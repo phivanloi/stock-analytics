@@ -1,0 +1,8 @@
+﻿Quy tắc đặt version của hệ thống là x.y.z
+	- x đại diện cho thay đổi lớn concept và kiến trúc của hệ thống
+	- y đại diện cho thay đổi lớn về giao diện người dùng
+	- z đại diện cho các bản update nhỏ, các bản vá bảo mật vvv
+
+Danh sách các tính năng ver 1.0.0
+	- Thu thập được thông tin giá chứng khoán, các chỉ số chứng khoán cơ bản
+	- Thử nghiệp được phương pháp đầu tư của các chứng khoán

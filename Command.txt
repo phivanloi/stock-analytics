@@ -1,0 +1,112 @@
+﻿- Cài đặt và update dotnet ef tool
+	dotnet tool install --global dotnet-ef 
+	or  
+	dotnet tool update --global dotnet-ef
+	dotnet add package Microsoft.EntityFrameworkCore.Design
+
+- Tạo db migrations cho db stock
+	dotnet ef migrations add InitialCreate --context MarketDbContext --startup-project "..\..\src\Pl.Sps.Cms" --output-dir "Migrations\MarketDbMigrations"
+	dotnet ef migrations remove --context DataDbContext --startup-project "..\..\src\Pl.Sps.Cms"
+
+- Tạo db migrations cho db analytics
+	dotnet ef migrations add InitialCreate --context AnalyticsDbContext --startup-project "..\..\src\Pl.Sps.Cms" --output-dir "Migrations\AnalyticsDbMigrations"
+	dotnet ef migrations remove --context AnalyticsDbContext --startup-project "..\..\src\Pl.Sps.Cms"
+
+- Các lệnh docker
+	Gỡ bỏ hết toàn bộ image và container trọng hệ thống
+	docker rm -f $(docker ps -a -q)
+	docker rmi -f $(docker images -a -q)
+	docker volume rm $(docker volume ls -q)
+
+- Để có thể telnet trong docker
+	docker exec -it <contaienr id>
+	apt-get update
+	apt-get install telnet
+
+- Để có thể ping trong docker
+	docker exec -it <contaienr id>
+	apt-get install iputils-ping
+
+- Cài github action trên linux account root, export là lệnh đặt một biến hệ thống
+	export RUNNER_ALLOW_RUNASROOT=1
+
+- Sau khi cài xong nếu muốn chạy ở service thì thêm dòng lệnh sau
+	./svc.sh install
+	./svc.sh start
+	./svc.sh status
+	./svc.sh stop
+	./svc.sh uninstall
+
+- Cách xử lý khi đồng hồ linux không đồng bộ
+	sudo service ntp stop
+	sudo ntpd -gq
+	sudo service ntp start
+
+- Xóa thư mục trong linux
+	rm -rf sp
+
+- Mở port trên linux 
+	yum install firewalld
+	systemctl status firewalld
+	systemctl start firewalld
+	systemctl restart firewalld
+	systemctl enable firewalld
+
+	firewall-cmd --get-active-zones
+	firewall-cmd --zone=public --add-port=1434/tcp --permanent
+	firewall-cmd --zone=public --add-port=80/tcp --permanent
+	firewall-cmd --zone=public --add-port=5682/tcp --permanent
+	firewall-cmd --zone=public --add-port=15682/tcp --permanent
+	firewall-cmd --zone=public --add-port=6389/tcp --permanent
+	firewall-cmd --reload
+
+- Xóa cache của linux
+	echo 1 > /proc/sys/vm/drop_caches
+	echo 2 > /proc/sys/vm/drop_caches
+	echo 3 > /proc/sys/vm/drop_caches
+	echo 4 > /proc/sys/vm/drop_caches
+
+- Xem đường dẫn đang đứng ở chỗ nào
+	pwd
+
+- Copy file từ server về máy local
+	scp -P 22108 root@42.112.28.14:/etc/haproxy/haproxy.cfg c:\download
+
+- Upload file từ local lên server
+	scp -P 22108 -r c:\download root@42.112.28.14:/etc/haproxy
+
+- Tạo file trên centOs7
+	touch <ten_file>
+
+- Edit file trong centOs7
+	vi <tên file>
+	i -> chuyển chế độ insert
+	Esc -> về chế độ bình thường 
+	:wq -> để thoát
+	cat <tên file> -> để xem lại kết quả
+
+- Để cho phép một user có thể truy cập docker container trong linux
+	sudo usermod -a -G docker loipv
+
+- Thực hiện các lệnh build docker
+	docker build -t sps-import -f tool/Pl.Sps.ImportStockTransaction/Dockerfile .
+	docker run -d --name sps-import-run sps-import
+
+- Các lệnh sql có thể cần sử dụng 
+
+	Cách đo tốc độ thực thi của một câu sql
+	SET STATISTICS TIME ON 
+		Viết Câu Query vào đây để đo tốc độ
+	SET STATISTICS TIME OFF
+
+	Lấy kích thước db kiểu gb 
+	SELECT 
+		log_size_gb = CAST(SUM(CASE WHEN type_desc = 'LOG' THEN size END) * 8. / 1024 / 1024 AS DECIMAL(8,2)),
+		row_size_gb = CAST(SUM(CASE WHEN type_desc = 'ROWS' THEN size END) * 8. / 1024 / 1024 AS DECIMAL(8,2)),
+		total_size_gb = CAST(SUM(size) * 8. / 1024/ 1024 AS DECIMAL(8,2))
+	FROM 
+		sys.master_files WITH(NOWAIT)
+	WHERE 
+		database_id = DB_ID()
+	GROUP BY 
+		database_id
