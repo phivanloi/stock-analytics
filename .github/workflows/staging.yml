@@ -1,0 +1,47 @@
+name: staging
+on:
+  push:
+    branches:
+    - staging
+
+jobs:
+  infastructure:
+    runs-on: self-hosted
+    steps:
+    - uses: actions/checkout@v3
+    - name: infastructure up
+      run: docker-compose -f docker-compose-staging-infastructure.yml -p espf_infastructure up -d --build
+  migrations:
+    runs-on: self-hosted
+    steps:
+    - name: docker-compose-staging-migrations.yml up
+      run: docker-compose -f docker-compose-staging-migrations.yml -p espf_migrations up -d --build
+    needs: infastructure
+  unittests:
+    runs-on: self-hosted
+    steps:
+    - name: run unit tests
+      run: |
+       export DOTNET_CLI_HOME=/root
+       dotnet test src/Shared/Es.Pf.CoreUnitTests
+    needs: migrations
+  application:
+    runs-on: self-hosted
+    steps:
+    - name: docker-compose-staging.yml up
+      run: docker-compose -f docker-compose-staging.yml -p espf_application up -d --build
+    needs: unittests
+  monitoring:
+    runs-on: self-hosted
+    steps:
+    - name: monitor docker-compose.yml up
+      run: docker-compose -f docker-compose-staging-monitor.yml -p espf_monitoring up -d --build
+    needs: unittests
+  clear:
+    runs-on: self-hosted
+    steps:
+    - name: clean build cache file
+      run: docker builder prune -a -f
+    - name: clean all temp image
+      run: docker image prune -f
+    needs: [application, monitoring]
