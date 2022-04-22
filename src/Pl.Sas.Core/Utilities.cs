@@ -1,9 +1,5 @@
-﻿using Pl.Sas.Core.Entities;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Data;
-using System.Linq;
 using System.Net;
 using System.Text;
 
@@ -123,32 +119,6 @@ namespace Pl.Sas.Core
         }
 
         /// <summary>
-        /// Xây dựng cây danh sách
-        /// </summary>
-        /// <typeparam name="T">Loại object</typeparam>
-        /// <typeparam name="K">Thuộc tính object</typeparam>
-        /// <param name="collection">Danh sách cần tạo tree</param>
-        /// <param name="idSelector">Thuộc tính id của object</param>
-        /// <param name="parentIdSelector">Thuộc tính cha id</param>
-        /// <param name="orderSelector">Thuộc tính xắp xếp thứ tự</param>
-        /// <param name="rootId">Giá trị gốc</param>
-        /// <param name="selector">Điều kiện lựa chọn nếu có</param>
-        public static IEnumerable<TreeItem<T>> GenerateTree<T, K, O>(this IEnumerable<T> collection, Func<T, K> idSelector, Func<T, K> parentIdSelector, Func<T, O> orderSelector, K rootId = default, Func<T, bool> selector = null)
-        {
-            foreach (T c in collection.Where(c => parentIdSelector(c).Equals(rootId)).OrderBy(q => orderSelector(q)))
-            {
-                if (selector is null || selector(c))
-                {
-                    yield return new TreeItem<T>
-                    {
-                        Item = c,
-                        Children = collection.GenerateTree(idSelector, parentIdSelector, orderSelector, idSelector(c))
-                    };
-                }
-            }
-        }
-
-        /// <summary>
         /// Ghi log ra màn hình console và log vào file
         /// log file theo ngày
         /// </summary>
@@ -224,167 +194,6 @@ namespace Pl.Sas.Core
                 builder.Append(ch);
             }
             return builder.ToString();
-        }
-
-        /// <summary>
-        /// hàm kiểm tra sự tăng giảm và tính % tăng trưởng một tập hợp phần tử, hàm chạy từ phần tử đẩu đến phần tử cuối cùng
-        /// </summary>
-        /// <typeparam name="T">Loại phần tử</typeparam>
-        /// <param name="collection">Tập hợp phần tử</param>
-        /// <param name="valueCheck">trường dữ liệu cần check</param>
-        /// <returns>
-        /// <para>EqualCount số điểm bằng nhau</para>
-        /// <para>IncreaseCount số điểm tăng thêm</para>
-        /// <para>ReductionCount sổ điểm giảm đi</para>
-        /// <para>FistEqualCount số điểm bằng nhau</para>
-        /// <para>FistGrowCount số điểm tăng trưởng liên tục</para>
-        /// <para>FistDropCount số điểm giảm liên tục</para>
-        /// <para>Percents Phàn trăm tăng giảm</para>
-        /// </returns>
-        public static (int EqualCount, int IncreaseCount, int ReductionCount, int FistEqualCount, int FistGrowCount, int FistDropCount, List<decimal> Percents) GetFluctuationsTopDown<T>
-            (this List<T> collection, Func<T, decimal> valueCheck)
-        {
-            var equalCount = 0;
-            var increaseCount = 0;
-            var reductionCount = 0;
-            var fistEqualCount = 0;
-            var fistGrowCount = 0;
-            var fistDropCount = 0;
-            var percents = new List<decimal>();
-            var checkCount = collection.Count;
-            for (int i = 0; i < checkCount; i++)
-            {
-                if ((i + 1) >= checkCount)
-                {
-                    break;
-                }
-
-                if (valueCheck(collection[i + 1]) != 0)
-                {
-                    percents.Add(valueCheck(collection[i]).GetPercent(valueCheck(collection[i + 1])));
-                }
-                else
-                {
-                    if (valueCheck(collection[i]) > 0)
-                    {
-                        percents.Add(100);
-                    }
-                    else if (valueCheck(collection[i]) == 0)
-                    {
-                        percents.Add(0);
-                    }
-                    else
-                    {
-                        percents.Add(-100);
-                    }
-                }
-
-                if (valueCheck(collection[i]) > valueCheck(collection[i + 1]))
-                {
-                    increaseCount++;
-                    if (reductionCount == 0 && equalCount == 0)
-                    {
-                        fistGrowCount++;
-                    }
-                }
-                else if (valueCheck(collection[i]) < valueCheck(collection[i + 1]))
-                {
-                    reductionCount++;
-                    if (increaseCount == 0 && equalCount == 0)
-                    {
-                        fistDropCount++;
-                    }
-                }
-                else
-                {
-                    equalCount++;
-                    if (fistDropCount == 0 && increaseCount == 0)
-                    {
-                        fistEqualCount++;
-                    }
-                }
-            }
-            return (equalCount, increaseCount, reductionCount, fistEqualCount, fistGrowCount, fistDropCount, percents);
-        }
-
-        /// <summary>
-        /// hàm kiểm tra sự tăng giảm và tính % tăng trưởng một tập hợp phần tử, hàm chạy từ phần tử cuối cho đến phần tử đầu
-        /// </summary>
-        /// <typeparam name="T">Loại phần tử</typeparam>
-        /// <param name="collection">Tập hợp phần tử</param>
-        /// <param name="valueCheck">trường dữ liệu cần check</param>
-        /// <returns>
-        /// <para>EqualCount số điểm bằng nhau</para>
-        /// <para>IncreaseCount số điểm tăng thêm</para>
-        /// <para>ReductionCount sổ điểm giảm đi</para>
-        /// <para>FistEqualCount số điểm bằng nhau</para>
-        /// <para>FistGrowCount số điểm tăng trưởng liên tục</para>
-        /// <para>FistDropCount số điểm giảm liên tục</para>
-        /// <para>Percents Phàn trăm tăng giảm</para>
-        /// </returns>
-        public static (int EqualCount, int IncreaseCount, int ReductionCount, int FistEqualCount, int FistGrowCount, int FistDropCount, List<decimal> Percents) GetFluctuationsDownTop<T>
-            (this List<T> collection, Func<T, decimal> valueCheck)
-        {
-            var equalCount = 0;
-            var increaseCount = 0;
-            var reductionCount = 0;
-            var fistEqualCount = 0;
-            var fistGrowCount = 0;
-            var fistDropCount = 0;
-            var percents = new List<decimal>();
-            for (int i = (collection.Count - 1); i >= 0; i--)
-            {
-                if (i == 0)
-                {
-                    break;
-                }
-
-                if (valueCheck(collection[i - 1]) != 0)
-                {
-                    percents.Add(valueCheck(collection[i]).GetPercent(valueCheck(collection[i - 1])));
-                }
-                else
-                {
-                    if (valueCheck(collection[i]) > 0)
-                    {
-                        percents.Add(100);
-                    }
-                    else if (valueCheck(collection[i]) == 0)
-                    {
-                        percents.Add(0);
-                    }
-                    else
-                    {
-                        percents.Add(-100);
-                    }
-                }
-
-                if (valueCheck(collection[i]) > valueCheck(collection[i - 1]))
-                {
-                    increaseCount++;
-                    if (reductionCount == 0 && equalCount == 0)
-                    {
-                        fistGrowCount++;
-                    }
-                }
-                else if (valueCheck(collection[i]) < valueCheck(collection[i - 1]))
-                {
-                    reductionCount++;
-                    if (increaseCount == 0 && equalCount == 0)
-                    {
-                        fistDropCount++;
-                    }
-                }
-                else
-                {
-                    equalCount++;
-                    if (fistDropCount == 0 && increaseCount == 0)
-                    {
-                        fistEqualCount++;
-                    }
-                }
-            }
-            return (equalCount, increaseCount, reductionCount, fistEqualCount, fistGrowCount, fistDropCount, percents);
         }
 
         /// <summary>
@@ -498,44 +307,6 @@ namespace Pl.Sas.Core
                 4 => "Thử nghiệm",
                 _ => "Dài hạn",
             };
-        }
-
-        /// <summary>
-        /// Chuyển dữ liệu lịch sử giá bình thường thành dữ liệu lịch sử giá điều chỉnh
-        /// </summary>
-        /// <param name="stockPrice">Dữ liệu lịch sử giá bình thường</param>
-        /// <returns>StockPriceAdj</returns>
-        public static StockPriceAdj ToStockPriceAdj(this StockPrice stockPrice)
-        {
-            var changePercent = (stockPrice.ClosePrice - stockPrice.ClosePriceAdjusted) / stockPrice.ClosePrice;
-            return new()
-            {
-                Symbol = stockPrice.Symbol,
-                TradingDate = stockPrice.TradingDate,
-                DatePath = stockPrice.DatePath,
-                OpenPrice = stockPrice.OpenPrice - (stockPrice.OpenPrice * changePercent),
-                HighestPrice = stockPrice.HighestPrice - (stockPrice.HighestPrice * changePercent),
-                LowestPrice = stockPrice.LowestPrice - (stockPrice.LowestPrice * changePercent),
-                ClosePrice = stockPrice.ClosePriceAdjusted,
-                TotalMatchVol = stockPrice.TotalMatchVol
-            };
-        }
-
-        /// <summary>
-        /// Chuyển lịch sử khớp lệnh từ dữ liệu ban đầu sang dữ liệu sau điều chỉnh phục vụ cho quá trình trading
-        /// </summary>
-        /// <param name="stockTransactionDetails">Dữ liệu nén của phiên giao dịch</param>
-        /// <param name="stockPrice">Dữ liệu lịch sử giá của phiện giao dịch tương ứng</param>
-        /// <returns>StockPriceAdj</returns>
-        public static List<StockTransactionDetails> RebuildStockTransactionDetails(this List<StockTransactionDetails> stockTransactionDetails, StockPrice stockPrice)
-        {
-            var changePercent = (stockPrice.ClosePrice - stockPrice.ClosePriceAdjusted) / stockPrice.ClosePrice;
-            foreach (var stockTransactionDetail in stockTransactionDetails)
-            {
-                stockTransactionDetail.Price -= (stockTransactionDetail.Price * changePercent);
-                stockTransactionDetail.RefPrice -= (stockTransactionDetail.RefPrice * changePercent);
-            }
-            return stockTransactionDetails;
         }
 
         /// <summary>

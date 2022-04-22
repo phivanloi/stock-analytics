@@ -1,11 +1,10 @@
-﻿using System;
-
-namespace Pl.Sas.Core.Entities
+﻿namespace Pl.Sas.Core.Entities
 {
     public class BaseEntity
     {
         /// <summary>
         /// Khóa chính của entity
+        /// vd 
         /// </summary>
         public string Id { get; set; } = Utilities.GenerateShortGuid();
 

@@ -1,0 +1,26 @@
+version: '3.4'
+
+services:
+  plhaproxy:
+    user: root
+    build:
+      context: .
+      dockerfile: haproxy/Dockerfile
+    environment:
+      - TZ=Asia/Ho_Chi_Minh
+      - ApplicationId=pl-haproxy
+    restart: always
+    networks:
+      - pl-haproxy-network
+    ports:
+      - "80:80"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
+
+networks:
+  pl-haproxy-network:
+    external:
+      name: pl-network

@@ -1,0 +1,57 @@
+version: '3.4'
+
+services:
+  plinfluxdb:
+    image: influxdb:latest
+    restart: always
+    volumes:
+      - influx_database:/root/influxdb/data
+      - influx_database_2:/var/lib/influxdb2
+    networks:
+      - pl-monitoring-network
+    ports:
+      - 3405:8086
+    environment:
+      - TZ=Asia/Ho_Chi_Minh
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=monitoring
+      - DOCKER_INFLUXDB_INIT_PASSWORD=234fdswe65
+      - DOCKER_INFLUXDB_INIT_ORG=plsas
+      - DOCKER_INFLUXDB_INIT_BUCKET=plsas
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=plloginfluxdbtoken
+      - ApplicationId=pl-influxdb
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
+
+  pltelegraf:
+    image: telegraf:latest
+    restart: always
+    build:
+      context: .
+      dockerfile: monitor/telegraf/Dockerfile
+      args:
+        - CONFIG_ENVIRONMENT=production
+    depends_on:
+      - plinfluxdb
+    networks:
+      - pl-monitoring-network
+    environment:
+      - TZ=Asia/Ho_Chi_Minh
+      - ApplicationId=pl-telegraf
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
+
+networks:
+  pl-monitoring-network:
+    external:
+      name: pl-network
+
+volumes:
+  influx_database: {}
+  influx_database_2: {}

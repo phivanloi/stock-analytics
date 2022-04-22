@@ -1,0 +1,99 @@
+version: '3.4'
+
+services:
+  plsqlserver:
+    image: mcr.microsoft.com/mssql/server
+    user: root
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_PID=Developer
+      - MSSQL_SA_PASSWORD=pl123456@1234
+      - TZ=Asia/Ho_Chi_Minh
+      - ApplicationId=pl-sql
+    volumes:
+      - sql_database:/var/opt/mssql/data
+    ports:
+      - 3400:1433
+    restart: always
+    networks:
+      - pl-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
+
+  plrabbitmq:
+    image: rabbitmq:3-management
+    user: root
+    environment:
+      - RABBITMQ_DEFAULT_USER=plsas
+      - RABBITMQ_DEFAULT_PASS=pl13245
+      - TZ=Asia/Ho_Chi_Minh
+      - ApplicationId=pl-rabbitmq
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - rabbitmq_config:/etc/rabbitmq
+    ports:
+      - 3401:15672
+      - 3402:5672
+    restart: always
+    networks:
+      - pl-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
+
+  plredis:
+    image: redis:latest
+    user: root
+    environment:
+      - TZ=Asia/Ho_Chi_Minh
+      - ApplicationId=pl-redis
+    volumes:
+      - redis_data:/data
+      - redis_config:/usr/local/etc/redis
+    ports:
+      - 3403:6379
+    restart: always
+    networks:
+      - pl-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
+
+  pllogger:
+    build:
+      context: .
+      dockerfile: logger/Pl.Sas.Logger/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - TZ=Asia/Ho_Chi_Minh
+      - ApplicationId=pl-logger
+      - SERVICE_PORTS=80
+    restart: always
+    ports:
+      - "3404:80"
+    networks:
+      - pl-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
+
+networks:
+  pl-network:
+    name: pl-network
+    driver: bridge
+
+volumes:
+  sql_database:
+  rabbitmq_data:
+  rabbitmq_config:
+  redis_data:
+  redis_config:

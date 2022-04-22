@@ -8,9 +8,7 @@ Mức độ bảo mật các phiên bản
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 3.8.3   | Không phát hiện lỗi bảo mật và hỗ trợ cập nhập |
-| 2.7.1   | Không hỗ trợ bản vá và ngừng cập nhật|
-| 1.0.0   | sql injection |
+| 1.0.0   | Không có lỗ hổng bảo mật nào được phát hiện |
 
 ## Reporting a Vulnerability
 
