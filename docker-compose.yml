@@ -61,19 +61,19 @@ services:
         max-size: "100m"
         max-file: "1"
 
-  plworker1:
+  plworker:
     build:
       context: .
       dockerfile: src/Pl.Sas.Worker/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - TZ=Asia/Ho_Chi_Minh
-      - ApplicationId=pl-worker1
+      - ApplicationId=pl-worker
       - SERVICE_PORTS=80
     deploy:
-      replicas: 4
+      replicas: 10
     ports:
-      - "3409-3413:80"
+      - "80"
     restart: always
     networks:
       - pl-application-network

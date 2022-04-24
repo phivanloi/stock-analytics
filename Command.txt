@@ -56,12 +56,16 @@
 	systemctl restart firewalld
 	systemctl enable firewalld
 
-	firewall-cmd --get-active-zones
-	firewall-cmd --zone=public --add-port=1434/tcp --permanent
+	firewall-cmd --get-active-zone
 	firewall-cmd --zone=public --add-port=80/tcp --permanent
-	firewall-cmd --zone=public --add-port=5682/tcp --permanent
-	firewall-cmd --zone=public --add-port=15682/tcp --permanent
-	firewall-cmd --zone=public --add-port=6389/tcp --permanent
+	firewall-cmd --zone=public --add-port=3406/tcp --permanent
+	firewall-cmd --zone=public --add-port=3407/tcp --permanent
+	firewall-cmd --zone=public --add-port=3408/tcp --permanent
+	firewall-cmd --zone=public --add-port=3409/tcp --permanent
+	firewall-cmd --zone=public --add-port=3410/tcp --permanent
+	firewall-cmd --zone=public --add-port=3411/tcp --permanent
+	firewall-cmd --zone=public --add-port=3412/tcp --permanent
+	firewall-cmd --zone=public --add-port=3413/tcp --permanent
 	firewall-cmd --reload
 
 - Xóa cache của linux
