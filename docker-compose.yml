@@ -68,7 +68,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - TZ=Asia/Ho_Chi_Minh
-      - ApplicationId=pl-worker
+      - ApplicationId=pl-worker1
       - SERVICE_PORTS=80
     ports:
       - "3409:80"
@@ -88,7 +88,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - TZ=Asia/Ho_Chi_Minh
-      - ApplicationId=pl-worker
+      - ApplicationId=pl-worker2
       - SERVICE_PORTS=80
     ports:
       - "3410:80"
@@ -108,7 +108,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - TZ=Asia/Ho_Chi_Minh
-      - ApplicationId=pl-worker
+      - ApplicationId=pl-worker3
       - SERVICE_PORTS=80
     ports:
       - "3411:80"
@@ -128,7 +128,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - TZ=Asia/Ho_Chi_Minh
-      - ApplicationId=pl-worker
+      - ApplicationId=pl-worker4
       - SERVICE_PORTS=80
     ports:
       - "3412:80"
@@ -148,7 +148,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - TZ=Asia/Ho_Chi_Minh
-      - ApplicationId=pl-worker
+      - ApplicationId=pl-worker5
       - SERVICE_PORTS=80
     ports:
       - "3413:80"

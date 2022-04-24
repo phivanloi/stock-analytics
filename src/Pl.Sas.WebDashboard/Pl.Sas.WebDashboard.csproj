@@ -25,7 +25,6 @@
 		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.15.1" />
 		<PackageReference Include="Microsoft.AspNetCore.HealthChecks" Version="1.0.0" />
 		<PackageReference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="6.0.4" />
-		<PackageReference Include="Seq.Extensions.Logging" Version="6.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
