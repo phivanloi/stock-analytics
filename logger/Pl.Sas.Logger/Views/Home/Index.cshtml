@@ -73,7 +73,7 @@
             $.ajax({
                 type: "POST",
                 cache: false,
-                url: "/home/getnewerlog",
+                url: "/getnewerlog",
                 data: {
                     startTime: time,
                     type: logType
@@ -121,7 +121,7 @@
             $.ajax({
                 type: "GET",
                 cache: false,
-                url: '/home/getcontent?&id=' + id,
+                url: '/getcontent?&id=' + id,
                 success: function (data) {
                     $(".modal-body").text(data);
                 }

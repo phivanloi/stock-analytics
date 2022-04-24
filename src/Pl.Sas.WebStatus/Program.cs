@@ -4,10 +4,6 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Logging.ClearProviders()
-    .AddConsole()
-    .AddSeq(builder.Configuration.GetSection("Seq"));
-
 builder.Services.AddHealthChecks()
             .AddCheck("self", () => HealthCheckResult.Healthy());
 builder.Services.AddHealthChecksUI()

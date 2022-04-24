@@ -1,4 +1,14 @@
+using Pl.Sas.Core;
+using Pl.Sas.Infrastructure.Loging;
+
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddDistributeLogService(option =>
+{
+    option.BaseUrl = builder.Configuration["LoggingSettings:BaseUrl"];
+    option.Secret = builder.Configuration["LoggingSettings:Secret"];
+    option.ServerName = builder.Configuration["LoggingSettings:ServerName"] ?? Utilities.IdentityServer();
+});
+
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

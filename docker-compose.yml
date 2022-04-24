@@ -31,26 +31,6 @@ services:
       - ApplicationId=pl-scheduler
       - SERVICE_PORTS=80
     ports:
-      - "3406:80"
-    restart: always
-    networks:
-      - pl-application-network
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "100m"
-        max-file: "1"
-
-  plworker:
-    build:
-      context: .
-      dockerfile: src/Pl.Sas.Worker/Dockerfile
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - TZ=Asia/Ho_Chi_Minh
-      - ApplicationId=pl-worker
-      - SERVICE_PORTS=80
-    ports:
       - "3407:80"
     restart: always
     networks:
@@ -72,6 +52,106 @@ services:
       - SERVICE_PORTS=80
     ports:
       - "3408:80"
+    restart: always
+    networks:
+      - pl-application-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
+
+  plworker1:
+    build:
+      context: .
+      dockerfile: src/Pl.Sas.Worker/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - TZ=Asia/Ho_Chi_Minh
+      - ApplicationId=pl-worker
+      - SERVICE_PORTS=80
+    ports:
+      - "3409:80"
+    restart: always
+    networks:
+      - pl-application-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
+
+  plworker2:
+    build:
+      context: .
+      dockerfile: src/Pl.Sas.Worker/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - TZ=Asia/Ho_Chi_Minh
+      - ApplicationId=pl-worker
+      - SERVICE_PORTS=80
+    ports:
+      - "3410:80"
+    restart: always
+    networks:
+      - pl-application-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
+
+  plworker3:
+    build:
+      context: .
+      dockerfile: src/Pl.Sas.Worker/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - TZ=Asia/Ho_Chi_Minh
+      - ApplicationId=pl-worker
+      - SERVICE_PORTS=80
+    ports:
+      - "3411:80"
+    restart: always
+    networks:
+      - pl-application-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
+
+  plworker4:
+    build:
+      context: .
+      dockerfile: src/Pl.Sas.Worker/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - TZ=Asia/Ho_Chi_Minh
+      - ApplicationId=pl-worker
+      - SERVICE_PORTS=80
+    ports:
+      - "3412:80"
+    restart: always
+    networks:
+      - pl-application-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
+
+  plworker5:
+    build:
+      context: .
+      dockerfile: src/Pl.Sas.Worker/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - TZ=Asia/Ho_Chi_Minh
+      - ApplicationId=pl-worker
+      - SERVICE_PORTS=80
+    ports:
+      - "3413:80"
     restart: always
     networks:
       - pl-application-network
