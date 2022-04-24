@@ -6,11 +6,11 @@ namespace Pl.Sas.Logger.Data
 {
     public class LoggerData
     {
-        private readonly Connections _connections;
+        private readonly ConnectionStrings _connectionStrings;
 
-        public LoggerData(IOptions<Connections> optionsConnection)
+        public LoggerData(IOptions<ConnectionStrings> optionsConnection)
         {
-            _connections = optionsConnection.Value;
+            _connectionStrings = optionsConnection.Value;
         }
 
         #region LogView
@@ -33,21 +33,21 @@ namespace Pl.Sas.Logger.Data
                     subQuery += " AND Type = @type ";
                 }
             }
-            using SqlConnection connection = new(_connections.LoggingConnection);
+            using SqlConnection connection = new(_connectionStrings.LoggingConnection);
             return await connection.QueryAsync<LogEntry>($"{query} {subQuery} ORDER BY CreatedTime DESC", new { top, startTime, type });
         }
 
         public virtual async Task<LogEntry> FindAsync(string id)
         {
             var query = "SELECT * FROM LogEntries WHERE Id = @id";
-            using SqlConnection connection = new(_connections.LoggingConnection);
+            using SqlConnection connection = new(_connectionStrings.LoggingConnection);
             return await connection.QueryFirstOrDefaultAsync<LogEntry>(query, new { id });
         }
 
         public virtual async Task ClearLogAsync()
         {
             var query = "TRUNCATE TABLE LogEntries";
-            using SqlConnection connection = new(_connections.LoggingConnection);
+            using SqlConnection connection = new(_connectionStrings.LoggingConnection);
             await connection.ExecuteAsync(query);
         }
 
@@ -67,7 +67,7 @@ namespace Pl.Sas.Logger.Data
                                         @Content,
                                         @Host,
                                         @Type)";
-            using SqlConnection connection = new(_connections.LoggingConnection);
+            using SqlConnection connection = new(_connectionStrings.LoggingConnection);
             return await connection.ExecuteAsync(query, logEntry) > 0;
         }
         #endregion
@@ -76,7 +76,7 @@ namespace Pl.Sas.Logger.Data
         public virtual long RecurrentDelete(int skipSecond = 36000)
         {
             var queryCount = "SELECT COUNT(1) FROM LogEntries";
-            using SqlConnection connection = new(_connections.LoggingConnection);
+            using SqlConnection connection = new(_connectionStrings.LoggingConnection);
             var count = connection.QueryFirstOrDefault<long>(queryCount);
             if (count > skipSecond)
             {

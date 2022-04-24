@@ -41,20 +41,16 @@ Pl stock prediction system is a  simple crawler stock data and simple stock, com
 
 ## Branch description
 
-- main contain all member change that pm accept
-- product to deploy docker production environment
-- stop to stop and clean all docker container
+- main => Toàn bộ các change mới nhất của dự án được merge về branch này
+- product => Toàn bộ các change của môi trường production
+- infrastructure => toàn bộ các change của hạ tầng được cấu hình và up ở branch
 
-## Địa chỉ các thành phần hạ tầng production
+## Địa chỉ dịch vụ
 
-- Web sps system => <http://sps.vuigreens.com>
-- Log => <http://log.vuigreens.com>
+- SqlServer => 42.112.27.31,3400  sa/pl123456@1234
+- Rabbit => Webmanager -><http://42.112.27.31:3401>  plsas/pl13245: Client connection -> 42.112.27.31:3402  plsas/pl13245
+- Redis => 42.112.27.31:3403
+- Log => <http://42.112.27.31:3406> Hoặc <http://log.vuigreens.com>
+- Web status => <http://42.112.27.31:3408> Hoặc <http://status.vuigreens.com>
+- Web dashboard => <http://42.112.27.31:3406> Hoặc <http://sas.vuigreens.com>
 
-## Địa chỉ các thành phần hạ tầng test
-
-- Sql => localhost:9001 sa/Loipv123456@1234
-- Rabbit => Webmanager -><http://localhost:9002>  loipv/spsloipv132: Client connection -> localhost:9003
-- Redis => localhost:9004
-- Log => <http://localhost:9005>
-- Monitoring => <http://localhost:9006> monitoring/234fdswe65
-- Web sps system => <http://localhost:9007>

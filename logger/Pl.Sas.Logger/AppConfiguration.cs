@@ -1,6 +1,6 @@
 ﻿namespace Pl.Sas.Logger
 {
-    public class Connections
+    public class ConnectionStrings
     {
         /// <summary>
         /// kết nối đến db log
