@@ -11,7 +11,7 @@ services:
       - ApplicationId=pl-haproxy
     restart: always
     networks:
-      - pl-haproxy-network
+      - pl-network
     ports:
       - "80:80"
     logging:
@@ -21,6 +21,6 @@ services:
         max-file: "1"
 
 networks:
-  pl-haproxy-network:
-    external:
-      name: pl-network
+  pl-network:
+    name: pl-network
+    driver: bridge
