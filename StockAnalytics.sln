@@ -17,6 +17,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ISSUE_TEMPLATE", "ISSUE_TEM
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{A4E165CB-2E63-482A-BBFF-025B00C7BB7C}"
 	ProjectSection(SolutionItems) = preProject
+		.github\workflows\haproxy.yml = .github\workflows\haproxy.yml
 		.github\workflows\infrastructure.yml = .github\workflows\infrastructure.yml
 		.github\workflows\staging.yml = .github\workflows\staging.yml
 	EndProjectSection
@@ -48,14 +49,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{B8FA2656-22ED-4CD6-855B-F24BE502112C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pl.Sas.UnitTests", "tests\Pl.Sas.UnitTests\Pl.Sas.UnitTests.csproj", "{20E0D103-E49C-4362-BEF2-D758EE229E3A}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "monitor", "monitor", "{9C3A7F23-1465-4B65-A6A6-D6EC17C92A7A}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "telegraf", "telegraf", "{43FB6E60-63C4-464A-AACF-988399701E79}"
-	ProjectSection(SolutionItems) = preProject
-		monitor\telegraf\Dockerfile = monitor\telegraf\Dockerfile
-		monitor\telegraf\telegraf-production.conf = monitor\telegraf\telegraf-production.conf
-	EndProjectSection
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{5E5BA0DF-85A1-4B5F-90B2-379DACEDC9EE}"
 EndProject
@@ -125,7 +118,6 @@ Global
 		{4404B8C3-DA31-4895-AACA-C2CE90F4A662} = {E849D658-A03B-4D48-8705-1B5A430ABE1F}
 		{7049B459-9474-4857-BC12-A258F2870F15} = {E849D658-A03B-4D48-8705-1B5A430ABE1F}
 		{20E0D103-E49C-4362-BEF2-D758EE229E3A} = {B8FA2656-22ED-4CD6-855B-F24BE502112C}
-		{43FB6E60-63C4-464A-AACF-988399701E79} = {9C3A7F23-1465-4B65-A6A6-D6EC17C92A7A}
 		{4E8FDFAC-B427-4D2F-9BA1-6C40520CB227} = {F46ADCF5-5D32-4267-88A1-0C324F75B697}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

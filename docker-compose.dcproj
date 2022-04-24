@@ -10,7 +10,6 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="docker-compose-haproxy.yml" />
-    <None Include="docker-compose-monitoring.yml" />
     <None Include="docker-compose-infastructure.yml" />
     <None Include="docker-compose.yml" />
     <None Include=".dockerignore" />
