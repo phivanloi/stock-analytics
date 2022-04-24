@@ -42,14 +42,16 @@ Pl stock prediction system is a  simple crawler stock data and simple stock, com
 ## Branch description
 
 - main => Toàn bộ các change mới nhất của dự án được merge về branch này
-- product => Toàn bộ các change của môi trường production
-- infrastructure => toàn bộ các change của hạ tầng được cấu hình và up ở branch
+- application => kích hoạt deploy ứng dụng
+- infrastructure => kích hoạt up hạ tầng
+- haproxy => kích hoạt deploy haproxy
 
 ## Địa chỉ dịch vụ
 
 - SqlServer => 42.112.27.31,3400  sa/pl123456@1234
 - Rabbit => Webmanager -><http://42.112.27.31:3401>  plsas/pl13245: Client connection -> 42.112.27.31:3402  plsas/pl13245
 - Redis => 42.112.27.31:3403
+- Haproxy => 103.121.89.235/haproxyStats  admin/loipv89
 - Log => <http://42.112.27.31:3406> Hoặc <http://log.vuigreens.com>
 - Web status => <http://42.112.27.31:3408> Hoặc <http://status.vuigreens.com>
 - Web dashboard => <http://42.112.27.31:3406> Hoặc <http://sas.vuigreens.com>

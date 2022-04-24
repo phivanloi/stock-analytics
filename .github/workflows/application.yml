@@ -23,7 +23,7 @@ jobs:
     runs-on: sasapp
     steps:
     - name: restart ha-proxy
-      run: docker restart es-haproxy_esplhaproxy_1
+      run: docker restart pl_haproxy_plhaproxy_1
     needs: application
   clear:
     runs-on: sasapp
