@@ -9,6 +9,18 @@ builder.Services.AddDistributeLogService(option =>
     option.ServerName = builder.Configuration["LoggingSettings:ServerName"] ?? Utilities.IdentityServer();
 });
 
+builder.Services.AddHttpClient("downloader", c =>
+{
+    c.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36 Edg/86.0.622.51");
+    c.DefaultRequestHeaders.Add("Referer", "https://iboard.ssi.com.vn/");
+}).ConfigurePrimaryHttpMessageHandler(() =>
+{
+    return new SocketsHttpHandler()
+    {
+        UseCookies = false
+    };
+});
+
 // Add services to the container.
 
 var app = builder.Build();

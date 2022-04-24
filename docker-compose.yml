@@ -1,25 +1,6 @@
 version: '3.4'
 
 services:
-  plwebdashboard:
-    build:
-      context: .
-      dockerfile: src/Pl.Sas.WebDashboard/Dockerfile
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - TZ=Asia/Ho_Chi_Minh
-      - ApplicationId=pl-webdashboard
-      - SERVICE_PORTS=80
-    ports:
-      - "3406:80"
-    restart: always
-    networks:
-      - pl-application-network
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "100m"
-        max-file: "1"
 
   plscheduler:
     build:
@@ -33,6 +14,28 @@ services:
     ports:
       - "3407:80"
     restart: always
+    networks:
+      - pl-application-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
+
+  plwebdashboard:
+    build:
+      context: .
+      dockerfile: src/Pl.Sas.WebDashboard/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - TZ=Asia/Ho_Chi_Minh
+      - ApplicationId=pl-webdashboard
+      - SERVICE_PORTS=80
+    ports:
+      - "3406:80"
+    restart: always
+    depends_on:
+      - plscheduler
     networks:
       - pl-application-network
     logging:
@@ -55,6 +58,8 @@ services:
     restart: always
     networks:
       - pl-application-network
+    depends_on:
+      - plscheduler
     logging:
       driver: "json-file"
       options:
@@ -75,6 +80,8 @@ services:
     ports:
       - "80"
     restart: always
+    depends_on:
+      - plscheduler
     networks:
       - pl-application-network
     logging:

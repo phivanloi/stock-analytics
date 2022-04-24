@@ -3,6 +3,11 @@
     public static class Constants
     {
         /// <summary>
+        /// Thời gian cache mặc định tính theo giây
+        /// </summary>
+        public const int DefaultCacheTime = 60;
+
+        /// <summary>
         /// Bộ tên tất cả các chỉ số chính của sản chứng khoán
         /// </summary>
         public static readonly string[] ShareIndex = new string[] { "VNINDEX", "VN30", "HNX", "HNX30", "UPCOM" };

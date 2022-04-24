@@ -5,12 +5,12 @@
 	dotnet add package Microsoft.EntityFrameworkCore.Design
 
 - Tạo db migrations cho db stock
-	dotnet ef migrations add InitialCreate --context MarketDbContext --startup-project "..\..\src\Pl.Sas.Cms" --output-dir "Migrations\MarketDbMigrations"
-	dotnet ef migrations remove --context DataDbContext --startup-project "..\..\src\Pl.Sas.Cms"
+	dotnet ef migrations add InitialCreate --context MarketDbContext --output-dir "Migrations\MarketDb"
+	dotnet ef migrations remove --context MarketDbContext
 
 - Tạo db migrations cho db analytics
-	dotnet ef migrations add InitialCreate --context AnalyticsDbContext --startup-project "..\..\src\Pl.Sas.Cms" --output-dir "Migrations\AnalyticsDbMigrations"
-	dotnet ef migrations remove --context AnalyticsDbContext --startup-project "..\..\src\Pl.Sas.Cms"
+	dotnet ef migrations add InitialCreate --context AnalyticsDbContext --output-dir "Migrations\AnalyticsDb"
+	dotnet ef migrations remove --context AnalyticsDbContext
 
 - Tạo db migrations cho db logger
 	dotnet ef migrations add InitialCreate --context LogDbContext --output-dir "Data\Migrations"

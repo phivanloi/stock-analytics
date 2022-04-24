@@ -18,6 +18,7 @@ namespace Pl.Sas.Infrastructure
         public virtual DbSet<FiinEvaluate> FiinEvaluates { get; set; } = null!;
         public virtual DbSet<StockRecommendation> StockRecommendations { get; set; } = null!;
         public virtual DbSet<VndStockScore> VndStockScores { get; set; } = null!;
+        public virtual DbSet<Schedule> Schedules { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -162,7 +163,7 @@ namespace Pl.Sas.Infrastructure
                 b.HasIndex(p => new { p.Symbol, p.Analyst, p.ReportDate });
             });
 
-            #endregion FinancialGrowth
+            #endregion StockRecommendation
 
             #region VndStockScore
 
@@ -180,7 +181,19 @@ namespace Pl.Sas.Infrastructure
                 b.Property(p => p.Locale).HasMaxLength(8);
             });
 
-            #endregion EconomicIndex
+            #endregion VndStockScore
+
+            #region Schedules
+
+            modelBuilder.Entity<Schedule>(b =>
+            {
+                b.Property(c => c.Id).HasMaxLength(22);
+                b.Property(p => p.Name).HasMaxLength(128);
+                b.Property(p => p.DataKey).HasMaxLength(64);
+                b.HasIndex(p => p.ActiveTime);
+            });
+
+            #endregion Schedules
         }
     }
 }
