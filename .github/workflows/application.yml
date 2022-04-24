@@ -1,13 +1,14 @@
-name: staging
+name: application
 on:
   push:
     branches:
-    - staging
+    - application
 
 jobs:
   unittests:
     runs-on: sasapp
     steps:
+    - uses: actions/checkout@v3
     - name: run unit tests
       run: |
        export DOTNET_CLI_HOME=/root

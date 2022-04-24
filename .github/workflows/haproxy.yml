@@ -8,6 +8,7 @@ jobs:
   haproxy:
     runs-on: sasapp
     steps:
+    - uses: actions/checkout@v3
     - name: docker-compose-haproxy up
       run: docker-compose -f docker-compose-haproxy.yml -p pl_haproxy up -d --build
   clear:
