@@ -17,9 +17,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ISSUE_TEMPLATE", "ISSUE_TEM
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{A4E165CB-2E63-482A-BBFF-025B00C7BB7C}"
 	ProjectSection(SolutionItems) = preProject
+		.github\workflows\application.yml = .github\workflows\application.yml
 		.github\workflows\haproxy.yml = .github\workflows\haproxy.yml
 		.github\workflows\infrastructure.yml = .github\workflows\infrastructure.yml
-		.github\workflows\staging.yml = .github\workflows\staging.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "items", "items", "{909C96E5-FBE1-4BF4-97C0-468EC4E88240}"
