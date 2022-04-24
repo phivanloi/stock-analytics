@@ -1,0 +1,21 @@
+name: haproxy
+on:
+  push:
+    branches:
+    - haproxy
+
+jobs:
+  haproxy:
+    runs-on: sasapp
+    steps:
+    - name: docker-compose-haproxy up
+      run: docker-compose -f docker-compose-haproxy.yml -p pl_haproxy up -d --build
+    needs: unittests
+  clear:
+    runs-on: sasapp
+    steps:
+    - name: clean build cache file
+      run: docker builder prune -a -f
+    - name: clean all temp image
+      run: docker image prune -f
+    needs: application

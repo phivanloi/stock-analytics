@@ -5,37 +5,30 @@ on:
     - staging
 
 jobs:
-  infastructure:
-    runs-on: self-hosted
-    steps:
-    - uses: actions/checkout@v3
-    - name: infastructure up
-      run: docker-compose -f docker-compose-infastructure.yml -p pl_infastructure up -d --build
   unittests:
-    runs-on: self-hosted
+    runs-on: sasapp
     steps:
     - name: run unit tests
       run: |
        export DOTNET_CLI_HOME=/root
        dotnet test src/tests/Pl.Sas.UnitTests
-    needs: infastructure
   application:
-    runs-on: self-hosted
+    runs-on: sasapp
     steps:
     - name: docker-compose.yml up
       run: docker-compose -f docker-compose.yml -p pl_application up -d --build
     needs: unittests
-  monitoring:
-    runs-on: self-hosted
+  restarthaproxy:
+    runs-on: sasapp
     steps:
-    - name: docker-compose-monitoring.yml up
-      run: docker-compose -f docker-compose-monitoring.yml -p pl_monitoring up -d --build
-    needs: unittests
+    - name: restart ha-proxy
+      run: docker restart es-haproxy_esplhaproxy_1
+    needs: application
   clear:
-    runs-on: self-hosted
+    runs-on: sasapp
     steps:
     - name: clean build cache file
       run: docker builder prune -a -f
     - name: clean all temp image
       run: docker image prune -f
-    needs: [application, monitoring]
+    needs: application
