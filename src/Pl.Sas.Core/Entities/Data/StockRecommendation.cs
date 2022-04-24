@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Pl.Sas.Core.Entities
+﻿namespace Pl.Sas.Core.Entities
 {
     /// <summary>
     /// Lưu những báo cáo của những công ty chứng khoán

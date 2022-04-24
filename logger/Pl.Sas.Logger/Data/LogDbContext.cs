@@ -15,9 +15,7 @@ namespace Pl.Sas.Logger.Data
                 b.Property(c => c.Id).HasMaxLength(22);
                 b.Property(p => p.Host).HasMaxLength(64);
                 b.Property(p => p.Message).HasMaxLength(256);
-                b.HasIndex(p => p.CreatedTime);
-                b.HasIndex(p => p.Type);
-                b.HasIndex(p => new { p.Type, p.CreatedTime });
+                b.HasIndex(p => new { p.CreatedTime, p.Type });
             });
         }
     }

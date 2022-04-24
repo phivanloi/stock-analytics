@@ -11,14 +11,14 @@ using Pl.Sas.Logger.Data;
 namespace Pl.Sas.Logger.Data.Migrations
 {
     [DbContext(typeof(LogDbContext))]
-    [Migration("20211205133415_InitialCreate")]
+    [Migration("20220424093500_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.0")
+                .HasAnnotation("ProductVersion", "6.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
@@ -48,11 +48,7 @@ namespace Pl.Sas.Logger.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedTime");
-
-                    b.HasIndex("Type");
-
-                    b.HasIndex("Type", "CreatedTime");
+                    b.HasIndex("CreatedTime", "Type");
 
                     b.ToTable("LogEntries");
                 });

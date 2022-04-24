@@ -12,6 +12,10 @@
 	dotnet ef migrations add InitialCreate --context AnalyticsDbContext --startup-project "..\..\src\Pl.Sas.Cms" --output-dir "Migrations\AnalyticsDbMigrations"
 	dotnet ef migrations remove --context AnalyticsDbContext --startup-project "..\..\src\Pl.Sas.Cms"
 
+- Tạo db migrations cho db logger
+	dotnet ef migrations add InitialCreate --context LogDbContext --output-dir "Data\Migrations"
+	dotnet ef migrations remove --context LogDbContext
+
 - Các lệnh docker
 	Gỡ bỏ hết toàn bộ image và container trọng hệ thống
 	docker rm -f $(docker ps -a -q)

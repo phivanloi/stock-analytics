@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Pl.Sas.Core.Entities
+﻿namespace Pl.Sas.Core.Entities
 {
     /// <summary>
     /// Lưu đánh giá cổ phiếu của công ty fiin

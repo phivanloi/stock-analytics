@@ -1,13 +1,11 @@
 ﻿using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Pl.Sas.Logger;
 using Pl.Sas.Logger.Data;
 using Pl.Sas.Logger.Scheduler;
-using Polly;
 using System.Net;
 using System.Reflection;
 
@@ -36,17 +34,16 @@ builder.Services.AddControllersWithViews();
 
 
 var app = builder.Build();
-
-var logDbContext = app.Services.GetService<LogDbContext>();
-var retry = Policy.Handle<SqlException>().WaitAndRetry(10, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
-retry.Execute(() =>
+using (var scope = app.Services.CreateScope())
 {
+    var services = scope.ServiceProvider;
+    var logDbContext = services.GetService<LogDbContext>();
     if (logDbContext is not null)
     {
-        logDbContext.Database.Migrate();
+        logDbContext?.Database.Migrate();
+        app.Logger.LogInformation("LogDbContext migrations at {Now}", DateTime.Now);
     }
-});
-app.Logger.LogInformation("LogDbContext migrations at {Now}", DateTime.Now);
+}
 
 if (app.Environment.IsProduction())
 {

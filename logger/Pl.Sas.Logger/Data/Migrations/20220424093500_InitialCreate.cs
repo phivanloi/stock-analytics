@@ -25,19 +25,9 @@ namespace Pl.Sas.Logger.Data.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_LogEntries_CreatedTime",
+                name: "IX_LogEntries_CreatedTime_Type",
                 table: "LogEntries",
-                column: "CreatedTime");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_LogEntries_Type",
-                table: "LogEntries",
-                column: "Type");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_LogEntries_Type_CreatedTime",
-                table: "LogEntries",
-                columns: new[] { "Type", "CreatedTime" });
+                columns: new[] { "CreatedTime", "Type" });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
