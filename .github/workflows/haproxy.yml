@@ -10,7 +10,6 @@ jobs:
     steps:
     - name: docker-compose-haproxy up
       run: docker-compose -f docker-compose-haproxy.yml -p pl_haproxy up -d --build
-    needs: unittests
   clear:
     runs-on: sasapp
     steps:
@@ -18,4 +17,4 @@ jobs:
       run: docker builder prune -a -f
     - name: clean all temp image
       run: docker image prune -f
-    needs: application
+    needs: haproxy
