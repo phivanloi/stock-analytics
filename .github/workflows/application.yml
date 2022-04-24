@@ -12,7 +12,7 @@ jobs:
     - name: run unit tests
       run: |
        export DOTNET_CLI_HOME=/root
-       dotnet test src/tests/Pl.Sas.UnitTests
+       dotnet test tests/Pl.Sas.UnitTests
   application:
     runs-on: sasapp
     steps:

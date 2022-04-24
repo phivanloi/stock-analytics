@@ -26,4 +26,8 @@
 		</PackageReference>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\..\src\Pl.Sas.Infrastructure\Pl.Sas.Infrastructure.csproj" />
+	</ItemGroup>
+
 </Project>
