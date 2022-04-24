@@ -5,12 +5,12 @@
 	dotnet add package Microsoft.EntityFrameworkCore.Design
 
 - Tạo db migrations cho db stock
-	dotnet ef migrations add InitialCreate --context MarketDbContext --startup-project "..\..\src\Pl.Sps.Cms" --output-dir "Migrations\MarketDbMigrations"
-	dotnet ef migrations remove --context DataDbContext --startup-project "..\..\src\Pl.Sps.Cms"
+	dotnet ef migrations add InitialCreate --context MarketDbContext --startup-project "..\..\src\Pl.Sas.Cms" --output-dir "Migrations\MarketDbMigrations"
+	dotnet ef migrations remove --context DataDbContext --startup-project "..\..\src\Pl.Sas.Cms"
 
 - Tạo db migrations cho db analytics
-	dotnet ef migrations add InitialCreate --context AnalyticsDbContext --startup-project "..\..\src\Pl.Sps.Cms" --output-dir "Migrations\AnalyticsDbMigrations"
-	dotnet ef migrations remove --context AnalyticsDbContext --startup-project "..\..\src\Pl.Sps.Cms"
+	dotnet ef migrations add InitialCreate --context AnalyticsDbContext --startup-project "..\..\src\Pl.Sas.Cms" --output-dir "Migrations\AnalyticsDbMigrations"
+	dotnet ef migrations remove --context AnalyticsDbContext --startup-project "..\..\src\Pl.Sas.Cms"
 
 - Các lệnh docker
 	Gỡ bỏ hết toàn bộ image và container trọng hệ thống
@@ -89,7 +89,7 @@
 	sudo usermod -a -G docker loipv
 
 - Thực hiện các lệnh build docker
-	docker build -t sps-import -f tool/Pl.Sps.ImportStockTransaction/Dockerfile .
+	docker build -t sps-import -f tool/Pl.Sas.ImportStockTransaction/Dockerfile .
 	docker run -d --name sps-import-run sps-import
 
 - Các lệnh sql có thể cần sử dụng 

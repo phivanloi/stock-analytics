@@ -1,0 +1,21 @@
+name: infastructure
+on:
+  push:
+    branches:
+    - infastructure
+
+jobs:
+  infastructure:
+    runs-on: windows-2019
+    steps:
+    - uses: actions/checkout@v3
+    - name: infastructure up
+      run: docker-compose -f docker-compose-infastructure.yml -p pl_infastructure up -d --build
+  clear:
+    runs-on: self-hosted
+    steps:
+    - name: clean build cache file
+      run: docker builder prune -a -f
+    - name: clean all temp image
+      run: docker image prune -f
+    needs: infastructure

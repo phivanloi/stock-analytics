@@ -244,7 +244,7 @@ namespace Pl.Sas.Core
         }
 
         /// <summary>
-        /// Lấy ngày giao dịch hiện tại
+        /// Lấy ngày giao dịch hiện tại, quy tắc xử lý 
         /// </summary>
         /// <returns>DateTime</returns>
         public static DateTime GetTradingDate()

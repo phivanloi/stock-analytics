@@ -1,4 +1,4 @@
-﻿namespace Pl.Sps.Core.Entities
+﻿namespace Pl.Sas.Core.Entities
 {
     /// <summary>
     /// Ngành nghề
@@ -8,22 +8,12 @@
         /// <summary>
         /// Tên loại hình công ty
         /// </summary>
-        public string Name { get; set; }
+        public string Name { get; set; } = null!;
 
         /// <summary>
         /// Mã ngành bên ssi crawler về
         /// </summary>
-        public string Code { get; set; }
-
-        /// <summary>
-        /// Thứ tự hiển thị
-        /// </summary>
-        public int Ordinal { get; set; } = 1;
-
-        /// <summary>
-        /// Trạng thái hoạt động
-        /// </summary>
-        public bool Activated { get; set; } = true;
+        public string Code { get; set; } = null!;
 
         /// <summary>
         /// Đánh giá khả năng tăng trưởng của ngành trong giai đoạn hiện tại

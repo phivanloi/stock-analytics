@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Pl.Sps.Core.Entities
+﻿namespace Pl.Sas.Core.Entities
 {
     /// <summary>
     /// Sự kiện quyền
@@ -10,12 +8,12 @@ namespace Pl.Sps.Core.Entities
         /// <summary>
         /// Mã chứng khoán
         /// </summary>
-        public string Symbol { get; set; }
+        public string Symbol { get; set; } = null!;
 
         /// <summary>
         /// Tên sự kiện
         /// </summary>
-        public string EventName { get; set; }
+        public string EventName { get; set; } = null!;
 
         /// <summary>
         /// Ngày giao dịch không hướng quyền GDKHQ
@@ -35,7 +33,7 @@ namespace Pl.Sps.Core.Entities
         /// <summary>
         /// Tiêu dề sự kiện
         /// </summary>
-        public string EventTitle { get; set; }
+        public string? EventTitle { get; set; }
 
         /// <summary>
         /// Ngày phát hành, ngày công bố
@@ -45,27 +43,27 @@ namespace Pl.Sps.Core.Entities
         /// <summary>
         /// Mã sàn chứng khoán
         /// </summary>
-        public string Exchange { get; set; }
+        public string Exchange { get; set; } = null!;
 
         /// <summary>
         /// Danh sách mã sự kiện
         /// </summary>
-        public string EventListCode { get; set; }
+        public string? EventListCode { get; set; }
 
         /// <summary>
         /// Giá trị
         /// </summary>
-        public decimal Value { get; set; }
+        public float Value { get; set; }
 
         /// <summary>
         /// Tỉ lệ
         /// </summary>
-        public decimal Ratio { get; set; }
+        public float Ratio { get; set; }
 
         /// <summary>
         /// Mô tả sự kiện
         /// </summary>
-        public byte[] ZipDescription { get; set; } = null;
+        public byte[]? ZipDescription { get; set; } = null;
 
         /// <summary>
         /// Mã sự kiện
@@ -76,6 +74,6 @@ namespace Pl.Sps.Core.Entities
         /// <para>KQCT,KQQY,KQSB’ => Kết quả kinh doanh</para>
         /// <para>AMEN,LIQUI,MA,MOVE,OTHE => Sự kiện khác</para>
         /// </summary>
-        public string EventCode { get; set; }
+        public string EventCode { get; set; } = null!;
     }
 }

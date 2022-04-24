@@ -1,20 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text.Json;
+﻿using System.Text.Json;
 
-namespace Pl.Sps.Core.Entities
+namespace Pl.Sas.Core.Entities
 {
     public class Schedule : BaseEntity
     {
         /// <summary>
         /// Tên lịch
         /// </summary>
-        public string Name { get; set; }
+        public string Name { get; set; } = null!;
 
         /// <summary>
         /// Lưu thông tin khóa dữ liệu cho lịch, có thể là mã chứng khoán hoặc có thể là id bản ghi vv
         /// </summary>
-        public string DataKey { get; set; } = null;
+        public string? DataKey { get; set; } = null!;
 
         /// <summary>
         /// Mức độ ưu tiên phổ từ 1 đến 100
@@ -45,7 +43,7 @@ namespace Pl.Sps.Core.Entities
         /// <summary>
         /// Danh sách cặp key và giá trị hỗ trợ trong quá trình xử lý lịch
         /// </summary>
-        public Dictionary<string, string> Options => JsonSerializer.Deserialize<Dictionary<string, string>>(OptionsJson);
+        public Dictionary<string, string> Options => JsonSerializer.Deserialize<Dictionary<string, string>>(OptionsJson) ?? throw new Exception("null OptionsJson");
 
         /// <summary>
         /// Loại của lịch

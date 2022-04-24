@@ -5,23 +5,23 @@ Pl stock prediction system is a  simple crawler stock data and simple stock, com
 ## Project structures
 
  1.Representation
-  Pl.Sps.Cms => a web app to management content and show analytics results
-  Pl.Sps.Crawler.Beater => beater for crawler system and schedule task
-  Pl.Sps.Crawler.Downloader => a downloader for download stock data
-  Pl.Sps.Crawler.Processor => parser downloader data
-  Pl.Sps.Realtime.Worker => update stock view data and listen stock price realtime
-  Pl.Sps.Worker => run schedule task (company analytics, stock prices analytic, user invest)
+  Pl.Sas.Cms => a web app to management content and show analytics results
+  Pl.Sas.Crawler.Beater => beater for crawler system and schedule task
+  Pl.Sas.Crawler.Downloader => a downloader for download stock data
+  Pl.Sas.Crawler.Processor => parser downloader data
+  Pl.Sas.Realtime.Worker => update stock view data and listen stock price realtime
+  Pl.Sas.Worker => run schedule task (company analytics, stock prices analytic, user invest)
 
  2.Core
-  Pl.Sps.Core => contains all business, interface, constants, and settings class of system
+  Pl.Sas.Core => contains all business, interface, constants, and settings class of system
 
  3.Infrastructure
-  Pl.Sps.Infrastructure => all 3rd part provider that support in system, and some helper, logging vvv
-  Pl.Sps.MachineLearning => contains ssa and ftt ML algorithm
+  Pl.Sas.Infrastructure => all 3rd part provider that support in system, and some helper, logging vvv
+  Pl.Sas.MachineLearning => contains ssa and ftt ML algorithm
 
  4.Tests
-  Pl.Sps.InvestmentPrinciplesTests => Test investment principle and find stock index
-  Pl.Sps.UnitTests => a unit test for all project
+  Pl.Sas.InvestmentPrinciplesTests => Test investment principle and find stock index
+  Pl.Sas.UnitTests => a unit test for all project
 
  5.SolutionItems
 

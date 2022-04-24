@@ -1,29 +1,28 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
-namespace Pl.Sps.Core.Entities
+namespace Pl.Sas.Core.Entities
 {
     public class Leadership : BaseEntity
     {
         /// <summary>
         /// mã cổ phiếu
         /// </summary>
-        public string Symbol { get; set; }
+        public string Symbol { get; set; } = null!;
 
         /// <summary>
         /// Tên đầy đủ
         /// </summary>
-        public string FullName { get; set; }
+        public string FullName { get; set; } = null!;
 
         /// <summary>
         /// vị trí
         /// </summary>
-        public string PositionName { get; set; }
+        public string PositionName { get; set; } = null!;
 
         /// <summary>
         /// cấp vị trí
         /// </summary>
-        public string PositionLevel { get; set; }
+        public string? PositionLevel { get; set; }
 
         /// <summary>
         /// Xếp hạng quản lý

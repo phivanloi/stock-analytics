@@ -1,8 +1,8 @@
-﻿using Pl.Sas.Core.Entities;
-using System;
-
-namespace Pl.Sps.Core.Entities
+﻿namespace Pl.Sas.Core.Entities
 {
+    /// <summary>
+    /// Công ty
+    /// </summary>
     public class Company : BaseEntity
     {
         /// <summary>
@@ -68,7 +68,7 @@ namespace Pl.Sps.Core.Entities
         /// <summary>
         /// Sàn niêm yết
         /// </summary>
-        public string Exchange { get; set; }
+        public string? Exchange { get; set; }
 
         /// <summary>
         /// Giá chào sàn
@@ -88,7 +88,7 @@ namespace Pl.Sps.Core.Entities
         /// <summary>
         /// Tên công ty
         /// </summary>
-        public string CompanyName { get; set; }
+        public string? CompanyName { get; set; }
 
         #region Statistics
 
@@ -102,18 +102,18 @@ namespace Pl.Sps.Core.Entities
         /// <para>là tổng giá trị của số cổ phần của một công ty niêm yết</para>
         /// <para>Vốn hóa = Giá 1 cổ phiếu X số lượng cổ phiếu đang lưu hành.</para>
         /// </summary>
-        public decimal MarketCap { get; set; }
+        public float MarketCap { get; set; }
 
         /// <summary>
         /// Số cổ phiếu phát hành ra ngoài
         /// </summary>
-        public decimal SharesOutStanding { get; set; }
+        public float SharesOutStanding { get; set; }
 
         /// <summary>
         /// <para>Chỉ số BV (Giá sổ sách)</para>
         /// <para>Vốn CSH – Tài sản vô hình/Tổng khối lượng cổ phiếu đang lưu hành</para>
         /// </summary>
-        public decimal Bv { get; set; }
+        public float Bv { get; set; }
 
         /// <summary>
         /// <para>Chỉ số BETA đo lường khả năng biến động giá so với thị trường(vnindex) </para>
@@ -123,21 +123,21 @@ namespace Pl.Sps.Core.Entities
         /// <para>Cụ thể hơn, nếu một chứng khoán có beta bằng 1,2 thì trên lý thuyết mức biến động của chứng khoán này sẽ cao hơn mức biến động chung của thị trường 20%.</para>
         /// <para>http://s.cafef.vn/help/hesobeta.aspx</para>
         /// </summary>
-        public decimal Beta { get; set; }
+        public float Beta { get; set; }
 
         /// <summary>
         /// <para>Chỉ số EPS</para>
         /// <para>lợi nhuận (thu nhập) trên mỗi cổ phiếu.</para>
         /// <para>EPS = (Thu nhập ròng - cổ tức cổ phiếu ưu đãi) / lượng cổ phiếu bình quân đang lưu thông.</para>
         /// </summary>
-        public decimal Eps { get; set; }
+        public float Eps { get; set; }
 
         /// <summary>
         /// <para>Chỉ số EPS pha loãng</para>
         /// <para>lợi nhuận (thu nhập) trên mỗi cổ phiếu.</para>
         /// <para>EPS = (Thu nhập ròng - cổ tức cổ phiếu ưu đãi) / lượng cổ phiếu bình quân đang lưu thông + các loại cổ phiếu, cổ tức khác có thể quy đổi sang cổ phiếu thường</para>
         /// </summary>
-        public decimal DilutedEps { get; set; }
+        public float DilutedEps { get; set; }
 
         /// <summary>
         /// <para>Chỉ số pe</para>
@@ -145,7 +145,7 @@ namespace Pl.Sps.Core.Entities
         /// <para>P/E = Giá thị trường của cổ phiếu (Price)/Thu nhập trên một cổ phiếu (EPS)</para>
         /// <para>Chỉ số P/E thể hiện mức giá mà nhà đầu tư sẵn sàng bỏ ra cho một đồng lợi nhuận thu được từ cổ phiếu.</para>
         /// </summary>
-        public decimal Pe { get; set; }
+        public float Pe { get; set; }
 
         /// <summary>
         /// Chỉ số pb
@@ -153,43 +153,43 @@ namespace Pl.Sps.Core.Entities
         /// <para>Chỉ số P/B (Price-to-Book ratio – Giá/Giá trị sổ sách) là tỷ lệ được sử dụng để so sánh giá của một cổ phiếu so với giá trị ghi sổ của cổ phiếu đó.</para>
         /// <para>https://vnexpress.net/chi-so-p-b-co-y-nghia-nhu-the-nao-2695409.html</para>
         /// </summary>
-        public decimal Pb { get; set; }
+        public float Pb { get; set; }
 
         /// <summary>
         /// Tỉ suất cổ tức
         /// là lệ % mà cổ đông nhận được trên mỗi cổ phân
         /// DividendYield = giá cổ tức/giá cổ phiếu hiện hành
         /// </summary>
-        public decimal DividendYield { get; set; }
+        public float DividendYield { get; set; }
 
         /// <summary>
         /// Tổng doanh thu của năm tài chính trước đó
         /// </summary>
-        public decimal TotalRevenue { get; set; }
+        public float TotalRevenue { get; set; }
 
         /// <summary>
         /// Lợi nhuận sau thuế của năm tài chính trước đó
         /// </summary>
-        public decimal Profit { get; set; }
+        public float Profit { get; set; }
 
         /// <summary>
         /// Tài sản
         /// </summary>
-        public decimal Asset { get; set; }
+        public float Asset { get; set; }
 
         /// <summary>
         /// <para>Chỉ số roe</para>
         /// <para>Return On Equity (ROE) hay lợi nhuận trên vốn chủ sở hữu là chỉ số đo lường mức độ hiệu quả của việc sử dụng vốn chủ sở hữu trong doanh nghiệp.</para>
         /// <para>roe = Lợi nhuận sau thuế(Earning) / Vốn chủ sở hữu bình quân(Equity)</para>
         /// </summary>
-        public decimal Roe { get; set; }
+        public float Roe { get; set; }
 
         /// <summary>
         /// <para>Chỉ số roa</para>
         /// <para>Return On Asset (ROA) hay lợi nhuận trên tổng tài sản là chỉ số đo lường mức độ hiệu quả của việc sử dụng tài sản của doanh nghiệp.</para>
         /// <para>roe = Lợi nhuận sau thuế(Earning) / Tổng tài sản bình quân</para>
         /// </summary>
-        public decimal Roa { get; set; }
+        public float Roa { get; set; }
 
         /// <summary>
         /// <para>Chỉ số npl</para>
@@ -197,12 +197,12 @@ namespace Pl.Sps.Core.Entities
         /// Tỉ lệ nợ xấu = (Dư nợ nợ xấu/Tổng dư nợ) x 100%.
         /// </para>
         /// </summary>
-        public decimal Npl { get; set; }
+        public float Npl { get; set; }
 
         /// <summary>
         /// Đòn bẩy tài chính là mức đòn bẩy mà ssi cung cho công ty này
         /// </summary>
-        public decimal FinanciallEverage { get; set; }
+        public float FinanciallEverage { get; set; }
 
         #endregion Statistics
     }
