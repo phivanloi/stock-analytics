@@ -25,7 +25,7 @@ namespace Pl.Sas.UnitTests
             {
                 BaseAddress = new Uri("http://log.vuigreens.com"),
             };
-            _httpClient.DefaultRequestHeaders.Add("SecurityKey", "VFBF2CB13C19G25684FK");
+            _httpClient.DefaultRequestHeaders.Add("SecurityKey", "CFBF2CB13C19325684FD");
             var response = await _httpClient.PostAsync($"write", new StringContent(JsonSerializer.Serialize(postObject), Encoding.UTF8, "application/json"), CancellationToken.None);
             Assert.True(response.IsSuccessStatusCode);
         }
