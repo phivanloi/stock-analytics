@@ -14,10 +14,8 @@ jobs:
   clear:
     runs-on: self-hosted
     steps:
-    - name: Remove File
-      uses: JesseTG/rm@v1.0.0
-      with:
-        path: /
+    - name: delete source code
+      run: Remove-Item * -Force -Recurse
     - name: clean build cache file
       run: docker builder prune -a -f
     - name: clean all temp image
