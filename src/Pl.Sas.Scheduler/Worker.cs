@@ -44,7 +44,7 @@ namespace Pl.Sas.Scheduler
                 }
                 else
                 {
-                    await Task.Delay(1000 * 5, stoppingToken);
+                    await Task.Delay(1000 * 3, stoppingToken);
                 }
             }
         }
