@@ -49,7 +49,7 @@ builder.Services.AddRedisCacheService(option =>
     option.Configuration = builder.Configuration.GetConnectionString("CacheConnection");
 });
 
-builder.Services.AddSingleton<IWorkerQueueService, WorkerQueueService>();
+builder.Services.AddSingleton<ISchedulerQueueService, SchedulerQueueService>();
 builder.Services.AddHostedService<Worker>();
 
 var app = builder.Build();
@@ -62,7 +62,7 @@ if (app.Environment.IsProduction())
         {
             var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
             var logger = app.Services.GetRequiredService<ILogger<Program>>();
-            logger.LogError(exceptionHandlerPathFeature?.Error, "");
+            logger.LogError(exceptionHandlerPathFeature?.Error, exceptionHandlerPathFeature?.Error.Message);
             context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
             context.Response.ContentType = "text/json";
             await context.Response.WriteAsync(JsonSerializer.Serialize(new
@@ -98,5 +98,5 @@ app.MapHealthChecks("/liveness", new HealthCheckOptions
 {
     Predicate = r => r.Name.Contains("self")
 });
-app.Logger.LogInformation("Dashboard scheduler application {AppVersion} started at {Now}", app.Configuration["AppSettings:AppVersion"], DateTime.Now);
+app.Logger.LogInformation("Scheduler service {AppVersion} started at {Now}", app.Configuration["AppSettings:AppVersion"], DateTime.Now);
 app.Run();

@@ -8,7 +8,7 @@
 		<Authors>Phí Văn Lời</Authors>
 		<Product>Stock Analytics System</Product>
 		<Company>NganChiCorp</Company>
-		<Description>Worker libary</Description>
+		<Description>Worker service</Description>
 		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
 		<DockerfileContext>..\..</DockerfileContext>
 	</PropertyGroup>

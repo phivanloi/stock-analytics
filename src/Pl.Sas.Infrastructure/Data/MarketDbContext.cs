@@ -187,7 +187,7 @@ namespace Pl.Sas.Infrastructure
 
             modelBuilder.Entity<Schedule>(b =>
             {
-                b.Property(c => c.Id).HasMaxLength(22);
+                b.Property(c => c.Id).HasMaxLength(22).IsRequired();
                 b.Property(p => p.Name).HasMaxLength(128);
                 b.Property(p => p.DataKey).HasMaxLength(64);
                 b.HasIndex(p => p.ActiveTime);

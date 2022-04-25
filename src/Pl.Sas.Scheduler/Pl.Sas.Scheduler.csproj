@@ -10,7 +10,7 @@
 		<Authors>Phí Văn Lời</Authors>
 		<Product>Stock Analytics System</Product>
 		<Company>NganChiCorp</Company>
-		<Description>Scheduler worker</Description>
+		<Description>Scheduler service</Description>
 		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
 		<DockerfileContext>..\..</DockerfileContext>
 	</PropertyGroup>

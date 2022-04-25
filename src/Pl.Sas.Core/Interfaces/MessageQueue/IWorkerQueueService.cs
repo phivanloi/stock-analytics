@@ -14,7 +14,7 @@ namespace Pl.Sas.Core.Interfaces
         /// Lắng nghe một sự kiện được yêu cầu worker xử lý
         /// </summary>
         /// <param name="func">Hàm xử lý</param>
-        void SubscribeWorkerTask(Action<QueueMessage> func);
+        void SubscribeWorkerTaskAsync(Func<QueueMessage, Task> func);
 
         /// <summary>
         /// Thu hồi tài nguyên

@@ -2,10 +2,12 @@
 using Pl.Sas.Core.Interfaces;
 using Microsoft.Extensions.Options;
 using Pl.Sas.Infrastructure;
-using Pl.Sas.Core.Entities;
 
 namespace Pl.Sas.Scheduler
 {
+    /// <summary>
+    /// Thực hiện tạo task từ bảng Schedules
+    /// </summary>
     public class Worker : BackgroundService
     {
         private readonly ILogger<Worker> _logger;
@@ -37,7 +39,7 @@ namespace Pl.Sas.Scheduler
                 {
                     foreach (var schedule in schedules)
                     {
-                        _schedulerQueueService.PublishWorkerTask(new QueueMessage(schedule.Id));
+                        _schedulerQueueService.PublishWorkerTask(new(schedule.Id));
                         schedule.ApplyActiveTime(DateTime.Now);
                     }
                     marketDbContext.SaveChanges();

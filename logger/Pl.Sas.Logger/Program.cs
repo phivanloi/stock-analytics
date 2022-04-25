@@ -37,12 +37,9 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    var logDbContext = services.GetService<LogDbContext>();
-    if (logDbContext is not null)
-    {
-        logDbContext?.Database.Migrate();
-        app.Logger.LogInformation("LogDbContext migrations at {Now}", DateTime.Now);
-    }
+    LogDbContext logDbContext = services.GetService<LogDbContext>() ?? throw new ArgumentNullException("LogDbContext");
+    logDbContext?.Database.Migrate();
+    app.Logger.LogInformation("LogDbContext migrations at {Now}", DateTime.Now);
 }
 
 if (app.Environment.IsProduction())

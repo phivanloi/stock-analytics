@@ -41,16 +41,16 @@ namespace Pl.Sas.Infrastructure.RabbitmqMessageQueue
             _broadcastUpdateMemoryChannel.ExchangeDeclare(exchange: MessageQueueConstants.UpdateMemoryExchangeName, type: ExchangeType.Fanout);
         }
 
-        public virtual void SubscribeWorkerTask(Action<QueueMessage> func)
+        public virtual void SubscribeWorkerTask(Func<QueueMessage, Task> func)
         {
             var consumer = new EventingBasicConsumer(_workerChannel);
-            consumer.Received += (model, ea) =>
+            consumer.Received += async (model, ea) =>
             {
                 try
                 {
                     var message = JsonSerializer.Deserialize<QueueMessage>(_zipHelper.UnZipByte(ea.Body.ToArray()));
                     Guard.Against.Null(message, nameof(message));
-                    func(message);
+                    await func(message);
                 }
                 catch (Exception ex)
                 {

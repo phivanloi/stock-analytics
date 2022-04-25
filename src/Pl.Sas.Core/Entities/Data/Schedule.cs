@@ -12,7 +12,7 @@ namespace Pl.Sas.Core.Entities
         /// <summary>
         /// Lưu thông tin khóa dữ liệu cho lịch, có thể là mã chứng khoán hoặc có thể là id bản ghi vv
         /// </summary>
-        public string? DataKey { get; set; } = null!;
+        public string? DataKey { get; set; }
 
         /// <summary>
         /// Trạng thái hoạt động hay không
