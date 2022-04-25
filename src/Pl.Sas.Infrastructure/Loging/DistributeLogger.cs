@@ -21,9 +21,7 @@ namespace Pl.Sas.Infrastructure.Loging
             _loggingBackgroundTaskQueue = loggingTaskQueue;
         }
 
-        internal IExternalScopeProvider ScopeProvider { get; set; } = null!;
-
-        public virtual IDisposable BeginScope<TState>(TState state) => ScopeProvider.Push(state);
+        public virtual IDisposable BeginScope<TState>(TState state) => NullScope.Instance;
 
         public virtual bool IsEnabled(LogLevel logLevel)
         {
@@ -107,6 +105,23 @@ namespace Pl.Sas.Infrastructure.Loging
                     sb.Replace(Environment.NewLine, " ", len, message.Length);
                 }
             }
+        }
+    }
+
+    internal sealed class NullScope : IDisposable
+    {
+        public static NullScope Instance
+        {
+            get;
+        } = new NullScope();
+
+
+        private NullScope()
+        {
+        }
+
+        public void Dispose()
+        {
         }
     }
 }

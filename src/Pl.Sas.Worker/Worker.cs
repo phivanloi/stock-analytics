@@ -13,10 +13,10 @@ namespace Pl.Sas.Worker
         private readonly ILogger<Worker> _logger;
         private readonly IWorkerQueueService _workerQueueService;
         private readonly AppSettings _appSettings;
-        private readonly WorkerService _workerService;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
 
         public Worker(
-            WorkerService workerService,
+            IServiceScopeFactory serviceScopeFactory,
             IWorkerQueueService workerQueueService,
             IOptions<AppSettings> optionsAppSettings,
             ILogger<Worker> logger)
@@ -24,7 +24,7 @@ namespace Pl.Sas.Worker
             _workerQueueService = workerQueueService;
             _logger = logger;
             _appSettings = optionsAppSettings.Value;
-            _workerService = workerService;
+            _serviceScopeFactory = serviceScopeFactory;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -42,7 +42,9 @@ namespace Pl.Sas.Worker
 
             _workerQueueService.SubscribeWorkerTask(async (message) =>
             {
-                var updateMemoryMessage = await _workerService.HandleEventAsync(message);
+                using var scope = _serviceScopeFactory.CreateScope();
+                var workerService = scope.ServiceProvider.GetRequiredService<WorkerService>();
+                var updateMemoryMessage = await workerService.HandleEventAsync(message);
                 if (updateMemoryMessage is not null)
                 {
                     _workerQueueService.BroadcastUpdateMemoryTask(updateMemoryMessage);

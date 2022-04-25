@@ -16,7 +16,7 @@ namespace Pl.Sas.Logger.Controllers
 
             public HeaderCheckerFilter(IConfiguration configuration, string headerName)
             {
-                _apiKey = configuration["AppSettings:ApiKey"];
+                _apiKey = configuration["AppSettings:SecurityKey"];
             }
 
             public void OnActionExecuting(ActionExecutingContext context)

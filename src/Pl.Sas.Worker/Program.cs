@@ -64,7 +64,7 @@ builder.Services.AddRedisCacheService(option =>
 });
 
 builder.Services.AddSingleton<IWorkerQueueService, WorkerQueueService>();
-builder.Services.AddSingleton<ICrawlData, CrawlData>();
+builder.Services.AddScoped<ICrawlData, CrawlData>();
 builder.Services.AddScoped<IMarketData, MarketData>();
 builder.Services.AddScoped<WorkerService>();
 builder.Services.AddHostedService<Worker>();
