@@ -1,3 +1,6 @@
+using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Pl.Sas.Core;
@@ -6,7 +9,11 @@ using Pl.Sas.Infrastructure;
 using Pl.Sas.Infrastructure.Caching;
 using Pl.Sas.Infrastructure.Helper;
 using Pl.Sas.Infrastructure.Loging;
+using Pl.Sas.Infrastructure.RabbitmqMessageQueue;
+using Pl.Sas.Scheduler;
+using System.Net;
 using System.Reflection;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDistributeLogService(option =>
@@ -47,29 +54,49 @@ builder.Services.AddHostedService<Worker>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-
-var summaries = new[]
+if (app.Environment.IsProduction())
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
+    app.UseExceptionHandler(errorApp =>
+    {
+        errorApp.Run(async context =>
+        {
+            var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
+            var logger = app.Services.GetRequiredService<ILogger<Program>>();
+            logger.LogError(exceptionHandlerPathFeature?.Error, "");
+            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+            context.Response.ContentType = "text/json";
+            await context.Response.WriteAsync(JsonSerializer.Serialize(new
+            {
+                Code = "-1",
+                Message = "Error on process your request."
+            }));
+        });
+    });
+}
+else
 {
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-       new WeatherForecast
-       (
-           DateTime.Now.AddDays(index),
-           Random.Shared.Next(-20, 55),
-           summaries[Random.Shared.Next(summaries.Length)]
-       ))
-        .ToArray();
-    return forecast;
+    app.UseDeveloperExceptionPage();
+}
+
+app.MigrateDbContext<MarketDbContext>((context, services) =>
+{
+    services.MarketSeed(context);
+    app.Logger.LogInformation("MarketDbContext migrations at {Now}", DateTime.Now);
 });
 
-app.Run();
-
-internal record WeatherForecast(DateTime Date, int TemperatureC, string? Summary)
+app.MapGet("/", () =>
 {
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+    return $"Scheduler version: {builder.Configuration["AppSettings:AppVersion"]}, published date: {builder.Configuration["AppSettings:AppPublishedDate"]}";
+});
+
+app.MapHealthChecks("/hc", new HealthCheckOptions()
+{
+    Predicate = _ => true,
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
+app.MapHealthChecks("/liveness", new HealthCheckOptions
+{
+    Predicate = r => r.Name.Contains("self")
+});
+app.Logger.LogInformation("Dashboard scheduler application {AppVersion} started at {Now}", app.Configuration["AppSettings:AppVersion"], DateTime.Now);
+app.Run();

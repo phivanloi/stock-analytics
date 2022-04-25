@@ -1,12 +1,10 @@
-﻿using Ardalis.GuardClauses;
-using Pl.Sas.Core;
+﻿using Pl.Sas.Core;
 using Pl.Sas.Core.Interfaces;
 using Microsoft.Extensions.Options;
-using System.Text;
 using Pl.Sas.Infrastructure;
 using Pl.Sas.Core.Entities;
 
-namespace Pl.Sas.Worker
+namespace Pl.Sas.Scheduler
 {
     public class Worker : BackgroundService
     {
