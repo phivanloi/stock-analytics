@@ -1,7 +1,7 @@
-﻿using Pl.Sas.Core;
+﻿using Microsoft.Extensions.Options;
+using Pl.Sas.Core;
 using Pl.Sas.Core.Interfaces;
-using Microsoft.Extensions.Options;
-using Pl.Sas.Core.Entities;
+using Pl.Sas.Core.Services;
 
 namespace Pl.Sas.Worker
 {
@@ -13,8 +13,10 @@ namespace Pl.Sas.Worker
         private readonly ILogger<Worker> _logger;
         private readonly IWorkerQueueService _workerQueueService;
         private readonly AppSettings _appSettings;
+        private readonly WorkerService _workerService;
 
         public Worker(
+            WorkerService workerService,
             IWorkerQueueService workerQueueService,
             IOptions<AppSettings> optionsAppSettings,
             ILogger<Worker> logger)
@@ -22,6 +24,7 @@ namespace Pl.Sas.Worker
             _workerQueueService = workerQueueService;
             _logger = logger;
             _appSettings = optionsAppSettings.Value;
+            _workerService = workerService;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -37,12 +40,12 @@ namespace Pl.Sas.Worker
         {
             _logger.LogDebug("Worker {version} starting at: {time}", _appSettings.AppVersion, DateTimeOffset.Now);
 
-            _workerQueueService.SubscribeWorkerTaskAsync(async (message) =>
+            _workerQueueService.SubscribeWorkerTask(async (message) =>
             {
-                var updateMemoryUpdate = await Task.FromResult(new QueueMessage(""));
-                if (updateMemoryUpdate is not null)
+                var updateMemoryMessage = await _workerService.HandleEventAsync(message);
+                if (updateMemoryMessage is not null)
                 {
-                    _workerQueueService.BroadcastUpdateMemoryTask(updateMemoryUpdate);
+                    _workerQueueService.BroadcastUpdateMemoryTask(updateMemoryMessage);
                 }
             });
 

@@ -1,8 +1,8 @@
 ﻿using Ardalis.GuardClauses;
-using Pl.Sas.Core.Interfaces;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.Extensions.Options;
+using Pl.Sas.Core.Interfaces;
 using StackExchange.Redis;
 using System.Net;
 using System.Text.Json;

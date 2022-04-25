@@ -1,7 +1,7 @@
 ﻿using Ardalis.GuardClauses;
-using Pl.Sas.Core.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Primitives;
+using Pl.Sas.Core.Interfaces;
 using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 

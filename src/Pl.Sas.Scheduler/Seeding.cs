@@ -1,5 +1,5 @@
 ﻿using Pl.Sas.Core.Entities;
-using Pl.Sas.Infrastructure;
+using Pl.Sas.Infrastructure.Data;
 
 namespace Pl.Sas.Scheduler
 {

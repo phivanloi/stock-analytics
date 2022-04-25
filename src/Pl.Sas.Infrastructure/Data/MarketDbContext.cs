@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Pl.Sas.Core.Entities;
 
-namespace Pl.Sas.Infrastructure
+namespace Pl.Sas.Infrastructure.Data
 {
     public class MarketDbContext : DbContext
     {
@@ -30,12 +30,8 @@ namespace Pl.Sas.Infrastructure
                 b.Property(p => p.Symbol).HasMaxLength(16).IsRequired();
                 b.Property(p => p.Name).HasMaxLength(128);
                 b.Property(p => p.FullName).HasMaxLength(256);
-                b.Property(p => p.Description).HasMaxLength(512);
                 b.Property(p => p.Exchange).HasMaxLength(16);
                 b.Property(p => p.Type).HasMaxLength(16);
-                b.Property(p => p.SsiStockNo).HasMaxLength(32);
-                b.Property(p => p.CompanyName).HasMaxLength(256);
-                b.Property(p => p.CompanyNameEn).HasMaxLength(256);
                 b.HasIndex(p => new { p.Symbol, p.Type });
             });
 

@@ -16,5 +16,10 @@
         /// ngày này được mặc định dùng để làm mốc cho việc trading thử nghiệm
         /// </summary>
         public static readonly DateTime StartTime = new(2020, 1, 1);
+
+        /// <summary>
+        /// Khóa cache cho schedule
+        /// </summary>
+        public const string ScheduleCachePrefix = "SCHDUCPF";
     }
 }

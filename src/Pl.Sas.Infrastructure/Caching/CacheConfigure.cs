@@ -1,8 +1,8 @@
 ﻿using Ardalis.GuardClauses;
-using Pl.Sas.Core.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.Extensions.DependencyInjection;
+using Pl.Sas.Core.Interfaces;
 
 namespace Pl.Sas.Infrastructure.Caching
 {

@@ -1,8 +1,8 @@
 ﻿using Ardalis.GuardClauses;
-using Pl.Sas.Core.Entities;
-using Pl.Sas.Core.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Pl.Sas.Core.Entities;
+using Pl.Sas.Core.Interfaces;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text.Json;

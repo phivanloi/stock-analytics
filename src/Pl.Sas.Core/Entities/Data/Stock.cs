@@ -13,7 +13,7 @@
         /// <summary>
         /// Tên cổ phiếu
         /// </summary>
-        public string? Name { get; set; }
+        public string Name { get; set; } = null!;
 
         /// <summary>
         /// Tên đẩy đủ
@@ -21,36 +21,16 @@
         public string? FullName { get; set; }
 
         /// <summary>
-        /// Mô tả
-        /// </summary>
-        public string? Description { get; set; }
-
-        /// <summary>
         /// Sàn niêm yết
         /// HOSE,HNX,UPCOM
         /// </summary>
-        public string? Exchange { get; set; }
+        public string Exchange { get; set; } = null!;
 
         /// <summary>
         /// Loại cổ phiếu
-        /// <para>stock => cổ phiếu</para>
-        /// <para>index => các quỹ và chỉ số</para>
+        /// <para>s => cổ phiếu</para>
+        /// <para>i => chỉ số thị trường</para>
         /// </summary>
-        public string? Type { get; set; }
-
-        /// <summary>
-        /// Mã quản lý bên ssi
-        /// </summary>
-        public string? SsiStockNo { get; set; }
-
-        /// <summary>
-        /// Tên công ty phát hành
-        /// </summary>
-        public string? CompanyName { get; set; }
-
-        /// <summary>
-        /// Tên công ty phát hành bằng tiếng anh
-        /// </summary>
-        public string? CompanyNameEn { get; set; }
+        public string Type { get; set; } = null!;
     }
 }

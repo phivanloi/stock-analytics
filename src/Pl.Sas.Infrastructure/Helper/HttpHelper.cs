@@ -8,11 +8,11 @@ namespace Pl.Sas.Infrastructure.Helper
 {
     public class HttpHelper : IHttpHelper
     {
-        protected readonly RetryPolicy _httpRetryPolicy;
+        private readonly RetryPolicy _httpRetryPolicy;
         private readonly HttpClient _httpClient;
-        public HttpHelper(IHttpClientFactory httpClientFactory)
+        public HttpHelper(HttpClient httpClient)
         {
-            _httpClient = httpClientFactory.CreateClient("downloader");
+            _httpClient = httpClient;
             _httpRetryPolicy = Policy.Handle<Exception>().WaitAndRetry(retryCount: 5, sleepDurationProvider: _ => TimeSpan.FromMilliseconds(300));
         }
 

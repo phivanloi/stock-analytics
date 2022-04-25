@@ -118,3 +118,6 @@
 		database_id = DB_ID()
 	GROUP BY 
 		database_id
+
+
+https://iboard.ssi.com.vn/dchart/api/history?resolution=D&symbol=VN30&from=1506773203&to=1650901263

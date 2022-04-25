@@ -73,17 +73,17 @@
         /// <summary>
         /// Giá chào sàn
         /// </summary>
-        public decimal FirstPrice { get; set; }
+        public float FirstPrice { get; set; }
 
         /// <summary>
         /// Khối lượng cổ phiếu đang niêm yết
         /// </summary>
-        public decimal IssueShare { get; set; }
+        public float IssueShare { get; set; }
 
         /// <summary>
         /// Thị giá vốn
         /// </summary>
-        public decimal ListedValue { get; set; }
+        public float ListedValue { get; set; }
 
         /// <summary>
         /// Tên công ty

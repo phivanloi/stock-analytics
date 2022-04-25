@@ -7,6 +7,7 @@ using Pl.Sas.Core;
 using Pl.Sas.Core.Interfaces;
 using Pl.Sas.Infrastructure;
 using Pl.Sas.Infrastructure.Caching;
+using Pl.Sas.Infrastructure.Data;
 using Pl.Sas.Infrastructure.Helper;
 using Pl.Sas.Infrastructure.Loging;
 using Pl.Sas.Infrastructure.RabbitmqMessageQueue;
@@ -62,7 +63,7 @@ if (app.Environment.IsProduction())
         {
             var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
             var logger = app.Services.GetRequiredService<ILogger<Program>>();
-            logger.LogError(exceptionHandlerPathFeature?.Error, exceptionHandlerPathFeature?.Error.Message);
+            logger.LogError(exceptionHandlerPathFeature?.Error, null);
             context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
             context.Response.ContentType = "text/json";
             await context.Response.WriteAsync(JsonSerializer.Serialize(new

@@ -5,8 +5,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Pl.Sas.Core;
 using Pl.Sas.Core.Interfaces;
+using Pl.Sas.Core.Services;
 using Pl.Sas.Infrastructure;
 using Pl.Sas.Infrastructure.Caching;
+using Pl.Sas.Infrastructure.Crawl;
+using Pl.Sas.Infrastructure.Data;
 using Pl.Sas.Infrastructure.Helper;
 using Pl.Sas.Infrastructure.Loging;
 using Pl.Sas.Infrastructure.RabbitmqMessageQueue;
@@ -61,6 +64,9 @@ builder.Services.AddRedisCacheService(option =>
 });
 
 builder.Services.AddSingleton<IWorkerQueueService, WorkerQueueService>();
+builder.Services.AddSingleton<ICrawlData, CrawlData>();
+builder.Services.AddScoped<IMarketData, MarketData>();
+builder.Services.AddScoped<WorkerService>();
 builder.Services.AddHostedService<Worker>();
 
 var app = builder.Build();

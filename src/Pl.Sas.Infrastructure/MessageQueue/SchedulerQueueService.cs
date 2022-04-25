@@ -1,7 +1,7 @@
 ﻿using Ardalis.GuardClauses;
+using Microsoft.Extensions.Options;
 using Pl.Sas.Core.Entities;
 using Pl.Sas.Core.Interfaces;
-using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using System.Text.Json;
 

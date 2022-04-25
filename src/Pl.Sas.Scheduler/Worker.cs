@@ -1,7 +1,7 @@
-﻿using Pl.Sas.Core;
+﻿using Microsoft.Extensions.Options;
+using Pl.Sas.Core;
 using Pl.Sas.Core.Interfaces;
-using Microsoft.Extensions.Options;
-using Pl.Sas.Infrastructure;
+using Pl.Sas.Infrastructure.Data;
 
 namespace Pl.Sas.Scheduler
 {
