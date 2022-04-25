@@ -14,6 +14,8 @@ jobs:
   clear:
     runs-on: self-hosted
     steps:
+    - name: delete source code
+      run: Remove-Item ../* -Force -Recurse
     - name: clean build cache file
       run: docker builder prune -a -f
     - name: clean all temp image
