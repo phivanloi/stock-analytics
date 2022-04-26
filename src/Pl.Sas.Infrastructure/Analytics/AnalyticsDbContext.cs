@@ -7,41 +7,19 @@ namespace Pl.Sas.Infrastructure.Analytics
     {
         public AnalyticsDbContext(DbContextOptions<AnalyticsDbContext> options) : base(options) { }
 
-        public virtual DbSet<AnalyticsResult> AnalyticsResults { get; set; }
-
-        public virtual DbSet<TradingResult> TradingResults { get; set; }
-
-        public virtual DbSet<StockFeature> StockFeatures { get; set; }
+        public virtual DbSet<AnalyticsResult> AnalyticsResults { get; set; } = null!;
+        public virtual DbSet<TradingResult> TradingResults { get; set; } = null!;
+        public virtual DbSet<StockTracking> StockTrackings { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            #region Schedule
-
-            modelBuilder.Entity<Schedule>(b =>
-            {
-                b.Property(c => c.Id).HasMaxLength(22);
-                b.Property(p => p.Name).HasMaxLength(128);
-                b.Property(p => p.DataKey).HasMaxLength(64);
-                b.HasIndex(p => p.Activated);
-                b.HasIndex(p => p.ActiveTime);
-                b.HasIndex(p => p.Priority);
-            });
-
-            #endregion Schedule
-
             #region AnalyticsResult
 
             modelBuilder.Entity<AnalyticsResult>(b =>
             {
-                b.Property(c => c.Id).HasMaxLength(22);
+                b.Property(c => c.Id).HasMaxLength(22).IsRequired();
                 b.Property(p => p.Symbol).HasMaxLength(16).IsRequired();
-                b.HasIndex(p => p.Symbol);
-                b.Property(p => p.DatePath).HasMaxLength(8).IsRequired();
-                b.HasIndex(p => p.DatePath);
-                b.HasIndex(p => new { p.Symbol, p.DatePath });
-                b.Property(p => p.SsaPerdictPrice).HasColumnType("decimal(35, 10)");
-                b.Property(p => p.FttPerdictPrice).HasColumnType("decimal(35, 10)");
-                b.Property(p => p.TargetPrice).HasColumnType("decimal(35, 10)");
+                b.HasIndex(p => new { p.Symbol, p.TradingDate });
             });
 
             #endregion AnalyticsResult
@@ -50,34 +28,26 @@ namespace Pl.Sas.Infrastructure.Analytics
 
             modelBuilder.Entity<TradingResult>(b =>
             {
-                b.Property(c => c.Id).HasMaxLength(22);
+                b.Property(c => c.Id).HasMaxLength(22).IsRequired();
                 b.Property(p => p.Symbol).HasMaxLength(16).IsRequired();
-                b.HasIndex(p => p.Symbol);
-                b.Property(p => p.DatePath).HasMaxLength(8).IsRequired();
-                b.HasIndex(p => p.DatePath);
-                b.HasIndex(p => p.Principle);
-                b.HasIndex(p => new { p.Symbol, p.DatePath });
-                b.HasIndex(p => new { p.Symbol, p.DatePath, p.Principle });
-                b.Property(p => p.BuyPrice).HasColumnType("decimal(10, 4)");
-                b.Property(p => p.SellPrice).HasColumnType("decimal(10, 4)");
-                b.Property(p => p.Profit).HasColumnType("decimal(35, 10)");
-                b.Property(p => p.Capital).HasColumnType("decimal(35, 10)");
-                b.Property(p => p.TotalTax).HasColumnType("decimal(35, 10)");
-                b.Property(p => p.ProfitPercent).HasColumnType("decimal(35, 10)");
+                b.HasIndex(p => new { p.Symbol, p.TradingDate, p.Principle });
             });
 
             #endregion TradingResult
 
-            #region StockFeature
+            #region StockTracking
 
-            modelBuilder.Entity<StockFeature>(b =>
+            modelBuilder.Entity<StockTracking>(b =>
             {
-                b.Property(c => c.Id).HasMaxLength(22);
+                b.Property(c => c.Id).HasMaxLength(22).IsRequired();
                 b.Property(p => p.Symbol).HasMaxLength(16).IsRequired();
-                b.HasIndex(p => p.Symbol);
+                b.Property(p => p.DownloadStatus).HasMaxLength(1024);
+                b.Property(p => p.DataStatus).HasMaxLength(1024);
+                b.Property(p => p.AnalyticsStatus).HasMaxLength(1024);
+                b.HasIndex(p => new { p.Symbol });
             });
 
-            #endregion StockTransaction
+            #endregion StockTracking
         }
     }
 }

@@ -5,6 +5,11 @@
     /// </summary>
     public class Stock : BaseEntity
     {
+        public Stock(string symbol)
+        {
+            Symbol = symbol;
+        }
+
         /// <summary>
         /// mã giao dịch
         /// </summary>

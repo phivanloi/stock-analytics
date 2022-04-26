@@ -71,7 +71,7 @@ namespace Pl.Sas.Core.Entities
         public string Symbol { get; set; } = null!;
 
         [JsonPropertyName("subsectorcode")]
-        public string? SubsectorCode { get; set; }
+        public string SubsectorCode { get; set; } = null!;
 
         [JsonPropertyName("industryname")]
         public string? IndustryName { get; set; }
@@ -83,13 +83,13 @@ namespace Pl.Sas.Core.Entities
         public string? Sector { get; set; }
 
         [JsonPropertyName("subsector")]
-        public string? Subsector { get; set; }
+        public string Subsector { get; set; } = null!;
 
         [JsonPropertyName("foundingdate")]
         public string? FoundingDate { get; set; }
 
         [JsonPropertyName("chartercapital")]
-        public string? CharterCapital { get; set; }
+        public string CharterCapital { get; set; } = null!;
 
         [JsonPropertyName("numberofemployee")]
         public string? NumberOfEmployee { get; set; }
@@ -98,7 +98,7 @@ namespace Pl.Sas.Core.Entities
         public string? BankNumberOfBranch { get; set; }
 
         [JsonPropertyName("companyprofile")]
-        public string? CompanyProfile { get; set; }
+        public string CompanyProfile { get; set; } = null!;
 
         [JsonPropertyName("listingdate")]
         public string? ListingDate { get; set; }
@@ -107,13 +107,13 @@ namespace Pl.Sas.Core.Entities
         public string? Exchange { get; set; }
 
         [JsonPropertyName("firstprice")]
-        public string? FirstPrice { get; set; }
+        public string FirstPrice { get; set; } = null!;
 
         [JsonPropertyName("issueshare")]
-        public string? IssueShare { get; set; }
+        public string IssueShare { get; set; } = null!;
 
         [JsonPropertyName("listedvalue")]
-        public string? ListedValue { get; set; }
+        public string ListedValue { get; set; } = null!;
 
         [JsonPropertyName("companyname")]
         public string? CompanyName { get; set; }
@@ -121,57 +121,92 @@ namespace Pl.Sas.Core.Entities
 
     public class Companystatistics
     {
-        [JsonPropertyName("symbol")]
-        public string Symbol { get; set; } = null!;
-
         [JsonPropertyName("marketcap")]
-        public string? MarketCap { get; set; }
+        public string MarketCap { get; set; } = null!;
 
         [JsonPropertyName("sharesoutstanding")]
-        public string? SharesOutStanding { get; set; }
+        public string SharesOutStanding { get; set; } = null!;
 
         [JsonPropertyName("bv")]
-        public string? BV { get; set; }
+        public string BV { get; set; } = null!;
 
         [JsonPropertyName("beta")]
-        public string? BETA { get; set; }
+        public string BETA { get; set; } = null!;
 
         [JsonPropertyName("eps")]
-        public string? EPS { get; set; }
+        public string EPS { get; set; } = null!;
 
         [JsonPropertyName("dilutedeps")]
-        public string? DilutedEps { get; set; }
+        public string DilutedEps { get; set; } = null!;
 
         [JsonPropertyName("pe")]
-        public string? PE { get; set; }
+        public string PE { get; set; } = null!;
 
         [JsonPropertyName("pb")]
-        public string? PB { get; set; }
+        public string PB { get; set; } = null!;
 
         [JsonPropertyName("dividendyield")]
-        public string? DividendYield { get; set; }
+        public string DividendYield { get; set; } = null!;
 
         [JsonPropertyName("totalrevenue")]
-        public string? TotalRevenue { get; set; }
+        public string TotalRevenue { get; set; } = null!;
 
         [JsonPropertyName("profit")]
-        public string? Profit { get; set; }
+        public string Profit { get; set; } = null!;
 
         [JsonPropertyName("asset")]
-        public string? Asset { get; set; }
+        public string Asset { get; set; } = null!;
 
         [JsonPropertyName("roe")]
-        public string? Roe { get; set; }
+        public string Roe { get; set; } = null!;
 
         [JsonPropertyName("roa")]
-        public string? Roa { get; set; }
+        public string Roa { get; set; } = null!;
 
         [JsonPropertyName("npl")]
-        public string? Npl { get; set; }
+        public string Npl { get; set; } = null!;
 
         [JsonPropertyName("financialleverage")]
-        public string? FinanciallEverage { get; set; }
+        public string FinanciallEverage { get; set; } = null!;
     }
 
     #endregion Company Info
+
+    #region Leadership
+
+    public class SsiLeadership
+    {
+        [JsonPropertyName("data")]
+        public SsiLeadershipData Data { get; set; } = null!;
+    }
+
+    public class SsiLeadershipData
+    {
+        [JsonPropertyName("leaderships")]
+        public Leaderships Leaderships { get; set; } = null!;
+    }
+
+    public class Leaderships
+    {
+        [JsonPropertyName("datas")]
+        public LeadershipJson[] Datas { get; set; } = null!;
+
+    }
+
+    public class LeadershipJson
+    {
+        [JsonPropertyName("symbol")]
+        public string Symbol { get; set; } = null!;
+
+        [JsonPropertyName("fullname")]
+        public string FullName { get; set; } = null!;
+
+        [JsonPropertyName("positionname")]
+        public string PositionName { get; set; } = null!;
+
+        [JsonPropertyName("positionlevel")]
+        public string PositionLevel { get; set; } = null!;
+    }
+
+    #endregion Leadership
 }

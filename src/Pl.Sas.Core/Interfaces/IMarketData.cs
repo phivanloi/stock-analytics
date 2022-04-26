@@ -41,5 +41,34 @@ namespace Pl.Sas.Core.Interfaces
         /// </summary>
         /// <returns>Dictionary<string, Stock></returns>
         Task<Dictionary<string, Stock>> GetStockDictionaryAsync();
+
+        /// <summary>
+        /// Thêm mới hoặc sửa thông tin ngành
+        /// </summary>
+        /// <param name="industry">Thông tin ngành</param>
+        /// <returns>bool</returns>
+        Task<bool> SaveIndustryAsync(Industry industry);
+
+        /// <summary>
+        /// Ghi lại thông tin công ty
+        /// </summary>
+        /// <param name="company">Thông tin cần ghi</param>
+        /// <returns>bool</returns>
+        Task<bool> SaveCompanyAsync(Company company);
+
+        /// <summary>
+        /// Lấy danh sách lãnh đạo theo mã chứng khoán
+        /// </summary>
+        /// <param name="symbol">Mã chứng khoán</param>
+        /// <returns>List Leadership</returns>
+        Task<List<Leadership>> GetLeadershipsAsync(string symbol);
+
+        /// <summary>
+        /// Ghi lại danh sách lãnh đạo của công ty
+        /// </summary>
+        /// <param name="insertItems">Danh sách cần thêm mới</param>
+        /// <param name="deleteItems">Danh sách cần xóa</param>
+        /// <returns>bool</returns>
+        Task<bool> SaveLeadershipsAsync(List<Leadership> insertItems, List<Leadership> deleteItems);
     }
 }

@@ -23,17 +23,6 @@ namespace Pl.Sas.Core.Entities
         /// cấp vị trí
         /// </summary>
         public string? PositionLevel { get; set; }
-
-        /// <summary>
-        /// Xếp hạng quản lý
-        /// Thang điểm 10
-        /// </summary>
-        public int ManagementRank { get; set; } = 5;
-
-        /// <summary>
-        /// Còn hoạt động hay không
-        /// </summary>
-        public bool Activated { get; set; } = true;
     }
 
     public class LeadershipComparer : IEqualityComparer<Leadership>

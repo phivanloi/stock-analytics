@@ -5,6 +5,11 @@
     /// </summary>
     public class Company : BaseEntity
     {
+        public Company(string symbol)
+        {
+            Symbol = symbol;
+        }
+
         /// <summary>
         /// Mã cổ phiếu
         /// </summary>
@@ -13,7 +18,7 @@
         /// <summary>
         /// Mã ngành sic
         /// </summary>
-        public string? SubsectorCode { get; set; }
+        public string SubsectorCode { get; set; } = null!;
 
         /// <summary>
         /// Tên ngành tra cứu
@@ -33,7 +38,7 @@
         /// <summary>
         /// Tên ngành phụ
         /// </summary>
-        public string? Subsector { get; set; }
+        public string Subsector { get; set; } = null!;
 
         /// <summary>
         /// Ngày thành lập
@@ -61,9 +66,9 @@
         public int BankNumberOfBranch { get; set; }
 
         /// <summary>
-        /// Giới thiệu công ty
+        /// Giới thiệu công ty được nén lại
         /// </summary>
-        public byte[]? CompanyProfileZip { get; set; } = null;
+        public byte[]? CompanyProfile { get; set; } = null;
 
         /// <summary>
         /// Sàn niêm yết
@@ -91,11 +96,6 @@
         public string? CompanyName { get; set; }
 
         #region Statistics
-
-        /// <summary>
-        /// Chưa biết
-        /// </summary>
-        public int TtmType { get; set; }
 
         /// <summary>
         /// <para>Vốn hóa thị trường</para>

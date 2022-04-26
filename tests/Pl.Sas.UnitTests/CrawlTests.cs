@@ -31,7 +31,7 @@ namespace Pl.Sas.UnitTests
         }
 
         [Fact]
-        public async Task GetApiStockPricesHistoryTest()
+        public async Task DownloadCompanyInfoTestAsync()
         {
             var services = ConfigureServices.GetConfigureServices();
             var serviceProvider = services.BuildServiceProvider();

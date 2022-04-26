@@ -1,7 +1,11 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Ardalis.GuardClauses;
+using Microsoft.Extensions.Logging;
 using Pl.Sas.Core.Entities;
 using Pl.Sas.Core.Interfaces;
 using System.Diagnostics;
+using System.Globalization;
+using System.Text;
+using System.Web;
 
 namespace Pl.Sas.Core.Services
 {
@@ -12,9 +16,13 @@ namespace Pl.Sas.Core.Services
     {
         private readonly IMarketData _marketData;
         private readonly ICrawlData _crawlData;
+        private readonly IAnalyticsData _analyticsData;
         private readonly ILogger<WorkerService> _logger;
+        private readonly IZipHelper _zipHelper;
 
         public WorkerService(
+            IZipHelper zipHelper,
+            IAnalyticsData analyticsData,
             ILogger<WorkerService> logger,
             ICrawlData crawlData,
             IMarketData marketData)
@@ -22,6 +30,8 @@ namespace Pl.Sas.Core.Services
             _marketData = marketData;
             _crawlData = crawlData;
             _logger = logger;
+            _analyticsData = analyticsData;
+            _zipHelper = zipHelper;
         }
 
         public async Task<QueueMessage?> HandleEventAsync(QueueMessage queueMessage)
@@ -37,7 +47,7 @@ namespace Pl.Sas.Core.Services
                     case 0:
                         return await InitialStockAsync();
 
-                    case 1:
+                    case 10:
                         return await StockDownloadAndAnalyticsAsync(schedule);
 
                     default:
@@ -68,9 +78,10 @@ namespace Pl.Sas.Core.Services
             var insertSchedules = new List<Schedule>();
             var updateStocks = new List<Stock>();
             var insertStocks = new List<Stock>();
+            var insertStockTrackings = new List<StockTracking>();
             foreach (var datum in ssiAllStock.Data)
             {
-                if (string.IsNullOrEmpty(datum.Type) || datum.Type != "s" || datum.Code.Length > 3)
+                if (string.IsNullOrEmpty(datum.Type) || datum.Type != "s" || datum.Type != "i")
                 {
                     _logger.LogInformation("Initial stock {Code} is ignore.", datum.Code);
                     continue;
@@ -88,26 +99,40 @@ namespace Pl.Sas.Core.Services
                 {
                     var random = new Random();
                     var currentTime = DateTime.Now;
-                    insertStocks.Add(new()
+                    insertStocks.Add(new(stockCode)
                     {
                         Name = datum.Name,
                         FullName = datum.FullName,
                         Exchange = datum.Exchange,
-                        Type = datum.Type,
-                        Symbol = stockCode
+                        Type = datum.Type
                     });
-                    insertSchedules.Add(new()
+                    if (datum.Type == "s")
                     {
-                        Name = $"Tải và phân tích mã: {stockCode}",
-                        Type = 1,
-                        DataKey = stockCode,
-                        ActiveTime = currentTime.AddMinutes(random.Next(0, 60))
-                    });
+                        insertSchedules.Add(new()
+                        {
+                            Name = $"Tải và phân tích mã chứng khoán: {stockCode}",
+                            Type = 10,
+                            DataKey = stockCode,
+                            ActiveTime = currentTime.AddMinutes(random.Next(0, 60))
+                        });
+                        insertStockTrackings.Add(new(stockCode));
+                    }
+                    else
+                    {
+                        insertSchedules.Add(new()
+                        {
+                            Name = $"Tải dữ liệu chỉ số: {stockCode}",
+                            Type = 11,
+                            DataKey = stockCode,
+                            ActiveTime = currentTime.AddMinutes(random.Next(0, 60))
+                        });
+                    }
                 }
             }
 
             await _marketData.InitialStockAsync(insertStocks, updateStocks);
             await _marketData.InsertScheduleAsync(insertSchedules);
+            await _analyticsData.InsertStockTrackingAsync(insertStockTrackings);
 
             if (updateStocks.Count > 0)
             {
@@ -128,63 +153,155 @@ namespace Pl.Sas.Core.Services
         /// <returns>Một message yêu cầu update memory</returns>
         public virtual async Task<QueueMessage?> StockDownloadAndAnalyticsAsync(Schedule schedule)
         {
-            var ssiAllStock = await _crawlData.DownloadInitialMarketStockAsync() ?? throw new Exception("Can't download initial market stock.");
-            var allStocks = await _marketData.GetStockDictionaryAsync();
-
-            var insertSchedules = new List<Schedule>();
-            var updateStocks = new List<Stock>();
-            var insertStocks = new List<Stock>();
-            foreach (var datum in ssiAllStock.Data)
+            Guard.Against.NullOrEmpty(schedule.DataKey, nameof(schedule.DataKey));
+            var stockTracking = new StockTracking(schedule.DataKey);
+            try
             {
-                if (string.IsNullOrEmpty(datum.Type) || datum.Type != "s" || datum.Code.Length > 3)
+                await UpdateCompanyInfoAsync(stockTracking);//xử lý thông tin công ty
+                await UpdateLeadershipInfoAsync(stockTracking);//xử lý thông tin lãnh đạo của công ty
+
+            }
+            finally
+            {
+                await _analyticsData.UpdateStockTrackingAsync(stockTracking);
+            }
+
+            var queueMessage = new QueueMessage("UpdatedStock");
+            queueMessage.KeyValues.Add("Symbol", schedule.DataKey);
+            return queueMessage;
+        }
+
+        #region Stock download
+        public virtual async Task<bool> UpdateLeadershipInfoAsync(StockTracking stockTracking)
+        {
+            stockTracking.DownloadStatus = "Tải và xử danh sách lãnh đạo cho công ty.";
+            stockTracking.DownloadDate = DateTime.Now;
+
+            var ssiLeadership = await _crawlData.DownloadLeadershipFromSsiAsync(stockTracking.Symbol) ?? throw new Exception("Can't download leadership info.");
+
+            var insertList = new List<Leadership>();
+            var dbLeaderships = new HashSet<Leadership>(await _marketData.GetLeadershipsAsync(stockTracking.Symbol), new LeadershipComparer());
+            foreach (var item in ssiLeadership.Data.Leaderships.Datas)
+            {
+                var newLeadership = new Leadership()
                 {
-                    _logger.LogInformation("Initial stock {Code} is ignore.", datum.Code);
-                    continue;
-                }
-                var stockCode = datum.Code.ToUpper();
-                var dbStock = allStocks.GetValueOrDefault(stockCode);
-                if (dbStock != null)
+                    Symbol = stockTracking.Symbol,
+                    FullName = item.FullName,
+                    PositionName = item.PositionName,
+                    PositionLevel = item.PositionLevel
+                };
+                if (dbLeaderships.Contains(newLeadership))
                 {
-                    dbStock.Name = datum.Name;
-                    dbStock.FullName = datum.FullName;
-                    dbStock.Exchange = datum.Exchange;
-                    updateStocks.Add(dbStock);
+                    dbLeaderships.Remove(newLeadership);
                 }
                 else
                 {
-                    var random = new Random();
-                    var currentTime = DateTime.Now;
-                    insertStocks.Add(new()
-                    {
-                        Name = datum.Name,
-                        FullName = datum.FullName,
-                        Exchange = datum.Exchange,
-                        Type = datum.Type,
-                        Symbol = stockCode
-                    });
-                    insertSchedules.Add(new()
-                    {
-                        Name = $"Tải và phân tích mã: {stockCode}",
-                        Type = 1,
-                        DataKey = stockCode,
-                        ActiveTime = currentTime.AddMinutes(random.Next(0, 60))
-                    });
+                    insertList.Add(newLeadership);
                 }
             }
+            return await _marketData.SaveLeadershipsAsync(insertList, dbLeaderships.ToList());
+        }
 
-            await _marketData.InitialStockAsync(insertStocks, updateStocks);
-            await _marketData.InsertScheduleAsync(insertSchedules);
+        /// <summary>
+        /// Tải thông tin doanh nghiệp
+        /// </summary>
+        /// <param name="stockTracking">Thông tin trạng thái kiểm tra download dữ liệu của cổ phiếu</param>
+        /// <returns>bool</returns>
+        /// <exception cref="Exception">Can't download company info.</exception>
+        public virtual async Task<bool> UpdateCompanyInfoAsync(StockTracking stockTracking)
+        {
+            stockTracking.DownloadStatus = "Tải và xử lý thông tin công ty.";
+            stockTracking.DownloadDate = DateTime.Now;
 
-            if (updateStocks.Count > 0)
+            var ssiCompanyInfo = await _crawlData.DownloadCompanyInfoAsync(stockTracking.Symbol) ?? throw new Exception("Can't download company info.");
+            if (!string.IsNullOrWhiteSpace(ssiCompanyInfo.Data.CompanyProfile.SubsectorCode) && ssiCompanyInfo.Data.CompanyProfile.SubsectorCode != "0")
             {
-                var queueMessage = new QueueMessage("UpdatedStocks");
-                for (int i = 0; i < updateStocks.Count; i++)
-                {
-                    queueMessage.KeyValues.Add("Symbol" + i, updateStocks[i].Symbol);
-                }
-                return queueMessage;
+                var saveIndustry = new Industry(ssiCompanyInfo.Data.CompanyProfile.SubsectorCode, ssiCompanyInfo.Data.CompanyProfile.Subsector);
+                await _marketData.SaveIndustryAsync(saveIndustry);
             }
-            return null;
+
+            var company = new Company(stockTracking.Symbol);
+            string companyProfile = ssiCompanyInfo.Data.CompanyProfile.CompanyProfile;
+            companyProfile = HttpUtility.HtmlDecode(companyProfile);
+            companyProfile = HttpUtility.HtmlDecode(companyProfile);
+            companyProfile = companyProfile.Replace("<div style=\"FONT-FAMILY: Arial; FONT-SIZE: 10pt;\">", "", StringComparison.OrdinalIgnoreCase);
+            companyProfile = companyProfile.Replace("</div>", "", StringComparison.OrdinalIgnoreCase);
+            companyProfile = companyProfile.Replace("<p>", "", StringComparison.OrdinalIgnoreCase);
+            companyProfile = companyProfile.Replace("</p>", "", StringComparison.OrdinalIgnoreCase);
+
+            company.SubsectorCode = ssiCompanyInfo.Data.CompanyProfile.SubsectorCode;
+            company.IndustryName = ssiCompanyInfo.Data.CompanyProfile.IndustryName;
+            company.Supersector = ssiCompanyInfo.Data.CompanyProfile.Supersector;
+            company.Sector = ssiCompanyInfo.Data.CompanyProfile.Sector;
+            company.Subsector = ssiCompanyInfo.Data.CompanyProfile.Subsector;
+            company.CompanyName = ssiCompanyInfo.Data.CompanyProfile.CompanyName;
+            company.FoundingDate = ParseDateType(ssiCompanyInfo.Data.CompanyProfile.FoundingDate);
+            company.CharterCapital = float.Parse(ssiCompanyInfo.Data.CompanyProfile.CharterCapital);
+            company.NumberOfEmployee = int.Parse(ssiCompanyInfo.Data.CompanyProfile.NumberOfEmployee ?? "0");
+            company.BankNumberOfBranch = int.Parse(ssiCompanyInfo.Data.CompanyProfile.BankNumberOfBranch ?? "0");
+            company.CompanyProfile = _zipHelper.ZipByte(Encoding.UTF8.GetBytes(companyProfile));
+            company.ListingDate = ParseDateType(ssiCompanyInfo.Data.CompanyProfile.ListingDate);
+            company.Exchange = ssiCompanyInfo.Data.CompanyProfile.Exchange;
+            company.FirstPrice = float.Parse(ssiCompanyInfo.Data.CompanyProfile.FirstPrice);
+            company.IssueShare = float.Parse(ssiCompanyInfo.Data.CompanyProfile.IssueShare);
+            company.ListedValue = float.Parse(ssiCompanyInfo.Data.CompanyProfile.ListedValue);
+
+            company.MarketCap = float.Parse(ssiCompanyInfo.Data.CompanyStatistics.MarketCap);
+            company.SharesOutStanding = float.Parse(ssiCompanyInfo.Data.CompanyStatistics.SharesOutStanding);
+            company.Bv = float.Parse(ssiCompanyInfo.Data.CompanyStatistics.BV);
+            company.Beta = float.Parse(ssiCompanyInfo.Data.CompanyStatistics.BETA);
+            company.Eps = float.Parse(ssiCompanyInfo.Data.CompanyStatistics.EPS);
+            company.DilutedEps = float.Parse(ssiCompanyInfo.Data.CompanyStatistics.DilutedEps);
+            company.Pe = float.Parse(ssiCompanyInfo.Data.CompanyStatistics.PE);
+            company.Pb = float.Parse(ssiCompanyInfo.Data.CompanyStatistics.PB);
+            company.DividendYield = float.Parse(ssiCompanyInfo.Data.CompanyStatistics.DividendYield);
+            company.TotalRevenue = float.Parse(ssiCompanyInfo.Data.CompanyStatistics.TotalRevenue);
+            company.Profit = float.Parse(ssiCompanyInfo.Data.CompanyStatistics.Profit);
+            company.Asset = float.Parse(ssiCompanyInfo.Data.CompanyStatistics.Asset);
+            company.Roe = float.Parse(ssiCompanyInfo.Data.CompanyStatistics.Roe);
+            company.Roa = float.Parse(ssiCompanyInfo.Data.CompanyStatistics.Roa);
+            company.Npl = float.Parse(ssiCompanyInfo.Data.CompanyStatistics.Npl);
+            company.FinanciallEverage = float.Parse(ssiCompanyInfo.Data.CompanyStatistics.FinanciallEverage);
+            return await _marketData.SaveCompanyAsync(company);
+        }
+        #endregion
+
+        /// <summary>
+        /// hàm xử lý chuyển đổi string thành ngày tháng theo định dạng dd/MM/yyyy HH:mm:ss
+        /// </summary>
+        /// <param name="value">dữ liệu cần chuyển đổi</param>
+        /// <returns>DateTime  or Null</returns>
+        private DateTime? ParseDateType(string? value)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                return null;
+            }
+            try
+            {
+                if (value.Contains('T'))
+                {
+                    string parseString = value.Replace('T', ' ');
+                    var dateTValue = DateTime.ParseExact(parseString, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+                    if (dateTValue == DateTime.MinValue)
+                    {
+                        return null;
+                    }
+                    return dateTValue;
+                }
+
+                var dateValue = DateTime.ParseExact(value, "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture);
+                if (dateValue == DateTime.MinValue)
+                {
+                    return null;
+                }
+                return dateValue;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "ParseDateType error: {value}", value);
+                return null;
+            }
         }
     }
 }

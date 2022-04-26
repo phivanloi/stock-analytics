@@ -261,37 +261,6 @@ namespace Pl.Sas.Core
         }
 
         /// <summary>
-        /// Lấy ngày giao dịch cuói cùng không phải ngày giao dịch hiện tại
-        /// </summary>
-        /// <returns>DateTime</returns>
-        public static DateTime GetLastTradingDate()
-        {
-            if (DayOfWeek.Sunday == DateTime.Now.DayOfWeek)
-            {
-                return DateTime.Now.Date.AddDays(-3);
-            }
-            if (DayOfWeek.Monday == DateTime.Now.DayOfWeek)
-            {
-                return DateTime.Now.Date.AddDays(-4);
-            }
-            return DateTime.Now.Date.AddDays(-2);
-        }
-
-        /// <summary>
-        /// Lấy chuỗi đường dẫn cho ngày giao dịch hiện tại
-        /// </summary>
-        /// <param name="value">Giá trị cần lấy nếu null thì lấy của hàm GetTradingDate</param>
-        /// <returns></returns>
-        public static string GetTradingDatePath(DateTime? value = null) => (value ?? GetTradingDate()).ToString("ddMMyyyy");
-
-        /// <summary>
-        /// Lấy chuỗi đường dẫn cho ngày giao dịch cuối cùng không phải ngày hiện tại
-        /// </summary>
-        /// <param name="value">Giá trị cần lấy nếu null thì lấy của hàm GetLastTradingDate</param>
-        /// <returns>string</returns>
-        public static string GetLastTradingDatePath(DateTime? value = null) => (value ?? GetLastTradingDate()).ToString("ddMMyyyy");
-
-        /// <summary>
         /// Lấy tên phương pháp đầu tư
         /// </summary>
         /// <param name="principle">Id phương pháp</param>

@@ -16,14 +16,8 @@ namespace Pl.Sas.Scheduler
                 });
                 marketDbContext.Schedules.Add(new Schedule()
                 {
-                    Name = "Phân tích tâm lý thị trường",
-                    Type = 2,
-                    ActiveTime = DateTime.Now.Date.AddHours(10).AddMinutes(1)
-                });
-                marketDbContext.Schedules.Add(new Schedule()
-                {
                     Name = "Phân tích dòng tiền theo ngành",
-                    Type = 3
+                    Type = 1
                 });
 
                 marketDbContext.SaveChanges();

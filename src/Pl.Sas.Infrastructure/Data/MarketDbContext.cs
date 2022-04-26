@@ -64,7 +64,7 @@ namespace Pl.Sas.Infrastructure.Data
                 b.HasIndex(i => i.Code);
             });
 
-            #endregion Industry
+            #endregion
 
             #region StockPrice
 
@@ -73,11 +73,8 @@ namespace Pl.Sas.Infrastructure.Data
                 b.Property(c => c.Id).HasMaxLength(22).IsRequired();
                 b.Property(p => p.Symbol).HasMaxLength(16).IsRequired();
                 b.HasIndex(p => p.Symbol);
-                b.Property(p => p.DatePath).HasMaxLength(8).IsRequired();
-                b.HasIndex(p => p.DatePath);
                 b.HasIndex(p => p.TradingDate);
                 b.HasIndex(p => new { p.Symbol, p.TradingDate });
-                b.HasIndex(p => new { p.Symbol, p.TradingDate, p.DatePath });
             });
 
             #endregion StockPrice

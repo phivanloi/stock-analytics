@@ -16,11 +16,6 @@
         public DateTime TradingDate { get; set; } = Utilities.GetTradingDate();
 
         /// <summary>
-        /// Chuỗi đại diện cho ngày giao dịch
-        /// </summary>
-        public string DatePath { get; set; } = Utilities.GetLastTradingDatePath();
-
-        /// <summary>
         /// Giá thay đổi
         /// </summary>
         public float PriceChange { get; set; }

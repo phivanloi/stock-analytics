@@ -5,6 +5,12 @@
     /// </summary>
     public class Industry : BaseEntity
     {
+        public Industry(string code, string name)
+        {
+            Code = code;
+            Name = name;
+        }
+
         /// <summary>
         /// Tên loại hình công ty
         /// </summary>

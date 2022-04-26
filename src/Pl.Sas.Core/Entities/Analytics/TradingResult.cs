@@ -1,7 +1,8 @@
-﻿using System;
-
-namespace Pl.Sas.Core.Entities
+﻿namespace Pl.Sas.Core.Entities
 {
+    /// <summary>
+    /// bảng lưu kết quả giao dịch thử nghiệm
+    /// </summary>
     public class TradingResult : BaseEntity
     {
         /// <summary>
@@ -19,14 +20,9 @@ namespace Pl.Sas.Core.Entities
         public int Principle { get; set; } = 1;
 
         /// <summary>
-        /// Ngày phân tích
+        /// Ngày trading
         /// </summary>
         public DateTime TradingDate { get; set; } = Utilities.GetTradingDate();
-
-        /// <summary>
-        /// Chuỗi đại diện cho ngày phân tích
-        /// </summary>
-        public string DatePath { get; set; } = Utilities.GetTradingDatePath();
 
         /// <summary>
         /// Đánh giá mua cho phiên này
@@ -49,19 +45,14 @@ namespace Pl.Sas.Core.Entities
         public decimal SellPrice { get; set; } = 0;
 
         /// <summary>
+        /// Vốn cố định ban đầu, 100tr vnd
+        /// </summary>
+        public decimal Capital { get; set; } = 100000000;
+
+        /// <summary>
         /// Kết quả sau khi chạy quá trình test
         /// </summary>
         public decimal Profit { get; set; } = 0;
-
-        /// <summary>
-        /// % lợi nhuận
-        /// </summary>
-        public decimal ProfitPercent { get; set; } = 0;
-
-        /// <summary>
-        /// Vốn cố định ban đầu
-        /// </summary>
-        public decimal Capital { get; set; } = 0;
 
         /// <summary>
         /// Tổng thuế phí giao dịch
@@ -69,8 +60,8 @@ namespace Pl.Sas.Core.Entities
         public decimal TotalTax { get; set; } = 0;
 
         /// <summary>
-        /// Ghi chú diễn giải đầu tư
+        /// Ghi chú diễn giải đầu tư <see cref="string"/>
         /// </summary>
-        public byte[] ZipExplainNotes { get; set; } = null;
+        public byte[]? TradingNotes { get; set; } = null;
     }
 }

@@ -11,7 +11,12 @@
         public string Message { get; set; }
 
         /// <summary>
-        /// Loại thông báo
+        /// Điểm đánh giá
+        /// </summary>
+        public int Score { get; set; }
+
+        /// <summary>
+        /// Trạng thái kết quả
         /// <para>-1 cảnh báo</para>
         /// <para>0 bình thường</para>
         /// <para>1 là tốt</para>
@@ -22,11 +27,6 @@
         /// Đường link tìm hiểu về phân tích này
         /// </summary>
         public string? GuideLink { get; set; }
-
-        /// <summary>
-        /// kết quả đánh giá
-        /// </summary>
-        public int Score { get; set; }
 
         /// <summary>
         /// Khởi tạo

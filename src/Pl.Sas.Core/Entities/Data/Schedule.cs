@@ -44,7 +44,7 @@ namespace Pl.Sas.Core.Entities
         /// Loại của lịch
         /// <para>0 Tìm kiếm và bổ sung mã chứng khoáng vào hệ thống</para>
         /// <para>1 Tải và phân tích dữ liệu cho từng cổ phiếu</para>
-        /// <para>2 Đánh giá tâm lý thị trường</para>
+        /// <para>2 Tải và đánh giá tâm lý thị trường, các chỉ số</para>
         /// <para>3 Phân tích dòng tiền theo ngành</para>
         /// </summary>
         public int Type { get; set; }
