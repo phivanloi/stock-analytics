@@ -55,7 +55,6 @@ builder.Services.AddHealthChecks()
     .AddRabbitMQ(builder.Configuration.GetConnectionString("EventBusConnection"), name: "rabbitmq-bus", tags: new string[] { "rabbitmq_bus", "31_rabbitmq" });
 
 builder.Services.AddSingleton<IZipHelper, GZipHelper>();
-builder.Services.AddSingleton<IHttpHelper, HttpHelper>();
 builder.Services.AddMemoryCacheService();
 builder.Services.AddRedisCacheService(option =>
 {
@@ -64,7 +63,7 @@ builder.Services.AddRedisCacheService(option =>
 });
 
 builder.Services.AddSingleton<IWorkerQueueService, WorkerQueueService>();
-builder.Services.AddScoped<ICrawlData, CrawlData>();
+builder.Services.AddSingleton<ICrawlData, CrawlData>();
 builder.Services.AddScoped<IMarketData, MarketData>();
 builder.Services.AddScoped<WorkerService>();
 builder.Services.AddHostedService<Worker>();
@@ -79,7 +78,7 @@ if (app.Environment.IsProduction())
         {
             var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
             var logger = app.Services.GetRequiredService<ILogger<Program>>();
-            logger.LogError(exceptionHandlerPathFeature?.Error, exceptionHandlerPathFeature?.Error.Message);
+            logger.LogError(exceptionHandlerPathFeature?.Error, null);
             context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
             context.Response.ContentType = "text/json";
             await context.Response.WriteAsync(JsonSerializer.Serialize(new

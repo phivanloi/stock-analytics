@@ -9,5 +9,12 @@ namespace Pl.Sas.Core.Interfaces
         /// </summary>
         /// <returns>SsiAllStock?</returns>
         Task<SsiAllStock?> DownloadInitialMarketStockAsync();
+
+        /// <summary>
+        /// Lấy thông tin công ty
+        /// </summary>
+        /// <param name="symbol">Mã chứng khoán</param>
+        /// <returns>SsiCompanyInfo</returns>
+        Task<SsiCompanyInfo?> DownloadCompanyInfoAsync(string symbol);
     }
 }

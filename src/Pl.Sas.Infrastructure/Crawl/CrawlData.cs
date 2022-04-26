@@ -1,6 +1,8 @@
 ﻿using Pl.Sas.Core.Entities;
 using Pl.Sas.Core.Interfaces;
 using Pl.Sas.Infrastructure.Helper;
+using System.Text;
+using System.Text.Json;
 
 namespace Pl.Sas.Infrastructure.Crawl
 {
@@ -16,6 +18,22 @@ namespace Pl.Sas.Infrastructure.Crawl
         {
             var requestUrl = "https://iboard.ssi.com.vn/dchart/api/1.1/defaultAllStocks";
             return await httpHelper.GetJsonAsync<SsiAllStock>(requestUrl);
+        }
+
+        public virtual async Task<SsiCompanyInfo?> DownloadCompanyInfoAsync(string symbol)
+        {
+            var requestUrl = "https://finfo-iboard.ssi.com.vn/graphql";
+            var mainInfoQuery = new
+            {
+                operationName = "companyProfile",
+                variables = new
+                {
+                    symbol = symbol,
+                    language = "vn"
+                },
+                query = "query companyProfile($symbol: String!, $language: String) { companyProfile(symbol: $symbol, language: $language) { symbol subsectorcode industryname supersector sector subsector foundingdate chartercapital numberofemployee banknumberofbranch companyprofile listingdate exchange firstprice issueshare listedvalue companyname __typename  } companyStatistics(symbol: $symbol) { symbol ttmtype marketcap sharesoutstanding bv beta eps dilutedeps pe pb dividendyield totalrevenue profit asset roe roa npl financialleverage __typename  }}"
+            };
+            return await httpHelper.PostJsonAsync<SsiCompanyInfo>(requestUrl, new StringContent(JsonSerializer.Serialize(mainInfoQuery), Encoding.UTF8, "application/json"));
         }
     }
 }

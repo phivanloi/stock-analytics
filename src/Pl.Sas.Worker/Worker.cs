@@ -49,6 +49,7 @@ namespace Pl.Sas.Worker
                 {
                     _workerQueueService.BroadcastUpdateMemoryTask(updateMemoryMessage);
                 }
+                scope.Dispose();
             });
 
             return base.StartAsync(cancellationToken);
