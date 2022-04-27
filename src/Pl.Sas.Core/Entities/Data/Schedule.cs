@@ -43,9 +43,9 @@ namespace Pl.Sas.Core.Entities
         /// <summary>
         /// Loại của lịch
         /// <para>0 Tìm kiếm và bổ sung mã chứng khoáng vào hệ thống</para>
-        /// <para>1 Tải và phân tích dữ liệu cho từng cổ phiếu</para>
-        /// <para>2 Tải và đánh giá tâm lý thị trường, các chỉ số</para>
-        /// <para>3 Phân tích dòng tiền theo ngành</para>
+        /// <para>10 Tải và phân tích dữ liệu cho từng cổ phiếu</para>
+        /// <para>11 Tải và đánh giá tâm lý thị trường, các chỉ số</para>
+        /// <para>12 Phân tích dòng tiền theo ngành</para>
         /// </summary>
         public int Type { get; set; }
 
@@ -59,9 +59,9 @@ namespace Pl.Sas.Core.Entities
             ActiveTime = Type switch
             {
                 0 => baseTime.Date.AddDays(1).AddHours(1).AddMinutes(random.Next(0, 60)),
-                1 => baseTime.AddHours(1).AddMinutes(random.Next(0, 60)),
-                2 => baseTime.AddHours(5).AddMinutes(random.Next(0, 60)),
-                3 => baseTime.Date.AddDays(1).AddHours(5).AddMinutes(random.Next(0, 60)),
+                10 => baseTime.AddHours(1).AddMinutes(random.Next(0, 60)),
+                11 => baseTime.AddHours(5).AddMinutes(random.Next(0, 60)),
+                12 => baseTime.Date.AddDays(1).AddHours(5).AddMinutes(random.Next(0, 60)),
                 _ => baseTime.AddHours(1),
             };
         }

@@ -32,7 +32,7 @@
         /// <summary>
         /// Giá mua vào cho phiên này
         /// </summary>
-        public decimal BuyPrice { get; set; } = 0;
+        public float BuyPrice { get; set; } = 0;
 
         /// <summary>
         /// Đánh giá bán cho phiên này
@@ -42,22 +42,22 @@
         /// <summary>
         /// Giá bán
         /// </summary>
-        public decimal SellPrice { get; set; } = 0;
+        public float SellPrice { get; set; } = 0;
 
         /// <summary>
         /// Vốn cố định ban đầu, 100tr vnd
         /// </summary>
-        public decimal Capital { get; set; } = 100000000;
+        public float Capital { get; set; } = 100000000;
 
         /// <summary>
         /// Kết quả sau khi chạy quá trình test
         /// </summary>
-        public decimal Profit { get; set; } = 0;
+        public float Profit { get; set; } = 0;
 
         /// <summary>
         /// Tổng thuế phí giao dịch
         /// </summary>
-        public decimal TotalTax { get; set; } = 0;
+        public float TotalTax { get; set; } = 0;
 
         /// <summary>
         /// Ghi chú diễn giải đầu tư <see cref="string"/>

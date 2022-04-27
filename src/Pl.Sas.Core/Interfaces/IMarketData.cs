@@ -8,6 +8,43 @@ namespace Pl.Sas.Core.Interfaces
     public interface IMarketData
     {
         /// <summary>
+        /// Xử lý ghi lại điểm đánh giá chứng khoán của vnd
+        /// </summary>
+        /// <param name="vndStockScores">Thông tin đánh giá</param>
+        /// <returns>bool</returns>
+        Task<bool> SaveVndStockScoresAsync(List<VndStockScore> vndStockScores);
+
+        /// <summary>
+        /// Ghi lại đánh giá của vnd
+        /// </summary>
+        /// <param name="stockRecommendation">Thôn tin báo cáo cần ghi lại</param>
+        /// <returns>bool</returns>
+        Task<bool> SaveStockRecommendationAsync(List<StockRecommendation> stockRecommendations);
+
+        /// <summary>
+        /// Ghi lại kết quả đánh giá 
+        /// </summary>
+        /// <param name="fiinEvaluate"></param>
+        /// <returns></returns>
+        Task<bool> SaveFiinEvaluateAsync(FiinEvaluated fiinEvaluate);
+
+        /// <summary>
+        /// Ghi lại danh sách cổ phiếu
+        /// </summary>
+        /// <param name="insertItems">Danh sách thêm mới</param>
+        /// <param name="updateItems">Danh sách update</param>
+        /// <returns>bool</returns>
+        Task<bool> SaveStockPriceAsync(List<StockPrice> insertItems, List<StockPrice> updateItems);
+
+        /// <summary>
+        /// Lấy lịch sử giá cổ phiếu bằng mã chứng khoán và ngày giao dịch
+        /// </summary>
+        /// <param name="symbol">Mã chứng khoán</param>
+        /// <param name="tradingDate">Ngày giao dịch</param>
+        /// <returns>StockPrice</returns>
+        Task<StockPrice?> GeStockPriceAsync(string symbol, DateTime tradingDate);
+
+        /// <summary>
         /// Update lại giá trị options của lịch
         /// </summary>
         /// <param name="schedule">Lịch cần update</param>

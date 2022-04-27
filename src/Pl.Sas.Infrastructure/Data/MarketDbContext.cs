@@ -15,7 +15,7 @@ namespace Pl.Sas.Infrastructure.Data
         public virtual DbSet<FinancialGrowth> FinancialGrowths { get; set; } = null!;
         public virtual DbSet<FinancialIndicator> FinancialIndicators { get; set; } = null!;
         public virtual DbSet<CorporateAction> CorporateActions { get; set; } = null!;
-        public virtual DbSet<FiinEvaluate> FiinEvaluates { get; set; } = null!;
+        public virtual DbSet<FiinEvaluated> FiinEvaluates { get; set; } = null!;
         public virtual DbSet<StockRecommendation> StockRecommendations { get; set; } = null!;
         public virtual DbSet<VndStockScore> VndStockScores { get; set; } = null!;
         public virtual DbSet<Schedule> Schedules { get; set; } = null!;
@@ -134,7 +134,7 @@ namespace Pl.Sas.Infrastructure.Data
 
             #region FiinEvaluate
 
-            modelBuilder.Entity<FiinEvaluate>(b =>
+            modelBuilder.Entity<FiinEvaluated>(b =>
             {
                 b.Property(c => c.Id).HasMaxLength(22).IsRequired();
                 b.Property(p => p.Symbol).HasMaxLength(16).IsRequired();

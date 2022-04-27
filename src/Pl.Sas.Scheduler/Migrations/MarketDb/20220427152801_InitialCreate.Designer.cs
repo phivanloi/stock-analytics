@@ -12,7 +12,7 @@ using Pl.Sas.Infrastructure.Data;
 namespace Pl.Sas.Scheduler.Migrations.MarketDb
 {
     [DbContext(typeof(MarketDbContext))]
-    [Migration("20220425161612_InitialCreate")]
+    [Migration("20220427152801_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -49,7 +49,7 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
-                    b.Property<byte[]>("CompanyProfileZip")
+                    b.Property<byte[]>("CompanyProfile")
                         .HasColumnType("varbinary(max)");
 
                     b.Property<DateTime>("CreatedTime")
@@ -121,10 +121,12 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
                         .HasColumnType("real");
 
                     b.Property<string>("Subsector")
+                        .IsRequired()
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("SubsectorCode")
+                        .IsRequired()
                         .HasMaxLength(22)
                         .HasColumnType("nvarchar(22)");
 
@@ -139,9 +141,6 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
 
                     b.Property<float>("TotalRevenue")
                         .HasColumnType("real");
-
-                    b.Property<int>("TtmType")
-                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedTime")
                         .HasColumnType("datetime2");
@@ -161,6 +160,9 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
 
                     b.Property<DateTime>("CreatedTime")
                         .HasColumnType("datetime2");
+
+                    b.Property<byte[]>("Description")
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<string>("EventCode")
                         .IsRequired()
@@ -210,9 +212,6 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
 
                     b.Property<float>("Value")
                         .HasColumnType("real");
-
-                    b.Property<byte[]>("ZipDescription")
-                        .HasColumnType("varbinary(max)");
 
                     b.HasKey("Id");
 
@@ -432,9 +431,6 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
                         .HasMaxLength(22)
                         .HasColumnType("nvarchar(22)");
 
-                    b.Property<bool>("Activated")
-                        .HasColumnType("bit");
-
                     b.Property<DateTime>("CreatedTime")
                         .HasColumnType("datetime2");
 
@@ -442,9 +438,6 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
                         .IsRequired()
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
-
-                    b.Property<int>("ManagementRank")
-                        .HasColumnType("int");
 
                     b.Property<string>("PositionLevel")
                         .HasMaxLength(128)
@@ -578,11 +571,6 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
                     b.Property<DateTime>("CreatedTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("DatePath")
-                        .IsRequired()
-                        .HasMaxLength(8)
-                        .HasColumnType("nvarchar(8)");
-
                     b.Property<float>("FloorPrice")
                         .HasColumnType("real");
 
@@ -662,15 +650,11 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DatePath");
-
                     b.HasIndex("Symbol");
 
                     b.HasIndex("TradingDate");
 
                     b.HasIndex("Symbol", "TradingDate");
-
-                    b.HasIndex("Symbol", "TradingDate", "DatePath");
 
                     b.ToTable("StockPrices");
                 });

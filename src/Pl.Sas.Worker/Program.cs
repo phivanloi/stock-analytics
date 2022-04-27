@@ -7,6 +7,7 @@ using Pl.Sas.Core;
 using Pl.Sas.Core.Interfaces;
 using Pl.Sas.Core.Services;
 using Pl.Sas.Infrastructure;
+using Pl.Sas.Infrastructure.Analytics;
 using Pl.Sas.Infrastructure.Caching;
 using Pl.Sas.Infrastructure.Crawl;
 using Pl.Sas.Infrastructure.Data;
@@ -48,8 +49,16 @@ builder.Services.AddDbContext<MarketDbContext>(options =>
         sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
     }));
 
+builder.Services.AddDbContext<AnalyticsDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("AnalyticsConnection"),
+    sqlServerOptionsAction: sqlOptions =>
+    {
+        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+    }));
+
 builder.Services.AddHealthChecks()
     .AddCheck("self", () => HealthCheckResult.Healthy())
+    .AddSqlServer(builder.Configuration.GetConnectionString("AnalyticsConnection"), name: "analytics-database", tags: new string[] { "analytics_database", "31_db" })
     .AddSqlServer(builder.Configuration.GetConnectionString("MarketConnection"), name: "market-database", tags: new string[] { "market_database", "31_db" })
     .AddRedis(builder.Configuration.GetConnectionString("CacheConnection"), name: "redis-cache", tags: new string[] { "redis_cache", "31_redis" })
     .AddRabbitMQ(builder.Configuration.GetConnectionString("EventBusConnection"), name: "rabbitmq-bus", tags: new string[] { "rabbitmq_bus", "31_rabbitmq" });
@@ -65,6 +74,7 @@ builder.Services.AddRedisCacheService(option =>
 builder.Services.AddSingleton<IWorkerQueueService, WorkerQueueService>();
 builder.Services.AddSingleton<ICrawlData, CrawlData>();
 builder.Services.AddScoped<IMarketData, MarketData>();
+builder.Services.AddScoped<IAnalyticsData, AnalyticsData>();
 builder.Services.AddScoped<WorkerService>();
 builder.Services.AddHostedService<Worker>();
 
@@ -78,7 +88,7 @@ if (app.Environment.IsProduction())
         {
             var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
             var logger = app.Services.GetRequiredService<ILogger<Program>>();
-            logger.LogError(exceptionHandlerPathFeature?.Error, null);
+            logger.LogError(exceptionHandlerPathFeature?.Error, "");
             context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
             context.Response.ContentType = "text/json";
             await context.Response.WriteAsync(JsonSerializer.Serialize(new

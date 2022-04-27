@@ -3,7 +3,7 @@
     /// <summary>
     /// Lưu đánh giá cổ phiếu của công ty fiin
     /// </summary>
-    public class FiinEvaluate : BaseEntity
+    public class FiinEvaluated : BaseEntity
     {
         /// <summary>
         /// Mã cổ phiếu

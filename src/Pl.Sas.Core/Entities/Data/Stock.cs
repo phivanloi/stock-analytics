@@ -5,6 +5,8 @@
     /// </summary>
     public class Stock : BaseEntity
     {
+        public Stock() { }
+
         public Stock(string symbol)
         {
             Symbol = symbol;

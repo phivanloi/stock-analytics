@@ -23,6 +23,79 @@ namespace Pl.Sas.Infrastructure.Data
             _memoryCacheService = memoryCacheService;
         }
 
+        public virtual async Task<bool> SaveVndStockScoresAsync(List<VndStockScore> vndStockScores)
+        {
+            Guard.Against.Null(vndStockScores, nameof(vndStockScores));
+            foreach (var vndStockScore in vndStockScores)
+            {
+                var updateItem = _marketDbContext.VndStockScores.FirstOrDefault(q => q.Symbol == vndStockScore.Symbol && q.CriteriaCode == vndStockScore.CriteriaCode);
+                if (updateItem != null)
+                {
+                    updateItem.Type = vndStockScore.Type;
+                    updateItem.FiscalDate = vndStockScore.FiscalDate;
+                    updateItem.ModelCode = vndStockScore.ModelCode;
+                    updateItem.CriteriaCode = vndStockScore.CriteriaCode;
+                    updateItem.CriteriaType = vndStockScore.CriteriaType;
+                    updateItem.CriteriaName = vndStockScore.CriteriaName;
+                    updateItem.Point = vndStockScore.Point;
+                    updateItem.Locale = vndStockScore.Locale;
+                    updateItem.UpdatedTime = DateTime.Now;
+                }
+                else
+                {
+                    _marketDbContext.VndStockScores.Add(vndStockScore);
+                }
+            }
+            return await _marketDbContext.SaveChangesAsync() > 0;
+        }
+
+        public virtual async Task<bool> SaveStockRecommendationAsync(List<StockRecommendation> stockRecommendations)
+        {
+            Guard.Against.Null(stockRecommendations, nameof(stockRecommendations));
+            foreach (var stockRecommendation in stockRecommendations)
+            {
+                var updateItem = _marketDbContext.StockRecommendations.FirstOrDefault(q => q.Symbol == stockRecommendation.Symbol && q.ReportDate == stockRecommendation.ReportDate && q.Analyst == stockRecommendation.Analyst);
+                if (updateItem != null)
+                {
+                    updateItem.Firm = stockRecommendation.Firm;
+                    updateItem.Type = stockRecommendation.Type;
+                    updateItem.ReportDate = stockRecommendation.ReportDate;
+                    updateItem.Source = stockRecommendation.Source;
+                    updateItem.Analyst = stockRecommendation.Analyst;
+                    updateItem.ReportPrice = stockRecommendation.ReportPrice;
+                    updateItem.TargetPrice = stockRecommendation.TargetPrice;
+                    updateItem.AvgTargetPrice = stockRecommendation.AvgTargetPrice;
+                    updateItem.UpdatedTime = DateTime.Now;
+                }
+                else
+                {
+                    _marketDbContext.StockRecommendations.Add(stockRecommendation);
+                }
+            }
+            return await _marketDbContext.SaveChangesAsync() > 0;
+        }
+
+        public virtual async Task<bool> SaveStockPriceAsync(List<StockPrice> insertItems, List<StockPrice> updateItems)
+        {
+            if (insertItems.Count > 0)
+            {
+                _marketDbContext.StockPrices.AddRange(insertItems);
+            }
+            if (updateItems.Count > 0)
+            {
+                foreach (var item in updateItems)
+                {
+                    item.UpdatedTime = DateTime.Now;
+                }
+            }
+            return await _marketDbContext.SaveChangesAsync() > 0;
+        }
+
+        public virtual async Task<StockPrice?> GeStockPriceAsync(string symbol, DateTime tradingDate)
+        {
+            return await _marketDbContext.StockPrices.FirstOrDefaultAsync(s => s.Symbol == symbol && s.TradingDate == tradingDate);
+        }
+
         public virtual async Task<bool> InsertScheduleAsync(List<Schedule> schedules)
         {
             if (schedules.Count > 0)
@@ -231,39 +304,31 @@ namespace Pl.Sas.Infrastructure.Data
             return await _marketDbContext.SaveChangesAsync() > 0;
         }
 
-        public virtual async Task BulkInserAsync(List<StockPrice> stockPrices)
+        public virtual async Task<bool> SaveFiinEvaluateAsync(FiinEvaluated fiinEvaluate)
         {
-            if (stockPrices?.Count <= 0)
+            Guard.Against.Null(fiinEvaluate, nameof(fiinEvaluate));
+            var updateItem = _marketDbContext.FiinEvaluates.FirstOrDefault(q => q.Symbol == fiinEvaluate.Symbol);
+            if (updateItem != null)
             {
-                return;
+                updateItem.IcbRank = fiinEvaluate.IcbRank;
+                updateItem.IcbTotalRanked = fiinEvaluate.IcbTotalRanked;
+                updateItem.IndexRank = fiinEvaluate.IndexRank;
+                updateItem.IndexTotalRanked = fiinEvaluate.IndexTotalRanked;
+                updateItem.IcbCode = fiinEvaluate.IcbCode;
+                updateItem.ComGroupCode = fiinEvaluate.ComGroupCode;
+                updateItem.Growth = fiinEvaluate.Growth;
+                updateItem.Value = fiinEvaluate.Value;
+                updateItem.Momentum = fiinEvaluate.Momentum;
+                updateItem.Vgm = fiinEvaluate.Vgm;
+                updateItem.ControlStatusCode = fiinEvaluate.ControlStatusCode;
+                updateItem.ControlStatusName = fiinEvaluate.ControlStatusName;
+                updateItem.UpdatedTime = DateTime.Now;
             }
-
-            var dataTableTemp = stockPrices.ToDataTable();
-
-            using SqlConnection connection = new(_connections.DataConnection);
-            connection.Open();
-            using var tran = connection.BeginTransaction();
-            try
+            else
             {
-                using (var sqlBulkCopy = new SqlBulkCopy(connection, SqlBulkCopyOptions.Default, tran))
-                {
-                    foreach (DataColumn column in dataTableTemp.Columns)
-                    {
-                        sqlBulkCopy.ColumnMappings.Add(new SqlBulkCopyColumnMapping(column.ColumnName, column.ColumnName));
-                    }
-
-                    sqlBulkCopy.BulkCopyTimeout = 300;
-                    sqlBulkCopy.DestinationTableName = "StockPrices";
-                    await sqlBulkCopy.WriteToServerAsync(dataTableTemp);
-                }
-                tran.Commit();
+                _marketDbContext.FiinEvaluates.Add(fiinEvaluate);
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Stock data error => BulkInserStockPricesAsync");
-                tran.Rollback();
-                throw;
-            }
+            return await _marketDbContext.SaveChangesAsync() > 0;
         }
     }
 }

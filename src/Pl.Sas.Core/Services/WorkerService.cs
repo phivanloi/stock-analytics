@@ -172,7 +172,10 @@ namespace Pl.Sas.Core.Services
                 await UpdateCapitalAndDividendAsync(stockTracking);//Xử lý vốn vả cổ thức
                 await UpdateFinancialIndicatorAsync(stockTracking);//xử lý chỉ số tài chính của công ty
                 await UpdateCorporateActionInfoAsync(stockTracking, int.Parse(schedule.Options["CorporateActionCrawlSize"]));//xử lý hoạt động của công ty
-
+                await UpdateStockPriceHistoryAsync(stockTracking, int.Parse(schedule.Options["StockPricesCrawlSize"]));
+                await UpdateFiinStockEvaluatesAsync(stockTracking);//xử lý đánh giá chứng khoán của fiin
+                await UpdateStockRecommendationsAsync(stockTracking);//xử lý báo cáo khuyến nghị chứng khoán
+                await UpdateVndStockScoreAsync(stockTracking);//Xử lý đánh giá chứng khoán của vnd
             }
             finally
             {
@@ -193,8 +196,120 @@ namespace Pl.Sas.Core.Services
         }
 
         #region Stock download
+        public virtual async Task<bool> UpdateVndStockScoreAsync(StockTracking stockTracking)
+        {
+            var vndStockScoreResponse = await _crawlData.DownloadVndStockScoringsAsync(stockTracking.Symbol) ?? throw new Exception("Can't stock score info.");
+            if (vndStockScoreResponse?.Data?.Length <= 0)
+            {
+                var vndStockScores = new List<VndStockScore>();
+                foreach (var item in vndStockScoreResponse.Data)
+                {
+                    var fiscalDate = DateTime.ParseExact(item.FiscalDate, "yyyy-MM-dd", null);
+                    vndStockScores.Add(new VndStockScore()
+                    {
+                        Symbol = stockTracking.Symbol,
+                        Type = item.Type,
+                        FiscalDate = fiscalDate,
+                        ModelCode = item.ModelCode,
+                        CriteriaCode = item.CriteriaCode,
+                        CriteriaType = item.CriteriaType,
+                        CriteriaName = item.CriteriaName,
+                        Point = item.Point,
+                        Locale = item.Locale
+                    });
+                }
+                return await _marketData.SaveVndStockScoresAsync(vndStockScores);
+            }
+            else
+            {
+                _logger.LogWarning("UpdateVndStockScoreAsync stock: {Symbol} parser item null.", stockTracking.Symbol);
+                return false;
+            }
+        }
 
-        public virtual async Task UpdateStockPriceHistoryAsync(StockTracking stockTracking, int size)
+        /// <summary>
+        /// Tải và xử lý đánh giá của các công ty chứng khoán
+        /// </summary>
+        /// <param name="stockTracking">Thông tin trạng thái kiểm tra download dữ liệu của cổ phiếu</param>
+        /// <returns>bool</returns>
+        /// <exception cref="Exception">Can't stock recommendation info</exception>
+        public virtual async Task<bool> UpdateStockRecommendationsAsync(StockTracking stockTracking)
+        {
+            var recommendations = await _crawlData.DownloadStockRecommendationsAsync(stockTracking.Symbol) ?? throw new Exception("Can't stock recommendation info.");
+            if (recommendations?.Data?.Length > 0)
+            {
+                var stockRecommendations = new List<StockRecommendation>();
+                foreach (var item in recommendations.Data)
+                {
+                    if (string.IsNullOrEmpty(item.ReportDate) || string.IsNullOrEmpty(item.Analyst))
+                    {
+                        continue;
+                    }
+                    var reportDate = DateTime.ParseExact(item.ReportDate, "yyyy-MM-dd", null);
+                    stockRecommendations.Add(new StockRecommendation()
+                    {
+                        Symbol = stockTracking.Symbol,
+                        Firm = item.Firm,
+                        ReportDate = reportDate,
+                        Analyst = item.Analyst,
+                        AvgTargetPrice = item.AvgTargetPrice,
+                        ReportPrice = item.ReportPrice,
+                        Source = item.Source,
+                        TargetPrice = item.TargetPrice,
+                        Type = item.Type
+                    });
+                }
+                return await _marketData.SaveStockRecommendationAsync(stockRecommendations);
+            }
+            else
+            {
+                _logger.LogWarning("UpdateStockRecommendationsAsync stock: {Symbol} parser item null.", stockTracking.Symbol);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Tải và xử lý dữ liệu đánh giá cổ phiếu của fiin
+        /// </summary>
+        /// <param name="stockTracking">Thông tin trạng thái kiểm tra download dữ liệu của cổ phiếu</param>
+        /// <returns></returns>
+        /// <exception cref="Exception">Can't fiinStock evaluate info.</exception>
+        public virtual async Task<bool> UpdateFiinStockEvaluatesAsync(StockTracking stockTracking)
+        {
+            var fiinStockEvaluate = await _crawlData.DownloadFiinStockEvaluatesAsync(stockTracking.Symbol) ?? throw new Exception("Can't fiinStock evaluate info.");
+            if (fiinStockEvaluate?.Items?.Length <= 0 || fiinStockEvaluate?.Items[0] is null)
+            {
+                _logger.LogWarning("UpdateFiinStockEvaluateAsync stock: {Symbol} parser item null.", stockTracking.Symbol);
+                return false;
+            }
+
+            var fiinEvaluate = new FiinEvaluated()
+            {
+                Symbol = stockTracking.Symbol,
+                IcbRank = fiinStockEvaluate.Items[0].IcbRank ?? -1,
+                IcbTotalRanked = fiinStockEvaluate.Items[0].IcbTotalRanked ?? -1,
+                IndexRank = fiinStockEvaluate.Items[0].IndexRank ?? -1,
+                IndexTotalRanked = fiinStockEvaluate.Items[0].IndexTotalRanked ?? -1,
+                IcbCode = fiinStockEvaluate.Items[0].IcbCode,
+                ComGroupCode = fiinStockEvaluate.Items[0].ComGroupCode,
+                Growth = fiinStockEvaluate.Items[0].Growth,
+                Value = fiinStockEvaluate.Items[0].Value,
+                Momentum = fiinStockEvaluate.Items[0].Momentum,
+                Vgm = fiinStockEvaluate.Items[0].Vgm,
+                ControlStatusCode = fiinStockEvaluate.Items[0].ControlStatusCode ?? -1,
+                ControlStatusName = fiinStockEvaluate.Items[0].ControlStatusName
+            };
+            return await _marketData.SaveFiinEvaluateAsync(fiinEvaluate);
+        }
+
+        /// <summary>
+        /// Xử ý sử giá cổ phiếu
+        /// </summary>
+        /// <param name="stockTracking">Thông tin trạng thái kiểm tra download dữ liệu của cổ phiếu</param>
+        /// <param name="size">số bản ghi cần update</param>
+        /// <returns>bool</returns>
+        /// <exception cref="Exception">Can't stock prices info.</exception>
+        public virtual async Task<bool> UpdateStockPriceHistoryAsync(StockTracking stockTracking, int size)
         {
             stockTracking.DownloadStatus = "Tải và xử lý dữ liệu lịch sử giá chứng khoán.";
             stockTracking.DownloadDate = DateTime.Now;
@@ -203,42 +318,37 @@ namespace Pl.Sas.Core.Services
             if (stockPriceHistory.Data.StockPrice.DataList.Length <= 0)
             {
                 _logger.LogWarning("UpdateStockPriceHistoryAsync null histories for: {Symbol}.", stockTracking.Symbol);
-                return;
+                return false;
             }
 
             var insertList = new List<StockPrice>();
             var updateList = new List<StockPrice>();
             if (size <= 10)
             {
-                var tradingDate = ParseDateType(stockPriceSsi.TradingDate);
-                if (tradingDate is null)
+                foreach (var stockPriceSsi in stockPriceHistory.Data.StockPrice.DataList)
                 {
-                    return;
-                }
-                var datePath = Utilities.GetTradingDatePath(tradingDate);
-                var updateItem = await _stockPriceData.GetByDayAsync(schedule.DataKey, datePath);
-                if (updateItem != null)
-                {
-                    StockPriceBindValue(ref updateItem, stockPriceSsi);
-                    await _stockPriceData.UpdateAsync(updateItem);
-                }
-                else
-                {
-                    var addItem = new StockPrice()
+                    var tradingDate = ParseDateType(stockPriceSsi.TradingDate);
+                    if (tradingDate is null)
                     {
-                        Symbol = schedule.DataKey,
-                        TradingDate = tradingDate.Value,
-                        DatePath = datePath
-                    };
-                    StockPriceBindValue(ref addItem, stockPriceSsi);
-                    await _stockPriceData.InsertAsync(addItem);
+                        continue;
+                    }
+
+                    var updateItem = await _marketData.GeStockPriceAsync(stockTracking.Symbol, tradingDate.Value.Date);
+                    if (updateItem != null)
+                    {
+                        StockPriceBindValue(ref updateItem, stockPriceSsi);
+                        updateList.Add(updateItem);
+                    }
+                    else
+                    {
+                        updateItem = new StockPrice(stockTracking.Symbol, tradingDate.Value);
+                        StockPriceBindValue(ref updateItem, stockPriceSsi);
+                        insertList.Add(updateItem);
+                    }
                 }
-                await UpdateStockPriceFromApiAsync(schedule, stockPriceHistory.Data.StockPrice.DataList[0]);
             }
             else
             {
-                var datePathHashSet = await _stockPriceData.GetAllDatePathBySymbol(schedule.DataKey);
-                var insertStockPrices = new List<StockPrice>();
                 foreach (var stockPrice in stockPriceHistory.Data.StockPrice.DataList)
                 {
                     var tradingDate = ParseDateType(stockPrice.TradingDate);
@@ -247,26 +357,12 @@ namespace Pl.Sas.Core.Services
                         continue;
                     }
 
-                    var datePath = Utilities.GetTradingDatePath(tradingDate);
-                    if (!datePathHashSet.Contains(datePath))
-                    {
-                        var addItem = new StockPrice()
-                        {
-                            Symbol = schedule.DataKey,
-                            TradingDate = tradingDate.Value,
-                            DatePath = datePath
-                        };
-                        StockPriceBindValue(ref addItem, stockPrice);
-                        insertStockPrices.Add(addItem);
-                    }
+                    var addItem = new StockPrice(stockTracking.Symbol, tradingDate.Value);
+                    StockPriceBindValue(ref addItem, stockPrice);
+                    insertList.Add(addItem);
                 }
-                await _operationRetry.Retry(() => _stockPriceData.BulkInserAsync(insertStockPrices), 10, TimeSpan.FromMilliseconds(100));
-                await UpdateIsNextTimeUpdate(schedule);
             }
-
-            var updateMemoryMessage = new QueueMessage() { Id = "StockPrices" };
-            updateMemoryMessage.KeyValues.Add("Symbol", schedule.DataKey);
-            _processorMessageQueueService.BroadcastUpdateMemoryTask(updateMemoryMessage);
+            return await _marketData.SaveStockPriceAsync(insertList, updateList);
         }
 
         /// <summary>
@@ -281,68 +377,77 @@ namespace Pl.Sas.Core.Services
             stockTracking.DownloadDate = DateTime.Now;
 
             var ssiFinancialIndicators = await _crawlData.DownloadFinancialIndicatorAsync(stockTracking.Symbol) ?? throw new Exception("Can't financial indicator info.");
-            var insertList = new List<FinancialIndicator>();
-            var updateList = new List<FinancialIndicator>();
-            var listDbCheck = await _marketData.GetFinancialIndicatorsAsync(stockTracking.Symbol);
-            foreach (var ssiFinancialIndicator in ssiFinancialIndicators.Data.FinancialIndicator.DataList)
+            if (ssiFinancialIndicators?.Data?.FinancialIndicator?.DataList?.Length > 0)
             {
-                var reportYear = int.Parse(ssiFinancialIndicator.YearReport);
-                var lengthReport = int.Parse(ssiFinancialIndicator.LengthReport);
-                var updateItem = listDbCheck.FirstOrDefault(q => q.YearReport == reportYear && q.LengthReport == lengthReport);
-                if (updateItem is not null)
+                var insertList = new List<FinancialIndicator>();
+                var updateList = new List<FinancialIndicator>();
+                var listDbCheck = await _marketData.GetFinancialIndicatorsAsync(stockTracking.Symbol);
+                foreach (var ssiFinancialIndicator in ssiFinancialIndicators.Data.FinancialIndicator.DataList)
                 {
-                    updateItem.YearReport = reportYear;
-                    updateItem.Symbol = stockTracking.Symbol;
-                    updateItem.LengthReport = lengthReport;
-                    updateItem.Revenue = float.Parse(ssiFinancialIndicator.Revenue);
-                    updateItem.Profit = float.Parse(ssiFinancialIndicator.Profit);
-                    updateItem.Eps = float.Parse(ssiFinancialIndicator.Eps);
-                    updateItem.DilutedEps = float.Parse(ssiFinancialIndicator.DilutedEps);
-                    updateItem.Pe = float.Parse(ssiFinancialIndicator.Pe);
-                    updateItem.DilutedPe = float.Parse(ssiFinancialIndicator.DilutedPe);
-                    updateItem.Roe = float.Parse(ssiFinancialIndicator.Roe);
-                    updateItem.Roa = float.Parse(ssiFinancialIndicator.Roa);
-                    updateItem.Roic = float.Parse(ssiFinancialIndicator.Roic);
-                    updateItem.GrossProfitMargin = float.Parse(ssiFinancialIndicator.GrossProfitMargin);
-                    updateItem.NetProfitMargin = float.Parse(ssiFinancialIndicator.NetProfitMargin);
-                    updateItem.DebtAsset = float.Parse(ssiFinancialIndicator.DebtAsset);
-                    updateItem.QuickRatio = float.Parse(ssiFinancialIndicator.QuickRatio);
-                    updateItem.CurrentRatio = float.Parse(ssiFinancialIndicator.CurrentRatio);
-                    updateItem.Pb = float.Parse(ssiFinancialIndicator.Pb);
-                    updateList.Add(updateItem);
-                }
-                else
-                {
-                    insertList.Add(new()
+                    var reportYear = int.Parse(ssiFinancialIndicator.YearReport);
+                    var lengthReport = int.Parse(ssiFinancialIndicator.LengthReport);
+                    var updateItem = listDbCheck.FirstOrDefault(q => q.YearReport == reportYear && q.LengthReport == lengthReport);
+                    if (updateItem is not null)
                     {
-                        YearReport = reportYear,
-                        Symbol = stockTracking.Symbol,
-                        LengthReport = lengthReport,
-                        Revenue = float.Parse(ssiFinancialIndicator.Revenue),
-                        Profit = float.Parse(ssiFinancialIndicator.Profit),
-                        Eps = float.Parse(ssiFinancialIndicator.Eps),
-                        DilutedEps = float.Parse(ssiFinancialIndicator.DilutedEps),
-                        Pe = float.Parse(ssiFinancialIndicator.Pe),
-                        DilutedPe = float.Parse(ssiFinancialIndicator.DilutedPe),
-                        Roe = float.Parse(ssiFinancialIndicator.Roe),
-                        Roa = float.Parse(ssiFinancialIndicator.Roa),
-                        Roic = float.Parse(ssiFinancialIndicator.Roic),
-                        GrossProfitMargin = float.Parse(ssiFinancialIndicator.GrossProfitMargin),
-                        NetProfitMargin = float.Parse(ssiFinancialIndicator.NetProfitMargin),
-                        DebtAsset = float.Parse(ssiFinancialIndicator.DebtAsset),
-                        QuickRatio = float.Parse(ssiFinancialIndicator.QuickRatio),
-                        CurrentRatio = float.Parse(ssiFinancialIndicator.CurrentRatio),
-                        Pb = float.Parse(ssiFinancialIndicator.Pb)
-                    });
+                        updateItem.YearReport = reportYear;
+                        updateItem.Symbol = stockTracking.Symbol;
+                        updateItem.LengthReport = lengthReport;
+                        updateItem.Revenue = float.Parse(ssiFinancialIndicator.Revenue);
+                        updateItem.Profit = float.Parse(ssiFinancialIndicator.Profit);
+                        updateItem.Eps = float.Parse(ssiFinancialIndicator.Eps);
+                        updateItem.DilutedEps = float.Parse(ssiFinancialIndicator.DilutedEps);
+                        updateItem.Pe = float.Parse(ssiFinancialIndicator.Pe);
+                        updateItem.DilutedPe = float.Parse(ssiFinancialIndicator.DilutedPe);
+                        updateItem.Roe = float.Parse(ssiFinancialIndicator.Roe);
+                        updateItem.Roa = float.Parse(ssiFinancialIndicator.Roa);
+                        updateItem.Roic = float.Parse(ssiFinancialIndicator.Roic);
+                        updateItem.GrossProfitMargin = float.Parse(ssiFinancialIndicator.GrossProfitMargin);
+                        updateItem.NetProfitMargin = float.Parse(ssiFinancialIndicator.NetProfitMargin);
+                        updateItem.DebtAsset = float.Parse(ssiFinancialIndicator.DebtAsset);
+                        updateItem.QuickRatio = float.Parse(ssiFinancialIndicator.QuickRatio);
+                        updateItem.CurrentRatio = float.Parse(ssiFinancialIndicator.CurrentRatio);
+                        updateItem.Pb = float.Parse(ssiFinancialIndicator.Pb);
+                        updateList.Add(updateItem);
+                    }
+                    else
+                    {
+                        insertList.Add(new()
+                        {
+                            YearReport = reportYear,
+                            Symbol = stockTracking.Symbol,
+                            LengthReport = lengthReport,
+                            Revenue = float.Parse(ssiFinancialIndicator.Revenue),
+                            Profit = float.Parse(ssiFinancialIndicator.Profit),
+                            Eps = float.Parse(ssiFinancialIndicator.Eps),
+                            DilutedEps = float.Parse(ssiFinancialIndicator.DilutedEps),
+                            Pe = float.Parse(ssiFinancialIndicator.Pe),
+                            DilutedPe = float.Parse(ssiFinancialIndicator.DilutedPe),
+                            Roe = float.Parse(ssiFinancialIndicator.Roe),
+                            Roa = float.Parse(ssiFinancialIndicator.Roa),
+                            Roic = float.Parse(ssiFinancialIndicator.Roic),
+                            GrossProfitMargin = float.Parse(ssiFinancialIndicator.GrossProfitMargin),
+                            NetProfitMargin = float.Parse(ssiFinancialIndicator.NetProfitMargin),
+                            DebtAsset = float.Parse(ssiFinancialIndicator.DebtAsset),
+                            QuickRatio = float.Parse(ssiFinancialIndicator.QuickRatio),
+                            CurrentRatio = float.Parse(ssiFinancialIndicator.CurrentRatio),
+                            Pb = float.Parse(ssiFinancialIndicator.Pb)
+                        });
+                    }
                 }
+                return await _marketData.SaveFinancialIndicatorAsync(insertList, updateList);
             }
-            return await _marketData.SaveFinancialIndicatorAsync(insertList, updateList);
+            else
+            {
+                _logger.LogWarning("UpdateFinancialIndicatorAsync => ssiFinancialIndicators null info for code: {Symbol}", stockTracking.Symbol);
+                return false;
+            }
         }
 
         /// <summary>
         /// Xử lý thông tin hoạt động của doanh nghiệp
         /// </summary>
         /// <param name="stockTracking">Thông tin trạng thái kiểm tra download dữ liệu của cổ phiếu</param>
+        /// <param name="size">số bản ghi cần update</param>
         /// <returns>bool</returns>
         /// <exception cref="Exception">Can't corporate action info.</exception>
         public virtual async Task<bool> UpdateCorporateActionInfoAsync(StockTracking stockTracking, int size)
@@ -351,38 +456,46 @@ namespace Pl.Sas.Core.Services
             stockTracking.DownloadDate = DateTime.Now;
 
             var ssiCorporateAction = await _crawlData.DownloadCorporateActionAsync(stockTracking.Symbol, size) ?? throw new Exception("Can't corporate action info.");
-            var insertList = new List<CorporateAction>();
-            var corporateActions = await _marketData.GetCorporateActionsAsync(stockTracking.Symbol);
-            foreach (var item in ssiCorporateAction.Data.CorporateActions.DataList)
+            if (ssiCorporateAction?.Data?.CorporateActions?.DataList?.Length > 0)
             {
-                if (string.IsNullOrEmpty(item.ExrightDate))
+                var insertList = new List<CorporateAction>();
+                var corporateActions = await _marketData.GetCorporateActionsAsync(stockTracking.Symbol);
+                foreach (var item in ssiCorporateAction.Data.CorporateActions.DataList)
                 {
-                    continue;
+                    if (string.IsNullOrEmpty(item.ExrightDate))
+                    {
+                        continue;
+                    }
+                    var newLeadership = new CorporateAction()
+                    {
+                        Symbol = stockTracking.Symbol,
+                        EventName = Utilities.TruncateString(item.EventName, 256),
+                        ExrightDate = ParseDateType(item.ExrightDate) ?? DateTime.Now,
+                        RecordDate = ParseDateType(item.RecordDate) ?? DateTime.Now,
+                        IssueDate = ParseDateType(item.IssueDate) ?? DateTime.Now,
+                        EventTitle = Utilities.TruncateString(item.EventTitle, 256),
+                        PublicDate = ParseDateType(item.PublicDate) ?? DateTime.Now,
+                        Exchange = item.Exchange,
+                        EventListCode = Utilities.TruncateString(item.EventListCode, 128),
+                        Value = float.Parse(item.Value),
+                        Ratio = float.Parse(item.Ratio),
+                        Description = _zipHelper.ZipByte(Encoding.UTF8.GetBytes(item.EventDescription)),
+                        EventCode = item.EventCode
+                    };
+                    if (!corporateActions.Any(q => q.Symbol == newLeadership.Symbol
+                    && q.ExrightDate == newLeadership.ExrightDate
+                    && q.EventCode == newLeadership.EventCode))
+                    {
+                        insertList.Add(newLeadership);
+                    }
                 }
-                var newLeadership = new CorporateAction()
-                {
-                    Symbol = stockTracking.Symbol,
-                    EventName = Utilities.TruncateString(item.EventName, 256),
-                    ExrightDate = ParseDateType(item.ExrightDate) ?? DateTime.Now,
-                    RecordDate = ParseDateType(item.RecordDate) ?? DateTime.Now,
-                    IssueDate = ParseDateType(item.IssueDate) ?? DateTime.Now,
-                    EventTitle = Utilities.TruncateString(item.EventTitle, 256),
-                    PublicDate = ParseDateType(item.PublicDate) ?? DateTime.Now,
-                    Exchange = item.Exchange,
-                    EventListCode = Utilities.TruncateString(item.EventListCode, 128),
-                    Value = float.Parse(item.Value),
-                    Ratio = float.Parse(item.Ratio),
-                    Description = _zipHelper.ZipByte(Encoding.UTF8.GetBytes(item.EventDescription)),
-                    EventCode = item.EventCode
-                };
-                if (!corporateActions.Any(q => q.Symbol == newLeadership.Symbol
-                && q.ExrightDate == newLeadership.ExrightDate
-                && q.EventCode == newLeadership.EventCode))
-                {
-                    insertList.Add(newLeadership);
-                }
+                return await _marketData.InsertCorporateActionAsync(insertList);
             }
-            return await _marketData.InsertCorporateActionAsync(insertList);
+            else
+            {
+                _logger.LogWarning("ImportCorporateActionInfoAsync => SsiCorporateAction null info for code: {Symbol}", stockTracking.Symbol);
+                return false;
+            }
         }
 
         /// <summary>
@@ -397,28 +510,36 @@ namespace Pl.Sas.Core.Services
             stockTracking.DownloadDate = DateTime.Now;
 
             var ssiLeadership = await _crawlData.DownloadLeadershipAsync(stockTracking.Symbol) ?? throw new Exception("Can't download leadership info.");
-
-            var insertList = new List<Leadership>();
-            var dbLeaderships = new HashSet<Leadership>(await _marketData.GetLeadershipsAsync(stockTracking.Symbol), new LeadershipComparer());
-            foreach (var item in ssiLeadership.Data.Leaderships.Datas)
+            if (ssiLeadership?.Data?.Leaderships?.Datas?.Length > 0)
             {
-                var newLeadership = new Leadership()
+                var insertList = new List<Leadership>();
+                var dbLeaderships = new HashSet<Leadership>(await _marketData.GetLeadershipsAsync(stockTracking.Symbol), new LeadershipComparer());
+
+                foreach (var item in ssiLeadership.Data.Leaderships.Datas)
                 {
-                    Symbol = stockTracking.Symbol,
-                    FullName = item.FullName,
-                    PositionName = item.PositionName,
-                    PositionLevel = item.PositionLevel
-                };
-                if (dbLeaderships.Contains(newLeadership))
-                {
-                    dbLeaderships.Remove(newLeadership);
+                    var newLeadership = new Leadership()
+                    {
+                        Symbol = stockTracking.Symbol,
+                        FullName = item.FullName,
+                        PositionName = item.PositionName,
+                        PositionLevel = item.PositionLevel
+                    };
+                    if (dbLeaderships.Contains(newLeadership))
+                    {
+                        dbLeaderships.Remove(newLeadership);
+                    }
+                    else
+                    {
+                        insertList.Add(newLeadership);
+                    }
                 }
-                else
-                {
-                    insertList.Add(newLeadership);
-                }
+                return await _marketData.SaveLeadershipsAsync(insertList, dbLeaderships.ToList());
             }
-            return await _marketData.SaveLeadershipsAsync(insertList, dbLeaderships.ToList());
+            else
+            {
+                _logger.LogWarning("UpdateLeadershipInfoAsync => ssiLeadership null info for code: {Symbol}", stockTracking.Symbol);
+                return false;
+            }
         }
 
         /// <summary>
@@ -433,6 +554,12 @@ namespace Pl.Sas.Core.Services
             stockTracking.DownloadDate = DateTime.Now;
 
             var ssiCompanyInfo = await _crawlData.DownloadCompanyInfoAsync(stockTracking.Symbol) ?? throw new Exception("Can't download company info.");
+            if (ssiCompanyInfo?.Data?.CompanyProfile == null || ssiCompanyInfo?.Data?.CompanyStatistics == null)
+            {
+                _logger.LogWarning("UpdateCompanyInfoAsync => ssiCompanyInfo null info for code: {Symbol}", stockTracking.Symbol);
+                return false;
+            }
+
             if (!string.IsNullOrWhiteSpace(ssiCompanyInfo.Data.CompanyProfile.SubsectorCode) && ssiCompanyInfo.Data.CompanyProfile.SubsectorCode != "0")
             {
                 var saveIndustry = new Industry(ssiCompanyInfo.Data.CompanyProfile.SubsectorCode, ssiCompanyInfo.Data.CompanyProfile.Subsector);
@@ -495,6 +622,12 @@ namespace Pl.Sas.Core.Services
             stockTracking.DownloadDate = DateTime.Now;
 
             var ssiCapitalAndDividend = await _crawlData.DownloadCapitalAndDividendAsync(stockTracking.Symbol) ?? throw new Exception("Can't download capital, dividend and asset info.");
+            if ((ssiCapitalAndDividend?.Data?.CapAndDividend?.TabcapitalDividendResponse?.DataGroup?.AssetlistList?.Length ?? 0) <= 0)
+            {
+                _logger.LogWarning("UpdateCapitalAndDividendAsync => ssiCapitalAndDividend null info for code: {Symbol}", stockTracking.Symbol);
+                return false;
+            }
+
             var insertList = new List<FinancialGrowth>();
             var updateList = new List<FinancialGrowth>();
             var listDbCheck = await _marketData.GetFinancialGrowthsAsync(stockTracking.Symbol);
@@ -560,6 +693,36 @@ namespace Pl.Sas.Core.Services
 
             return await _marketData.SaveFinancialGrowthAsync(insertList, updateList);
         }
+
+        private static void StockPriceBindValue(ref StockPrice stockPrice, Entities.CrawlObjects.StockPriceSsi stockPriceDl)
+        {
+            stockPrice.PriceChange = float.Parse(stockPriceDl.PriceChange);
+            stockPrice.PerPriceChange = float.Parse(stockPriceDl.PerPriceChange);
+            stockPrice.CeilingPrice = float.Parse(stockPriceDl.CeilingPrice);
+            stockPrice.FloorPrice = float.Parse(stockPriceDl.FloorPrice);
+            stockPrice.RefPrice = float.Parse(stockPriceDl.RefPrice);
+            stockPrice.OpenPrice = float.Parse(stockPriceDl.OpenPrice);
+            stockPrice.HighestPrice = float.Parse(stockPriceDl.HighestPrice);
+            stockPrice.LowestPrice = float.Parse(stockPriceDl.LowestPrice);
+            stockPrice.ClosePrice = float.Parse(stockPriceDl.ClosePrice);
+            stockPrice.AveragePrice = float.Parse(stockPriceDl.AveragePrice);
+            stockPrice.ClosePriceAdjusted = float.Parse(stockPriceDl.ClosePriceAdjusted);
+            stockPrice.TotalMatchVol = float.Parse(stockPriceDl.TotalMatchVol);
+            stockPrice.TotalMatchVal = float.Parse(stockPriceDl.TotalMatchVal);
+            stockPrice.TotalDealVal = float.Parse(stockPriceDl.TotalDealVal);
+            stockPrice.TotalDealVol = float.Parse(stockPriceDl.TotalDealVol);
+            stockPrice.ForeignBuyVolTotal = float.Parse(stockPriceDl.ForeignBuyVolTotal);
+            stockPrice.ForeignCurrentRoom = float.Parse(stockPriceDl.ForeignCurrentRoom);
+            stockPrice.ForeignSellVolTotal = float.Parse(stockPriceDl.ForeignSellVolTotal);
+            stockPrice.ForeignBuyValTotal = float.Parse(stockPriceDl.ForeignBuyValTotal);
+            stockPrice.ForeignSellValTotal = float.Parse(stockPriceDl.ForeignSellValTotal);
+            stockPrice.TotalBuyTrade = float.Parse(stockPriceDl.TotalBuyTrade);
+            stockPrice.TotalBuyTradeVol = float.Parse(stockPriceDl.TotalBuyTradeVol);
+            stockPrice.TotalSellTrade = float.Parse(stockPriceDl.TotalSellTrade);
+            stockPrice.TotalSellTradeVol = float.Parse(stockPriceDl.TotalSellTradeVol);
+            stockPrice.NetBuySellVol = float.Parse(stockPriceDl.NetBuySellVol);
+            stockPrice.NetBuySellVal = float.Parse(stockPriceDl.NetBuySellVal);
+        }
         #endregion
 
         /// <summary>
@@ -599,5 +762,7 @@ namespace Pl.Sas.Core.Services
                 return null;
             }
         }
+
+
     }
 }

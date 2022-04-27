@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -14,23 +15,22 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
                 {
                     Id = table.Column<string>(type: "nvarchar(22)", maxLength: 22, nullable: false),
                     Symbol = table.Column<string>(type: "nvarchar(16)", maxLength: 16, nullable: false),
-                    SubsectorCode = table.Column<string>(type: "nvarchar(22)", maxLength: 22, nullable: true),
+                    SubsectorCode = table.Column<string>(type: "nvarchar(22)", maxLength: 22, nullable: false),
                     IndustryName = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: true),
                     Supersector = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: true),
                     Sector = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: true),
-                    Subsector = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: true),
+                    Subsector = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
                     FoundingDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     ListingDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CharterCapital = table.Column<float>(type: "real", nullable: false),
                     NumberOfEmployee = table.Column<int>(type: "int", nullable: false),
                     BankNumberOfBranch = table.Column<int>(type: "int", nullable: false),
-                    CompanyProfileZip = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
+                    CompanyProfile = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
                     Exchange = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     FirstPrice = table.Column<float>(type: "real", nullable: false),
                     IssueShare = table.Column<float>(type: "real", nullable: false),
                     ListedValue = table.Column<float>(type: "real", nullable: false),
                     CompanyName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    TtmType = table.Column<int>(type: "int", nullable: false),
                     MarketCap = table.Column<float>(type: "real", nullable: false),
                     SharesOutStanding = table.Column<float>(type: "real", nullable: false),
                     Bv = table.Column<float>(type: "real", nullable: false),
@@ -71,7 +71,7 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
                     EventListCode = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: true),
                     Value = table.Column<float>(type: "real", nullable: false),
                     Ratio = table.Column<float>(type: "real", nullable: false),
-                    ZipDescription = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
+                    Description = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
                     EventCode = table.Column<string>(type: "nvarchar(16)", maxLength: 16, nullable: false),
                     CreatedTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedTime = table.Column<DateTime>(type: "datetime2", nullable: false)
@@ -181,8 +181,6 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
                     FullName = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
                     PositionName = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
                     PositionLevel = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: true),
-                    ManagementRank = table.Column<int>(type: "int", nullable: false),
-                    Activated = table.Column<bool>(type: "bit", nullable: false),
                     CreatedTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedTime = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
@@ -218,7 +216,6 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
                     Id = table.Column<string>(type: "nvarchar(22)", maxLength: 22, nullable: false),
                     Symbol = table.Column<string>(type: "nvarchar(16)", maxLength: 16, nullable: false),
                     TradingDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    DatePath = table.Column<string>(type: "nvarchar(8)", maxLength: 8, nullable: false),
                     PriceChange = table.Column<float>(type: "real", nullable: false),
                     PerPriceChange = table.Column<float>(type: "real", nullable: false),
                     CeilingPrice = table.Column<float>(type: "real", nullable: false),
@@ -361,11 +358,6 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
                 column: "ActiveTime");
 
             migrationBuilder.CreateIndex(
-                name: "IX_StockPrices_DatePath",
-                table: "StockPrices",
-                column: "DatePath");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_StockPrices_Symbol",
                 table: "StockPrices",
                 column: "Symbol");
@@ -374,11 +366,6 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
                 name: "IX_StockPrices_Symbol_TradingDate",
                 table: "StockPrices",
                 columns: new[] { "Symbol", "TradingDate" });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_StockPrices_Symbol_TradingDate_DatePath",
-                table: "StockPrices",
-                columns: new[] { "Symbol", "TradingDate", "DatePath" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_StockPrices_TradingDate",

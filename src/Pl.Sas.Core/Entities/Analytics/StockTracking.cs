@@ -5,6 +5,8 @@
     /// </summary>
     public class StockTracking : BaseEntity
     {
+        public StockTracking() { }
+
         public StockTracking(string symbol)
         {
             Symbol = symbol;

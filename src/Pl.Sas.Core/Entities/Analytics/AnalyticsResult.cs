@@ -2,6 +2,8 @@
 {
     public class AnalyticsResult : BaseEntity
     {
+        public AnalyticsResult() { }
+
         public AnalyticsResult(string symbol, DateTime lastTradingDate)
         {
             Symbol = symbol;

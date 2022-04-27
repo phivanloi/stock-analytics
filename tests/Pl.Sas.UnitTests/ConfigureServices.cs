@@ -6,6 +6,7 @@ using Pl.Sas.Core;
 using Pl.Sas.Core.Interfaces;
 using Pl.Sas.Core.Services;
 using Pl.Sas.Infrastructure;
+using Pl.Sas.Infrastructure.Analytics;
 using Pl.Sas.Infrastructure.Caching;
 using Pl.Sas.Infrastructure.Crawl;
 using Pl.Sas.Infrastructure.Data;
@@ -63,13 +64,23 @@ namespace Pl.Sas.UnitTests
 
             services.AddDbContext<MarketDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("MarketConnection"),
-            sqlServerOptionsAction: sqlOptions =>
-            {
-                sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
-            }));
+                sqlServerOptionsAction: sqlOptions =>
+                {
+                    sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+                })
+            );
+
+            services.AddDbContext<AnalyticsDbContext>(options =>
+                options.UseSqlServer(configuration.GetConnectionString("AnalyticsConnection"),
+                sqlServerOptionsAction: sqlOptions =>
+                {
+                    sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+                })
+            );
 
             services.AddSingleton<ICrawlData, CrawlData>();
             services.AddScoped<IMarketData, MarketData>();
+            services.AddScoped<IAnalyticsData, AnalyticsData>();
             services.AddScoped<WorkerService>();
             return services;
         }

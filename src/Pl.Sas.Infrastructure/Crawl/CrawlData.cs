@@ -103,7 +103,7 @@ namespace Pl.Sas.Infrastructure.Crawl
             return await _httpClient.PostJsonAsync<SsiCorporateAction>(requestUrl, new StringContent(JsonSerializer.Serialize(corporateActionQuery), Encoding.UTF8, "application/json"));
         }
 
-        public virtual async Task<FiintradingEvaluate?> DownloadFiinStockEvaluateAsync(string symbol)
+        public virtual async Task<FiintradingEvaluate?> DownloadFiinStockEvaluatesAsync(string symbol)
         {
             var requestUrl = $"https://fundamental.fiintrade.vn/Snapshot/GetCompanyScore?language=vi&OrganCode={symbol}";
             _httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer");

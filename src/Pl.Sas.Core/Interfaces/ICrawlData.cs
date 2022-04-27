@@ -44,7 +44,7 @@ namespace Pl.Sas.Core.Interfaces
         /// </summary>
         /// <param name="symbol">mã chứng khoán</param>
         /// <returns>FiintradingEvaluate</returns>
-        Task<FiintradingEvaluate?> DownloadFiinStockEvaluateAsync(string symbol);
+        Task<FiintradingEvaluate?> DownloadFiinStockEvaluatesAsync(string symbol);
 
         /// <summary>
         /// Tải sự kiện của công ty
