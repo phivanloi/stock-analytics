@@ -36,7 +36,7 @@ namespace Pl.Sas.Infrastructure.Crawl
             return await httpHelper.PostJsonAsync<SsiCompanyInfo>(requestUrl, new StringContent(JsonSerializer.Serialize(mainInfoQuery), Encoding.UTF8, "application/json"));
         }
 
-        public virtual async Task<SsiLeadership?> DownloadLeadershipFromSsiAsync(string symbol)
+        public virtual async Task<SsiLeadership?> DownloadLeadershipAsync(string symbol)
         {
             var requestUrl = "https://finfo-iboard.ssi.com.vn/graphql";
             var leaderShipsQuery = new
@@ -51,6 +51,21 @@ namespace Pl.Sas.Infrastructure.Crawl
                 query = "query leaderships($symbol: String!, $size: Int, $offset: Int, $order: String, $orderBy: String) { leaderships(symbol: $symbol, size: $size, offset: $offset, order: $order, orderBy: $orderBy) { datas { symbol fullname positionname positionlevel __typename } __typename }}"
             };
             return await httpHelper.PostJsonAsync<SsiLeadership>(requestUrl, new StringContent(JsonSerializer.Serialize(leaderShipsQuery), Encoding.UTF8, "application/json"));
+        }
+
+        public virtual async Task<SsiCapitalAndDividend?> DownloadCapitalAndDividendAsync(string symbol)
+        {
+            var requestUrl = "https://finfo-iboard.ssi.com.vn/graphql";
+            var capitalAndDividendQuery = new
+            {
+                operationName = "capAndDividend",
+                variables = new
+                {
+                    symbol
+                },
+                query = "query capAndDividend($symbol: String!) {capAndDividend(symbol: $symbol)}"
+            };
+            return await httpHelper.PostJsonAsync<SsiCapitalAndDividend>(requestUrl, new StringContent(JsonSerializer.Serialize(capitalAndDividendQuery), Encoding.UTF8, "application/json"));
         }
     }
 }

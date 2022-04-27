@@ -22,6 +22,13 @@ namespace Pl.Sas.Core.Interfaces
         /// </summary>
         /// <param name="symbol">Mã chứng khoán</param>
         /// <returns>SsiLeadership?</returns>
-        Task<SsiLeadership?> DownloadLeadershipFromSsiAsync(string symbol);
+        Task<SsiLeadership?> DownloadLeadershipAsync(string symbol);
+
+        /// <summary>
+        /// Lấy thông tin vốn và cổ tức
+        /// </summary>
+        /// <param name="symbol">Mã chứng khoán</param>
+        /// <returns>SsiCapitalAndDividend?</returns>
+        Task<SsiCapitalAndDividend?> DownloadCapitalAndDividendAsync(string symbol);
     }
 }

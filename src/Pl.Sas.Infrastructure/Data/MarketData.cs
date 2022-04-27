@@ -43,7 +43,6 @@ namespace Pl.Sas.Infrastructure.Data
                 foreach (var item in updateItems)
                 {
                     item.UpdatedTime = DateTime.Now;
-                    _marketDbContext.Stocks.Attach(item);
                 }
             }
             return await _marketDbContext.SaveChangesAsync() > 0;
@@ -51,7 +50,7 @@ namespace Pl.Sas.Infrastructure.Data
 
         public virtual async Task<Dictionary<string, Stock>> GetStockDictionaryAsync()
         {
-            return await _marketDbContext.Stocks.AsNoTracking().ToDictionaryAsync(s => s.Symbol, s => s);
+            return await _marketDbContext.Stocks.ToDictionaryAsync(s => s.Symbol, s => s);
         }
 
         public virtual async Task<Schedule?> GetScheduleByIdAsync(string id)
@@ -150,6 +149,27 @@ namespace Pl.Sas.Infrastructure.Data
             if (deleteItems.Count > 0)
             {
                 _marketDbContext.Leaderships.RemoveRange(deleteItems);
+            }
+            return await _marketDbContext.SaveChangesAsync() > 0;
+        }
+
+        public virtual async Task<List<FinancialGrowth>> GetFinancialGrowthsAsync(string symbol)
+        {
+            return await _marketDbContext.FinancialGrowths.Where(q => q.Symbol == symbol).ToListAsync();
+        }
+
+        public virtual async Task<bool> SaveFinancialGrowthAsync(List<FinancialGrowth> insertItems, List<FinancialGrowth> updateItems)
+        {
+            if (insertItems.Count > 0)
+            {
+                _marketDbContext.FinancialGrowths.AddRange(insertItems);
+            }
+            if (updateItems.Count > 0)
+            {
+                foreach (var item in updateItems)
+                {
+                    item.UpdatedTime = DateTime.Now;
+                }
             }
             return await _marketDbContext.SaveChangesAsync() > 0;
         }

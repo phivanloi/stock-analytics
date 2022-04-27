@@ -39,32 +39,25 @@ namespace Pl.Sas.UnitTests
             var hostedService = serviceProvider.GetService<IHostedService>() as LoggingQueuedHostedService ?? throw new Exception("Can't get LoggingQueuedHostedService");
             await hostedService.StartAsync(CancellationToken.None);
 
-            var ssiCompanyInfo = await crawlData.DownloadCompanyInfoAsync("TVC");
-            Assert.True(ssiCompanyInfo != null);
+            var companyInfo = await crawlData.DownloadCompanyInfoAsync("TVC");
+            Assert.True(companyInfo != null);
 
             await hostedService.StopAsync(CancellationToken.None);
         }
 
         [Fact]
-        public async Task GetApiCompanyInfoTest()
+        public async Task DownloadCapitalAndDividendTestAsync()
         {
-            var url = "https://finfo-iboard.ssi.com.vn/graphql";
-            var postObject = new
-            {
-                operationName = "companyProfile",
-                variables = new
-                {
-                    symbol = "DBC",
-                    language = "vn"
-                },
-                query = "query companyProfile($symbol: String!, $language: String) { companyProfile(symbol: $symbol, language: $language) { symbol subsectorcode industryname supersector sector subsector foundingdate chartercapital numberofemployee banknumberofbranch companyprofile listingdate exchange firstprice issueshare listedvalue companyname __typename  } companyStatistics(symbol: $symbol) { symbol ttmtype marketcap sharesoutstanding bv beta eps dilutedeps pe pb dividendyield totalrevenue profit asset roe roa npl financialleverage __typename  }}"
-            };
-            var content = new StringContent(JsonSerializer.Serialize(postObject), Encoding.UTF8, "application/json");
-            using var client = new HttpClient();
-            client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36 Edg/86.0.622.51");
-            var result = await client.PostAsync(url, content);
-            var contentResult = await result.Content.ReadAsStringAsync();
-            Assert.NotEmpty(contentResult);
+            var services = ConfigureServices.GetConfigureServices();
+            var serviceProvider = services.BuildServiceProvider();
+            var crawlData = serviceProvider.GetService<ICrawlData>() ?? throw new Exception("Can't get ICrawlData");
+            var hostedService = serviceProvider.GetService<IHostedService>() as LoggingQueuedHostedService ?? throw new Exception("Can't get LoggingQueuedHostedService");
+            await hostedService.StartAsync(CancellationToken.None);
+
+            var capitalAndDividend = await crawlData.DownloadCapitalAndDividendAsync("TVC");
+            Assert.True(capitalAndDividend != null);
+
+            await hostedService.StopAsync(CancellationToken.None);
         }
 
         [Fact]

@@ -70,5 +70,20 @@ namespace Pl.Sas.Core.Interfaces
         /// <param name="deleteItems">Danh sách cần xóa</param>
         /// <returns>bool</returns>
         Task<bool> SaveLeadershipsAsync(List<Leadership> insertItems, List<Leadership> deleteItems);
+
+        /// <summary>
+        /// Lấy danh sách thông tin tăng trưởng tài chính của đoanh nghiệp
+        /// </summary>
+        /// <param name="symbol"></param>
+        /// <returns></returns>
+        Task<List<FinancialGrowth>> GetFinancialGrowthsAsync(string symbol);
+
+        /// <summary>
+        /// Ghi lại dữ liệu tăng trưởng tài chính
+        /// </summary>
+        /// <param name="insertItems">Danh sách thêm mới</param>
+        /// <param name="updateItems">Danh sách update</param>
+        /// <returns>bool</returns>
+        Task<bool> SaveFinancialGrowthAsync(List<FinancialGrowth> insertItems, List<FinancialGrowth> updateItems);
     }
 }

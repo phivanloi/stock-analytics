@@ -209,4 +209,71 @@ namespace Pl.Sas.Core.Entities
     }
 
     #endregion Leadership
+
+    #region Capital and Dividend
+
+    public class SsiCapitalAndDividend
+    {
+        [JsonPropertyName("data")]
+        public CapitalAndDividendData Data { get; set; } = null!;
+    }
+
+    public class CapitalAndDividendData
+    {
+        [JsonPropertyName("capAndDividend")]
+        public Capanddividend CapAndDividend { get; set; } = null!;
+    }
+
+    public class Capanddividend
+    {
+        [JsonPropertyName("tabcapitaldividendresponse")]
+        public Tabcapitaldividendresponse TabcapitalDividendResponse { get; set; } = null!;
+    }
+
+    public class Tabcapitaldividendresponse
+    {
+        [JsonPropertyName("datagroup")]
+        public Datagroup DataGroup { get; set; } = null!;
+    }
+
+    public class Datagroup
+    {
+        [JsonPropertyName("assetlistList")]
+        public Assetlistlist[] AssetlistList { get; set; } = null!;
+
+        [JsonPropertyName("cashdividendlistList")]
+        public Cashdividendlistlist[] CashdividendlistList { get; set; } = null!;
+
+        [JsonPropertyName("ownercapitallistList")]
+        public Ownercapitallistlist[] OwnercapitallistList { get; set; } = null!;
+    }
+
+    public class Assetlistlist
+    {
+        [JsonPropertyName("year")]
+        public string Year { get; set; } = null!;
+
+        [JsonPropertyName("asset")]
+        public string Asset { get; set; } = null!;
+    }
+
+    public class Cashdividendlistlist
+    {
+        [JsonPropertyName("year")]
+        public string Year { get; set; } = null!;
+
+        [JsonPropertyName("valuepershare")]
+        public string ValuePershare { get; set; } = null!;
+    }
+
+    public class Ownercapitallistlist
+    {
+        [JsonPropertyName("year")]
+        public string Year { get; set; } = null!;
+
+        [JsonPropertyName("ownercapital")]
+        public string OwnerCapital { get; set; } = null!;
+    }
+
+    #endregion Capital and Dividend
 }

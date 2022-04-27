@@ -172,12 +172,18 @@ namespace Pl.Sas.Core.Services
         }
 
         #region Stock download
+        /// <summary>
+        /// download và bổ sung thông tin lãn đạo doanh nghiệp
+        /// </summary>
+        /// <param name="stockTracking">Thông tin trạng thái kiểm tra download dữ liệu của cổ phiếu</param>
+        /// <returns></returns>
+        /// <exception cref="Exception">Can't download leadership info.</exception>
         public virtual async Task<bool> UpdateLeadershipInfoAsync(StockTracking stockTracking)
         {
             stockTracking.DownloadStatus = "Tải và xử danh sách lãnh đạo cho công ty.";
             stockTracking.DownloadDate = DateTime.Now;
 
-            var ssiLeadership = await _crawlData.DownloadLeadershipFromSsiAsync(stockTracking.Symbol) ?? throw new Exception("Can't download leadership info.");
+            var ssiLeadership = await _crawlData.DownloadLeadershipAsync(stockTracking.Symbol) ?? throw new Exception("Can't download leadership info.");
 
             var insertList = new List<Leadership>();
             var dbLeaderships = new HashSet<Leadership>(await _marketData.GetLeadershipsAsync(stockTracking.Symbol), new LeadershipComparer());
@@ -263,6 +269,83 @@ namespace Pl.Sas.Core.Services
             company.Npl = float.Parse(ssiCompanyInfo.Data.CompanyStatistics.Npl);
             company.FinanciallEverage = float.Parse(ssiCompanyInfo.Data.CompanyStatistics.FinanciallEverage);
             return await _marketData.SaveCompanyAsync(company);
+        }
+
+        /// <summary>
+        /// Xử lý bổ sung thông in vốn, cổ tức, tài sản doanh nghiệp theo mã
+        /// </summary>
+        /// <param name="stockTracking">Thông tin trạng thái kiểm tra download dữ liệu của cổ phiếu</param>
+        /// <returns></returns>
+        public virtual async Task<bool> UpdateCapitalAndDividendAsync(StockTracking stockTracking)
+        {
+            stockTracking.DownloadStatus = "Tải và xử lý thông tin vốn và cổ tức.";
+            stockTracking.DownloadDate = DateTime.Now;
+
+            var ssiCapitalAndDividend = await _crawlData.DownloadCapitalAndDividendAsync(stockTracking.Symbol) ?? throw new Exception("Can't download capital, dividend and asset info.");
+            var insertList = new List<FinancialGrowth>();
+            var updateList = new List<FinancialGrowth>();
+            var listDbCheck = await _marketData.GetFinancialGrowthsAsync(stockTracking.Symbol);
+
+            if (ssiCapitalAndDividend?.Data?.CapAndDividend?.TabcapitalDividendResponse?.DataGroup?.AssetlistList?.Length > 0)
+            {
+                foreach (var asset in ssiCapitalAndDividend.Data.CapAndDividend.TabcapitalDividendResponse.DataGroup.AssetlistList)
+                {
+                    var year = int.Parse(asset.Year);
+                    var updateItem = listDbCheck.FirstOrDefault(q => q.Year == year);
+                    if (updateItem is null)
+                    {
+                        insertList.Add(new()
+                        {
+                            Year = year,
+                            Symbol = stockTracking.Symbol,
+                            Asset = float.Parse(asset.Asset)
+                        });
+                    }
+                    else
+                    {
+                        updateItem.Asset = float.Parse(asset.Asset);
+                        updateList.Add(updateItem);
+                    }
+                }
+            }
+
+            if (ssiCapitalAndDividend?.Data?.CapAndDividend?.TabcapitalDividendResponse?.DataGroup?.CashdividendlistList?.Length > 0)
+            {
+                foreach (var cashdividend in ssiCapitalAndDividend.Data.CapAndDividend.TabcapitalDividendResponse.DataGroup.CashdividendlistList)
+                {
+                    var year = int.Parse(cashdividend.Year);
+                    var currentAddItem = insertList.FirstOrDefault(q => q.Year == year);
+                    if (currentAddItem != null)
+                    {
+                        currentAddItem.ValuePershare = float.Parse(cashdividend.ValuePershare);
+                    }
+                    var currentUpdateItem = updateList.FirstOrDefault(q => q.Year == year);
+                    if (currentUpdateItem != null)
+                    {
+                        currentUpdateItem.ValuePershare = float.Parse(cashdividend.ValuePershare);
+                    }
+                }
+            }
+
+            if (ssiCapitalAndDividend?.Data?.CapAndDividend?.TabcapitalDividendResponse?.DataGroup?.OwnercapitallistList?.Length > 0)
+            {
+                foreach (var ownerCapital in ssiCapitalAndDividend.Data.CapAndDividend.TabcapitalDividendResponse.DataGroup.OwnercapitallistList)
+                {
+                    var year = int.Parse(ownerCapital.Year);
+                    var currentAddItem = insertList.FirstOrDefault(q => q.Year == year);
+                    if (currentAddItem != null)
+                    {
+                        currentAddItem.OwnerCapital = float.Parse(ownerCapital.OwnerCapital);
+                    }
+                    var currentUpdateItem = updateList.FirstOrDefault(q => q.Year == year);
+                    if (currentUpdateItem != null)
+                    {
+                        currentUpdateItem.OwnerCapital = float.Parse(ownerCapital.OwnerCapital);
+                    }
+                }
+            }
+
+            return await _marketData.SaveFinancialGrowthAsync(insertList, updateList);
         }
         #endregion
 
