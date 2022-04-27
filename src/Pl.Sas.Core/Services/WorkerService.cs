@@ -5,6 +5,7 @@ using Pl.Sas.Core.Interfaces;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
+using System.Text.Json;
 using System.Web;
 
 namespace Pl.Sas.Core.Services
@@ -113,7 +114,12 @@ namespace Pl.Sas.Core.Services
                             Name = $"Tải và phân tích mã chứng khoán: {stockCode}",
                             Type = 10,
                             DataKey = stockCode,
-                            ActiveTime = currentTime.AddMinutes(random.Next(0, 60))
+                            ActiveTime = currentTime.AddMinutes(random.Next(0, 10)),
+                            OptionsJson = JsonSerializer.Serialize(new Dictionary<string, string>()
+                            {
+                                {"CorporateActionCrawlSize","10000" },
+                                {"StockPricesCrawlSize","10000" }
+                            })
                         });
                         insertStockTrackings.Add(new(stockCode));
                     }
@@ -124,7 +130,11 @@ namespace Pl.Sas.Core.Services
                             Name = $"Tải dữ liệu chỉ số: {stockCode}",
                             Type = 11,
                             DataKey = stockCode,
-                            ActiveTime = currentTime.AddMinutes(random.Next(0, 60))
+                            ActiveTime = currentTime.AddMinutes(random.Next(0, 10)),
+                            OptionsJson = JsonSerializer.Serialize(new Dictionary<string, string>()
+                            {
+                                {"DateCrawlStart","10000" }
+                            })
                         });
                     }
                 }
@@ -159,11 +169,22 @@ namespace Pl.Sas.Core.Services
             {
                 await UpdateCompanyInfoAsync(stockTracking);//xử lý thông tin công ty
                 await UpdateLeadershipInfoAsync(stockTracking);//xử lý thông tin lãnh đạo của công ty
+                await UpdateCapitalAndDividendAsync(stockTracking);//Xử lý vốn vả cổ thức
+                await UpdateFinancialIndicatorAsync(stockTracking);//xử lý chỉ số tài chính của công ty
+                await UpdateCorporateActionInfoAsync(stockTracking, int.Parse(schedule.Options["CorporateActionCrawlSize"]));//xử lý hoạt động của công ty
 
             }
             finally
             {
                 await _analyticsData.UpdateStockTrackingAsync(stockTracking);
+                if (schedule.Options["CorporateActionCrawlSize"] == "10000")
+                {
+                    await _marketData.UpdateKeyOptionScheduleAsync(schedule, "CorporateActionCrawlSize", "10");
+                }
+                if (schedule.Options["StockPricesCrawlSize"] == "10000")
+                {
+                    await _marketData.UpdateKeyOptionScheduleAsync(schedule, "StockPricesCrawlSize", "10");
+                }
             }
 
             var queueMessage = new QueueMessage("UpdatedStock");
@@ -172,6 +193,198 @@ namespace Pl.Sas.Core.Services
         }
 
         #region Stock download
+
+        public virtual async Task UpdateStockPriceHistoryAsync(StockTracking stockTracking, int size)
+        {
+            stockTracking.DownloadStatus = "Tải và xử lý dữ liệu lịch sử giá chứng khoán.";
+            stockTracking.DownloadDate = DateTime.Now;
+
+            var stockPriceHistory = await _crawlData.DownloadStockPricesAsync(stockTracking.Symbol, size) ?? throw new Exception("Can't stock prices info.");
+            if (stockPriceHistory.Data.StockPrice.DataList.Length <= 0)
+            {
+                _logger.LogWarning("UpdateStockPriceHistoryAsync null histories for: {Symbol}.", stockTracking.Symbol);
+                return;
+            }
+
+            var insertList = new List<StockPrice>();
+            var updateList = new List<StockPrice>();
+            if (size <= 10)
+            {
+                var tradingDate = ParseDateType(stockPriceSsi.TradingDate);
+                if (tradingDate is null)
+                {
+                    return;
+                }
+                var datePath = Utilities.GetTradingDatePath(tradingDate);
+                var updateItem = await _stockPriceData.GetByDayAsync(schedule.DataKey, datePath);
+                if (updateItem != null)
+                {
+                    StockPriceBindValue(ref updateItem, stockPriceSsi);
+                    await _stockPriceData.UpdateAsync(updateItem);
+                }
+                else
+                {
+                    var addItem = new StockPrice()
+                    {
+                        Symbol = schedule.DataKey,
+                        TradingDate = tradingDate.Value,
+                        DatePath = datePath
+                    };
+                    StockPriceBindValue(ref addItem, stockPriceSsi);
+                    await _stockPriceData.InsertAsync(addItem);
+                }
+                await UpdateStockPriceFromApiAsync(schedule, stockPriceHistory.Data.StockPrice.DataList[0]);
+            }
+            else
+            {
+                var datePathHashSet = await _stockPriceData.GetAllDatePathBySymbol(schedule.DataKey);
+                var insertStockPrices = new List<StockPrice>();
+                foreach (var stockPrice in stockPriceHistory.Data.StockPrice.DataList)
+                {
+                    var tradingDate = ParseDateType(stockPrice.TradingDate);
+                    if (tradingDate is null)
+                    {
+                        continue;
+                    }
+
+                    var datePath = Utilities.GetTradingDatePath(tradingDate);
+                    if (!datePathHashSet.Contains(datePath))
+                    {
+                        var addItem = new StockPrice()
+                        {
+                            Symbol = schedule.DataKey,
+                            TradingDate = tradingDate.Value,
+                            DatePath = datePath
+                        };
+                        StockPriceBindValue(ref addItem, stockPrice);
+                        insertStockPrices.Add(addItem);
+                    }
+                }
+                await _operationRetry.Retry(() => _stockPriceData.BulkInserAsync(insertStockPrices), 10, TimeSpan.FromMilliseconds(100));
+                await UpdateIsNextTimeUpdate(schedule);
+            }
+
+            var updateMemoryMessage = new QueueMessage() { Id = "StockPrices" };
+            updateMemoryMessage.KeyValues.Add("Symbol", schedule.DataKey);
+            _processorMessageQueueService.BroadcastUpdateMemoryTask(updateMemoryMessage);
+        }
+
+        /// <summary>
+        /// Xử lý thông tin tài chính của doanh nghiệp
+        /// </summary>
+        /// <param name="stockTracking">Thông tin trạng thái kiểm tra download dữ liệu của cổ phiếu</param>
+        /// <returns>bool</returns>
+        /// <exception cref="Exception">Can't corporate action info.</exception>
+        public virtual async Task<bool> UpdateFinancialIndicatorAsync(StockTracking stockTracking)
+        {
+            stockTracking.DownloadStatus = "Tải và xử lý dữ liệu tài chính của công ty.";
+            stockTracking.DownloadDate = DateTime.Now;
+
+            var ssiFinancialIndicators = await _crawlData.DownloadFinancialIndicatorAsync(stockTracking.Symbol) ?? throw new Exception("Can't financial indicator info.");
+            var insertList = new List<FinancialIndicator>();
+            var updateList = new List<FinancialIndicator>();
+            var listDbCheck = await _marketData.GetFinancialIndicatorsAsync(stockTracking.Symbol);
+            foreach (var ssiFinancialIndicator in ssiFinancialIndicators.Data.FinancialIndicator.DataList)
+            {
+                var reportYear = int.Parse(ssiFinancialIndicator.YearReport);
+                var lengthReport = int.Parse(ssiFinancialIndicator.LengthReport);
+                var updateItem = listDbCheck.FirstOrDefault(q => q.YearReport == reportYear && q.LengthReport == lengthReport);
+                if (updateItem is not null)
+                {
+                    updateItem.YearReport = reportYear;
+                    updateItem.Symbol = stockTracking.Symbol;
+                    updateItem.LengthReport = lengthReport;
+                    updateItem.Revenue = float.Parse(ssiFinancialIndicator.Revenue);
+                    updateItem.Profit = float.Parse(ssiFinancialIndicator.Profit);
+                    updateItem.Eps = float.Parse(ssiFinancialIndicator.Eps);
+                    updateItem.DilutedEps = float.Parse(ssiFinancialIndicator.DilutedEps);
+                    updateItem.Pe = float.Parse(ssiFinancialIndicator.Pe);
+                    updateItem.DilutedPe = float.Parse(ssiFinancialIndicator.DilutedPe);
+                    updateItem.Roe = float.Parse(ssiFinancialIndicator.Roe);
+                    updateItem.Roa = float.Parse(ssiFinancialIndicator.Roa);
+                    updateItem.Roic = float.Parse(ssiFinancialIndicator.Roic);
+                    updateItem.GrossProfitMargin = float.Parse(ssiFinancialIndicator.GrossProfitMargin);
+                    updateItem.NetProfitMargin = float.Parse(ssiFinancialIndicator.NetProfitMargin);
+                    updateItem.DebtAsset = float.Parse(ssiFinancialIndicator.DebtAsset);
+                    updateItem.QuickRatio = float.Parse(ssiFinancialIndicator.QuickRatio);
+                    updateItem.CurrentRatio = float.Parse(ssiFinancialIndicator.CurrentRatio);
+                    updateItem.Pb = float.Parse(ssiFinancialIndicator.Pb);
+                    updateList.Add(updateItem);
+                }
+                else
+                {
+                    insertList.Add(new()
+                    {
+                        YearReport = reportYear,
+                        Symbol = stockTracking.Symbol,
+                        LengthReport = lengthReport,
+                        Revenue = float.Parse(ssiFinancialIndicator.Revenue),
+                        Profit = float.Parse(ssiFinancialIndicator.Profit),
+                        Eps = float.Parse(ssiFinancialIndicator.Eps),
+                        DilutedEps = float.Parse(ssiFinancialIndicator.DilutedEps),
+                        Pe = float.Parse(ssiFinancialIndicator.Pe),
+                        DilutedPe = float.Parse(ssiFinancialIndicator.DilutedPe),
+                        Roe = float.Parse(ssiFinancialIndicator.Roe),
+                        Roa = float.Parse(ssiFinancialIndicator.Roa),
+                        Roic = float.Parse(ssiFinancialIndicator.Roic),
+                        GrossProfitMargin = float.Parse(ssiFinancialIndicator.GrossProfitMargin),
+                        NetProfitMargin = float.Parse(ssiFinancialIndicator.NetProfitMargin),
+                        DebtAsset = float.Parse(ssiFinancialIndicator.DebtAsset),
+                        QuickRatio = float.Parse(ssiFinancialIndicator.QuickRatio),
+                        CurrentRatio = float.Parse(ssiFinancialIndicator.CurrentRatio),
+                        Pb = float.Parse(ssiFinancialIndicator.Pb)
+                    });
+                }
+            }
+            return await _marketData.SaveFinancialIndicatorAsync(insertList, updateList);
+        }
+
+        /// <summary>
+        /// Xử lý thông tin hoạt động của doanh nghiệp
+        /// </summary>
+        /// <param name="stockTracking">Thông tin trạng thái kiểm tra download dữ liệu của cổ phiếu</param>
+        /// <returns>bool</returns>
+        /// <exception cref="Exception">Can't corporate action info.</exception>
+        public virtual async Task<bool> UpdateCorporateActionInfoAsync(StockTracking stockTracking, int size)
+        {
+            stockTracking.DownloadStatus = "Tải và xử lý dữ liệu sư kiện của công ty.";
+            stockTracking.DownloadDate = DateTime.Now;
+
+            var ssiCorporateAction = await _crawlData.DownloadCorporateActionAsync(stockTracking.Symbol, size) ?? throw new Exception("Can't corporate action info.");
+            var insertList = new List<CorporateAction>();
+            var corporateActions = await _marketData.GetCorporateActionsAsync(stockTracking.Symbol);
+            foreach (var item in ssiCorporateAction.Data.CorporateActions.DataList)
+            {
+                if (string.IsNullOrEmpty(item.ExrightDate))
+                {
+                    continue;
+                }
+                var newLeadership = new CorporateAction()
+                {
+                    Symbol = stockTracking.Symbol,
+                    EventName = Utilities.TruncateString(item.EventName, 256),
+                    ExrightDate = ParseDateType(item.ExrightDate) ?? DateTime.Now,
+                    RecordDate = ParseDateType(item.RecordDate) ?? DateTime.Now,
+                    IssueDate = ParseDateType(item.IssueDate) ?? DateTime.Now,
+                    EventTitle = Utilities.TruncateString(item.EventTitle, 256),
+                    PublicDate = ParseDateType(item.PublicDate) ?? DateTime.Now,
+                    Exchange = item.Exchange,
+                    EventListCode = Utilities.TruncateString(item.EventListCode, 128),
+                    Value = float.Parse(item.Value),
+                    Ratio = float.Parse(item.Ratio),
+                    Description = _zipHelper.ZipByte(Encoding.UTF8.GetBytes(item.EventDescription)),
+                    EventCode = item.EventCode
+                };
+                if (!corporateActions.Any(q => q.Symbol == newLeadership.Symbol
+                && q.ExrightDate == newLeadership.ExrightDate
+                && q.EventCode == newLeadership.EventCode))
+                {
+                    insertList.Add(newLeadership);
+                }
+            }
+            return await _marketData.InsertCorporateActionAsync(insertList);
+        }
+
         /// <summary>
         /// download và bổ sung thông tin lãn đạo doanh nghiệp
         /// </summary>
@@ -180,7 +393,7 @@ namespace Pl.Sas.Core.Services
         /// <exception cref="Exception">Can't download leadership info.</exception>
         public virtual async Task<bool> UpdateLeadershipInfoAsync(StockTracking stockTracking)
         {
-            stockTracking.DownloadStatus = "Tải và xử danh sách lãnh đạo cho công ty.";
+            stockTracking.DownloadStatus = "Tải và xử lý danh sách lãnh đạo cho công ty.";
             stockTracking.DownloadDate = DateTime.Now;
 
             var ssiLeadership = await _crawlData.DownloadLeadershipAsync(stockTracking.Symbol) ?? throw new Exception("Can't download leadership info.");

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Pl.Sas.Core;
 using Pl.Sas.Core.Entities;
 using Pl.Sas.Core.Interfaces;
+using System.Text.Json;
 
 namespace Pl.Sas.Infrastructure.Data
 {
@@ -32,6 +33,21 @@ namespace Pl.Sas.Infrastructure.Data
             return false;
         }
 
+        public virtual async Task<bool> UpdateKeyOptionScheduleAsync(Schedule schedule, string key, string value)
+        {
+            var options = schedule.Options;
+            if (options.ContainsKey("key"))
+            {
+                options[key] = value;
+            }
+            else
+            {
+                options.Add(key, value);
+            }
+            schedule.OptionsJson = JsonSerializer.Serialize(options);
+            return await _marketDbContext.SaveChangesAsync() > 0;
+        }
+
         public virtual async Task<bool> InitialStockAsync(List<Stock> insertItems, List<Stock> updateItems)
         {
             if (insertItems.Count > 0)
@@ -56,6 +72,12 @@ namespace Pl.Sas.Infrastructure.Data
         public virtual async Task<Schedule?> GetScheduleByIdAsync(string id)
         {
             return await _marketDbContext.Schedules.FirstOrDefaultAsync(s => s.Id == id);
+        }
+
+        public virtual async Task<bool> UpdateScheduleAsync(Schedule schedule)
+        {
+            schedule.UpdatedTime = DateTime.Now;
+            return await _marketDbContext.SaveChangesAsync() > 0;
         }
 
         public virtual async Task<Schedule?> CacheGetScheduleByIdAsync(string id)
@@ -172,6 +194,76 @@ namespace Pl.Sas.Infrastructure.Data
                 }
             }
             return await _marketDbContext.SaveChangesAsync() > 0;
+        }
+
+        public virtual async Task<List<FinancialIndicator>> GetFinancialIndicatorsAsync(string symbol)
+        {
+            return await _marketDbContext.FinancialIndicators.Where(q => q.Symbol == symbol).ToListAsync();
+        }
+
+        public virtual async Task<bool> SaveFinancialIndicatorAsync(List<FinancialIndicator> insertItems, List<FinancialIndicator> updateItems)
+        {
+            if (insertItems.Count > 0)
+            {
+                _marketDbContext.FinancialIndicators.AddRange(insertItems);
+            }
+            if (updateItems.Count > 0)
+            {
+                foreach (var item in updateItems)
+                {
+                    item.UpdatedTime = DateTime.Now;
+                }
+            }
+            return await _marketDbContext.SaveChangesAsync() > 0;
+        }
+
+        public virtual async Task<List<CorporateAction>> GetCorporateActionsAsync(string symbol)
+        {
+            return await _marketDbContext.CorporateActions.Where(q => q.Symbol == symbol).ToListAsync();
+        }
+
+        public virtual async Task<bool> InsertCorporateActionAsync(List<CorporateAction> insertItems)
+        {
+            if (insertItems.Count > 0)
+            {
+                _marketDbContext.CorporateActions.AddRange(insertItems);
+            }
+            return await _marketDbContext.SaveChangesAsync() > 0;
+        }
+
+        public virtual async Task BulkInserAsync(List<StockPrice> stockPrices)
+        {
+            if (stockPrices?.Count <= 0)
+            {
+                return;
+            }
+
+            var dataTableTemp = stockPrices.ToDataTable();
+
+            using SqlConnection connection = new(_connections.DataConnection);
+            connection.Open();
+            using var tran = connection.BeginTransaction();
+            try
+            {
+                using (var sqlBulkCopy = new SqlBulkCopy(connection, SqlBulkCopyOptions.Default, tran))
+                {
+                    foreach (DataColumn column in dataTableTemp.Columns)
+                    {
+                        sqlBulkCopy.ColumnMappings.Add(new SqlBulkCopyColumnMapping(column.ColumnName, column.ColumnName));
+                    }
+
+                    sqlBulkCopy.BulkCopyTimeout = 300;
+                    sqlBulkCopy.DestinationTableName = "StockPrices";
+                    await sqlBulkCopy.WriteToServerAsync(dataTableTemp);
+                }
+                tran.Commit();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Stock data error => BulkInserStockPricesAsync");
+                tran.Rollback();
+                throw;
+            }
         }
     }
 }

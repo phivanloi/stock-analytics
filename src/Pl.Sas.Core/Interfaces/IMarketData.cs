@@ -8,6 +8,36 @@ namespace Pl.Sas.Core.Interfaces
     public interface IMarketData
     {
         /// <summary>
+        /// Update lại giá trị options của lịch
+        /// </summary>
+        /// <param name="schedule">Lịch cần update</param>
+        /// <param name="key">Khóa</param>
+        /// <param name="value">Giá trị</param>
+        /// <returns></returns>
+        Task<bool> UpdateKeyOptionScheduleAsync(Schedule schedule, string key, string value);
+
+        /// <summary>
+        /// Hàm update lịch
+        /// </summary>
+        /// <param name="schedule">Thông tin lịch cần update</param>
+        /// <returns>bool</returns>
+        Task<bool> UpdateScheduleAsync(Schedule schedule);
+
+        /// <summary>
+        /// Thêm mới hoạt động của công ty
+        /// </summary>
+        /// <param name="insertItems">Danh sách dữ liệu thêm mới</param>
+        /// <returns>bool</returns>
+        Task<bool> InsertCorporateActionAsync(List<CorporateAction> insertItems);
+
+        /// <summary>
+        /// Lấy danh sách hoạt động của công ty
+        /// </summary>
+        /// <param name="symbol">Mã chứng khoán</param>
+        /// <returns>List CorporateAction</returns>
+        Task<List<CorporateAction>> GetCorporateActionsAsync(string symbol);
+
+        /// <summary>
         /// Thêm mới một danh sách lịch
         /// </summary>
         /// <param name="schedules">Danh sách lịch cần thêm mới</param>
@@ -74,7 +104,7 @@ namespace Pl.Sas.Core.Interfaces
         /// <summary>
         /// Lấy danh sách thông tin tăng trưởng tài chính của đoanh nghiệp
         /// </summary>
-        /// <param name="symbol"></param>
+        /// <param name="symbol">Mã chứng khoán</param>
         /// <returns></returns>
         Task<List<FinancialGrowth>> GetFinancialGrowthsAsync(string symbol);
 
@@ -85,5 +115,20 @@ namespace Pl.Sas.Core.Interfaces
         /// <param name="updateItems">Danh sách update</param>
         /// <returns>bool</returns>
         Task<bool> SaveFinancialGrowthAsync(List<FinancialGrowth> insertItems, List<FinancialGrowth> updateItems);
+
+        /// <summary>
+        /// Lấy danh sách chỉ số tài chính của công ty
+        /// </summary>
+        /// <param name="symbol">Mã chứng khoán</param>
+        /// <returns>FinancialIndicator</returns>
+        Task<List<FinancialIndicator>> GetFinancialIndicatorsAsync(string symbol);
+
+        /// <summary>
+        /// Ghi lại thông tin chỉ số tài chính
+        /// </summary>
+        /// <param name="insertItems">Danh sách thêm mới</param>
+        /// <param name="updateItems">Danh sách update</param>
+        /// <returns>bool</returns>
+        Task<bool> SaveFinancialIndicatorAsync(List<FinancialIndicator> insertItems, List<FinancialIndicator> updateItems);
     }
 }

@@ -63,7 +63,7 @@
         /// <summary>
         /// Mô tả sự kiện
         /// </summary>
-        public byte[]? ZipDescription { get; set; } = null;
+        public byte[]? Description { get; set; } = null;
 
         /// <summary>
         /// Mã sự kiện
