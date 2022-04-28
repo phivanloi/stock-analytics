@@ -21,7 +21,7 @@
         /// Trạng thái tải dữ liệu
         /// <para>ok => thành công, khác là có vấn đề</para>
         /// </summary>
-        public string DownloadStatus { get; set; } = null!;
+        public string DownloadStatus { get; set; } = "";
 
         /// <summary>
         /// Ngày download dữ liệu
@@ -32,7 +32,7 @@
         /// Trạng thái dữ liệu
         /// <para>ok => đầy đủ, khác là có vấn đề</para>
         /// </summary>
-        public string DataStatus { get; set; } = null!;
+        public string DataStatus { get; set; } = "";
 
         /// <summary>
         /// Ngày kiểm tra dữ liệu
@@ -43,7 +43,7 @@
         /// Trạng thái phân tích
         /// <para>ok => phân tích thành công, khác là có vấn đề</para>
         /// </summary>
-        public string AnalyticsStatus { get; set; } = null!;
+        public string AnalyticsStatus { get; set; } = "";
 
         /// <summary>
         /// Ngày phân tích

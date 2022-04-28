@@ -24,9 +24,9 @@ namespace Pl.Sas.UnitTests
 
             var message = await workerService.StockDownloadAndAnalyticsAsync(new Core.Entities.Schedule()
             {
-                Name = $"Tải và phân tích mã chứng khoán: TVC",
+                Name = $"Tải và phân tích mã chứng khoán: HPG",
                 Type = 10,
-                DataKey = "TVC",
+                DataKey = "HPG",
                 OptionsJson = JsonSerializer.Serialize(new Dictionary<string, string>()
                 {
                     {"CorporateActionCrawlSize","10000" },

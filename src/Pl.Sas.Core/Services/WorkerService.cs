@@ -172,22 +172,24 @@ namespace Pl.Sas.Core.Services
                 await UpdateCapitalAndDividendAsync(stockTracking);//Xử lý vốn vả cổ thức
                 await UpdateFinancialIndicatorAsync(stockTracking);//xử lý chỉ số tài chính của công ty
                 await UpdateCorporateActionInfoAsync(stockTracking, int.Parse(schedule.Options["CorporateActionCrawlSize"]));//xử lý hoạt động của công ty
-                await UpdateStockPriceHistoryAsync(stockTracking, int.Parse(schedule.Options["StockPricesCrawlSize"]));
-                await UpdateFiinStockEvaluatesAsync(stockTracking);//xử lý đánh giá chứng khoán của fiin
-                await UpdateStockRecommendationsAsync(stockTracking);//xử lý báo cáo khuyến nghị chứng khoán
-                await UpdateVndStockScoreAsync(stockTracking);//Xử lý đánh giá chứng khoán của vnd
-            }
-            finally
-            {
-                await _analyticsData.UpdateStockTrackingAsync(stockTracking);
                 if (schedule.Options["CorporateActionCrawlSize"] == "90000")
                 {
                     await _marketData.UpdateKeyOptionScheduleAsync(schedule, "CorporateActionCrawlSize", "10");
                 }
+                await UpdateStockPriceHistoryAsync(stockTracking, int.Parse(schedule.Options["StockPricesCrawlSize"]));//xử lý 
                 if (schedule.Options["StockPricesCrawlSize"] == "90000")
                 {
                     await _marketData.UpdateKeyOptionScheduleAsync(schedule, "StockPricesCrawlSize", "10");
                 }
+                await UpdateFiinStockEvaluatesAsync(stockTracking);//xử lý đánh giá chứng khoán của fiin
+                await UpdateStockRecommendationsAsync(stockTracking);//xử lý báo cáo khuyến nghị chứng khoán
+                await UpdateVndStockScoreAsync(stockTracking);//Xử lý đánh giá chứng khoán của vnd
+                stockTracking.DownloadStatus = "ok";
+                stockTracking.DownloadDate = DateTime.Now;
+            }
+            finally
+            {
+                await _analyticsData.UpdateStockTrackingAsync(stockTracking);
             }
 
             var queueMessage = new QueueMessage("UpdatedStock");
@@ -198,8 +200,11 @@ namespace Pl.Sas.Core.Services
         #region Stock download
         public virtual async Task<bool> UpdateVndStockScoreAsync(StockTracking stockTracking)
         {
+            stockTracking.DownloadStatus = "Tải đánh giá cổ phiếu của vnd.";
+            stockTracking.DownloadDate = DateTime.Now;
+
             var vndStockScoreResponse = await _crawlData.DownloadVndStockScoringsAsync(stockTracking.Symbol) ?? throw new Exception("Can't stock score info.");
-            if (vndStockScoreResponse?.Data?.Length <= 0)
+            if (vndStockScoreResponse?.Data?.Length > 0)
             {
                 var vndStockScores = new List<VndStockScore>();
                 foreach (var item in vndStockScoreResponse.Data)
@@ -235,6 +240,9 @@ namespace Pl.Sas.Core.Services
         /// <exception cref="Exception">Can't stock recommendation info</exception>
         public virtual async Task<bool> UpdateStockRecommendationsAsync(StockTracking stockTracking)
         {
+            stockTracking.DownloadStatus = "Tải và xử lý đánh giá khuyến nghị của vnd.";
+            stockTracking.DownloadDate = DateTime.Now;
+
             var recommendations = await _crawlData.DownloadStockRecommendationsAsync(stockTracking.Symbol) ?? throw new Exception("Can't stock recommendation info.");
             if (recommendations?.Data?.Length > 0)
             {
@@ -276,6 +284,9 @@ namespace Pl.Sas.Core.Services
         /// <exception cref="Exception">Can't fiinStock evaluate info.</exception>
         public virtual async Task<bool> UpdateFiinStockEvaluatesAsync(StockTracking stockTracking)
         {
+            stockTracking.DownloadStatus = "Tải đánh giá của fiin.";
+            stockTracking.DownloadDate = DateTime.Now;
+
             var fiinStockEvaluate = await _crawlData.DownloadFiinStockEvaluatesAsync(stockTracking.Symbol) ?? throw new Exception("Can't fiinStock evaluate info.");
             if (fiinStockEvaluate?.Items?.Length <= 0 || fiinStockEvaluate?.Items[0] is null)
             {

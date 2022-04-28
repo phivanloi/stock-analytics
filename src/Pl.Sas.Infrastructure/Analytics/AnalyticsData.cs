@@ -26,7 +26,7 @@ namespace Pl.Sas.Infrastructure.Data
             var updateItem = _analyticsDbContext.StockTrackings.FirstOrDefault(s => s.Symbol == stockTracking.Symbol);
             if (updateItem is not null)
             {
-                updateItem.DownloadStatus = stockTracking.DataStatus;
+                updateItem.DownloadStatus = stockTracking.DownloadStatus;
                 updateItem.DownloadDate = stockTracking.DownloadDate;
                 updateItem.DataStatus = stockTracking.DataStatus;
                 updateItem.DataDate = stockTracking.DataDate;
