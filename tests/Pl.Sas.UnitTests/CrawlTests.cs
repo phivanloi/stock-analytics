@@ -59,5 +59,20 @@ namespace Pl.Sas.UnitTests
 
             await hostedService.StopAsync(CancellationToken.None);
         }
+
+        [Fact]
+        public async Task DownloadStockPricesTestAsync()
+        {
+            var services = ConfigureServices.GetConfigureServices();
+            var serviceProvider = services.BuildServiceProvider();
+            var crawlData = serviceProvider.GetService<ICrawlData>() ?? throw new Exception("Can't get ICrawlData");
+            var hostedService = serviceProvider.GetService<IHostedService>() as LoggingQueuedHostedService ?? throw new Exception("Can't get LoggingQueuedHostedService");
+            await hostedService.StartAsync(CancellationToken.None);
+
+            var ssiStockPrices = await crawlData.DownloadStockPricesAsync("TVC");
+            Assert.True(ssiStockPrices != null);
+
+            await hostedService.StopAsync(CancellationToken.None);
+        }
     }
 }

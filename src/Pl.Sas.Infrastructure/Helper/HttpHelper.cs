@@ -12,14 +12,17 @@ namespace Pl.Sas.Infrastructure.Helper
         public static async Task<T?> GetJsonAsync<T>(this HttpClient httpClient, string url)
         {
             Guard.Against.NullOrEmpty(url, nameof(url));
-            var responseData = await _httpRetryPolicy.Execute(async () =>
+            var httpResponseMessage = await _httpRetryPolicy.Execute(async () =>
             {
-                return await httpClient.GetStringAsync(url);
+                return await httpClient.GetAsync(url);
             });
-
-            if (!string.IsNullOrEmpty(responseData))
+            if (httpResponseMessage.IsSuccessStatusCode)
             {
-                return JsonSerializer.Deserialize<T>(responseData);
+                var jsonContent = await httpResponseMessage.Content.ReadAsStringAsync();
+                if (!string.IsNullOrEmpty(jsonContent))
+                {
+                    return JsonSerializer.Deserialize<T>(jsonContent);
+                }
             }
             return default;
         }

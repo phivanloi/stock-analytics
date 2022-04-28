@@ -78,12 +78,13 @@ namespace Pl.Sas.Infrastructure.Crawl
                 {
                     symbol,
                     offset = 1,
-                    size
+                    size,
+                    fromDate = DateTime.Now.AddDays(-size).ToString("dd/MM/yyyy"),
+                    toDate = DateTime.Now.ToString("dd/MM/yyyy"),
                 },
-                query = "query stockPrice($symbol: String!, $size: Int, $offset: Int, $fromDate: String, $toDate: String) { stockPrice(symbol: $symbol, size: $size, offset: $offset, fromDate: $fromDate, toDate: $toDate) }"
+                query = "query stockPrice($symbol: String!, $size: Int, $offset: Int, $fromDate: String, $toDate: String) {\n  stockPrice(\n    symbol: $symbol\n    size: $size\n    offset: $offset\n    fromDate: $fromDate\n    toDate: $toDate\n  )\n}\n"
             };
-            var stockPriceSendContent = new StringContent(JsonSerializer.Serialize(stockPriceSendQuery), Encoding.UTF8, "application/json");
-            return await _httpClient.PostJsonAsync<SsiStockPriceHistory>(requestUrl, new StringContent(JsonSerializer.Serialize(stockPriceSendContent), Encoding.UTF8, "application/json"));
+            return await _httpClient.PostJsonAsync<SsiStockPriceHistory>(requestUrl, new StringContent(JsonSerializer.Serialize(stockPriceSendQuery), Encoding.UTF8, "application/json"));
         }
 
         public virtual async Task<SsiCorporateAction?> DownloadCorporateActionAsync(string symbol, int size = 10000)

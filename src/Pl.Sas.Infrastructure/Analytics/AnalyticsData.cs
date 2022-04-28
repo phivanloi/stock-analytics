@@ -23,7 +23,7 @@ namespace Pl.Sas.Infrastructure.Data
 
         public virtual async Task<bool> UpdateStockTrackingAsync(StockTracking stockTracking)
         {
-            var updateItem = await _analyticsDbContext.StockTrackings.FirstOrDefaultAsync(s => s.Symbol == stockTracking.Symbol);
+            var updateItem = _analyticsDbContext.StockTrackings.FirstOrDefault(s => s.Symbol == stockTracking.Symbol);
             if (updateItem is not null)
             {
                 updateItem.DownloadStatus = stockTracking.DataStatus;
@@ -32,9 +32,12 @@ namespace Pl.Sas.Infrastructure.Data
                 updateItem.DataDate = stockTracking.DataDate;
                 updateItem.AnalyticsStatus = stockTracking.AnalyticsStatus;
                 updateItem.AnalyticsDate = stockTracking.AnalyticsDate;
-                return await _analyticsDbContext.SaveChangesAsync() > 0;
             }
-            return false;
+            else
+            {
+                _analyticsDbContext.StockTrackings.Add(stockTracking);
+            }
+            return await _analyticsDbContext.SaveChangesAsync() > 0;
         }
 
         public virtual async Task<bool> InsertStockTrackingAsync(List<StockTracking> stockTrackings)

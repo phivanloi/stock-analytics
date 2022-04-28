@@ -117,8 +117,8 @@ namespace Pl.Sas.Core.Services
                             ActiveTime = currentTime.AddMinutes(random.Next(0, 10)),
                             OptionsJson = JsonSerializer.Serialize(new Dictionary<string, string>()
                             {
-                                {"CorporateActionCrawlSize","10000" },
-                                {"StockPricesCrawlSize","10000" }
+                                {"CorporateActionCrawlSize","90000" },
+                                {"StockPricesCrawlSize","90000" }
                             })
                         });
                         insertStockTrackings.Add(new(stockCode));
@@ -133,7 +133,7 @@ namespace Pl.Sas.Core.Services
                             ActiveTime = currentTime.AddMinutes(random.Next(0, 10)),
                             OptionsJson = JsonSerializer.Serialize(new Dictionary<string, string>()
                             {
-                                {"DateCrawlStart","10000" }
+                                {"DateCrawlStart","90000" }
                             })
                         });
                     }
@@ -180,11 +180,11 @@ namespace Pl.Sas.Core.Services
             finally
             {
                 await _analyticsData.UpdateStockTrackingAsync(stockTracking);
-                if (schedule.Options["CorporateActionCrawlSize"] == "10000")
+                if (schedule.Options["CorporateActionCrawlSize"] == "90000")
                 {
                     await _marketData.UpdateKeyOptionScheduleAsync(schedule, "CorporateActionCrawlSize", "10");
                 }
-                if (schedule.Options["StockPricesCrawlSize"] == "10000")
+                if (schedule.Options["StockPricesCrawlSize"] == "90000")
                 {
                     await _marketData.UpdateKeyOptionScheduleAsync(schedule, "StockPricesCrawlSize", "10");
                 }
