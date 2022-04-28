@@ -52,5 +52,20 @@ namespace Pl.Sas.UnitTests
 
             await hostedService.StopAsync(CancellationToken.None);
         }
+
+        [Fact]
+        public async Task InitialStockTestAsync()
+        {
+            var services = ConfigureServices.GetConfigureServices();
+            var serviceProvider = services.BuildServiceProvider();
+            var workerService = serviceProvider.GetService<WorkerService>() ?? throw new Exception("Can't get WorkerService");
+            var hostedService = serviceProvider.GetService<IHostedService>() as LoggingQueuedHostedService ?? throw new Exception("Can't get LoggingQueuedHostedService");
+            await hostedService.StartAsync(CancellationToken.None);
+
+            await workerService.InitialStockAsync();
+            Assert.True(1 == 1);
+
+            await hostedService.StopAsync(CancellationToken.None);
+        }
     }
 }

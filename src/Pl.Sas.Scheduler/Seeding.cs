@@ -17,7 +17,7 @@ namespace Pl.Sas.Scheduler
                 marketDbContext.Schedules.Add(new Schedule()
                 {
                     Name = "Phân tích dòng tiền theo ngành",
-                    Type = 1
+                    Type = 12
                 });
 
                 marketDbContext.SaveChanges();

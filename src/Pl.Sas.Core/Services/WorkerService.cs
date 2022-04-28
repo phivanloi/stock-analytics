@@ -82,7 +82,7 @@ namespace Pl.Sas.Core.Services
             var insertStockTrackings = new List<StockTracking>();
             foreach (var datum in ssiAllStock.Data)
             {
-                if (string.IsNullOrEmpty(datum.Type) || datum.Type != "s" || datum.Type != "i")
+                if (string.IsNullOrEmpty(datum.Type) || (datum.Type != "s" && datum.Type != "i"))
                 {
                     _logger.LogInformation("Initial stock {Code} is ignore.", datum.Code);
                     continue;

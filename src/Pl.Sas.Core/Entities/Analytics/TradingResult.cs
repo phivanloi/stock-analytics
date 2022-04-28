@@ -55,6 +55,11 @@
         public float Profit { get; set; } = 0;
 
         /// <summary>
+        /// Phần trăm lợi nhuận
+        /// </summary>
+        public float ProfitPercent => (Profit - Capital) * 100 / Capital;
+
+        /// <summary>
         /// Tổng thuế phí giao dịch
         /// </summary>
         public float TotalTax { get; set; } = 0;
