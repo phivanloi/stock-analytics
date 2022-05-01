@@ -16,7 +16,7 @@ namespace Pl.Sas.UnitTests
         {
             var services = ConfigureServices.GetConfigureServices();
             var serviceProvider = services.BuildServiceProvider();
-            var crawlData = serviceProvider.GetService<ICrawlData>() ?? throw new Exception("Can't get ICrawlData");
+            var crawlData = serviceProvider.GetService<IDownloadData>() ?? throw new Exception("Can't get ICrawlData");
             var hostedService = serviceProvider.GetService<IHostedService>() as LoggingQueuedHostedService ?? throw new Exception("Can't get LoggingQueuedHostedService");
             await hostedService.StartAsync(CancellationToken.None);
 
@@ -31,7 +31,7 @@ namespace Pl.Sas.UnitTests
         {
             var services = ConfigureServices.GetConfigureServices();
             var serviceProvider = services.BuildServiceProvider();
-            var crawlData = serviceProvider.GetService<ICrawlData>() ?? throw new Exception("Can't get ICrawlData");
+            var crawlData = serviceProvider.GetService<IDownloadData>() ?? throw new Exception("Can't get ICrawlData");
             var hostedService = serviceProvider.GetService<IHostedService>() as LoggingQueuedHostedService ?? throw new Exception("Can't get LoggingQueuedHostedService");
             await hostedService.StartAsync(CancellationToken.None);
 
@@ -46,7 +46,7 @@ namespace Pl.Sas.UnitTests
         {
             var services = ConfigureServices.GetConfigureServices();
             var serviceProvider = services.BuildServiceProvider();
-            var crawlData = serviceProvider.GetService<ICrawlData>() ?? throw new Exception("Can't get ICrawlData");
+            var crawlData = serviceProvider.GetService<IDownloadData>() ?? throw new Exception("Can't get ICrawlData");
             var hostedService = serviceProvider.GetService<IHostedService>() as LoggingQueuedHostedService ?? throw new Exception("Can't get LoggingQueuedHostedService");
             await hostedService.StartAsync(CancellationToken.None);
 
@@ -61,7 +61,7 @@ namespace Pl.Sas.UnitTests
         {
             var services = ConfigureServices.GetConfigureServices();
             var serviceProvider = services.BuildServiceProvider();
-            var crawlData = serviceProvider.GetService<ICrawlData>() ?? throw new Exception("Can't get ICrawlData");
+            var crawlData = serviceProvider.GetService<IDownloadData>() ?? throw new Exception("Can't get ICrawlData");
             var hostedService = serviceProvider.GetService<IHostedService>() as LoggingQueuedHostedService ?? throw new Exception("Can't get LoggingQueuedHostedService");
             await hostedService.StartAsync(CancellationToken.None);
 

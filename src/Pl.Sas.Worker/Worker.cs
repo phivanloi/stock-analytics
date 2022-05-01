@@ -11,8 +11,8 @@ namespace Pl.Sas.Worker
     public class Worker : BackgroundService
     {
         private readonly ILogger<Worker> _logger;
-        private readonly IWorkerQueueService _workerQueueService;
         private readonly AppSettings _appSettings;
+        private readonly IWorkerQueueService _workerQueueService;
         private readonly IServiceScopeFactory _serviceScopeFactory;
 
         public Worker(
@@ -40,15 +40,19 @@ namespace Pl.Sas.Worker
         {
             _logger.LogDebug("Worker {version} starting at: {time}", _appSettings.AppVersion, DateTimeOffset.Now);
 
-            _workerQueueService.SubscribeWorkerTask(async (message) =>
+            _workerQueueService.SubscribeDownloadTask(async (message) =>
             {
                 using var scope = _serviceScopeFactory.CreateScope();
-                var workerService = scope.ServiceProvider.GetRequiredService<WorkerService>();
-                var updateMemoryMessage = await workerService.HandleEventAsync(message);
-                if (updateMemoryMessage is not null)
-                {
-                    _workerQueueService.BroadcastUpdateMemoryTask(updateMemoryMessage);
-                }
+                var downloadService = scope.ServiceProvider.GetRequiredService<DownloadService>();
+                await downloadService.HandleEventAsync(message);
+                scope.Dispose();
+            });
+
+            _workerQueueService.SubscribeAnalyticsTask(async (message) =>
+            {
+                using var scope = _serviceScopeFactory.CreateScope();
+                var analyticsService = scope.ServiceProvider.GetRequiredService<AnalyticsService>();
+                await analyticsService.HandleEventAsync(message);
                 scope.Dispose();
             });
 

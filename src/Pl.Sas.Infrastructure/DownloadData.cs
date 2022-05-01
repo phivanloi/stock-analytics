@@ -6,10 +6,10 @@ using System.Text.Json;
 
 namespace Pl.Sas.Infrastructure.Crawl
 {
-    public class CrawlData : ICrawlData
+    public class DownloadData : IDownloadData
     {
         private readonly HttpClient _httpClient;
-        public CrawlData(IHttpClientFactory httpClientFactory)
+        public DownloadData(IHttpClientFactory httpClientFactory)
         {
             _httpClient = httpClientFactory.CreateClient("downloader");
         }
@@ -149,6 +149,60 @@ namespace Pl.Sas.Infrastructure.Crawl
                 query = "query financialIndicator($symbol: String!, $yearReport: String, $lengthReport: String, $size: Int, $offset: Int) {financialIndicator(symbol: $symbol, yearReport: $yearReport, lengthReport: $lengthReport, size: $size, offset: $offset)}"
             };
             return await _httpClient.PostJsonAsync<SsiFinancialIndicator>(requestUrl, new StringContent(JsonSerializer.Serialize(financialIndicatorQuery), Encoding.UTF8, "application/json"));
+        }
+
+        public virtual async Task<SsiTransaction?> DownloadTransactionAsync(string stockNo)
+        {
+            var requestUrl = "https://gateway-iboard.ssi.com.vn/graphql";
+            var stockPriceSendQuery = new
+            {
+                operationName = "leTables",
+                variables = new
+                {
+                    stockNo
+                },
+                query = "query leTables($stockNo: String) {\n  leTables(stockNo: $stockNo) {\n    stockNo\n    price\n    vol\n    accumulatedVol\n    time\n    ref\n    side\n    __typename\n  }\n  stockRealtime(stockNo: $stockNo) {\n    stockNo\n    ceiling\n    floor\nrefPrice\n    stockSymbol\n    __typename\n  }\n}\n"
+            };
+            return await _httpClient.PostJsonAsync<SsiTransaction>(requestUrl, new StringContent(JsonSerializer.Serialize(stockPriceSendQuery), Encoding.UTF8, "application/json"));
+        }
+
+        public virtual async Task<List<SsiIndexPrice>> DownloadIndexPricesAsync(string symbol, long configTime)
+        {
+            var result = new List<SsiIndexPrice>();
+            var startTime = DateTimeOffset.FromUnixTimeSeconds(configTime);
+            for (int i = startTime.Year; i <= (DateTimeOffset.Now.Year + 1); i++)
+            {
+                await Task.Delay(100);
+                var fromTime = startTime.ToUnixTimeSeconds();
+                var toTime = startTime.AddYears(1).AddDays(1).ToUnixTimeSeconds();
+                var requestUrl = $"https://iboard.ssi.com.vn/dchart/api/history?resolution=D&symbol={symbol}&from={fromTime}&to={toTime}";
+                var ssiIndexPrices = await _httpClient.GetJsonAsync<SsiIndexPrice>(requestUrl);
+                if (ssiIndexPrices is not null)
+                {
+                    result.Add(ssiIndexPrices);
+                }
+                startTime = startTime.AddYears(1);
+            }
+            return result;
+        }
+
+        public virtual async Task<List<BankInterestRateObject>> DownloadBankInterestRateAsync(string periods = "3,6,12,24")
+        {
+            var result = new List<BankInterestRateObject>();
+            _httpClient.DefaultRequestHeaders.Add("Origin", $"https://dstock.vndirect.com.vn");
+            var lengthArray = periods.Split(',');
+            foreach (var length in lengthArray)
+            {
+                await Task.Delay(500);
+                var requestUrl = $"https://finfo-api.vndirect.com.vn/v4/macro_interests?q=customerType:PERSONAL~channel:COUNTER~paymentType:MATURITY~unit:MONTHLY~term:{length}";
+                var bankInterestRateObject = await _httpClient.GetJsonAsync<BankInterestRateObject>(requestUrl);
+                if (bankInterestRateObject is not null)
+                {
+                    result.Add(bankInterestRateObject);
+                }
+            }
+            _httpClient.DefaultRequestHeaders.Remove("Origin");
+            return result;
         }
     }
 }

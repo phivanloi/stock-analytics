@@ -12,6 +12,7 @@ using Pl.Sas.Infrastructure.Data;
 using Pl.Sas.Infrastructure.Helper;
 using Pl.Sas.Infrastructure.Loging;
 using Pl.Sas.Infrastructure.RabbitmqMessageQueue;
+using Pl.Sas.Infrastructure.System;
 using Pl.Sas.Scheduler;
 using System.Net;
 using System.Reflection;
@@ -29,6 +30,13 @@ builder.Services.AddOptions();
 builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
 builder.Services.Configure<ConnectionStrings>(builder.Configuration.GetSection("ConnectionStrings"));
 
+builder.Services.AddDbContext<SystemDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("SystemConnection"),
+    sqlServerOptionsAction: sqlOptions =>
+    {
+        sqlOptions.MigrationsAssembly(typeof(Program).GetTypeInfo().Assembly.GetName().Name);
+        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+    }));
 builder.Services.AddDbContext<MarketDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("MarketConnection"),
     sqlServerOptionsAction: sqlOptions =>
@@ -46,6 +54,7 @@ builder.Services.AddDbContext<AnalyticsDbContext>(options =>
 
 builder.Services.AddHealthChecks()
     .AddCheck("self", () => HealthCheckResult.Healthy())
+    .AddSqlServer(builder.Configuration.GetConnectionString("SystemConnection"), name: "system-database", tags: new string[] { "system_database", "31_db" })
     .AddSqlServer(builder.Configuration.GetConnectionString("AnalyticsConnection"), name: "analytics-database", tags: new string[] { "analytics_database", "31_db" })
     .AddSqlServer(builder.Configuration.GetConnectionString("MarketConnection"), name: "market-database", tags: new string[] { "market_database", "31_db" })
     .AddRedis(builder.Configuration.GetConnectionString("CacheConnection"), name: "redis-cache", tags: new string[] { "redis_cache", "31_redis" })
@@ -88,9 +97,13 @@ else
     app.UseDeveloperExceptionPage();
 }
 
+app.MigrateDbContext<SystemDbContext>((context, services) =>
+{
+    services.SystemDbSeed(context);
+    app.Logger.LogInformation("SystemDbContext migrations at {Now}", DateTime.Now);
+});
 app.MigrateDbContext<MarketDbContext>((context, services) =>
 {
-    services.MarketSeed(context);
     app.Logger.LogInformation("MarketDbContext migrations at {Now}", DateTime.Now);
 });
 app.MigrateDbContext<AnalyticsDbContext>((context, services) =>

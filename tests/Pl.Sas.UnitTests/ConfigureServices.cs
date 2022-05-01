@@ -78,7 +78,7 @@ namespace Pl.Sas.UnitTests
                 })
             );
 
-            services.AddSingleton<ICrawlData, CrawlData>();
+            services.AddSingleton<IDownloadData, DownloadData>();
             services.AddScoped<IMarketData, MarketData>();
             services.AddScoped<IAnalyticsData, AnalyticsData>();
             services.AddScoped<WorkerService>();

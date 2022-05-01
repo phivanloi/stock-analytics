@@ -11,14 +11,18 @@ namespace Pl.Sas.Core
         /// <param name="message">Nội dung thông báo cần thêm</param>
         /// <param name="type">
         /// Loại thông báo
+        /// <para>-2 nguy hiểm</para>
         /// <para>-1 cảnh báo</para>
         /// <para>0 bình thường</para>
         /// <para>1 là tốt</para>
+        /// <para>2 là rất tốt</para>
         /// </param>
         /// <param name="guideLink">Đường link tìm hiểu về phân tích này</param>
-        public static void Add(this List<AnalyticsNote> analyticsNotes, string message, int score, int type, string? guideLink = null)
+        /// <returns>score</returns>
+        public static int Add(this List<AnalyticsNote> analyticsNotes, string message, int score, int type, string? guideLink = null)
         {
             analyticsNotes.Add(new AnalyticsNote(message, score, type, guideLink));
+            return score;
         }
 
         /// <summary>

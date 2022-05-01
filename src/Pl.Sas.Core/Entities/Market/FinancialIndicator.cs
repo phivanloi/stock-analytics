@@ -6,7 +6,7 @@
     public class FinancialIndicator : BaseEntity
     {
         /// <summary>
-        /// Mã cổ phiếu
+        /// Mã chứng khoán <see cref="Stock"/>
         /// </summary>
         public string Symbol { get; set; } = null!;
 

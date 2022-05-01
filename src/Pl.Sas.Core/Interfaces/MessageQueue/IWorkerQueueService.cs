@@ -11,10 +11,16 @@ namespace Pl.Sas.Core.Interfaces
         void BroadcastUpdateMemoryTask(QueueMessage queueMessage);
 
         /// <summary>
-        /// Lắng nghe một sự kiện được yêu cầu worker xử lý
+        /// Lắng nghe sư kiện yêu cầu phân tích dữ liệu
         /// </summary>
         /// <param name="func">Hàm xử lý</param>
-        void SubscribeWorkerTask(Func<QueueMessage, Task> func);
+        void SubscribeAnalyticsTask(Func<QueueMessage, Task> func);
+
+        /// <summary>
+        /// Lắng nghe một sự kiện download dữ liệu
+        /// </summary>
+        /// <param name="func">Hàm xử lý</param>
+        void SubscribeDownloadTask(Func<QueueMessage, Task> func);
 
         /// <summary>
         /// Thu hồi tài nguyên

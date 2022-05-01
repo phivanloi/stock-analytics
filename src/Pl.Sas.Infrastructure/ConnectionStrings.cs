@@ -3,6 +3,11 @@
     public class ConnectionStrings
     {
         /// <summary>
+        /// Chuỗi kết nối đến db hệ thống
+        /// </summary>
+        public string SystemConnection { get; set; } = null!;
+
+        /// <summary>
         /// Chuỗi kết nối đến db market lưu dữ liệu gốc crawler về
         /// </summary>
         public string MarketConnection { get; set; } = null!;

@@ -5,7 +5,7 @@ namespace Pl.Sas.Core.Entities
     public class Leadership : BaseEntity
     {
         /// <summary>
-        /// mã cổ phiếu
+        /// Mã chứng khoán <see cref="Stock"/>
         /// </summary>
         public string Symbol { get; set; } = null!;
 

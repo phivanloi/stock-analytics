@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Pl.Sas.Core.Entities;
 
-namespace Pl.Sas.Infrastructure.Data
+namespace Pl.Sas.Infrastructure.Market
 {
     public class MarketDbContext : DbContext
     {
@@ -18,7 +18,8 @@ namespace Pl.Sas.Infrastructure.Data
         public virtual DbSet<FiinEvaluated> FiinEvaluates { get; set; } = null!;
         public virtual DbSet<StockRecommendation> StockRecommendations { get; set; } = null!;
         public virtual DbSet<VndStockScore> VndStockScores { get; set; } = null!;
-        public virtual DbSet<Schedule> Schedules { get; set; } = null!;
+        public virtual DbSet<StockTransaction> StockTransactions { get; set; } = null!;
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -132,7 +133,7 @@ namespace Pl.Sas.Infrastructure.Data
 
             #endregion CorporateAction
 
-            #region FiinEvaluate
+            #region FiinEvaluated
 
             modelBuilder.Entity<FiinEvaluated>(b =>
             {
@@ -176,17 +177,16 @@ namespace Pl.Sas.Infrastructure.Data
 
             #endregion VndStockScore
 
-            #region Schedules
+            #region StockTransaction
 
-            modelBuilder.Entity<Schedule>(b =>
+            modelBuilder.Entity<StockTransaction>(b =>
             {
                 b.Property(c => c.Id).HasMaxLength(22).IsRequired();
-                b.Property(p => p.Name).HasMaxLength(128);
-                b.Property(p => p.DataKey).HasMaxLength(64);
-                b.HasIndex(p => p.ActiveTime);
+                b.Property(p => p.Symbol).HasMaxLength(16).IsRequired();
+                b.HasIndex(p => new { p.Symbol, p.TradingDate });
             });
 
-            #endregion Schedules
+            #endregion
         }
     }
 }

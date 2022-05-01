@@ -17,9 +17,11 @@
 
         /// <summary>
         /// Trạng thái kết quả
+        /// <para>-2 nguy hiểm</para>
         /// <para>-1 cảnh báo</para>
         /// <para>0 bình thường</para>
         /// <para>1 là tốt</para>
+        /// <para>1 là rất tốt</para>
         /// </summary>
         public int Type { get; set; } = 0;
 

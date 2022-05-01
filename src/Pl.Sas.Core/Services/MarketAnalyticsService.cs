@@ -11,9 +11,9 @@ namespace Pl.Sas.Core.Services
         /// <param name="stockPrices">Lịch sửa giá của cổ phiếu</param>
         /// <param name="indicatorSets">Tập hợp các chỉ báo kỹ thuật của index</param>
         /// <returns>int</returns>
-        public static int IndexValueTrend(List<AnalyticsMessage> notes, List<StockPrice> stockPrices, Dictionary<string, IndicatorSet> indicatorSets)
+        public static int IndexValueTrend(List<AnalyticsNote> notes, List<StockPrice> stockPrices, Dictionary<string, IndicatorSet> indicatorSets)
         {
-            if (stockPrices?.Count < 2)
+            if (stockPrices.Count < 2)
             {
                 notes.Add($"Chưa có đủ lịch sử chỉ số để phân tích su thế thị trường.", -1, -1, null);
                 return -1;
@@ -43,7 +43,7 @@ namespace Pl.Sas.Core.Services
             var changePecent = stockPrices[0].ClosePrice.GetPercent(stockPrices[1].ClosePrice);
             if (changePecent > 0)
             {
-                if (changePecent > 1.5M)
+                if (changePecent > 1.5f)
                 {
                     subScore += 2;
                 }
@@ -54,7 +54,7 @@ namespace Pl.Sas.Core.Services
             }
             else
             {
-                if (changePecent < -1.5M)
+                if (changePecent < -1.5f)
                 {
                     subScore -= 2;
                 }
@@ -64,7 +64,7 @@ namespace Pl.Sas.Core.Services
                 }
             }
 
-            if (indicatorSets?.Count > 1)
+            if (indicatorSets.Count > 1)
             {
                 if (stockPrices[0].ClosePriceAdjusted > indicatorSets[stockPrices[0].DatePath].Values[$"ema-5"])
                 {
@@ -129,39 +129,6 @@ namespace Pl.Sas.Core.Services
             }
             notes.Add(note, score, type, "https://vcbs.com.vn/vn/Utilities/Index/52");
             return score;
-        }
-
-        /// <summary>
-        /// Kiểm tra khối lượng giao dịch trung bình 5 phiên, hiện chưa xử lý
-        /// </summary>
-        /// <param name="notes">Ghi chú</param>
-        /// <param name="stockPrices">Danh sách lịch sử giá</param>
-        /// <returns>int</returns>
-        public static int MatchVolTrend(List<AnalyticsMessage> notes, List<StockPrice> stockPrices)
-        {
-            if (stockPrices?.Count < 2)
-            {
-                notes.Add($"Chưa có đủ lịch sử chỉ số để phân tích khối lượng thị trường.", -1, -1, null);
-                return -1;
-            }
-
-            //var type = 0;
-            var score = 0;
-            //var note = "";
-            var priceArray = stockPrices.ToArray();
-            var avgMatchVol = stockPrices.ToArray()[..2].Average(q => q.TotalMatchVol);
-            var avgMatchVolLast = stockPrices.ToArray()[2..5].Average(q => q.TotalMatchVol);
-            var changePecent = avgMatchVol.GetPercent(avgMatchVolLast);
-            if (changePecent > 0)
-            {
-                score++;
-            }
-            else
-            {
-                score--;
-            }
-            //notes.Add(note, score, type, null);
-            return 0;
         }
     }
 }

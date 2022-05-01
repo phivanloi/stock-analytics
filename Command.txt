@@ -4,6 +4,10 @@
 	dotnet tool update --global dotnet-ef
 	dotnet add package Microsoft.EntityFrameworkCore.Design
 
+- Tạo db migrations cho system db
+	dotnet ef migrations add InitialCreate --context SystemDbContext --output-dir "Migrations\SystemDb"
+	dotnet ef migrations remove --context SystemDbContext
+
 - Tạo db migrations cho db stock
 	dotnet ef migrations add InitialCreate --context MarketDbContext --output-dir "Migrations\MarketDb"
 	dotnet ef migrations remove --context MarketDbContext
@@ -118,6 +122,3 @@
 		database_id = DB_ID()
 	GROUP BY 
 		database_id
-
-
-https://iboard.ssi.com.vn/dchart/api/history?resolution=D&symbol=VN30&from=1506773203&to=1650901263

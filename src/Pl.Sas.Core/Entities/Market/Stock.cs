@@ -5,15 +5,8 @@
     /// </summary>
     public class Stock : BaseEntity
     {
-        public Stock() { }
-
-        public Stock(string symbol)
-        {
-            Symbol = symbol;
-        }
-
         /// <summary>
-        /// mã giao dịch
+        /// Mã chứng khoán
         /// </summary>
         public string Symbol { get; set; } = null!;
 

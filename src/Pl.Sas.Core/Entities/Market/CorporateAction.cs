@@ -6,7 +6,7 @@
     public class CorporateAction : BaseEntity
     {
         /// <summary>
-        /// Mã chứng khoán
+        /// Mã chứng khoán <see cref="Stock"/>
         /// </summary>
         public string Symbol { get; set; } = null!;
 

@@ -8,6 +8,13 @@ namespace Pl.Sas.Core.Interfaces
     public interface IMarketData
     {
         /// <summary>
+        /// Ghi lại lịch sử giao dịch chứng khoán
+        /// </summary>
+        /// <param name="stockTransaction">Thông tin giao dịch</param>
+        /// <returns>bool</returns>
+        Task<bool> SaveStockTransactionAsync(StockTransaction stockTransaction);
+
+        /// <summary>
         /// Xử lý ghi lại điểm đánh giá chứng khoán của vnd
         /// </summary>
         /// <param name="vndStockScores">Thông tin đánh giá</param>
@@ -45,22 +52,6 @@ namespace Pl.Sas.Core.Interfaces
         Task<StockPrice?> GeStockPriceAsync(string symbol, DateTime tradingDate);
 
         /// <summary>
-        /// Update lại giá trị options của lịch
-        /// </summary>
-        /// <param name="schedule">Lịch cần update</param>
-        /// <param name="key">Khóa</param>
-        /// <param name="value">Giá trị</param>
-        /// <returns></returns>
-        Task<bool> UpdateKeyOptionScheduleAsync(Schedule schedule, string key, string value);
-
-        /// <summary>
-        /// Hàm update lịch
-        /// </summary>
-        /// <param name="schedule">Thông tin lịch cần update</param>
-        /// <returns>bool</returns>
-        Task<bool> UpdateScheduleAsync(Schedule schedule);
-
-        /// <summary>
         /// Thêm mới hoạt động của công ty
         /// </summary>
         /// <param name="insertItems">Danh sách dữ liệu thêm mới</param>
@@ -68,18 +59,11 @@ namespace Pl.Sas.Core.Interfaces
         Task<bool> InsertCorporateActionAsync(List<CorporateAction> insertItems);
 
         /// <summary>
-        /// Lấy danh sách hoạt động của công ty
+        /// Lấy danh sách hoạt động của công ty cho xử download
         /// </summary>
         /// <param name="symbol">Mã chứng khoán</param>
         /// <returns>List CorporateAction</returns>
-        Task<List<CorporateAction>> GetCorporateActionsAsync(string symbol);
-
-        /// <summary>
-        /// Thêm mới một danh sách lịch
-        /// </summary>
-        /// <param name="schedules">Danh sách lịch cần thêm mới</param>
-        /// <returns>bool</returns>
-        Task<bool> InsertScheduleAsync(List<Schedule> schedules);
+        Task<List<CorporateAction>> GetCorporateActionsForCheckDownloadAsync(string symbol);
 
         /// <summary>
         /// Hàm tạo và update các cổ phiếu
@@ -88,20 +72,6 @@ namespace Pl.Sas.Core.Interfaces
         /// <param name="updateItems">Danh sách các cổ phiếu cần update</param>
         /// <returns>bool</returns>
         Task<bool> InitialStockAsync(List<Stock> insertItems, List<Stock> updateItems);
-
-        /// <summary>
-        /// Lấy thông tin đầy đủ của một Schedule
-        /// </summary>
-        /// <param name="id">Id cần lấy</param>
-        /// <returns>Schedule</returns>
-        Task<Schedule?> GetScheduleByIdAsync(string id);
-
-        /// <summary>
-        /// Lấy thông tin đầy đủ của một Schedule trên cache
-        /// </summary>
-        /// <param name="id">Id cần lấy</param>
-        /// <returns>Schedule</returns>
-        Task<Schedule?> CacheGetScheduleByIdAsync(string id);
 
         /// <summary>
         /// Lấy danh sách toàn bộ mã trong hệ thống đang có và chuyển sang dictionary symbol, obj

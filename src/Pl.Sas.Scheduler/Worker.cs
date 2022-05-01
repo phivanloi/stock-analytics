@@ -39,7 +39,11 @@ namespace Pl.Sas.Scheduler
                 {
                     foreach (var schedule in schedules)
                     {
-                        _schedulerQueueService.PublishWorkerTask(new(schedule.Id));
+                        if (schedule.Type < 99)
+                        {
+                            _schedulerQueueService.PublishDownloadTask(new(schedule.Id));
+                        }
+                        
                         schedule.ApplyActiveTime(DateTime.Now);
                     }
                     marketDbContext.SaveChanges();

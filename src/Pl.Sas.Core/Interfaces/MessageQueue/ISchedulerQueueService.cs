@@ -8,7 +8,7 @@ namespace Pl.Sas.Core.Interfaces
         /// Gửi một nhiệm vụ cho worker task
         /// </summary>
         /// <param name="queueMessage">Thông tin nhiệm vụ</param>
-        void PublishWorkerTask(QueueMessage queueMessage);
+        void PublishDownloadTask(QueueMessage queueMessage);
 
         /// <summary>
         /// Thu hồi tài nguyên

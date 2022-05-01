@@ -1,0 +1,75 @@
+﻿using Microsoft.EntityFrameworkCore;
+using Pl.Sas.Core;
+using Pl.Sas.Core.Entities;
+using Pl.Sas.Core.Interfaces;
+using System.Text.Json;
+
+namespace Pl.Sas.Infrastructure.System
+{
+    /// <summary>
+    /// Lớp xử lỹ liệu của các thành phần hệ thống
+    /// </summary>
+    public class SystemData : ISystemData
+    {
+        private readonly SystemDbContext _systemDbContext;
+        private readonly IMemoryCacheService _memoryCacheService;
+
+        public SystemData(
+            IMemoryCacheService memoryCacheService,
+            SystemDbContext systemDbContext)
+        {
+            _systemDbContext = systemDbContext;
+            _memoryCacheService = memoryCacheService;
+        }
+
+        public virtual async Task<bool> SetKeyValue<T>(string key, T value)
+        {
+            var updateItem = _systemDbContext.KeyValues.FirstOrDefault(x => x.Key == key);
+            if (updateItem == null)
+            {
+                _systemDbContext.KeyValues.Add(new() { Key = key, Value = JsonSerializer.Serialize(value) });
+            }
+            else
+            {
+                updateItem.Value = JsonSerializer.Serialize(value);
+                updateItem.UpdatedTime = DateTime.Now;
+            }
+            return await _systemDbContext.SaveChangesAsync() > 0;
+        }
+
+        public virtual async Task<Schedule?> GetScheduleByIdAsync(string id)
+        {
+            return await _systemDbContext.Schedules.FirstOrDefaultAsync(s => s.Id == id);
+        }
+
+        public virtual async Task<bool> UpdateScheduleAsync(Schedule schedule)
+        {
+            schedule.UpdatedTime = DateTime.Now;
+            return await _systemDbContext.SaveChangesAsync() > 0;
+        }
+
+        public virtual async Task<Schedule?> CacheGetScheduleByIdAsync(string id)
+        {
+            var cacheKey = $"{Constants.ScheduleCachePrefix}-CGSBIA{id}";
+            return await _memoryCacheService.GetOrCreateAsync(cacheKey, async () =>
+            {
+                var item = await _systemDbContext.Schedules.FirstOrDefaultAsync(s => s.Id == id);
+                if (item != null)
+                {
+                    _systemDbContext.Entry(item).State = EntityState.Detached;
+                }
+                return item;
+            }, Constants.DefaultCacheTime * 60 * 24);
+        }
+
+        public virtual async Task<bool> InsertScheduleAsync(List<Schedule> schedules)
+        {
+            if (schedules.Count > 0)
+            {
+                _systemDbContext.Schedules.AddRange(schedules);
+                return await _systemDbContext.SaveChangesAsync() > 0;
+            }
+            return false;
+        }
+    }
+}

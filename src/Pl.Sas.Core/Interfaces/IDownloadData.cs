@@ -2,7 +2,8 @@
 
 namespace Pl.Sas.Core.Interfaces
 {
-    public interface ICrawlData
+    //Tổng hợp các nghiệp vụ download dữ liệu
+    public interface IDownloadData
     {
         /// <summary>
         /// Lấy danh sách cổ phiếu bắt đầu từ ssi
@@ -74,5 +75,27 @@ namespace Pl.Sas.Core.Interfaces
         /// <param name="symbol">mã chứng khoán</param>
         /// <returns>SsiFinancialIndicator?</returns>
         Task<SsiFinancialIndicator?> DownloadFinancialIndicatorAsync(string symbol);
+
+        /// <summary>
+        /// Lấy dữ liệu giao dịch trong 1 phiên
+        /// </summary>
+        /// <param name="stockNo">Mã chứng khoán bên ssi</param>
+        /// <returns>SsiTransaction?</returns>
+        Task<SsiTransaction?> DownloadTransactionAsync(string stockNo);
+
+        /// <summary>
+        /// Tải thông tin chỉ số
+        /// </summary>
+        /// <param name="symbol">Mã chỉ số</param>
+        /// <param name="configTime">Cấu hình thời gian bắt đầu lấy</param>
+        /// <returns>List SsiIndexPrice</returns>
+        Task<List<SsiIndexPrice>> DownloadIndexPricesAsync(string symbol, long configTime);
+
+        /// <summary>
+        /// Lấy lãi suất ngân hàng cao nhất với các kỳ hạn được chuyền vào
+        /// </summary>
+        /// <param name="periods">Danh sách kỳ hạn cách nhau 1 dấu ,</param>
+        /// <returns>List BankInterestRateObject</returns>
+        Task<List<BankInterestRateObject>> DownloadBankInterestRateAsync(string periods = "3,6,12,24");
     }
 }

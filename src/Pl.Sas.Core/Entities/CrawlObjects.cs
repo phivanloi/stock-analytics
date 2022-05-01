@@ -665,4 +665,124 @@ namespace Pl.Sas.Core.Entities.CrawlObjects
         public string Locale { get; set; } = null!;
     }
     #endregion
+
+    #region Transaction
+
+    public class SsiTransaction
+    {
+        [JsonPropertyName("data")]
+        public SsiTransactionJsonObject Data { get; set; } = null!;
+    }
+
+    public class SsiTransactionJsonObject
+    {
+        [JsonPropertyName("leTables")]
+        public LetableTransaction[] LeTables { get; set; } = null!;
+    }
+
+    public class LetableTransaction
+    {
+        [JsonPropertyName("stockNo")]
+        public string StockNo { get; set; } = null!;
+
+        [JsonPropertyName("price")]
+        public int Price { get; set; }
+
+        [JsonPropertyName("vol")]
+        public int Vol { get; set; }
+
+        [JsonPropertyName("accumulatedVol")]
+        public int AccumulatedVol { get; set; }
+
+        [JsonPropertyName("time")]
+        public string Time { get; set; } = null!;
+
+        [JsonPropertyName("side")]
+        public string Side { get; set; } = null!;
+
+        [JsonPropertyName("_ref")]
+        public int RefPrice { get; set; }
+    }
+
+    #endregion Transaction
+
+    #region Index price
+
+    public class SsiIndexPrice
+    {
+        [JsonPropertyName("t")]
+        public int[] Time { get; set; } = null!;
+
+        [JsonPropertyName("c")]
+        public float[] Close { get; set; } = null!;
+
+        [JsonPropertyName("o")]
+        public float[] Open { get; set; } = null!;
+
+        [JsonPropertyName("h")]
+        public float[] Highest { get; set; } = null!;
+
+        [JsonPropertyName("l")]
+        public float[] Lowest { get; set; } = null!;
+
+        [JsonPropertyName("v")]
+        public int[] Volumes { get; set; } = null!;
+
+        [JsonPropertyName("s")]
+        public string Status { get; set; } = null!;
+    }
+
+    #endregion
+
+    #region VndBankInterestRate
+
+    public class BankInterestRateObject
+    {
+        [JsonPropertyName("data")]
+        public BankInterestRateItem[] Data { get; set; } = null!;
+    }
+
+    public class BankInterestRateItem
+    {
+        [JsonPropertyName("code")]
+        public string Code { get; set; } = null!;
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = null!;
+
+        [JsonPropertyName("channel")]
+        public string Channel { get; set; } = null!;
+
+        [JsonPropertyName("effectiveDate")]
+        public string EffectiveDate { get; set; } = null!;
+
+        [JsonPropertyName("interestRate")]
+        public float InterestRate { get; set; }
+
+        [JsonPropertyName("source")]
+        public string Source { get; set; } = null!;
+
+        [JsonPropertyName("term")]
+        public float? Term { get; set; }
+
+        [JsonPropertyName("minLimit")]
+        public float? MinLimit { get; set; }
+
+        [JsonPropertyName("maxLimit")]
+        public float? MaxLimit { get; set; }
+
+        [JsonPropertyName("paymentType")]
+        public string PaymentType { get; set; } = null!;
+
+        [JsonPropertyName("customerType")]
+        public string CustomerType { get; set; } = null!;
+
+        [JsonPropertyName("currency")]
+        public string Currency { get; set; } = null!;
+
+        [JsonPropertyName("unit")]
+        public string Unit { get; set; } = null!;
+    }
+
+    #endregion
 }

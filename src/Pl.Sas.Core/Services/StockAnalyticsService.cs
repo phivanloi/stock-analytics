@@ -8,12 +8,12 @@ namespace Pl.Sas.Core.Services
         /// Phân tích su thế của giá cổ phiếu
         /// </summary>
         /// <param name="notes">Ghi chú</param>
-        /// <param name="stockPriceAdjs">Danh sách lịch sử giao dịch, sắp sếp theo phiên diao dịch gần nhất lên đầu</param>
+        /// <param name="stockPrices">Danh sách lịch sử giao dịch, sắp sếp theo phiên diao dịch gần nhất lên đầu</param>
         /// <param name="exchangeFluctuationsRate">Tỉ lệ tăng giảm tối đa của sàn mà chứng khoán liêm yết</param>
         /// <returns>int</returns>
-        public static int LastTradingAnalytics(List<AnalyticsMessage> notes, List<StockPriceAdj> stockPriceAdjs, decimal exchangeFluctuationsRate)
+        public static int LastTradingAnalytics(List<AnalyticsNote> notes, List<StockPrice> stockPrices, float exchangeFluctuationsRate)
         {
-            if (stockPriceAdjs?.Count < 2)
+            if (stockPrices.Count < 2)
             {
                 notes.Add($"Chưa có đủ lịch sử giá để phân tích.", -5, -1, null);
                 return -5;
@@ -23,12 +23,12 @@ namespace Pl.Sas.Core.Services
             var score = 0;
             var note = string.Empty;
 
-            var priceChange = stockPriceAdjs[0].ClosePrice.GetPercent(stockPriceAdjs[1].ClosePrice);
+            var priceChange = stockPrices[0].ClosePrice.GetPercent(stockPrices[1].ClosePrice);
             if (priceChange == 0)// Giá không có biến động
             {
                 note += $"Giá không thay đổi,";
             }
-            else if (Math.Abs(priceChange) > (exchangeFluctuationsRate - (exchangeFluctuationsRate * 0.15M)))//Mức biến động giá lớn
+            else if (Math.Abs(priceChange) > (exchangeFluctuationsRate - (exchangeFluctuationsRate * 0.15f)))//Mức biến động giá lớn
             {
                 if (priceChange < 0)
                 {
@@ -43,7 +43,7 @@ namespace Pl.Sas.Core.Services
                     type = 3;
                 }
             }
-            else if (Math.Abs(priceChange) > (exchangeFluctuationsRate - (exchangeFluctuationsRate * 0.5M)))//Mức biến động giá khá lớn
+            else if (Math.Abs(priceChange) > (exchangeFluctuationsRate - (exchangeFluctuationsRate * 0.5f)))//Mức biến động giá khá lớn
             {
                 if (priceChange < 0)
                 {
@@ -85,9 +85,9 @@ namespace Pl.Sas.Core.Services
         /// <param name="notes">Danh sách ghi chú</param>
         /// <param name="indicators">Danh sách chỉ báo kỹ thuật</param>
         /// <returns></returns>
-        public static int StochasticTrend(List<AnalyticsMessage> notes, Dictionary<string, IndicatorSet> indicators)
+        public static int StochasticTrend(List<AnalyticsNote> notes, Dictionary<string, IndicatorSet> indicators)
         {
-            if (indicators?.Count < 2)
+            if (indicators.Count < 2)
             {
                 notes.Add($"Chưa có đủ danh sách chỉ báo để phân tích phân tích Stochastic.", -1, -1, null);
                 return -1;
@@ -114,7 +114,7 @@ namespace Pl.Sas.Core.Services
                 note = $"Chỉ báo Stochastic(14) {checkList[0].Values["stochastic-14"]:0.0} đang ở trạng thái bình thường.";
             }
 
-            if (checkList[0].Values["stochastic-14"] > (checkList[1].Values["stochastic-14"] + (checkList[1].Values["stochastic-14"] * 0.05M)))
+            if (checkList[0].Values["stochastic-14"] > (checkList[1].Values["stochastic-14"] + (checkList[1].Values["stochastic-14"] * 0.05f)))
             {
                 note += " Chỉ báo Stochastic(14) phiên gần nhất lớn hơn phiên trước + 5% đó.";
                 score++;
@@ -136,9 +136,9 @@ namespace Pl.Sas.Core.Services
         /// <param name="indicators">Chỉ báo quỹ thuật của lịch sử giá cần phân tích</param>
         /// <param name="lastTradingPrice">Thông tin phiên giao dịch cuối cùng</param>
         /// <returns></returns>
-        public static int EmaTrend(List<AnalyticsMessage> notes, Dictionary<string, IndicatorSet> indicators, StockPriceAdj lastTradingPrice)
+        public static int EmaTrend(List<AnalyticsNote> notes, Dictionary<string, IndicatorSet> indicators, StockPrice lastTradingPrice)
         {
-            if (indicators?.Count < 1)
+            if (indicators.Count < 1)
             {
                 notes.Add($"Chưa có đủ danh sách chỉ báo để phân tích phân tích.", -1, -1, null);
                 return -1;
@@ -219,9 +219,9 @@ namespace Pl.Sas.Core.Services
         /// <param name="notes">Ghi chú</param>
         /// <param name="stockPrices">Lịch sửa giá của cổ phiếu</param>
         /// <returns>int</returns>
-        public static int PriceTrend(List<AnalyticsMessage> notes, List<StockPriceAdj> stockPriceAdjs)
+        public static int PriceTrend(List<AnalyticsNote> notes, List<StockPrice> stockPrices)
         {
-            if (stockPriceAdjs?.Count < 1)
+            if (stockPrices.Count < 1)
             {
                 notes.Add($"Chưa có đủ lịch sử giá để phân tích.", -1, -1, null);
                 return -1;
@@ -229,10 +229,10 @@ namespace Pl.Sas.Core.Services
 
             var type = 0;
             var score = 0;
-            var (equalCount, increaseCount, reductionCount, fistEqualCount, fistGrowCount, fistDropCount, percents) = stockPriceAdjs.GetFluctuationsTopDown(q => q.ClosePrice);
+            var (equalCount, increaseCount, reductionCount, fistEqualCount, fistGrowCount, fistDropCount, percents) = stockPrices.GetFluctuationsTopDown(q => q.ClosePrice);
 
             var avgPercent = percents.Average();
-            var note = $"Tăng trưởng giá trung bình {stockPriceAdjs.Count} phiên {avgPercent:0,0}%";
+            var note = $"Tăng trưởng giá trung bình {stockPrices.Count} phiên {avgPercent:0,0}%";
             if (fistEqualCount > 0)
             {
                 note += $", duy trì trong {fistEqualCount} phiên đến hiện tại.";
@@ -264,51 +264,51 @@ namespace Pl.Sas.Core.Services
                 note += $" giảm {reductionCount} phiên. ";
             }
 
-            if (stockPriceAdjs.Count > 5)
+            if (stockPrices.Count > 5)
             {
-                if (stockPriceAdjs[0].ClosePrice > stockPriceAdjs[5].ClosePrice)
+                if (stockPrices[0].ClosePrice > stockPrices[5].ClosePrice)
                 {
-                    note += $"Biến động giá 5 phiên tăng {stockPriceAdjs[0].ClosePrice.GetPercent(stockPriceAdjs[5].ClosePrice):0,0}%.";
+                    note += $"Biến động giá 5 phiên tăng {stockPrices[0].ClosePrice.GetPercent(stockPrices[5].ClosePrice):0,0}%.";
                 }
                 else
                 {
-                    note += $"Biến động giá 5 phiên giảm {stockPriceAdjs[0].ClosePrice.GetPercent(stockPriceAdjs[5].ClosePrice):0,0}%.";
+                    note += $"Biến động giá 5 phiên giảm {stockPrices[0].ClosePrice.GetPercent(stockPrices[5].ClosePrice):0,0}%.";
                 }
             }
 
-            if (stockPriceAdjs.Count > 10)
+            if (stockPrices.Count > 10)
             {
-                if (stockPriceAdjs[0].ClosePrice > stockPriceAdjs[10].ClosePrice)
+                if (stockPrices[0].ClosePrice > stockPrices[10].ClosePrice)
                 {
-                    note += $"Biến động giá 10 phiên tăng {stockPriceAdjs[0].ClosePrice.GetPercent(stockPriceAdjs[10].ClosePrice):0,0}%.";
+                    note += $"Biến động giá 10 phiên tăng {stockPrices[0].ClosePrice.GetPercent(stockPrices[10].ClosePrice):0,0}%.";
                 }
                 else
                 {
-                    note += $"Biến động giá 10 phiên giảm {stockPriceAdjs[0].ClosePrice.GetPercent(stockPriceAdjs[10].ClosePrice):0,0}%.";
+                    note += $"Biến động giá 10 phiên giảm {stockPrices[0].ClosePrice.GetPercent(stockPrices[10].ClosePrice):0,0}%.";
                 }
             }
 
-            if (stockPriceAdjs.Count > 20)
+            if (stockPrices.Count > 20)
             {
-                if (stockPriceAdjs[0].ClosePrice > stockPriceAdjs[20].ClosePrice)
+                if (stockPrices[0].ClosePrice > stockPrices[20].ClosePrice)
                 {
-                    note += $"Biến động giá 20 phiên tăng {stockPriceAdjs[0].ClosePrice.GetPercent(stockPriceAdjs[20].ClosePrice):0,0}%.";
+                    note += $"Biến động giá 20 phiên tăng {stockPrices[0].ClosePrice.GetPercent(stockPrices[20].ClosePrice):0,0}%.";
                 }
                 else
                 {
-                    note += $"Biến động giá 20 phiên giảm {stockPriceAdjs[0].ClosePrice.GetPercent(stockPriceAdjs[20].ClosePrice):0,0}%.";
+                    note += $"Biến động giá 20 phiên giảm {stockPrices[0].ClosePrice.GetPercent(stockPrices[20].ClosePrice):0,0}%.";
                 }
             }
 
-            if (stockPriceAdjs.Count > 50)
+            if (stockPrices.Count > 50)
             {
-                if (stockPriceAdjs[0].ClosePrice > stockPriceAdjs[50].ClosePrice)
+                if (stockPrices[0].ClosePrice > stockPrices[50].ClosePrice)
                 {
-                    note += $"Biến động giá 50 phiên tăng {stockPriceAdjs[0].ClosePrice.GetPercent(stockPriceAdjs[50].ClosePrice):0,0}%.";
+                    note += $"Biến động giá 50 phiên tăng {stockPrices[0].ClosePrice.GetPercent(stockPrices[50].ClosePrice):0,0}%.";
                 }
                 else
                 {
-                    note += $"Biến động giá 50 phiên giảm {stockPriceAdjs[0].ClosePrice.GetPercent(stockPriceAdjs[50].ClosePrice):0,0}%.";
+                    note += $"Biến động giá 50 phiên giảm {stockPrices[0].ClosePrice.GetPercent(stockPrices[50].ClosePrice):0,0}%.";
                 }
             }
 
@@ -322,7 +322,7 @@ namespace Pl.Sas.Core.Services
         /// <param name="notes">Ghi chú</param>
         /// <param name="stockPrices">Danh sách lịch sử giá</param>
         /// <returns>int</returns>
-        public static int MatchVolCheck(List<AnalyticsMessage> notes, List<StockPrice> stockPrices)
+        public static int MatchVolCheck(List<AnalyticsNote> notes, List<StockPrice> stockPrices)
         {
             var avgMatchVol = stockPrices.Average(q => q.TotalMatchVol);
             var count = stockPrices.Count;
@@ -354,9 +354,9 @@ namespace Pl.Sas.Core.Services
         /// <param name="notes">Ghi chú</param>
         /// <param name="stockPrices">Lịch sửa giá của cổ phiếu</param>
         /// <returns>int</returns>
-        public static int MatchVolTrend(List<AnalyticsMessage> notes, List<StockPrice> stockPrices)
+        public static int MatchVolTrend(List<AnalyticsNote> notes, List<StockPrice> stockPrices)
         {
-            if (stockPrices?.Count < 1)
+            if (stockPrices.Count < 1)
             {
                 notes.Add($"Chưa có đủ lịch sử giá để phân tích.", -1, -1, null);
                 return -1;
@@ -408,9 +408,9 @@ namespace Pl.Sas.Core.Services
         /// <param name="notes">Ghi chú</param>
         /// <param name="stockPrices">Lịch sửa giá của cổ phiếu</param>
         /// <returns>int</returns>
-        public static int ForeignPurchasingPowerTrend(List<AnalyticsMessage> notes, List<StockPrice> stockPrices)
+        public static int ForeignPurchasingPowerTrend(List<AnalyticsNote> notes, List<StockPrice> stockPrices)
         {
-            if (stockPrices?.Count < 1)
+            if (stockPrices.Count < 1)
             {
                 notes.Add($"Chưa có đủ lịch sử giá để phân tích.", -1, -1, null);
                 return -1;
@@ -462,9 +462,9 @@ namespace Pl.Sas.Core.Services
         /// <param name="notes">Ghi chú</param>
         /// <param name="stockPrices">Lịch sửa giá của cổ phiếu</param>
         /// <returns>int</returns>
-        public static int TraderTrend(List<AnalyticsMessage> notes, List<StockPrice> stockPrices)
+        public static int TraderTrend(List<AnalyticsNote> notes, List<StockPrice> stockPrices)
         {
-            if (stockPrices?.Count < 1)
+            if (stockPrices.Count < 1)
             {
                 notes.Add($"Chưa có đủ lịch sử giá để phân tích.", -1, -1, null);
                 return -1;
@@ -530,97 +530,9 @@ namespace Pl.Sas.Core.Services
         /// Đánh gía giao dịch của vnd
         /// </summary>
         /// <param name="notes">Ghi chú</param>
-        /// <param name="vndSignalShort">Phân tích kỹ thuật ngắn hạn của vnd</param>
-        /// <param name="vndSignalLong">Phân tích kỹ thuật dài hạn của vnd</param>
-        /// <returns></returns>
-        public static int VndCheck(List<AnalyticsMessage> notes, VndSignal vndSignalShort, VndSignal vndSignalLong)
-        {
-            var type = 0;
-            var score = 0;
-            var note = string.Empty;
-
-            if (vndSignalShort is null)
-            {
-                note += "Không có thông tin đánh giá kỹ thuật ngắn hạn của vnd. ";
-                score -= 1;
-                type--;
-            }
-            else
-            {
-                switch (vndSignalShort.Signal)
-                {
-                    case "STRONGSELL":
-                        note += "Đánh giá ngắn hạn của vnd bán mạnh, ";
-                        score -= 2;
-                        type -= 2;
-                        break;
-                    case "SELL":
-                        note += "Đánh giá ngắn hạn của vnd bán, ";
-                        score--;
-                        type--;
-                        break;
-                    case "NEUTRAL":
-                        note += "Đánh giá ngắn hạn của vnd trung tính, ";
-                        break;
-                    case "BUY":
-                        note += "Đánh giá ngắn hạn của vnd mua, ";
-                        score++;
-                        type++;
-                        break;
-                    case "STRONGBUY":
-                        note += "Đánh giá ngắn hạn của vnd mua mạnh, ";
-                        score += 2;
-                        type += 2;
-                        break;
-                }
-            }
-
-            if (vndSignalLong is null)
-            {
-                note += "Không có thông tin đánh giá kỹ thuật dài hạn của vnd. ";
-                score -= 1;
-                type--;
-            }
-            else
-            {
-                switch (vndSignalLong.Signal)
-                {
-                    case "STRONGSELL":
-                        note += "Đánh giá dài hạn của vnd bán mạnh, ";
-                        score -= 2;
-                        type -= 2;
-                        break;
-                    case "SELL":
-                        note += "Đánh giá dài hạn của vnd bán, ";
-                        score--;
-                        type--;
-                        break;
-                    case "NEUTRAL":
-                        note += "Đánh giá dài hạn của vnd trung tính, ";
-                        break;
-                    case "BUY":
-                        note += "Đánh giá dài hạn của vnd mua, ";
-                        score++;
-                        type++;
-                        break;
-                    case "STRONGBUY":
-                        note += "Đánh giá dài hạn của vnd mua mạnh, ";
-                        score += 2;
-                        type += 2;
-                        break;
-                }
-            }
-            notes.Add(note, score, type, null);
-            return score;
-        }
-
-        /// <summary>
-        /// Đánh gía giao dịch của vnd
-        /// </summary>
-        /// <param name="notes">Ghi chú</param>
         /// <param name="fiinEvaluate">Đánh giá của fiin</param>
         /// <returns></returns>
-        public static int FiinCheck(List<AnalyticsMessage> notes, FiinEvaluate fiinEvaluate)
+        public static int FiinCheck(List<AnalyticsNote> notes, FiinEvaluated fiinEvaluate)
         {
             var type = 0;
             var score = 0;

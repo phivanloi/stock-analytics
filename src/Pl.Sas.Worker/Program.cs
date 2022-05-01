@@ -14,6 +14,7 @@ using Pl.Sas.Infrastructure.Data;
 using Pl.Sas.Infrastructure.Helper;
 using Pl.Sas.Infrastructure.Loging;
 using Pl.Sas.Infrastructure.RabbitmqMessageQueue;
+using Pl.Sas.Infrastructure.System;
 using Pl.Sas.Worker;
 using System.Net;
 using System.Text.Json;
@@ -42,13 +43,18 @@ builder.Services.AddHttpClient("downloader", c =>
     };
 });
 
+builder.Services.AddDbContext<SystemDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("SystemConnection"),
+    sqlServerOptionsAction: sqlOptions =>
+    {
+        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+    }));
 builder.Services.AddDbContext<MarketDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("MarketConnection"),
     sqlServerOptionsAction: sqlOptions =>
     {
         sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
     }));
-
 builder.Services.AddDbContext<AnalyticsDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("AnalyticsConnection"),
     sqlServerOptionsAction: sqlOptions =>
@@ -58,6 +64,7 @@ builder.Services.AddDbContext<AnalyticsDbContext>(options =>
 
 builder.Services.AddHealthChecks()
     .AddCheck("self", () => HealthCheckResult.Healthy())
+    .AddSqlServer(builder.Configuration.GetConnectionString("SystemConnection"), name: "system-database", tags: new string[] { "system_database", "31_db" })
     .AddSqlServer(builder.Configuration.GetConnectionString("AnalyticsConnection"), name: "analytics-database", tags: new string[] { "analytics_database", "31_db" })
     .AddSqlServer(builder.Configuration.GetConnectionString("MarketConnection"), name: "market-database", tags: new string[] { "market_database", "31_db" })
     .AddRedis(builder.Configuration.GetConnectionString("CacheConnection"), name: "redis-cache", tags: new string[] { "redis_cache", "31_redis" })
@@ -72,7 +79,7 @@ builder.Services.AddRedisCacheService(option =>
 });
 
 builder.Services.AddSingleton<IWorkerQueueService, WorkerQueueService>();
-builder.Services.AddSingleton<ICrawlData, CrawlData>();
+builder.Services.AddSingleton<IDownloadData, DownloadData>();
 builder.Services.AddScoped<IMarketData, MarketData>();
 builder.Services.AddScoped<IAnalyticsData, AnalyticsData>();
 builder.Services.AddScoped<WorkerService>();

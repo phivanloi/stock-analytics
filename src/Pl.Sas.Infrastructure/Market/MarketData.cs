@@ -5,7 +5,7 @@ using Pl.Sas.Core.Entities;
 using Pl.Sas.Core.Interfaces;
 using System.Text.Json;
 
-namespace Pl.Sas.Infrastructure.Data
+namespace Pl.Sas.Infrastructure.Market
 {
     /// <summary>
     /// Lớp xử lỹ liệu của market
@@ -16,7 +16,7 @@ namespace Pl.Sas.Infrastructure.Data
         private readonly IMemoryCacheService _memoryCacheService;
 
         public MarketData(
-             IMemoryCacheService memoryCacheService,
+            IMemoryCacheService memoryCacheService,
             MarketDbContext marketDbContext)
         {
             _marketDbContext = marketDbContext;
@@ -96,31 +96,6 @@ namespace Pl.Sas.Infrastructure.Data
             return await _marketDbContext.StockPrices.FirstOrDefaultAsync(s => s.Symbol == symbol && s.TradingDate == tradingDate);
         }
 
-        public virtual async Task<bool> InsertScheduleAsync(List<Schedule> schedules)
-        {
-            if (schedules.Count > 0)
-            {
-                _marketDbContext.Schedules.AddRange(schedules);
-                return await _marketDbContext.SaveChangesAsync() > 0;
-            }
-            return false;
-        }
-
-        public virtual async Task<bool> UpdateKeyOptionScheduleAsync(Schedule schedule, string key, string value)
-        {
-            var options = schedule.Options;
-            if (options.ContainsKey("key"))
-            {
-                options[key] = value;
-            }
-            else
-            {
-                options.Add(key, value);
-            }
-            schedule.OptionsJson = JsonSerializer.Serialize(options);
-            return await _marketDbContext.SaveChangesAsync() > 0;
-        }
-
         public virtual async Task<bool> InitialStockAsync(List<Stock> insertItems, List<Stock> updateItems)
         {
             if (insertItems.Count > 0)
@@ -140,31 +115,6 @@ namespace Pl.Sas.Infrastructure.Data
         public virtual async Task<Dictionary<string, Stock>> GetStockDictionaryAsync()
         {
             return await _marketDbContext.Stocks.ToDictionaryAsync(s => s.Symbol, s => s);
-        }
-
-        public virtual async Task<Schedule?> GetScheduleByIdAsync(string id)
-        {
-            return await _marketDbContext.Schedules.FirstOrDefaultAsync(s => s.Id == id);
-        }
-
-        public virtual async Task<bool> UpdateScheduleAsync(Schedule schedule)
-        {
-            schedule.UpdatedTime = DateTime.Now;
-            return await _marketDbContext.SaveChangesAsync() > 0;
-        }
-
-        public virtual async Task<Schedule?> CacheGetScheduleByIdAsync(string id)
-        {
-            var cacheKey = $"{Constants.ScheduleCachePrefix}-CGSBIA{id}";
-            return await _memoryCacheService.GetOrCreateAsync(cacheKey, async () =>
-            {
-                var item = await _marketDbContext.Schedules.FirstOrDefaultAsync(s => s.Id == id);
-                if (item != null)
-                {
-                    _marketDbContext.Entry(item).State = EntityState.Detached;
-                }
-                return item;
-            }, Constants.DefaultCacheTime * 60 * 24);
         }
 
         public virtual async Task<bool> SaveIndustryAsync(Industry industry)
@@ -290,9 +240,9 @@ namespace Pl.Sas.Infrastructure.Data
             return await _marketDbContext.SaveChangesAsync() > 0;
         }
 
-        public virtual async Task<List<CorporateAction>> GetCorporateActionsAsync(string symbol)
+        public virtual async Task<List<CorporateAction>> GetCorporateActionsForCheckDownloadAsync(string symbol)
         {
-            return await _marketDbContext.CorporateActions.Where(q => q.Symbol == symbol).ToListAsync();
+            return await _marketDbContext.CorporateActions.Where(q => q.Symbol == symbol).Select(q => new CorporateAction() { Symbol = q.Symbol, EventCode = q.EventCode, ExrightDate = q.ExrightDate }).ToListAsync();
         }
 
         public virtual async Task<bool> InsertCorporateActionAsync(List<CorporateAction> insertItems)
@@ -327,6 +277,24 @@ namespace Pl.Sas.Infrastructure.Data
             else
             {
                 _marketDbContext.FiinEvaluates.Add(fiinEvaluate);
+            }
+            return await _marketDbContext.SaveChangesAsync() > 0;
+        }
+
+        public virtual async Task<bool> SaveStockTransactionAsync(StockTransaction stockTransaction)
+        {
+            Guard.Against.Null(stockTransaction, nameof(stockTransaction));
+            var updateItem = _marketDbContext.StockTransactions.FirstOrDefault(q => q.Symbol == stockTransaction.Symbol && q.TradingDate == stockTransaction.TradingDate);
+            if (updateItem != null)
+            {
+                updateItem.Symbol = stockTransaction.Symbol;
+                updateItem.TradingDate = stockTransaction.TradingDate;
+                updateItem.ZipDetails = stockTransaction.ZipDetails;
+                updateItem.UpdatedTime = DateTime.Now;
+            }
+            else
+            {
+                _marketDbContext.StockTransactions.Add(stockTransaction);
             }
             return await _marketDbContext.SaveChangesAsync() > 0;
         }

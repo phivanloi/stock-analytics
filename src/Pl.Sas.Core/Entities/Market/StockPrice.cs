@@ -5,26 +5,20 @@
     /// </summary>
     public class StockPrice : BaseEntity
     {
-        public StockPrice()
-        {
-            Symbol = null!;
-        }
-
-        public StockPrice(string symbol, DateTime tradingDate)
-        {
-            Symbol = symbol;
-            TradingDate = tradingDate;
-        }
-
         /// <summary>
-        /// mã chứng khoán
+        /// Mã chứng khoán <see cref="Stock"/>
         /// </summary>
-        public string Symbol { get; set; }
+        public string Symbol { get; set; } = null!;
 
         /// <summary>
         /// ngày giao dịch
         /// </summary>
-        public DateTime TradingDate { get; set; }
+        public DateTime TradingDate { get; set; } = DateTime.Now;
+
+        /// <summary>
+        /// trading date path
+        /// </summary>
+        public string DatePath => TradingDate.ToString("yyyyMMdd");
 
         /// <summary>
         /// Giá thay đổi
