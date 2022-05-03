@@ -2,14 +2,6 @@
 {
     public class AnalyticsResult : BaseEntity
     {
-        public AnalyticsResult() { }
-
-        public AnalyticsResult(string symbol, DateTime lastTradingDate)
-        {
-            Symbol = symbol;
-            TradingDate = lastTradingDate;
-        }
-
         /// <summary>
         /// Mã chứng khoán <see cref="Stock"/>
         /// </summary>

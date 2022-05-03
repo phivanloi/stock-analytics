@@ -8,6 +8,87 @@ namespace Pl.Sas.Core.Interfaces
     public interface IMarketData
     {
         /// <summary>
+        /// Lấy danh sách bao cáo khuyên nghị từ 6 tháng trở lên
+        /// </summary>
+        /// <param name="symbol">Mã chứng khoán</param>
+        /// <param name="top">Số báo cáo cần lấy</param>
+        /// <returns>List StockRecommendation</returns>
+        Task<List<StockRecommendation>> GetTopStockRecommendationInSixMonthAsync(string symbol, int top);
+
+        /// <summary>
+        /// Lấy top lịch sử giá cổ phiếu dùng để phân tích do đã chuyển đổi giá lớn nhât, giá nhỏ nhất
+        /// </summary>
+        /// <param name="symbol">Mã chứng khoán</param>
+        /// <param name="top">Số bản ghi cần lấy</param>
+        /// <returns></returns>
+        Task<List<StockPrice>> GetAnalyticsTopStockPriceAsync(string symbol, int top);
+
+        /// <summary>
+        /// Lấy thông tin chứng khoán
+        /// </summary>
+        /// <param name="symbol">Mã chứng khoán</param>
+        /// <returns>Stock</returns>
+        Task<Stock?> GetStockByCode(string symbol);
+
+        /// <summary>
+        /// Lấy top lịch sử giá cổ phiếu, sắp sếp ngày giao dịch giảm dần
+        /// </summary>
+        /// <param name="symbol">Mã chứng khoán</param>
+        /// <param name="top">Số bản ghi cần lấy</param>
+        /// <returns></returns>
+        Task<List<StockPrice>> GetTopStockPriceAsync(string symbol, int top);
+
+        /// <summary>
+        /// Lấy thông tin tải sản và tỉ lệ cổ tức mới nhất theo mã cổ phiếu
+        /// </summary>
+        /// <param name="symbol">Mã cố phiếu</param>
+        /// <returns>FinancialGrowth?</returns>
+        Task<FinancialGrowth?> GetLastFinancialGrowthAsync(string symbol);
+
+        /// <summary>
+        /// Lấy thông tin giao dịch ngày cuối cùng
+        /// </summary>
+        /// <param name="symbol">Mã chứng khoán</param>
+        /// <returns>StockPrice</returns>
+        Task<StockPrice?> GetLastStockPriceAsync(string symbol);
+
+        /// <summary>
+        /// Lấy thông tin đánh giá cổ phiểu của vnd
+        /// </summary>
+        /// <param name="symbol">Mã chứng khoán</param>
+        /// <returns>VndStockScore</returns>
+        Task<List<VndStockScore>> GetVndStockScoreAsync(string symbol);
+
+        /// <summary>
+        /// Lấy thông tin tài chính
+        /// </summary>
+        /// <param name="symbol">Mã chứng khoán</param>
+        /// <returns>FiinEvaluated</returns>
+        Task<FiinEvaluated?> GetFiinEvaluatedAsync(string symbol);
+
+        /// <summary>
+        /// Lấy báo cáo tài chính 5 năm các công ty cùng một ngành
+        /// </summary>
+        /// <param name="industryCode">Mã ngành</param>
+        /// <param name="companies">Danh sách các công ty cần lấy báo cáo tài chính</param>
+        /// <param name="yearRanger">Độ dài báo cáo khoảng 5 năm</param>
+        /// <returns>List FinancialIndicatorReports</returns>
+        Task<List<FinancialIndicator>> CacheGetFinancialIndicatorByIndustriesAsync(string industryCode, List<Company> companies, int yearRanger = 5);
+
+        /// <summary>
+        /// Lấy toàn bộ công ty trong hệ thống
+        /// </summary>
+        /// <returns>List Company</returns>
+        Task<List<Company>> CacheGetCompaniesAsync();
+
+        /// <summary>
+        /// Lấy thông tin công ty theo mã chứng khoán
+        /// </summary>
+        /// <param name="symbol">Mã chứng khoán</param>
+        /// <returns></returns>
+        Task<Company?> GetCompanyAsync(string symbol);
+
+        /// <summary>
         /// Ghi lại lịch sử giao dịch chứng khoán
         /// </summary>
         /// <param name="stockTransaction">Thông tin giao dịch</param>
@@ -49,7 +130,7 @@ namespace Pl.Sas.Core.Interfaces
         /// <param name="symbol">Mã chứng khoán</param>
         /// <param name="tradingDate">Ngày giao dịch</param>
         /// <returns>StockPrice</returns>
-        Task<StockPrice?> GeStockPriceAsync(string symbol, DateTime tradingDate);
+        Task<StockPrice?> GetStockPriceAsync(string symbol, DateTime tradingDate);
 
         /// <summary>
         /// Thêm mới hoạt động của công ty

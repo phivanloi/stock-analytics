@@ -532,7 +532,7 @@ namespace Pl.Sas.Core.Services
         /// <param name="notes">Ghi chú</param>
         /// <param name="fiinEvaluate">Đánh giá của fiin</param>
         /// <returns></returns>
-        public static int FiinCheck(List<AnalyticsNote> notes, FiinEvaluated fiinEvaluate)
+        public static int FiinCheck(List<AnalyticsNote> notes, FiinEvaluated? fiinEvaluate)
         {
             var type = 0;
             var score = 0;

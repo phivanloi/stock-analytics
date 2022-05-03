@@ -8,13 +8,20 @@ namespace Pl.Sas.Core.Interfaces
     public interface ISystemData
     {
         /// <summary>
+        /// Lấy thông tin khóa giá trị
+        /// </summary>
+        /// <param name="key">Khóa</param>
+        /// <returns>KeyValue?</returns>
+        Task<KeyValue?> GetKeyValueAsync(string key);
+
+        /// <summary>
         /// Ghi lại khóa giá trị
         /// </summary>
         /// <typeparam name="T">Loại giá trị</typeparam>
         /// <param name="key">Khóa</param>
         /// <param name="value">Giá trị</param>
         /// <returns>bool</returns>
-        Task<bool> SetKeyValue<T>(string key, T value);
+        Task<bool> SetKeyValueAsync<T>(string key, T value);
 
         /// <summary>
         /// Lấy thông tin đầy đủ của một Schedule

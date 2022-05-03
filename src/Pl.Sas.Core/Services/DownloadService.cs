@@ -129,7 +129,7 @@ namespace Pl.Sas.Core.Services
             if (bankInterestRates is null || bankInterestRates.Count < 0)
             {
                 _logger.LogWarning("UpdateBankInterestRateAsync => bankInterestRates is null");
-                return await _systemData.SetKeyValue(checkingKey, false);
+                return await _systemData.SetKeyValueAsync(checkingKey, false);
             }
 
             foreach (var rate in bankInterestRates)
@@ -137,10 +137,10 @@ namespace Pl.Sas.Core.Services
                 if (rate?.Data?.Length > 0)
                 {
                     var maxItem = rate.Data.OrderByDescending(q => q.InterestRate).FirstOrDefault() ?? throw new Exception("rate.Data is null.");
-                    await _systemData.SetKeyValue($"BankInterestRate{(int)(maxItem.Term ?? 3)}", maxItem.InterestRate);
+                    await _systemData.SetKeyValueAsync($"BankInterestRate{(int)(maxItem.Term ?? 3)}", maxItem.InterestRate);
                 }
             }
-            return await _systemData.SetKeyValue(checkingKey, true);
+            return await _systemData.SetKeyValueAsync(checkingKey, true);
         }
 
         /// <summary>
@@ -158,7 +158,7 @@ namespace Pl.Sas.Core.Services
             if (indexPrices is null || indexPrices.Count < 0)
             {
                 _logger.LogWarning("UpdateIndexPricesAsync => indexPrices null info for index: {symbol}", symbol);
-                return await _systemData.SetKeyValue(checkingKey, false);
+                return await _systemData.SetKeyValueAsync(checkingKey, false);
             }
 
             var stockPrices = new List<StockPrice>();
@@ -190,7 +190,7 @@ namespace Pl.Sas.Core.Services
             if (stockPrices.Count <= 0)
             {
                 _logger.LogWarning("UpdateIndexPricesAsync => indexPrices null info for index: {symbol}", symbol);
-                return await _systemData.SetKeyValue(checkingKey, false);
+                return await _systemData.SetKeyValueAsync(checkingKey, false);
             }
 
             if (schedule.Options["DateCrawlStartTime"] == _indexStartDownloadTime.ToUnixTimeSeconds().ToString())
@@ -201,7 +201,7 @@ namespace Pl.Sas.Core.Services
                 {
                     await _systemData.UpdateScheduleAsync(schedule);
                 }
-                return await _systemData.SetKeyValue(checkingKey, check);
+                return await _systemData.SetKeyValueAsync(checkingKey, check);
             }
             else
             {
@@ -209,7 +209,7 @@ namespace Pl.Sas.Core.Services
                 var updateList = new List<StockPrice>();
                 foreach (var stockPrice in stockPrices)
                 {
-                    var updateItem = await _marketData.GeStockPriceAsync(symbol, stockPrice.TradingDate);
+                    var updateItem = await _marketData.GetStockPriceAsync(symbol, stockPrice.TradingDate);
                     if (updateItem != null)
                     {
                         updateItem.ClosePrice = stockPrice.ClosePrice;
@@ -226,7 +226,7 @@ namespace Pl.Sas.Core.Services
                     }
                 }
                 var check = await _marketData.SaveStockPriceAsync(insertList, updateList);
-                return await _systemData.SetKeyValue(checkingKey, check);
+                return await _systemData.SetKeyValueAsync(checkingKey, check);
             }
         }
 
@@ -244,7 +244,7 @@ namespace Pl.Sas.Core.Services
             if (fiinStockEvaluate is null || fiinStockEvaluate.Items[0] is null)
             {
                 _logger.LogWarning("UpdateFiinStockEvaluatesAsync => fiinStockEvaluate null info for code: {symbol}", symbol);
-                return await _systemData.SetKeyValue(checkingKey, false);
+                return await _systemData.SetKeyValueAsync(checkingKey, false);
             }
 
             var fiinEvaluate = new FiinEvaluated()
@@ -264,7 +264,7 @@ namespace Pl.Sas.Core.Services
                 ControlStatusName = fiinStockEvaluate.Items[0].ControlStatusName
             };
             var check = await _marketData.SaveFiinEvaluateAsync(fiinEvaluate);
-            return await _systemData.SetKeyValue(checkingKey, check);
+            return await _systemData.SetKeyValueAsync(checkingKey, check);
         }
 
         /// <summary>
@@ -281,7 +281,7 @@ namespace Pl.Sas.Core.Services
             if (recommendations is null || recommendations.Data.Length < 0)
             {
                 _logger.LogWarning("UpdateStockRecommendationsAsync => recommendations null info for code: {symbol}", symbol);
-                return await _systemData.SetKeyValue(checkingKey, false);
+                return await _systemData.SetKeyValueAsync(checkingKey, false);
             }
 
             var stockRecommendations = new List<StockRecommendation>();
@@ -306,7 +306,7 @@ namespace Pl.Sas.Core.Services
                 });
             }
             var check = await _marketData.SaveStockRecommendationAsync(stockRecommendations);
-            return await _systemData.SetKeyValue(checkingKey, check);
+            return await _systemData.SetKeyValueAsync(checkingKey, check);
         }
 
         /// <summary>
@@ -323,7 +323,7 @@ namespace Pl.Sas.Core.Services
             if (vndStockScoreResponse is null || vndStockScoreResponse.Data.Length < 0)
             {
                 _logger.LogWarning("UpdateVndStockScoreAsync => vndStockScoreResponse null info for code: {symbol}", symbol);
-                return await _systemData.SetKeyValue(checkingKey, false);
+                return await _systemData.SetKeyValueAsync(checkingKey, false);
             }
 
             var vndStockScores = new List<VndStockScore>();
@@ -344,7 +344,7 @@ namespace Pl.Sas.Core.Services
                 });
             }
             var check = await _marketData.SaveVndStockScoresAsync(vndStockScores);
-            return await _systemData.SetKeyValue(checkingKey, check);
+            return await _systemData.SetKeyValueAsync(checkingKey, check);
         }
 
         /// <summary>
@@ -360,7 +360,7 @@ namespace Pl.Sas.Core.Services
             if (ssiTransactions is null || ssiTransactions.Data.LeTables.Length < 0)
             {
                 _logger.LogWarning("UpdateStockTransactionAsync => ssiTransactions null info for code: {symbol}", symbol);
-                return await _systemData.SetKeyValue(checkingKey, false);
+                return await _systemData.SetKeyValueAsync(checkingKey, false);
             }
 
             var listTransactionDetails = new List<StockTransactionDetails>();
@@ -384,7 +384,7 @@ namespace Pl.Sas.Core.Services
                 ZipDetails = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(listTransactionDetails))
             };
             var check = await _marketData.SaveStockTransactionAsync(stockTransaction);
-            return await _systemData.SetKeyValue(checkingKey, check);
+            return await _systemData.SetKeyValueAsync(checkingKey, check);
         }
 
         /// <summary>
@@ -402,7 +402,7 @@ namespace Pl.Sas.Core.Services
             if (ssiCorporateAction is null || ssiCorporateAction.Data.CorporateActions.DataList.Length < 0)
             {
                 _logger.LogWarning("UpdateCorporateActionInfoAsync => ssiCorporateAction null info for code: {symbol}", symbol);
-                return await _systemData.SetKeyValue(checkingKey, false);
+                return await _systemData.SetKeyValueAsync(checkingKey, false);
             }
 
             var insertList = new List<CorporateAction>();
@@ -437,7 +437,7 @@ namespace Pl.Sas.Core.Services
                 }
             }
 
-            await _systemData.SetKeyValue(checkingKey, true);
+            await _systemData.SetKeyValueAsync(checkingKey, true);
             return await _marketData.InsertCorporateActionAsync(insertList);
         }
 
@@ -456,7 +456,7 @@ namespace Pl.Sas.Core.Services
             if (stockPriceHistory is null || stockPriceHistory.Data.StockPrice.DataList.Length <= 0)
             {
                 _logger.LogWarning("UpdateStockPriceHistoryAsync => stockPriceHistory null info for code: {symbol}", symbol);
-                return await _systemData.SetKeyValue(checkingKey, false);
+                return await _systemData.SetKeyValueAsync(checkingKey, false);
             }
 
             var insertList = new List<StockPrice>();
@@ -471,7 +471,7 @@ namespace Pl.Sas.Core.Services
                         continue;
                     }
 
-                    var updateItem = await _marketData.GeStockPriceAsync(symbol, tradingDate.Value.Date);
+                    var updateItem = await _marketData.GetStockPriceAsync(symbol, tradingDate.Value.Date);
                     if (updateItem != null)
                     {
                         StockPriceBindValue(ref updateItem, stockPriceSsi);
@@ -504,7 +504,7 @@ namespace Pl.Sas.Core.Services
             }
 
             var check = await _marketData.SaveStockPriceAsync(insertList, updateList);
-            return await _systemData.SetKeyValue(checkingKey, check);
+            return await _systemData.SetKeyValueAsync(checkingKey, check);
         }
 
         /// <summary>
@@ -521,7 +521,7 @@ namespace Pl.Sas.Core.Services
             if (ssiFinancialIndicators is null || ssiFinancialIndicators.Data.FinancialIndicator.DataList.Length < 0)
             {
                 _logger.LogWarning("UpdateFinancialIndicatorAsync => ssiFinancialIndicators null info for code: {Symbol}", symbol);
-                return await _systemData.SetKeyValue(checkingKey, false);
+                return await _systemData.SetKeyValueAsync(checkingKey, false);
             }
 
             var insertList = new List<FinancialIndicator>();
@@ -581,7 +581,7 @@ namespace Pl.Sas.Core.Services
             }
 
             var check = await _marketData.SaveFinancialIndicatorAsync(insertList, updateList);
-            return await _systemData.SetKeyValue(checkingKey, check);
+            return await _systemData.SetKeyValueAsync(checkingKey, check);
         }
 
         /// <summary>
@@ -598,7 +598,7 @@ namespace Pl.Sas.Core.Services
             if (ssiCapitalAndDividend is null || ssiCapitalAndDividend.Data.CapAndDividend.TabcapitalDividendResponse.DataGroup.AssetlistList.Length <= 0)
             {
                 _logger.LogWarning("UpdateCapitalAndDividendAsync => ssiCapitalAndDividend null info for code: {symbol}", symbol);
-                return await _systemData.SetKeyValue(checkingKey, false);
+                return await _systemData.SetKeyValueAsync(checkingKey, false);
             }
 
             var insertList = new List<FinancialGrowth>();
@@ -665,7 +665,7 @@ namespace Pl.Sas.Core.Services
             }
 
             var check = await _marketData.SaveFinancialGrowthAsync(insertList, updateList);
-            return await _systemData.SetKeyValue(checkingKey, check);
+            return await _systemData.SetKeyValueAsync(checkingKey, check);
         }
 
         /// <summary>
@@ -682,7 +682,7 @@ namespace Pl.Sas.Core.Services
             if (ssiLeadership is null || ssiLeadership.Data.Leaderships.Datas.Length < 0)
             {
                 _logger.LogWarning("UpdateLeadershipInfoAsync => ssiLeadership null info for code: {symbol}", symbol);
-                return await _systemData.SetKeyValue(checkingKey, false);
+                return await _systemData.SetKeyValueAsync(checkingKey, false);
             }
 
             var insertList = new List<Leadership>();
@@ -707,7 +707,7 @@ namespace Pl.Sas.Core.Services
                 }
             }
 
-            await _systemData.SetKeyValue(checkingKey, true);
+            await _systemData.SetKeyValueAsync(checkingKey, true);
             return await _marketData.SaveLeadershipsAsync(insertList, dbLeaderships.ToList());
         }
 
@@ -725,7 +725,7 @@ namespace Pl.Sas.Core.Services
             if (ssiCompanyInfo is null || ssiCompanyInfo.Data.CompanyStatistics is null)
             {
                 _logger.LogWarning("UpdateCompanyInfoAsync => ssiCompanyInfo null info for code: {symbol}", symbol);
-                return await _systemData.SetKeyValue(checkingKey, false);
+                return await _systemData.SetKeyValueAsync(checkingKey, false);
             }
 
             if (!string.IsNullOrWhiteSpace(ssiCompanyInfo.Data.CompanyProfile.SubsectorCode) && ssiCompanyInfo.Data.CompanyProfile.SubsectorCode != "0")
@@ -781,7 +781,11 @@ namespace Pl.Sas.Core.Services
             company.Npl = float.Parse(ssiCompanyInfo.Data.CompanyStatistics.Npl);
             company.FinanciallEverage = float.Parse(ssiCompanyInfo.Data.CompanyStatistics.FinanciallEverage);
             var check = await _marketData.SaveCompanyAsync(company);
-            return await _systemData.SetKeyValue(checkingKey, check);
+            if (check)
+            {
+                _workerQueueService.BroadcastUpdateMemoryTask(new("Company"));
+            }
+            return await _systemData.SetKeyValueAsync(checkingKey, check);
         }
 
         /// <summary>
@@ -792,7 +796,7 @@ namespace Pl.Sas.Core.Services
             var ssiAllStock = await _crawlData.DownloadInitialMarketStockAsync();
             if (ssiAllStock is null || ssiAllStock.Data.Length <= 0)
             {
-                await _systemData.SetKeyValue("InitialStockDownloadStatus", false);
+                await _systemData.SetKeyValueAsync("InitialStockDownloadStatus", false);
                 _logger.LogWarning("InitialStockAsync => ssiAllStock is null.");
                 return;
             }
@@ -837,49 +841,49 @@ namespace Pl.Sas.Core.Services
                             Type = 1,
                             Name = $"Bổ sung thông tin doanh nghiệp theo mã: {stockCode}",
                             DataKey = stockCode,
-                            ActiveTime = currentTime.AddMinutes(random.Next(0, 60))
+                            ActiveTime = currentTime.AddMinutes(random.Next(0, 10))
                         });
                         insertSchedules.Add(new()
                         {
                             Type = 2,
                             Name = $"Bổ sung thông tin lãnh đạo mã: {stockCode}",
                             DataKey = stockCode,
-                            ActiveTime = currentTime.AddMinutes(random.Next(0, 60))
+                            ActiveTime = currentTime.AddMinutes(random.Next(0, 10))
                         });
                         insertSchedules.Add(new()
                         {
                             Type = 3,
                             Name = $"Bổ sung thông tin vốn, cổ tức, tài sản mã: {stockCode}",
                             DataKey = stockCode,
-                            ActiveTime = currentTime.AddMinutes(random.Next(0, 60))
+                            ActiveTime = currentTime.AddMinutes(random.Next(0, 10))
                         });
                         insertSchedules.Add(new()
                         {
                             Type = 4,
                             Name = $"Bổ sung thông tin tài chính doanh nghiệp mã: {stockCode}",
                             DataKey = stockCode,
-                            ActiveTime = currentTime.AddMinutes(random.Next(0, 60))
+                            ActiveTime = currentTime.AddMinutes(random.Next(0, 10))
                         });
                         insertSchedules.Add(new()
                         {
                             Type = 5,
                             Name = $"Bổ sung lịch sử giá cổ phiếu theo mã: {stockCode}",
                             DataKey = stockCode,
-                            ActiveTime = currentTime.AddMinutes(random.Next(0, 60))
+                            ActiveTime = currentTime.AddMinutes(random.Next(15, 20))//làm muộn nhất để kích hoạt phân tích
                         });
                         insertSchedules.Add(new()
                         {
                             Type = 6,
                             Name = $"Bổ sung lịch sử sự kiện công ty theo mã: {stockCode}",
                             DataKey = stockCode,
-                            ActiveTime = currentTime.AddMinutes(random.Next(0, 60))
+                            ActiveTime = currentTime.AddMinutes(random.Next(0, 10))
                         });
                         insertSchedules.Add(new()
                         {
                             Type = 7,
                             Name = $"Bổ sung lịch sử khớp lệnh cho mã: {stockCode}",
                             DataKey = stockCode,
-                            ActiveTime = currentTime.AddMinutes(random.Next(0, 60)),
+                            ActiveTime = currentTime.AddMinutes(random.Next(0, 10)),
                             OptionsJson = JsonSerializer.Serialize(new Dictionary<string, string>() { { "SsiStockNo", datum.StockNo } })
                         });
                         insertSchedules.Add(new()
@@ -887,21 +891,21 @@ namespace Pl.Sas.Core.Services
                             Type = 8,
                             Name = $"Bổ sung đánh giá của fiintrade cho mã: {stockCode}",
                             DataKey = stockCode,
-                            ActiveTime = currentTime.AddMinutes(random.Next(0, 60))
+                            ActiveTime = currentTime.AddMinutes(random.Next(0, 10))
                         });
                         insertSchedules.Add(new()
                         {
                             Type = 9,
                             Name = $"Thu thập khuyến nghị của các công ty chứng khoán cho mã: {stockCode}",
                             DataKey = stockCode,
-                            ActiveTime = currentTime.AddMinutes(random.Next(0, 60))
+                            ActiveTime = currentTime.AddMinutes(random.Next(0, 10))
                         });
                         insertSchedules.Add(new()
                         {
                             Type = 10,
                             Name = $"Thu thập đánh giá cổ phiếu của vndirect cho mã: {stockCode}",
                             DataKey = stockCode,
-                            ActiveTime = currentTime.AddMinutes(random.Next(0, 60))
+                            ActiveTime = currentTime.AddMinutes(random.Next(0, 10))
                         });
                     }
                     else
@@ -924,11 +928,11 @@ namespace Pl.Sas.Core.Services
 
             await _marketData.InitialStockAsync(insertStocks, updateStocks);
             await _systemData.InsertScheduleAsync(insertSchedules);
-            await _systemData.SetKeyValue("InitialStockDownloadStatus", true);
+            await _systemData.SetKeyValueAsync("InitialStockDownloadStatus", true);
 
             if (updateStocks.Count > 0)
             {
-                var queueMessage = new QueueMessage("UpdatedStocks");
+                var queueMessage = new QueueMessage("Stocks");
                 queueMessage.KeyValues.Add("Symbols", JsonSerializer.Serialize(updateStocks.Select(q => q.Symbol)));
                 _workerQueueService.BroadcastUpdateMemoryTask(queueMessage);
             }

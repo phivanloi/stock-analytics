@@ -895,7 +895,7 @@ namespace Pl.Sas.Core.Services
         /// <param name="notes">Ghi chú đánh giá</param>
         /// <param name="fiinEvaluate">Kết quả đánh giá của fiintrading</param>
         /// <returns></returns>
-        public static int FiinGrowthCheck(List<AnalyticsNote> notes, FiinEvaluated fiinEvaluate)
+        public static int FiinGrowthCheck(List<AnalyticsNote> notes, FiinEvaluated? fiinEvaluate)
         {
             var type = 0;
             var score = 0;

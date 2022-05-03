@@ -52,10 +52,10 @@ namespace Pl.Sas.Core.Trading
 
             }
 
-            var totalBuyMoney = totalMoney - (totalMoney * tax);
+            var totalBuyMoney = totalMoney - (totalMoney * BuyTax);
             var buyStockCount = Math.Floor(totalBuyMoney / stockPrice);
             var totalValueStock = buyStockCount * stockPrice;
-            var totalTax = totalValueStock * tax;
+            var totalTax = totalValueStock * BuyTax;
             var excessCash = totalMoney - (totalValueStock + totalTax);
             return (buyStockCount, excessCash, totalTax);
         }
@@ -66,7 +66,7 @@ namespace Pl.Sas.Core.Trading
         /// <param name="exchangeName">Tên sàn</param>
         /// <param name="isStartTrading">Có là ngày đầu tiên bắt đầu giao dịch hay không hoặc là ngày đầu tiên sau 25 phiên không giao dịch</param>
         /// <returns></returns>
-        public static decimal GetExchangeFluctuationsRate(string exchangeName, bool isStartTrading = false)
+        public static float GetExchangeFluctuationsRate(string exchangeName, bool isStartTrading = false)
         {
             if (isStartTrading)
             {
@@ -92,7 +92,7 @@ namespace Pl.Sas.Core.Trading
         /// </summary>
         /// <param name="stockPriceAdjs">Danh sach lịch sử giá đã được điều chỉnh khi chia cổ tức sắp xếp theo phiên mới mất lên đầu</param>
         /// <returns>Dictionary string, IndicatorSet</returns>
-        public static Dictionary<string, IndicatorSet> BuildIndicatorSet(List<StockPriceAdj> stockPriceAdjs)
+        public static Dictionary<string, IndicatorSet> BuildIndicatorSet(List<StockPrice> stockPrices)
         {
             var indicatorSet = new Dictionary<string, IndicatorSet>();
             var maPeriod = new List<int>();
@@ -103,14 +103,13 @@ namespace Pl.Sas.Core.Trading
             maPeriod.AddRange(new List<int>() { 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200 });
             var basePeriod = new List<int> { 5, 10, 12, 14, 16, 20 };
 
-            for (int i = stockPriceAdjs.Count - 1; i >= 0; i--)
+            for (int i = stockPrices.Count - 1; i >= 0; i--)
             {
                 var addItem = new IndicatorSet()
                 {
-                    DatePath = stockPriceAdjs[i].DatePath,
-                    TradingDate = stockPriceAdjs[i].TradingDate,
-                    Symbol = stockPriceAdjs[i].Symbol,
-                    Values = new Dictionary<string, decimal>()
+                    TradingDate = stockPrices[i].TradingDate,
+                    Symbol = stockPrices[i].Symbol,
+                    Values = new Dictionary<string, float>()
                 };
                 if (indicatorSet.Count <= 0)
                 {
@@ -121,17 +120,17 @@ namespace Pl.Sas.Core.Trading
                     }
                     foreach (var index in maPeriod)
                     {
-                        addItem.Values.Add($"ema-{index}", stockPriceAdjs[i].ClosePrice);
+                        addItem.Values.Add($"ema-{index}", stockPrices[i].ClosePrice);
                     }
                 }
                 else
                 {
-                    var yesterdaySet = indicatorSet[stockPriceAdjs[i + 1].DatePath];
+                    var yesterdaySet = indicatorSet[stockPrices[i + 1].DatePath];
                     foreach (var index in basePeriod)
                     {
                         if (indicatorSet.Count > index)
                         {
-                            var items = stockPriceAdjs.Skip(i).Take(index).ToList();
+                            var items = stockPrices.Skip(i).Take(index).ToList();
                             addItem.Values.Add($"stochastic-{index}", Stochastic.CalculateStochastic(items));
                             addItem.Values.Add($"rsi-{index}", RelativeStrengthIndex.CalculateRsi(items));
                         }
@@ -143,47 +142,12 @@ namespace Pl.Sas.Core.Trading
                     }
                     foreach (var index in maPeriod)
                     {
-                        addItem.Values.Add($"ema-{index}", ExponentialMovingAverage.ExponentialMovingAverageFormula(stockPriceAdjs[i].ClosePrice, yesterdaySet.Values[$"ema-{index}"], index));
+                        addItem.Values.Add($"ema-{index}", ExponentialMovingAverage.ExponentialMovingAverageFormula(stockPrices[i].ClosePrice, yesterdaySet.Values[$"ema-{index}"], index));
                     }
                 }
-                indicatorSet.Add(stockPriceAdjs[i].DatePath, addItem);
+                indicatorSet.Add(stockPrices[i].DatePath, addItem);
             }
             return indicatorSet;
-        }
-
-        /// <summary>
-        /// Chuyển lịch sử giả bình thường thành lịch sử giá điều chỉnh dùng cho trading
-        /// </summary>
-        /// <param name="stockPrices">Lịch sử giá cổ phiếu</param>
-        /// <returns>List StockPriceAdj</returns>
-        public static List<StockPriceAdj> ConvertStockPricesToStockPriceAdj(IEnumerable<StockPrice> stockPrices)
-        {
-            GuardClauses.NullOrEmpty(stockPrices, nameof(stockPrices));
-            return stockPrices.Select(q => q.ToStockPriceAdj()).ToList();
-        }
-
-        /// <summary>
-        /// Chuyển lịch sử giao dịch của phiên thành chi tiết các giao dịch
-        /// </summary>
-        /// <param name="stockTransactions">Danh sách lịch sử giá</param>
-        /// <param name="stockPrices">Lịch sử giá dùng để chuyển đổi</param>
-        /// <param name="zipHelper"></param>
-        /// <returns></returns>
-        public static List<TradingStockTransaction> ConvertStockTransactionToTradingStockTransaction(IEnumerable<StockTransaction> stockTransactions, IEnumerable<StockPrice> stockPrices, IZipHelper zipHelper)
-        {
-            GuardClauses.NullOrEmpty(stockTransactions, nameof(stockTransactions));
-            var result = new List<TradingStockTransaction>();
-            foreach (var stockTransaction in stockTransactions)
-            {
-                var stockPrice = stockPrices.FirstOrDefault(q => q.DatePath == stockTransaction.DatePath);
-                var transactionDetails = stockTransaction.ZipDetails is not null ? JsonSerializer.Deserialize<List<StockTransactionDetails>>(zipHelper.UnZipByte(stockTransaction.ZipDetails)) : new();
-                result.Add(new()
-                {
-                    DatePath = stockTransaction.DatePath,
-                    Details = stockPrice is not null ? transactionDetails.RebuildStockTransactionDetails(stockPrice) : transactionDetails
-                });
-            }
-            return result;
         }
     }
 }

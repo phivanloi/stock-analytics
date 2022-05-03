@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Ardalis.GuardClauses;
+using Microsoft.EntityFrameworkCore;
 using Pl.Sas.Core;
 using Pl.Sas.Core.Entities;
 using Pl.Sas.Core.Interfaces;
@@ -22,7 +23,13 @@ namespace Pl.Sas.Infrastructure.System
             _memoryCacheService = memoryCacheService;
         }
 
-        public virtual async Task<bool> SetKeyValue<T>(string key, T value)
+        public virtual async Task<KeyValue?> GetKeyValueAsync(string key)
+        {
+            Guard.Against.NullOrEmpty(key, nameof(key));
+            return await _systemDbContext.KeyValues.FirstOrDefaultAsync(x => x.Key == key);
+        }
+
+        public virtual async Task<bool> SetKeyValueAsync<T>(string key, T value)
         {
             var updateItem = _systemDbContext.KeyValues.FirstOrDefault(x => x.Key == key);
             if (updateItem == null)

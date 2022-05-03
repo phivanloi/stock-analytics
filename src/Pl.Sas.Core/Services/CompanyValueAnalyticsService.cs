@@ -159,7 +159,7 @@ namespace Pl.Sas.Core.Services
         /// <param name="marketPrice">Thị giá của phiên giao dịch gần nhất của cổ phiếu</param>
         /// <param name="bankInterestRate6">Lãi suất ngân hàng kỳ hạn 6 tháng(có thể dùng lãi xuất 3 tháng)</param>
         /// <returns>Tối đa được 1 điểm, thấp nhất được -1</returns>
-        public static int EpLastQuarterlyCheck(List<AnalyticsNote> notes, FinancialIndicator lastQuarterlyFinancialIndicator, float marketPrice, float bankInterestRate6)
+        public static int EpLastQuarterlyCheck(List<AnalyticsNote> notes, FinancialIndicator? lastQuarterlyFinancialIndicator, float marketPrice, float bankInterestRate6)
         {
             if (lastQuarterlyFinancialIndicator is null)
             {
@@ -402,7 +402,7 @@ namespace Pl.Sas.Core.Services
         /// <param name="marketPrice">Thị giá của phiên giao dịch gần nhất của cổ phiếu</param>
         /// <param name="bankInterestRate12">Lãi suất ngân hàng kỳ hạn 12 tháng</param>
         /// <returns>int</returns>
-        public static int EpLastYearlyCheck(List<AnalyticsNote> notes, FinancialIndicator lastQuarterlyFinancialIndicator, float marketPrice, float bankInterestRate12)
+        public static int EpLastYearlyCheck(List<AnalyticsNote> notes, FinancialIndicator? lastQuarterlyFinancialIndicator, float marketPrice, float bankInterestRate12)
         {
             if (lastQuarterlyFinancialIndicator is null)
             {
@@ -445,7 +445,7 @@ namespace Pl.Sas.Core.Services
         /// <returns>
         /// Tối đa được 3 điểm, nhỏ nhất -1 điểm
         /// </returns>
-        public static int MarketCapCheck(List<AnalyticsNote> notes, Company company, IEnumerable<Company> companiesSameIndustries, float avgTotalMarketCap)
+        public static int MarketCapCheck(List<AnalyticsNote> notes, Company company, List<Company> companiesSameIndustries, float avgTotalMarketCap)
         {
             var type = 0;
             var score = 0;
@@ -501,7 +501,7 @@ namespace Pl.Sas.Core.Services
         /// <returns>
         /// Tối đa được một điểm, nhỏ nhất -1 điểm.
         /// </returns>
-        public static int DividendDivCheck(List<AnalyticsNote> notes, float bankInterestRate12, decimal dividendMoney)
+        public static int DividendDivCheck(List<AnalyticsNote> notes, float bankInterestRate12, float dividendMoney)
         {
             var guideLink = "https://vietnamfinance.vn/ty-le-co-tuc-la-gi-20180504224215063.htm";
             if (dividendMoney <= 0)
@@ -512,9 +512,9 @@ namespace Pl.Sas.Core.Services
 
             var score = 0;
             var dp = dividendMoney * 100;
-            if (dp > (decimal)bankInterestRate12)
+            if (dp > bankInterestRate12)
             {
-                if (dp > (decimal)(bankInterestRate12 * 2))
+                if (dp > (bankInterestRate12 * 2))
                 {
                     score += 2;
                 }
@@ -537,10 +537,10 @@ namespace Pl.Sas.Core.Services
         /// <param name="companiesSameIndustries"></param>
         /// <param name="companies"></param>
         /// <returns></returns>
-        public static int PbCheck(List<AnalyticsNote> notes, Company company, IEnumerable<Company> companiesSameIndustries, IEnumerable<Company> companies)
+        public static int PbCheck(List<AnalyticsNote> notes, Company company, List<Company> companiesSameIndustries, List<Company> companies)
         {
             var guideLink = "https://vnexpress.net/chi-so-p-b-co-y-nghia-nhu-the-nao-2695409.html";
-            if (companiesSameIndustries.Count() <= 0 || companies.Count() <= 0)
+            if (!companiesSameIndustries.Any() || !companies.Any())
             {
                 notes.Add("Chỉ số Giá/Tải sản hữu hình (pb) không có thông tin để đánh giá và so sánh.", -2, -2, guideLink);
                 return -2;
@@ -590,7 +590,7 @@ namespace Pl.Sas.Core.Services
         /// <returns>
         /// Tối đa 3 điểm, thấp nhất -1 điểm
         /// </returns>
-        public static int CurrentRatioCheck(List<AnalyticsNote> notes, FinancialIndicator lastQuarterlyFinancialIndicator, IEnumerable<FinancialIndicator> lastQuarterlyFinancialIndicatorSameIndustries)
+        public static int CurrentRatioCheck(List<AnalyticsNote> notes, FinancialIndicator? lastQuarterlyFinancialIndicator, List<FinancialIndicator> lastQuarterlyFinancialIndicatorSameIndustries)
         {
             var guideLink = "https://vcbs.com.vn/vn/Utilities/Index/53";
             if (lastQuarterlyFinancialIndicator is null)
@@ -615,7 +615,7 @@ namespace Pl.Sas.Core.Services
                 score++;
                 type++;
                 note += ", lớn hơn 1.2";
-                if (lastQuarterlyFinancialIndicatorSameIndustries?.Count() > 0)
+                if (lastQuarterlyFinancialIndicatorSameIndustries?.Count > 0)
                 {
                     var avgSameIndustries = lastQuarterlyFinancialIndicatorSameIndustries.Average(q => q.CurrentRatio);
                     if (avgSameIndustries > 1 && lastQuarterlyFinancialIndicator.CurrentRatio > avgSameIndustries)
@@ -643,7 +643,7 @@ namespace Pl.Sas.Core.Services
         /// <param name="lastQuarterlyFinancialIndicator">Chỉ số tài chính quý gần đây nhất</param>
         /// <param name="bankInterestRate12">lái suất ngân hàng trong 12 tháng</param>
         /// <returns>Tối đa được 2 điểm, thấp nhất -2 điểm</returns>
-        public static int GrossProfitMarginCheck(List<AnalyticsNote> notes, FinancialIndicator lastQuarterlyFinancialIndicator, float bankInterestRate12)
+        public static int GrossProfitMarginCheck(List<AnalyticsNote> notes, FinancialIndicator? lastQuarterlyFinancialIndicator, float bankInterestRate12)
         {
             var guideLink = "https://vietnambiz.vn/ti-suat-loi-nhuan-gop-gross-profit-margin-la-gi-cong-thuc-xac-dinh-va-y-nghia-20191008164428741.htm";
             if (lastQuarterlyFinancialIndicator is null)
@@ -688,7 +688,7 @@ namespace Pl.Sas.Core.Services
         /// <param name="lastYearlyFinancialIndicator">Chỉ số năm gần nhất</param>
         /// <param name="lastYearlyFinancialIndicatorSameIndustries">Danh sách các chỉ số tài chính công ty cùng ngành của năm gần nhất</param>
         /// <returns></returns>
-        public static int DebtAssetCheck(List<AnalyticsNote> notes, FinancialIndicator lastYearlyFinancialIndicator, IEnumerable<FinancialIndicator> lastYearlyFinancialIndicatorSameIndustries)
+        public static int DebtAssetCheck(List<AnalyticsNote> notes, FinancialIndicator? lastYearlyFinancialIndicator, List<FinancialIndicator> lastYearlyFinancialIndicatorSameIndustries)
         {
             var guideLink = "https://vietnambiz.vn/he-so-no-tren-von-chu-so-huu-dept-to-equity-ratio-he-so-d-e-la-gi-2019081919185477.htm";
             if (lastYearlyFinancialIndicator is null)
@@ -733,7 +733,7 @@ namespace Pl.Sas.Core.Services
         /// <param name="lastYearlyFinancialIndicator">Chỉ số năm gần nhất</param>
         /// <param name="lastYearlyFinancialIndicatorSameIndustries">Danh sách các chỉ số tài chính công ty cùng ngành của năm gần nhất</param>
         /// <returns></returns>
-        public static int DebtEquityCheck(List<AnalyticsNote> notes, FinancialIndicator lastYearlyFinancialIndicator, IEnumerable<FinancialIndicator> lastYearlyFinancialIndicatorSameIndustries)
+        public static int DebtEquityCheck(List<AnalyticsNote> notes, FinancialIndicator? lastYearlyFinancialIndicator, List<FinancialIndicator> lastYearlyFinancialIndicatorSameIndustries)
         {
             var guideLink = "https://vietnambiz.vn/he-so-no-tren-von-chu-so-huu-dept-to-equity-ratio-he-so-d-e-la-gi-2019081919185477.htm";
             if (lastYearlyFinancialIndicator is null)
@@ -779,7 +779,7 @@ namespace Pl.Sas.Core.Services
         /// <returns>
         /// Tối đa 1 điểm, thấp nhất 0 điểm
         /// </returns>
-        public static int CharterCapitalCheck(List<AnalyticsNote> notes, Company company, IEnumerable<Company> companiesSameSubsectorCode)
+        public static int CharterCapitalCheck(List<AnalyticsNote> notes, Company company, List<Company> companiesSameSubsectorCode)
         {
             var score = 1;
             var type = 0;
@@ -818,7 +818,7 @@ namespace Pl.Sas.Core.Services
         /// <param name="notes">Ghi chú đánh giá</param>
         /// <param name="fiinEvaluate">Kết quả đánh giá của fiintrading</param>
         /// <returns></returns>
-        public static int FiinValueCheck(List<AnalyticsNote> notes, FiinEvaluated fiinEvaluate)
+        public static int FiinValueCheck(List<AnalyticsNote> notes, FiinEvaluated? fiinEvaluate)
         {
             var type = 0;
             var score = 0;
