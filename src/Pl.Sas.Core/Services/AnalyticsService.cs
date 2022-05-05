@@ -21,8 +21,10 @@ namespace Pl.Sas.Core.Services
         private readonly ILogger<AnalyticsService> _logger;
         private readonly IZipHelper _zipHelper;
         private readonly ISystemData _systemData;
+        private readonly IWorkerQueueService _workerQueueService;
 
         public AnalyticsService(
+            IWorkerQueueService workerQueueService,
             ISystemData systemData,
             IZipHelper zipHelper,
             IAnalyticsData analyticsData,
@@ -34,59 +36,89 @@ namespace Pl.Sas.Core.Services
             _analyticsData = analyticsData;
             _zipHelper = zipHelper;
             _systemData = systemData;
+            _workerQueueService = workerQueueService;
         }
 
         public async Task HandleEventAsync(QueueMessage queueMessage)
         {
-            Stopwatch stopWatch = new();
-            stopWatch.Start();
-
-            switch (queueMessage.Id)
+            var schedule = await _systemData.GetScheduleByIdAsync(queueMessage.Id);
+            if (schedule != null)
             {
-                case "CompanyValueAnalytics":
-                    await CompanyValueAnalyticsAsync(queueMessage.KeyValues["Symbol"]);
-                    break;
+                Stopwatch stopWatch = new();
+                stopWatch.Start();
 
-                case "CompanyGrowthAnalytics":
-                    await CompanyGrowthAnalyticsAsync(queueMessage.KeyValues["Symbol"]);
-                    break;
+                switch (schedule.Type)
+                {
+                    case 200:
+                        _logger.LogInformation("Run company analytics for {DataKey}.", schedule.DataKey);
+                        await CompanyValueAnalyticsAsync(schedule.DataKey ?? "");
+                        break;
 
-                case "StockPriceAnalytics":
-                    await StockPriceAnalyticsAsync(queueMessage.KeyValues["Symbol"]);
-                    break;
+                    case 201:
+                        _logger.LogInformation("Run stock price analytics for {DataKey}.", schedule.DataKey);
+                        await StockPriceAnalyticsAsync(schedule.DataKey ?? "");
+                        break;
 
-                case "VndScoreAnalytics":
-                    await VndScoreAnalyticsAsync(queueMessage.KeyValues["Symbol"]);
-                    break;
+                    case 202:
+                        _logger.LogInformation("Run test trading analytics for {DataKey}.", schedule.DataKey);
+                        await TestTradingAnalyticsAsync(schedule.DataKey ?? "");
+                        break;
 
-                case "FiinAnalytics":
-                    await VndScoreAnalyticsAsync(queueMessage.KeyValues["Symbol"]);
-                    break;
+                    case 203:
+                        _logger.LogInformation("Run target price analytics => {DataKey}.", schedule.DataKey);
+                        await TargetPriceAnalyticsAsync(schedule.DataKey ?? "");
+                        break;
 
-                case "TradingAnalytics":
-                    await VndScoreAnalyticsAsync(queueMessage.KeyValues["Symbol"]);
-                    break;
+                    case 204:
+                        _logger.LogInformation("Run industry trend analytics for {Id}.", schedule.Id);
+                        await IndustryTrendAnalyticsAsync();
+                        break;
 
-                case "MarketSentimentAnalytics":
-                    await MarketSentimentAnalyticsAsync(queueMessage.KeyValues["Symbol"]);
-                    break;
+                    case 205:
+                        _logger.LogInformation("Run update price on corporate action for {Id}.", schedule.Id);
+                        await CorporateActionToPriceAsync();
+                        break;
 
-                case "IndustryTrendAnalytics":
-                    await IndustryTrendAnalyticsAsync(queueMessage.KeyValues["Symbol"]);
-                    break;
+                    case 207:
+                        _logger.LogInformation("Run market sentiment analytics => {DataKey}.", schedule.DataKey);
+                        await MarketSentimentAnalyticsAsync();
+                        break;
 
-                case "CorporateActionToPrice":
-                    await CorporateActionToPriceAsync(queueMessage.KeyValues["Symbol"]);
-                    break;
+                    case 208:
+                        _logger.LogInformation("Run macroeconomics analytics => {DataKey}.", schedule.DataKey);
+                        await MacroeconomicsAnalyticsAsync(schedule);
+                        break;
 
-                default:
-                    _logger.LogWarning("Worker analytics id {Id} don't match any function", queueMessage.Id);
-                    break;
+                    case 209:
+                        _logger.LogInformation("Run company growth analytics => {DataKey}.", schedule.DataKey);
+                        await CompanyGrowthAnalyticsAsync(schedule.DataKey);
+                        break;
+
+                    case 210:
+                        _logger.LogInformation("Run fiintrading analytics => {DataKey}.", schedule.DataKey);
+                        await FiinAnalyticsAsync(schedule.DataKey);
+                        break;
+
+                    case 211:
+                        _logger.LogInformation("Run vnd score analytics => {DataKey}.", schedule.DataKey);
+                        await VndScoreAnalyticsAsync(schedule.DataKey);
+                        break;
+
+                    default:
+                        _logger.LogWarning("Scheduler id {Id}, type: {Type} don't match any function", queueMessage.Id, schedule.Type);
+                        stopWatch.Stop();
+                        return;
+                }
+
+                stopWatch.Stop();
+                _logger.LogInformation("Worker analytics {Id} in {ElapsedMilliseconds} miniseconds.", queueMessage.Id, stopWatch.ElapsedMilliseconds);
             }
-
-            stopWatch.Stop();
-            _logger.LogInformation("Worker analytics {Id} in {ElapsedMilliseconds} miniseconds.", queueMessage.Id, stopWatch.ElapsedMilliseconds);
+            else
+            {
+                _logger.LogWarning("AnalyticsService HandleEventAsync null scheduler Id: {Id}.", queueMessage.Id);
+            }
         }
+
         /// <summary>
         /// Phân tích giá trị doanh nghiệp
         /// </summary>
@@ -495,41 +527,24 @@ namespace Pl.Sas.Core.Services
         /// <param name="workerMessageQueueService">message queue service</param>
         /// <param name="schedule">Thông tin lịch làm việc</param>
         /// <returns></returns>
-        public virtual async Task MarketSentimentAnalyticsAsync(Schedule schedule, IWorkerMessageQueueService workerMessageQueueService)
+        public virtual async Task MarketSentimentAnalyticsAsync()
         {
-            foreach (var index in Constants.ShareIndex)
+            var indexs = await _marketData.GetStockByType("i");
+            foreach (var index in indexs)
             {
-                var stockPrices = await _stockPriceData.GetForIMarketSentimentAnalyticsAsync(index, 512);
-                if (stockPrices?.Count < 5)
+                var indexPrices = await _marketData.GetAnalyticsTopIndexPriceAsync(index.Symbol, 512);
+                if (indexPrices.Count < 5)
                 {
                     _logger.LogWarning("Chỉ số {index} không được phân tích tâm lý do không đủ dữ liệu để phân tích.", index);
                     continue;
                 }
-                var stockPricesAdj = BaseTrading.ConvertStockPricesToStockPriceAdj(stockPrices);
-                var indicatorSet = BaseTrading.BuildIndicatorSet(stockPricesAdj);
+                var indicatorSet = BaseTrading.BuildIndicatorSet(indexPrices);
 
                 var score = 0;
-                var marketSentimentNotes = new List<AnalyticsMessage>();
-                score += MarketAnalyticsService.IndexValueTrend(marketSentimentNotes, stockPrices, indicatorSet);
-                score += MarketAnalyticsService.MatchVolTrend(marketSentimentNotes, stockPrices);
-                var key = $"{Constants.MarketSentimentIndexKey}-{index}";
-                var saveItem = new EconomicIndex()
-                {
-                    Key = key,
-                    Value = score,
-                    Description = $"Phân tích trạng thái thị trường {index}."
-                };
-                var checkSave = await _economicIndexData.SaveAsync(saveItem);
-                if (checkSave)
-                {
-                    var updateMemoryMessage = new QueueMessage() { Id = "MarketSentimentIndex" };
-                    updateMemoryMessage.KeyValues.Add("Key", key);
-                    workerMessageQueueService.BroadcastUpdateMemoryTask(updateMemoryMessage);
-                }
-                else
-                {
-                    _logger.LogWarning("MarketSentimentAnalyticsAsync can't SaveAsync for: {Id}, Key: {key}", schedule.Id, key);
-                }
+                var marketSentimentNotes = new List<AnalyticsNote>();
+                score += MarketAnalyticsService.IndexValueTrend(marketSentimentNotes, indexPrices, indicatorSet);
+                var key = $"{index.Symbol}-Analytics-MarketSentiment";
+                await _systemData.SetKeyValueAsync(key, score);
             }
         }
 
@@ -538,21 +553,22 @@ namespace Pl.Sas.Core.Services
         /// </summary>
         /// <param name="workerMessageQueueService">Message queue service</param>
         /// <returns></returns>
-        public virtual async Task IndustryTrendAnalyticsAsync(IWorkerMessageQueueService workerMessageQueueService)
+        public virtual async Task IndustryTrendAnalyticsAsync()
         {
-            var industries = await _industryData.FindAllAsync();
-            var oneChange = new List<decimal>();
-            var threeChange = new List<decimal>();
-            var fiveChange = new List<decimal>();
-            var tenChange = new List<decimal>();
-            var twentyChange = new List<decimal>();
-            var thirtyChange = new List<decimal>();
+            var industries = await _marketData.GetIndustriesAsync();
+            var oneChange = new List<float>();
+            var threeChange = new List<float>();
+            var fiveChange = new List<float>();
+            var tenChange = new List<float>();
+            var twentyChange = new List<float>();
+            var thirtyChange = new List<float>();
             foreach (var industry in industries)
             {
-                var stocks = await _companyData.FindAllAsync(industry.Code);
-                foreach (var stock in stocks)
+                var notes = new List<AnalyticsNote>();
+                var companies = await _marketData.CacheGetCompaniesAsync(industry.Code);
+                foreach (var company in companies)
                 {
-                    var stockPrices = await _operationRetry.Retry(() => _stockPriceData.GetForIndustryTrendAnalyticsAsync(stock.Symbol, 35), 10, TimeSpan.FromMilliseconds(100));
+                    var stockPrices = await _marketData.GetAnalyticsTopStockPriceAsync(company.Symbol, 35);
                     if (stockPrices.Count <= 0)
                     {
                         continue;
@@ -609,19 +625,19 @@ namespace Pl.Sas.Core.Services
                         }
                     }
                 }
-                var score = 0;
+                var score = 0f;
                 if (oneChange.Count > 1)
                 {
-                    score += oneChange.Count > 0 ? (int)oneChange.Average() * 10 : 0;
-                    score += threeChange.Count > 0 ? (int)threeChange.Average() * 6 : 0;
-                    score += fiveChange.Count > 0 ? (int)fiveChange.Average() * 5 : 0;
-                    score += tenChange.Count > 0 ? (int)tenChange.Average() : 3;
-                    score += twentyChange.Count > 0 ? (int)(twentyChange.Average() * 2) : 0;
-                    score += thirtyChange.Count > 0 ? (int)(thirtyChange.Average() * 1) : 0;
+                    score += oneChange.Count > 0 ? oneChange.Average() * 10 : 0;
+                    score += threeChange.Count > 0 ? threeChange.Average() * 6 : 0;
+                    score += fiveChange.Count > 0 ? fiveChange.Average() * 5 : 0;
+                    score += tenChange.Count > 0 ? tenChange.Average() : 3;
+                    score += twentyChange.Count > 0 ? twentyChange.Average() * 2 : 0;
+                    score += thirtyChange.Count > 0 ? thirtyChange.Average() * 1 : 0;
                 }
 
-                industry.AutoRank = score;
-                await _industryData.UpdateAsync(industry);
+                var saveZipData = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(notes));
+                await _analyticsData.SaveIndustryScoreAsync(industry.Code, score, saveZipData);
                 oneChange.Clear();
                 threeChange.Clear();
                 fiveChange.Clear();
@@ -629,8 +645,7 @@ namespace Pl.Sas.Core.Services
                 twentyChange.Clear();
                 thirtyChange.Clear();
             }
-            var sendUpdateMemory = new QueueMessage() { Id = "Industries" };
-            workerMessageQueueService.BroadcastUpdateMemoryTask(sendUpdateMemory);
+            _workerQueueService.BroadcastUpdateMemoryTask(new QueueMessage("Industries"));
         }
 
         /// <summary>
@@ -638,24 +653,57 @@ namespace Pl.Sas.Core.Services
         /// </summary>
         /// <param name="workerMessageQueueService">Message queue service</param>
         /// <returns></returns>
-        public virtual async Task CorporateActionToPriceAsync(IWorkerMessageQueueService workerMessageQueueService)
+        public virtual async Task CorporateActionToPriceAsync()
         {
-            var exrightCorporateActions = await _corporateActionData.GetTradingByExrightDateAsync();
+            var exrightCorporateActions = await _marketData.GetCorporateActionTradingByExrightDateAsync();
             foreach (var corporateActions in exrightCorporateActions)
             {
-                var schedule = await _scheduleData.FindAsync(5, corporateActions.Symbol);
+                var schedule = await _systemData.GetScheduleAsync(5, corporateActions.Symbol);
                 if (schedule is not null)
                 {
-                    await _stockPriceData.DeleteBySymbolAsync(corporateActions.Symbol);
-                    schedule.OptionsJson = JsonSerializer.Serialize(new Dictionary<string, string>());
-                    var updateResult = await _scheduleData.UpdateAsync(schedule);
+                    await _marketData.DeleteStockPrices(corporateActions.Symbol);
+                    schedule.OptionsJson = JsonSerializer.Serialize(new Dictionary<string, string>() { { "StockPricesCrawlSize", "90000" } });
+                    schedule.ActiveTime = DateTime.Now;
+                    var updateResult = await _systemData.UpdateScheduleAsync(schedule);
                     if (updateResult)
                     {
-                        var sendUpdateMemory = new QueueMessage() { Id = "UpdatedSchedule" };
-                        sendUpdateMemory.KeyValues.Add("SchedulerId", schedule.Id);
-                        workerMessageQueueService.BroadcastUpdateMemoryTask(sendUpdateMemory);
+                        _workerQueueService.BroadcastUpdateMemoryTask(new QueueMessage("Schedule"));
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Phân tích các yếu tố vĩ mô tác động đến giá cổ phiếu
+        /// </summary>
+        /// <param name="workerMessageQueueService">message queue service</param>
+        /// <param name="schedule">Thông tin lịch làm việc</param>
+        /// <returns></returns>
+        public virtual async Task<bool> MacroeconomicsAnalyticsAsync(string symbol)
+        {
+            var stockPrice = await _marketData.GetLastStockPriceAsync(symbol);
+            var company = await _marketData.GetCompanyAsync(symbol);
+            if (stockPrice is null || company is null)
+            {
+                var checkingKey = $"{symbol}-Analytics-Macroeconomics";
+                _logger.LogWarning("MacroeconomicsAnalyticsAsync can't find last stock price and company with symbol: {symbol}", symbol);
+                return await _systemData.SetKeyValueAsync(checkingKey, false);
+            }
+
+            var indexCode = Utilities.GetLeadIndexByExchange(company.Exchange ?? "VNINDEX");
+            var marketSentimentIndices = await _systemData.GetKeyValueAsync($"{indexCode}-Analytics-MarketSentiment");
+            var industry = await _analyticsData.GetIndustryAnalyticsAsync(company.SubsectorCode);
+            var score = 0;
+            var analyticsNotes = new List<AnalyticsNote>();
+            score += MarketAnalyticsService.MarketSentimentTrend(analyticsNotes, marketSentimentIndices?.GetValue<float>() ?? 0);
+            score += MarketAnalyticsService.IndustryTrend(analyticsNotes, industry);
+
+            var saveZipData = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(analyticsNotes));
+            var saveResult = await _operationRetry.Retry(() =>
+                _analyticsResultData.SaveMacroeconomicsScoreAsync(schedule.DataKey, Utilities.GetTradingDatePath(), score, saveZipData), 10, TimeSpan.FromMilliseconds(100));
+            if (!saveResult)
+            {
+                _logger.LogWarning("MacroeconomicsAnalyticsAsync can't save result for symbol: {DataKey}", schedule.DataKey);
             }
         }
     }

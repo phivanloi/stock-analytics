@@ -869,14 +869,16 @@ namespace Pl.Sas.Core.Services
                             Type = 5,
                             Name = $"Bổ sung lịch sử giá cổ phiếu theo mã: {stockCode}",
                             DataKey = stockCode,
-                            ActiveTime = currentTime.AddMinutes(random.Next(15, 20))//làm muộn nhất để kích hoạt phân tích
+                            ActiveTime = currentTime.AddMinutes(random.Next(0, 10)),
+                            OptionsJson = JsonSerializer.Serialize(new Dictionary<string, string>() { { "StockPricesCrawlSize", "90000" } })
                         });
                         insertSchedules.Add(new()
                         {
                             Type = 6,
                             Name = $"Bổ sung lịch sử sự kiện công ty theo mã: {stockCode}",
                             DataKey = stockCode,
-                            ActiveTime = currentTime.AddMinutes(random.Next(0, 10))
+                            ActiveTime = currentTime.AddMinutes(random.Next(0, 10)),
+                            OptionsJson = JsonSerializer.Serialize(new Dictionary<string, string>() { { "CorporateActionCrawlSize", "90000" } })
                         });
                         insertSchedules.Add(new()
                         {
@@ -907,10 +909,74 @@ namespace Pl.Sas.Core.Services
                             DataKey = stockCode,
                             ActiveTime = currentTime.AddMinutes(random.Next(0, 10))
                         });
+
+                        insertSchedules.Add(new()
+                        {
+                            Type = 208,
+                            Name = $"Phân tích các yếu tố vĩ mô tác động đến cổ phiếu: {stockCode}",
+                            DataKey = stockCode,
+                            ActiveTime = currentTime.Date.AddDays(1).AddHours(5)
+                        });
+                        insertSchedules.Add(new()
+                        {
+                            Type = 200,
+                            Name = $"Phân tích giá trị doanh nghiệp cho mã: {stockCode}",
+                            DataKey = stockCode,
+                            ActiveTime = currentTime.Date.AddDays(1).AddHours(5)
+                        });
+                        insertSchedules.Add(new()
+                        {
+                            Type = 209,
+                            Name = $"Đánh giá tăng trưởng doanh nghiệp: {stockCode}",
+                            DataKey = stockCode,
+                            ActiveTime = currentTime.Date.AddDays(1).AddHours(5)
+                        });
+                        insertSchedules.Add(new()
+                        {
+                            Type = 201,
+                            Name = $"Phân tích chỉ số kỹ thuật cho mã: {stockCode}",
+                            DataKey = stockCode,
+                            ActiveTime = currentTime.Date.AddDays(1).AddHours(5)
+                        });
+                        insertSchedules.Add(new()
+                        {
+                            Type = 202,
+                            Name = $"Trading thư nghiệm cho mã: {stockCode}",
+                            DataKey = stockCode,
+                            ActiveTime = currentTime.Date.AddDays(1).AddHours(6)
+                        });
+                        insertSchedules.Add(new()
+                        {
+                            Type = 210,
+                            Name = $"Phân tích đánh giá của fiintrading: {stockCode}",
+                            DataKey = stockCode,
+                            ActiveTime = currentTime.Date.AddDays(1).AddHours(5)
+                        });
+                        insertSchedules.Add(new()
+                        {
+                            Type = 211,
+                            Name = $"Phân tích đánh giá của vnd: {stockCode}",
+                            DataKey = stockCode,
+                            ActiveTime = currentTime.Date.AddDays(1).AddHours(5)
+                        });
+                        insertSchedules.Add(new()
+                        {
+                            Type = 203,
+                            Name = $"Tính toán giá dự phóng của các công ty chứng khoán cho mã: {stockCode}",
+                            DataKey = stockCode,
+                            ActiveTime = currentTime.Date.AddDays(1).AddHours(5)
+                        });
+
+                        insertSchedules.Add(new()
+                        {
+                            Type = 400,
+                            Name = $"Tìm kiếm các đặc trưng của cô phiếu cho mã: {stockCode}",
+                            DataKey = stockCode,
+                            ActiveTime = currentTime.Date.AddDays(10).AddHours(5)
+                        });
                     }
                     else
                     {
-
                         insertSchedules.Add(new()
                         {
                             Name = $"Tải dữ liệu chỉ số: {stockCode}",

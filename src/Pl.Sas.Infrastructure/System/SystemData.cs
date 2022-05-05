@@ -44,6 +44,11 @@ namespace Pl.Sas.Infrastructure.System
             return await _systemDbContext.SaveChangesAsync() > 0;
         }
 
+        public virtual async Task<Schedule?> GetScheduleAsync(int type, string dataKey)
+        {
+            return await _systemDbContext.Schedules.FirstOrDefaultAsync(s => s.Type == type && s.DataKey == dataKey);
+        }
+
         public virtual async Task<Schedule?> GetScheduleByIdAsync(string id)
         {
             return await _systemDbContext.Schedules.FirstOrDefaultAsync(s => s.Id == id);

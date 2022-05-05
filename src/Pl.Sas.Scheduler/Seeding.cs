@@ -20,14 +20,14 @@ namespace Pl.Sas.Scheduler
                     },
                     new Schedule()
                     {
-                        Type = 50,
+                        Type = 10,
                         Name = "Lấy lãi suất ngân hàng cao nhất.",
                         OptionsJson = JsonSerializer.Serialize(new Dictionary<string, string>() { { "Length", $"3,6,12,24" } })
                     },
 
                     new Schedule()
                     {
-                        Type = 100,
+                        Type = 204,
                         Name = "Đánh giá mã ngành tự động.",
                         ActiveTime = DateTime.Now.AddHours(1)
                     },

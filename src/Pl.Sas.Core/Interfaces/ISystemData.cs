@@ -8,6 +8,14 @@ namespace Pl.Sas.Core.Interfaces
     public interface ISystemData
     {
         /// <summary>
+        /// Lấy lịch theo loại vào khóa dữ liệu
+        /// </summary>
+        /// <param name="type">Loại</param>
+        /// <param name="dataKey">Khóa dữ liệu</param>
+        /// <returns>Schedule</returns>
+        Task<Schedule?> GetScheduleAsync(int type, string dataKey);
+
+        /// <summary>
         /// Lấy thông tin khóa giá trị
         /// </summary>
         /// <param name="key">Khóa</param>

@@ -130,5 +130,61 @@ namespace Pl.Sas.Core.Services
             notes.Add(note, score, type, "https://vcbs.com.vn/vn/Utilities/Index/52");
             return score;
         }
+
+        /// <summary>
+        /// Phân tích chỉ số tâm lý thị trường
+        /// </summary>
+        /// <param name="notes">Ghi chú</param>
+        /// <param name="marketSentimentScore">Điểm đánh giá thị trường</param>
+        /// <returns>int</returns>
+        public static int MarketSentimentTrend(List<AnalyticsNote> notes, float marketSentimentScore)
+        {
+            var type = 0;
+            var score = 0;
+            var note = $"Chỉ số tâm lý thị trường hiện tại {marketSentimentScore}";
+            notes.Add(note, score, type, null);
+            return score;
+        }
+
+        /// <summary>
+        /// Phân tích trạng thái ngành
+        /// </summary>
+        /// <param name="notes">Ghi chú</param>
+        /// <param name="industryAnalytics">Thông tin ngành của cố phiếu đang lắm giữ</param>
+        /// <returns></returns>
+        public static int IndustryTrend(List<AnalyticsNote> notes, IndustryAnalytics? industryAnalytics)
+        {
+            if (industryAnalytics is null)
+            {
+                notes.Add($"Không có thông tin ngành để phân tích.", -2, -2, null);
+                return -2;
+            }
+
+            var type = 0;
+            var score = 0;
+            var note = $"Cổ phiếu thuộc ngành \"{industryAnalytics.Code}\" có đánh giá cố định {industryAnalytics.ManualScore}, đánh giá tự động {industryAnalytics.Score}.";
+            if (industryAnalytics.Score > 100)
+            {
+                type++;
+                score++;
+            }
+            else if (industryAnalytics.Score < 0)
+            {
+                type--;
+                score--;
+            }
+            if (industryAnalytics.ManualScore > 0)
+            {
+                type++;
+                score++;
+            }
+            else
+            {
+                type--;
+                score--;
+            }
+            notes.Add(note, score, type, null);
+            return score;
+        }
     }
 }

@@ -7,9 +7,9 @@ namespace Pl.Sas.Infrastructure.Analytics
     {
         public AnalyticsDbContext(DbContextOptions<AnalyticsDbContext> options) : base(options) { }
 
-        public virtual DbSet<AnalyticsResult> AnalyticsResults { get; set; } = null!;
-        public virtual DbSet<TradingResult> TradingResults { get; set; } = null!;
-        public virtual DbSet<StockTracking> StockTrackings { get; set; } = null!;
+        public virtual DbSet<AnalyticsResult> AnalyticsResults { get; set; } = null!;//bảng kết quản phân tích cổ phiếu
+        public virtual DbSet<TradingResult> TradingResults { get; set; } = null!;//bảng kết quả giao dịch
+        public virtual DbSet<IndustryAnalytics> IndustryAnalytics { get; set; } = null!;//bảng kết quả phân tích ngành
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -37,14 +37,10 @@ namespace Pl.Sas.Infrastructure.Analytics
 
             #region StockTracking
 
-            modelBuilder.Entity<StockTracking>(b =>
+            modelBuilder.Entity<IndustryAnalytics>(b =>
             {
                 b.Property(c => c.Id).HasMaxLength(22).IsRequired();
-                b.Property(p => p.Symbol).HasMaxLength(16).IsRequired();
-                b.Property(p => p.DownloadStatus).HasMaxLength(1024);
-                b.Property(p => p.DataStatus).HasMaxLength(1024);
-                b.Property(p => p.AnalyticsStatus).HasMaxLength(1024);
-                b.HasIndex(p => new { p.Symbol });
+                b.Property(p => p.Code).HasMaxLength(16).IsRequired();
             });
 
             #endregion StockTracking

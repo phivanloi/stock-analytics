@@ -1,4 +1,5 @@
-﻿using Pl.Sas.Core.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using Pl.Sas.Core.Entities;
 using Pl.Sas.Core.Interfaces;
 using Pl.Sas.Infrastructure.Analytics;
 
@@ -20,6 +21,11 @@ namespace Pl.Sas.Infrastructure.Data
             _memoryCacheService = memoryCacheService;
         }
 
+        public virtual async Task<IndustryAnalytics?> GetIndustryAnalyticsAsync(string code)
+        {
+            return await _analyticsDbContext.IndustryAnalytics.FirstOrDefaultAsync(q => q.Code == code);
+        }
+
         public virtual async Task<bool> SaveMacroeconomicsScoreAsync(string symbol, DateTime tradingDate, int marketScore, byte[] marketNote)
         {
             var updateItem = _analyticsDbContext.AnalyticsResults.FirstOrDefault(q => q.Symbol == symbol && q.TradingDate == tradingDate);
@@ -27,6 +33,7 @@ namespace Pl.Sas.Infrastructure.Data
             {
                 updateItem.MarketScore = marketScore;
                 updateItem.MarketNotes = marketNote;
+                updateItem.UpdatedTime = DateTime.Now;
             }
             else
             {
@@ -48,6 +55,7 @@ namespace Pl.Sas.Infrastructure.Data
             {
                 updateItem.CompanyValueScore = companyValueScore;
                 updateItem.CompanyValueNotes = companyValueNote;
+                updateItem.UpdatedTime = DateTime.Now;
             }
             else
             {
@@ -69,6 +77,7 @@ namespace Pl.Sas.Infrastructure.Data
             {
                 updateItem.CompanyGrowthScore = companyGrowthScore;
                 updateItem.CompanyGrowthNotes = companyGrowthNote;
+                updateItem.UpdatedTime = DateTime.Now;
             }
             else
             {
@@ -90,6 +99,7 @@ namespace Pl.Sas.Infrastructure.Data
             {
                 updateItem.StockScore = stockScore;
                 updateItem.StockNotes = stockNote;
+                updateItem.UpdatedTime = DateTime.Now;
             }
             else
             {
@@ -111,6 +121,7 @@ namespace Pl.Sas.Infrastructure.Data
             {
                 updateItem.FiinScore = fiinScore;
                 updateItem.FiinNotes = fiinNote;
+                updateItem.UpdatedTime = DateTime.Now;
             }
             else
             {
@@ -132,6 +143,7 @@ namespace Pl.Sas.Infrastructure.Data
             {
                 updateItem.VndScore = vndScore;
                 updateItem.VndNote = vndNote;
+                updateItem.UpdatedTime = DateTime.Now;
             }
             else
             {
@@ -153,6 +165,7 @@ namespace Pl.Sas.Infrastructure.Data
             {
                 updateItem.TargetPrice = targetPrice;
                 updateItem.TargetPriceNotes = targetPriceNote;
+                updateItem.UpdatedTime = DateTime.Now;
             }
             else
             {
@@ -162,6 +175,27 @@ namespace Pl.Sas.Infrastructure.Data
                     TradingDate = tradingDate,
                     TargetPrice = targetPrice,
                     TargetPriceNotes = targetPriceNote
+                });
+            }
+            return await _analyticsDbContext.SaveChangesAsync() > 0;
+        }
+
+        public virtual async Task<bool> SaveIndustryScoreAsync(string code, float score, byte[] analyticsNote)
+        {
+            var updateItem = _analyticsDbContext.IndustryAnalytics.FirstOrDefault(q => q.Code == code);
+            if (updateItem is not null)
+            {
+                updateItem.Score = score;
+                updateItem.Notes = analyticsNote;
+                updateItem.UpdatedTime = DateTime.Now;
+            }
+            else
+            {
+                _analyticsDbContext.IndustryAnalytics.Add(new()
+                {
+                    Code = code,
+                    Score = score,
+                    Notes = analyticsNote,
                 });
             }
             return await _analyticsDbContext.SaveChangesAsync() > 0;

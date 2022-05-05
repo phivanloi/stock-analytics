@@ -8,6 +8,40 @@ namespace Pl.Sas.Core.Interfaces
     public interface IMarketData
     {
         /// <summary>
+        /// Lấy danh sách cổ phiếu theo loại
+        /// </summary>
+        /// <param name="type">Loại</param>
+        /// <returns>Stock</returns>
+        Task<List<Stock>> GetStockByType(string type);
+
+        /// <summary>
+        /// Lấy danh sách lịch sử giá của chỉ số
+        /// </summary>
+        /// <param name="index">chỉ số</param>
+        /// <param name="top">Số bản ghi cần lấy</param>
+        /// <returns>List StockPrice</returns>
+        Task<List<StockPrice>> GetAnalyticsTopIndexPriceAsync(string index, int top);
+
+        /// <summary>
+        /// Xóa lịch sử giá theo mã chứng khoán
+        /// </summary>
+        /// <param name="symbol">Mã chứng khoán</param>
+        /// <returns>bool</returns>
+        Task<bool> DeleteStockPrices(string symbol);
+
+        /// <summary>
+        /// Lấy danh sách sự kiện vào ngày hôm nay để xử lý update lại giá mới
+        /// </summary>
+        /// <returns>List CorporateAction</returns>
+        Task<List<CorporateAction>> GetCorporateActionTradingByExrightDateAsync();
+
+        /// <summary>
+        /// Lấy danh sách ngành
+        /// </summary>
+        /// <returns>List Industry</returns>
+        Task<List<Industry>> GetIndustriesAsync();
+
+        /// <summary>
         /// Lấy danh sách bao cáo khuyên nghị từ 6 tháng trở lên
         /// </summary>
         /// <param name="symbol">Mã chứng khoán</param>
@@ -78,8 +112,9 @@ namespace Pl.Sas.Core.Interfaces
         /// <summary>
         /// Lấy toàn bộ công ty trong hệ thống
         /// </summary>
+        /// <param name="industryCode">mã ngành</param>
         /// <returns>List Company</returns>
-        Task<List<Company>> CacheGetCompaniesAsync();
+        Task<List<Company>> CacheGetCompaniesAsync(string? industryCode = null);
 
         /// <summary>
         /// Lấy thông tin công ty theo mã chứng khoán

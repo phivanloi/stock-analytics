@@ -8,6 +8,22 @@ namespace Pl.Sas.Core.Interfaces
     public interface IAnalyticsData
     {
         /// <summary>
+        /// Lấy phân tích dòng tiền theo ngành
+        /// </summary>
+        /// <param name="code">Mã</param>
+        /// <returns>IndustryAnalytics</returns>
+        Task<IndustryAnalytics?> GetIndustryAnalyticsAsync(string code);
+
+        /// <summary>
+        /// Ghi kết quả phân tích dòng tiền theo ngành
+        /// </summary>
+        /// <param name="code">Mã ngành</param>
+        /// <param name="score">điểm đánh giá</param>
+        /// <param name="analyticsNote">Ghi chú đánh giá</param>
+        /// <returns>bool</returns>
+        Task<bool> SaveIndustryScoreAsync(string code, float score, byte[] analyticsNote);
+
+        /// <summary>
         /// Ghi lại kết quả đánh giá giá trị doanh nghiệp
         /// </summary>
         /// <param name="symbol">Mã cổ phiếu</param>
