@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Pl.Sas.Core.Entities
+﻿namespace Pl.Sas.Core.Entities
 {
     public class StockTransaction : BaseEntity
     {

@@ -1,5 +1,4 @@
-﻿using Ardalis.GuardClauses;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Pl.Sas.Core.Entities;
 using Pl.Sas.Core.Interfaces;
 using System.Diagnostics;

@@ -1,5 +1,4 @@
 ﻿using Pl.Sas.Core.Entities;
-using Pl.Sas.Infrastructure.Data;
 using Pl.Sas.Infrastructure.System;
 using System.Text.Json;
 

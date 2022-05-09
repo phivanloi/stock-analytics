@@ -8,83 +8,50 @@ using System.Text;
 
 namespace Pl.Sas.Core.Services
 {
-    public class StockViewService : IStockViewService
+    public class StockViewService
     {
         private static readonly ConcurrentDictionary<string, StockView> _stockViews = new();
-        private static readonly int _defaultCacheTime = 1;
-        private readonly ICompanyData _companyData;
-        private readonly IIndustryData _industryData;
-        private readonly IStockData _stockData;
-        private readonly IStockPriceData _stockPriceData;
         private readonly IAsyncCacheService _asyncCacheService;
-        private readonly IAnalyticsResultData _analyticsResultData;
         private readonly ILogger<StockViewService> _logger;
-        private readonly IScheduleData _scheduleData;
-        private readonly ITradingResultData _tradingResultData;
-        private readonly IFinancialIndicatorData _financialIndicatorData;
-        private readonly IOperationRetry _operationRetry;
         private readonly IMemoryCacheService _memoryCacheService;
         private readonly IZipHelper _zipHelper;
-        private readonly IFollowStockData _followStockData;
-        private readonly IUserNotificationData _userNotificationData;
-        private readonly ICorporateActionData _corporateActionData;
+        private readonly IMarketData _marketData;
+        private readonly IAnalyticsData _analyticsData;
+        private readonly ISystemData _systemData;
 
         public StockViewService(
+            ISystemData systemData,
+            IAnalyticsData analyticsData,
+            IMarketData marketData,
             IZipHelper zipHelper,
-            IFollowStockData followStockData,
-            IUserNotificationData userNotificationData,
-            ICorporateActionData corporateActionData,
-            IFinancialIndicatorData financialIndicatorData,
-            ITradingResultData tradingResultData,
-            IScheduleData scheduleData,
-            IOperationRetry operationRetry,
             ILogger<StockViewService> logger,
-            IAnalyticsResultData analyticsResultData,
             IAsyncCacheService asyncCacheService,
-            IStockPriceData stockPriceData,
-            IStockData stockData,
-            ICompanyData companyData,
-            IIndustryData industryData,
             IMemoryCacheService memoryCacheService)
         {
-            _corporateActionData = corporateActionData;
-            _userNotificationData = userNotificationData;
-            _followStockData = followStockData;
             _zipHelper = zipHelper;
-            _industryData = industryData;
-            _companyData = companyData;
-            _stockData = stockData;
-            _stockPriceData = stockPriceData;
             _asyncCacheService = asyncCacheService;
-            _analyticsResultData = analyticsResultData;
             _logger = logger;
-            _scheduleData = scheduleData;
-            _tradingResultData = tradingResultData;
-            _financialIndicatorData = financialIndicatorData;
-            _operationRetry = operationRetry;
             _memoryCacheService = memoryCacheService;
+            _marketData = marketData;
+            _analyticsData = analyticsData;
+            _systemData = systemData;
         }
 
-        public virtual async Task<List<string>> CacheGetExchangesAsync()
+        public virtual async Task<Dictionary<string, string>> CacheGetIndustriesAsync()
         {
-            var cacheKey = CacheKeyService.GetStockExchangeCacheKey();
+            var cacheKey = $"{Constants.IndustryCachePrefix}-CGIDS";
             return await _memoryCacheService.GetOrCreateAsync(cacheKey, async () =>
             {
-                return (await _stockData.GetExchanges()).ToList();
-            }, _defaultCacheTime);
+                var industries = await _marketData.GetIndustriesAsync();
+                var analyticsIndustries = await _analyticsData.GetIndustryAnalyticsAsync();
+                var stats = from industry in industries
+                            join analyticsIndustry in analyticsIndustries on industry.Code equals analyticsIndustry.Code
+                            select new { industry.Code, industry.Name, analyticsIndustry.ManualScore, analyticsIndustry.Score };
+                return stats.OrderByDescending(q => q.ManualScore).ThenByDescending(q => q.Score).ToDictionary(q => q.Code, q => $"{q.Name} ({q.ManualScore} - {q.Score})");
+            }, Constants.DefaultCacheTime * 60 * 24);
         }
 
-        public virtual async Task<Dictionary<string, string>> CacheGetIndustriesSelectAsync()
-        {
-            var cacheKey = CacheKeyService.GetIndustriesCacheKey();
-            return await _memoryCacheService.GetOrCreateAsync(cacheKey, async () =>
-            {
-                var industries = await _industryData.FindAllAsync();
-                return industries.OrderByDescending(q => q.AutoRank).ThenByDescending(q => q.Rank).ToDictionary(q => q.Code, q => $"{q.Name} ({q.AutoRank} - {q.Rank})");
-            }, _defaultCacheTime);
-        }
-
-        public virtual List<StockView> GetMarketStocksView(int principle = 1, string exchange = null, string industryCode = null, string symbol = null, string ordinal = null, string zone = null, List<string> followSymbols = null)
+        public virtual List<StockView> GetMarketStocksView(int principle = 1, string? exchange = null, string? industryCode = null, string? symbol = null, string? ordinal = null, string? zone = null, List<string>? followSymbols = null)
         {
             var query = _stockViews.Select(q => q.Value).AsQueryable();
             if (!string.IsNullOrEmpty(exchange))
@@ -114,7 +81,7 @@ namespace Pl.Sas.Core.Services
                         break;
 
                     case "suggestion":
-                        var industries = CacheGetIndustriesSelectAsync().Result;
+                        var industries = CacheGetIndustriesAsync().Result;
                         query = query.Where(q =>
                         q.TotalScore > 15
                         && q.IndustryCode == industries.FirstOrDefault().Key
@@ -142,7 +109,7 @@ namespace Pl.Sas.Core.Services
 
         public virtual async Task UpdateChangeStockView()
         {
-            var cacheKey = CacheKeyService.GetAllStockViewCacheKey();
+            var cacheKey = $"{Constants.StockViewCachePrefix}-ALL";
             var dictData = await _asyncCacheService.GetByKeyAsync<Dictionary<string, StockView>>(cacheKey);
             if (dictData is not null)
             {
@@ -154,46 +121,9 @@ namespace Pl.Sas.Core.Services
             }
         }
 
-        public virtual async Task<List<StockPrice>> CacheGetStockPricesForDetailPageAsync(string symbol)
+        public virtual async Task<QueueMessage?> HandleStockViewEventAsync(QueueMessage queueMessage)
         {
-            var cacheKey = CacheKeyService.GetStockPricesByCodeCacheKey(symbol, 100000, null);
-            return await _memoryCacheService.GetOrCreateAsync(cacheKey, async () =>
-            {
-                return await _operationRetry.Retry(() => _stockPriceData.GetForDetailPageAsync(symbol, 100000), 10, TimeSpan.FromMilliseconds(100));
-            }, _defaultCacheTime);
-        }
-
-        public virtual async Task<Stock> CacheGetStockByCodeAsync(string symbol)
-        {
-            var cacheKey = CacheKeyService.GetStockByCodeCacheKey(symbol);
-            return await _memoryCacheService.GetOrCreateAsync(cacheKey, async () =>
-            {
-                return await _stockData.GetByCodeAsync(symbol);
-            }, _defaultCacheTime);
-        }
-
-        public virtual async Task<AnalyticsResult> CacheGetAnalyticsResultAsync(string symbol, string datePath)
-        {
-            var cacheKey = CacheKeyService.GetAnalyticsResultCacheKey(symbol, datePath);
-            return await _memoryCacheService.GetOrCreateAsync(cacheKey, async () =>
-            {
-                var analyticsResults = await _operationRetry.Retry(() => _analyticsResultData.FindAllAsync(symbol, datePath, 1), 5, TimeSpan.FromMilliseconds(100));
-                return analyticsResults.FirstOrDefault();
-            }, _defaultCacheTime);
-        }
-
-        public virtual async Task<Company> CacheGetCompanyByCodeAsync(string symbol)
-        {
-            var cacheKey = CacheKeyService.GetCompanyByCodeCacheKey(symbol);
-            return await _memoryCacheService.GetOrCreateAsync(cacheKey, async () =>
-            {
-                return await _companyData.GetByCodeAsync(symbol);
-            }, _defaultCacheTime);
-        }
-
-        public virtual async Task<QueueMessage> HandleStockViewEventAsync(QueueMessage queueMessage)
-        {
-            var schedule = await _operationRetry.Retry(() => _scheduleData.GetByIdAsync(queueMessage.Id), 5, TimeSpan.FromMilliseconds(100));
+            var schedule = await _systemData.GetScheduleByIdAsync(queueMessage.Id);
             if (schedule != null)
             {
                 Stopwatch stopWatch = new();
@@ -203,10 +133,6 @@ namespace Pl.Sas.Core.Services
                 {
                     case 300:
                         return await BindingStocksViewAndSetCacheAsync();
-
-                    case 301:
-
-                        return await NotificationAnalyticsAsync(schedule);
 
                     default:
                         _logger.LogWarning("Process scheduler id {Id}, type: {Type} don't match any function", queueMessage.Id, schedule.Type);
@@ -221,27 +147,26 @@ namespace Pl.Sas.Core.Services
 
         public virtual async Task<QueueMessage> BindingStocksViewAndSetCacheAsync()
         {
-            var tradingDatePath = Utilities.GetTradingDatePath();
             var dictStockView = new Dictionary<string, StockView>();
-            var companies = await _operationRetry.Retry(() => _companyData.FindAllAsync(null), 10, TimeSpan.FromMilliseconds(100));
-            var stocks = await _stockData.FindAllAsync();
+            var companies = await _marketData.CacheGetCompaniesAsync();
+            var stocks = await _marketData.GetStockDictionaryAsync();
             foreach (var stock in stocks)
             {
-                if (!dictStockView.ContainsKey(stock.Code))
+                if (!dictStockView.ContainsKey(stock.Key))
                 {
-                    var stockPrices = await _operationRetry.Retry(() => _stockPriceData.GetForStockViewAsync(stock.Code, 3840), 10, TimeSpan.FromMilliseconds(100));
+                    var stockPrices = await _marketData.GetForStockViewAsync(stock.Key, 3840);
                     if (stockPrices?.Count < 2)
                     {
-                        _logger.LogWarning("Can't build view data for stock code {Code} by stock price is lower five item.", stock.Code);
+                        _logger.LogWarning("Can't build view data for stock code {Key} by stock price is lower five item.", stock.Key);
                         continue;
                     }
-                    var company = companies.FirstOrDefault(q => q.Symbol == stock.Code);
+                    var company = companies.FirstOrDefault(q => q.Symbol == stock.Key);
                     if (company is null)
                     {
-                        _logger.LogWarning("Can't build view data for stock code {Code} by company info is null.", stock.Code);
+                        _logger.LogWarning("Can't build view data for stock code {Key} by company info is null.", stock.Key);
                         continue;
                     }
-                    var analyticsResults = await _operationRetry.Retry(() => _analyticsResultData.FindAllAsync(stock.Code, tradingDatePath, 1), 10, TimeSpan.FromMilliseconds(100));
+                    var analyticsResults = await _analyticsData.FindAllAsync(stock.Code, tradingDatePath, 1), 10, TimeSpan.FromMilliseconds(100));
                     if (analyticsResults?.Count < 1)
                     {
                         _logger.LogWarning("Can't build view data for stock code {Code} by analytics result lower one item.", stock.Code);
@@ -528,125 +453,6 @@ namespace Pl.Sas.Core.Services
             {
                 Id = "UpdateStockView"
             };
-        }
-
-        public async Task<QueueMessage> NotificationAnalyticsAsync(Schedule schedule)
-        {
-            if (!string.IsNullOrEmpty(schedule.DataKey))
-            {
-                var todayDate = DateTime.Now.Date;
-                var stockCodes = new List<string>();
-
-                var userFollows = await _followStockData.FindAllAsync(schedule.DataKey);
-                foreach (var userFollow in userFollows)
-                {
-                    if (!stockCodes.Contains(userFollow.Symbol))
-                    {
-                        stockCodes.Add(userFollow.Symbol);
-                    }
-                }
-
-                if (stockCodes?.Count > 0)
-                {
-                    var insertList = new List<UserNotification>();
-                    foreach (var code in stockCodes)
-                    {
-                        var stock = await _stockData.GetByCodeAsync(code);
-                        if (stock is null)
-                        {
-                            continue;
-                        }
-                        //Thông tin sư kiện
-                        var corporateActions = await _corporateActionData.NotificationFindAllAsync(code, todayDate);
-                        foreach (var corporateAction in corporateActions)
-                        {
-                            insertList.Add(new UserNotification()
-                            {
-                                Symbol = code,
-                                Readed = false,
-                                UserId = schedule.DataKey,
-                                Title = corporateAction.EventTitle,
-                                ZipMessage = corporateAction.ZipDescription
-                            });
-                        }
-
-                        //Phân tích và đánh giá doanh nghiệp
-                        var datePath = Utilities.GetTradingDatePath();
-                        var lastDatePath = Utilities.GetLastTradingDatePath();
-                        var analytic = await _analyticsResultData.FindAsync(code, datePath);
-                        var lastAnalytic = await _analyticsResultData.FindAsync(code, lastDatePath);
-                        if (analytic is not null && lastAnalytic is not null)
-                        {
-                            if (analytic.TotalScore > lastAnalytic.TotalScore)
-                            {
-                                insertList.Add(new UserNotification()
-                                {
-                                    Symbol = code,
-                                    Readed = false,
-                                    UserId = schedule.DataKey,
-                                    Title = $"Cổ phiếu '{code}' có sự thay đổi về đánh giá doanh nghiệp hiện tại {analytic.TotalScore}, trước đó {lastAnalytic.TotalScore}",
-                                    ZipMessage = _zipHelper.ZipByte(Encoding.UTF8.GetBytes($"Cổ phiếu '{code}' có sự biến về đánh giá doanh nghiệp hiện tại {analytic.TotalScore}, trước đó {lastAnalytic.TotalScore}. Chi tiết xin xem <a href=\"#\" onclick=\"OpenModalDetails('{code}', '{stock.Exchange} {stock.CompanyName}', 1)\">tại đây</a>"))
-                                });
-                            }
-                        }
-
-                        //Phân tích và đánh giá trading
-                        var tradingResults = await _tradingResultData.FindAllAsync(code, datePath, null, 999);
-                        foreach (var tradingResult in tradingResults)
-                        {
-                            if (!tradingResult.IsBuy && !tradingResult.IsSell)
-                            {
-                                continue;
-                            }
-
-                            var principleName = Utilities.GetPrincipleName(tradingResult.Principle);
-                            if (tradingResult.IsBuy && tradingResult.IsSell)
-                            {
-                                insertList.Add(new UserNotification()
-                                {
-                                    Symbol = code,
-                                    Readed = false,
-                                    UserId = schedule.DataKey,
-                                    Title = $"{principleName} đánh giá '{code}' mua và bán.",
-                                    ZipMessage = _zipHelper.ZipByte(Encoding.UTF8.GetBytes($"Cổ phiếu '{code}' được phương pháp {principleName} đánh giá mua với giá {tradingResult.BuyPrice / 1000:0.00}, và bán với giá {tradingResult.SellPrice / 1000:0.00}. Chi tiết xin xem <a href=\"#\" onclick=\"OpenModalDetails('{code}', '{stock.Exchange} {stock.CompanyName}', 1)\">tại đây</a>"))
-                                });
-                                continue;
-                            }
-                            if (tradingResult.IsBuy)
-                            {
-                                insertList.Add(new UserNotification()
-                                {
-                                    Symbol = code,
-                                    Readed = false,
-                                    UserId = schedule.DataKey,
-                                    Title = $"{principleName} đánh giá '{code}' mua.",
-                                    ZipMessage = _zipHelper.ZipByte(Encoding.UTF8.GetBytes($"Cổ phiếu '{code}' được phương pháp {principleName} đánh giá mua với giá {tradingResult.BuyPrice / 1000:0.00}. Chi tiết xin xem <a href=\"#\" onclick=\"OpenModalDetails('{code}', '{stock.Exchange} {stock.CompanyName}', 1)\">tại đây</a>"))
-                                });
-                                continue;
-                            }
-                            else
-                            {
-                                insertList.Add(new UserNotification()
-                                {
-                                    Symbol = code,
-                                    Readed = false,
-                                    UserId = schedule.DataKey,
-                                    Title = $"{principleName} đánh giá '{code}' bán.",
-                                    ZipMessage = _zipHelper.ZipByte(Encoding.UTF8.GetBytes($"Cổ phiếu '{code}' được phương pháp {principleName} đánh giá bán với giá {tradingResult.SellPrice / 1000:0.00}. Chi tiết xin xem <a href=\"#\" onclick=\"OpenModalDetails('{code}', '{stock.Exchange} {stock.CompanyName}', 1)\">tại đây</a>"))
-                                });
-                                continue;
-                            }
-                        }
-                    }
-                    await _userNotificationData.BulkInserAsync(insertList);
-                    return new()
-                    {
-                        Id = "UpdateNotification",
-                        KeyValues = new Dictionary<string, string>() { { "UserId", schedule.DataKey } }
-                    };
-                }
-            }
-            return null;
         }
     }
 }

@@ -4,10 +4,7 @@ using Pl.Sas.Core.Entities;
 using Pl.Sas.Core.Interfaces;
 using Pl.Sas.Core.Trading;
 using System.Diagnostics;
-using System.Globalization;
-using System.Text;
 using System.Text.Json;
-using System.Web;
 
 namespace Pl.Sas.Core.Services
 {

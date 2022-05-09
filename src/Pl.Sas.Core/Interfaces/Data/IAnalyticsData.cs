@@ -8,6 +8,12 @@ namespace Pl.Sas.Core.Interfaces
     public interface IAnalyticsData
     {
         /// <summary>
+        /// Lấy toàn bộ phân tích ngành
+        /// </summary>
+        /// <returns></returns>
+        Task<List<IndustryAnalytics>> GetIndustryAnalyticsAsync();
+
+        /// <summary>
         /// Ghi lại kết quả trading thử nghiệm
         /// </summary>
         /// <param name="tradingResult">Kết quả tradinh thử nghiệm</param>
@@ -99,5 +105,13 @@ namespace Pl.Sas.Core.Interfaces
         /// <param name="targetPriceNote">Ghi chú tính giá</param>
         /// <returns>bool</returns>
         Task<bool> SaveTargetPriceAsync(string symbol, DateTime tradingDate, float targetPrice, byte[] targetPriceNote);
+
+        /// <summary>
+        /// Lấy thông tin phân tích theo mã chứng khoán và ngày
+        /// </summary>
+        /// <param name="symbol">Mã chứng khoán</param>
+        /// <param name="tradingDate">Ngày phân tích</param>
+        /// <returns>AnalyticsResult</returns>
+        Task<AnalyticsResult?> CacheGetAnalyticsResultAsync(string symbol, DateTime tradingDate);
     }
 }

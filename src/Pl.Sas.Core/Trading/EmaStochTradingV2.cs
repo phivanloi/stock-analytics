@@ -1,5 +1,4 @@
 ﻿using Pl.Sas.Core.Entities;
-using Pl.Sas.Core.Indicators;
 
 namespace Pl.Sas.Core.Trading
 {

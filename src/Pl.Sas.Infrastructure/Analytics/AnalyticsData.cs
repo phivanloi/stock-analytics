@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Pl.Sas.Core;
 using Pl.Sas.Core.Entities;
 using Pl.Sas.Core.Interfaces;
 using Pl.Sas.Infrastructure.Analytics;
@@ -6,7 +7,7 @@ using Pl.Sas.Infrastructure.Analytics;
 namespace Pl.Sas.Infrastructure.Data
 {
     /// <summary>
-    /// Lớp xử lỹ liệu của market
+    /// Lớp xử lỹ liệu cho analytic
     /// </summary>
     public class AnalyticsData : IAnalyticsData
     {
@@ -46,6 +47,20 @@ namespace Pl.Sas.Infrastructure.Data
         public virtual async Task<IndustryAnalytics?> GetIndustryAnalyticsAsync(string code)
         {
             return await _analyticsDbContext.IndustryAnalytics.FirstOrDefaultAsync(q => q.Code == code);
+        }
+
+        public virtual async Task<List<IndustryAnalytics>> GetIndustryAnalyticsAsync()
+        {
+            return await _analyticsDbContext.IndustryAnalytics.ToListAsync();
+        }
+
+        public virtual async Task<AnalyticsResult?> CacheGetAnalyticsResultAsync(string symbol, DateTime tradingDate)
+        {
+            var cacheKey = $"{Constants.AnalyticsResultCachePrefix}-SM{symbol}-DP{tradingDate:ddMMyyyy}";
+            return await _memoryCacheService.GetOrCreateAsync(cacheKey, async () =>
+            {
+                return await _analyticsDbContext.AnalyticsResults.FirstOrDefaultAsync(q => q.Symbol == symbol && q.TradingDate == tradingDate);
+            }, Constants.DefaultCacheTime * 60 * 24);
         }
 
         public virtual async Task<bool> SaveMacroeconomicsScoreAsync(string symbol, DateTime tradingDate, int marketScore, byte[] marketNote)

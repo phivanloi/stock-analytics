@@ -32,6 +32,26 @@
         /// </summary>
         public const string StockCachePrefix = "STOCCPF";
 
+        /// <summary>
+        /// Khóa cache cho StockPrice
+        /// </summary>
+        public const string StockPriceCachePrefix = "STPROCCPF";
+
+        /// <summary>
+        /// Khóa cache cho Industry
+        /// </summary>
+        public const string IndustryCachePrefix = "INDCPF";
+
+        /// <summary>
+        /// Khóa cache cho StockView
+        /// </summary>
+        public const string StockViewCachePrefix = "GASVCK";
+
+        /// <summary>
+        /// Khóa cache cho AnalyticsResult
+        /// </summary>
+        public const string AnalyticsResultCachePrefix = "ANRCPF";
+
         #region Lãi suất ngân hàng
         /// <summary>
         /// Lái suất ngần hàng kỳ hạn 3 tháng. Lấy ngân hàng có mức lái suất cao nhất

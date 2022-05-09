@@ -1,7 +1,5 @@
 ﻿using Pl.Sas.Core.Entities;
 using Pl.Sas.Core.Indicators;
-using Pl.Sas.Core.Interfaces;
-using System.Text.Json;
 
 namespace Pl.Sas.Core.Trading
 {

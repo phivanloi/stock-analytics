@@ -8,6 +8,41 @@ namespace Pl.Sas.Core.Interfaces
     public interface IMarketData
     {
         /// <summary>
+        /// Lấy danh sách lịch sử giá cổ phiểu
+        /// </summary>
+        /// <param name="symbol">Mã chứng khoán</param>
+        /// <param name="numberItem">số bản ghi cần lấy</param>
+        /// <returns></returns>
+        Task<List<StockPrice>> GetForStockViewAsync(string symbol, int numberItem = 10000);
+
+        /// <summary>
+        /// Lấy toàn bộ lịch sử giao dịch theo mã chứng khoán, mới nhất ở trên đầu
+        /// </summary>
+        /// <param name="symbol">Mã chứng khoán</param>
+        /// <returns>List StockPrice</returns>
+        Task<List<StockPrice>> CacheGetAllStockPricesAsync(string symbol);
+
+        /// <summary>
+        /// Lấy thông tin chứng khoán theo mã
+        /// </summary>
+        /// <param name="symbol">Mã chứng khoán</param>
+        /// <returns></returns>
+        Task<Stock?> CacheGetStockByCodeAsync(string symbol);
+
+        /// <summary>
+        /// Lấy thông tin công ty theo mã chứng khoán
+        /// </summary>
+        /// <param name="symbol">Mã chứng khoán</param>
+        /// <returns>Company</returns>
+        Task<Company?> CacheGetCompanyByCodeAsync(string symbol);
+
+        /// <summary>
+        /// Lấy danh sách sàn chứng khoán
+        /// </summary>
+        /// <returns>List string</returns>
+        Task<List<string>> CacheGetExchangesAsync();
+
+        /// <summary>
         /// Lấy danh sách cổ phiếu theo loại
         /// </summary>
         /// <param name="type">Loại</param>

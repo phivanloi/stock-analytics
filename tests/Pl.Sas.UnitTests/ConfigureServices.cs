@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Pl.Sas.Core;
 using Pl.Sas.Core.Interfaces;
-using Pl.Sas.Core.Services;
 using Pl.Sas.Infrastructure;
 using Pl.Sas.Infrastructure.Analytics;
 using Pl.Sas.Infrastructure.Caching;
