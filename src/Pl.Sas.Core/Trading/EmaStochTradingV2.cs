@@ -10,9 +10,8 @@ namespace Pl.Sas.Core.Trading
         /// </summary>
         /// <param name="tradingCase">Case trường hợp đầu tư</param>
         /// <param name="indicatorSet">Tập hợp các chỉ báo của phiên trước đó</param>
-        /// <param name="tradingStockTransaction">Danh sách khớp lệnh ngày hôm này</param>
         /// <returns>bool</returns>
-        public static bool TodayIsBuy(TradingCase tradingCase, IndicatorSet indicatorSet, TradingStockTransaction tradingStockTransaction)
+        public static bool TodayIsBuy(TradingCase tradingCase, IndicatorSet indicatorSet)
         {
             if (indicatorSet is null)
             {
@@ -24,26 +23,7 @@ namespace Pl.Sas.Core.Trading
             //    return false;
             //}
 
-            if (tradingStockTransaction is null || tradingStockTransaction.Details?.Count <= 0)
-            {
-                return indicatorSet.Values[$"ema-{tradingCase.FirstEmaBuy}"] > indicatorSet.Values[$"ema-{tradingCase.SecondEmaBuy}"];
-            }
-            else
-            {
-                var listMorning = tradingStockTransaction.Details.Where(q => q.Time.StartsWith("09") || q.Time.StartsWith("10") || q.Time.StartsWith("11"));
-                if (!listMorning.Any())
-                {
-                    listMorning = tradingStockTransaction.Details.Where(q => q.Time.StartsWith("13"));
-                }
-                if (!listMorning.Any())
-                {
-                    return indicatorSet.Values[$"ema-{tradingCase.FirstEmaBuy}"] > indicatorSet.Values[$"ema-{tradingCase.SecondEmaBuy}"];
-                }
-                var average = listMorning.Average(q => q.Price);
-                var firstEma = ExponentialMovingAverage.ExponentialMovingAverageFormula(average, indicatorSet.Values[$"ema-{tradingCase.FirstEmaSell}"], tradingCase.FirstEmaSell);
-                var secondEma = ExponentialMovingAverage.ExponentialMovingAverageFormula(average, indicatorSet.Values[$"ema-{tradingCase.SecondEmaSell}"], tradingCase.SecondEmaSell);
-                return firstEma > secondEma;
-            }
+            return indicatorSet.Values[$"ema-{tradingCase.FirstEmaBuy}"] > indicatorSet.Values[$"ema-{tradingCase.SecondEmaBuy}"];
         }
 
         /// <summary>
@@ -51,9 +31,8 @@ namespace Pl.Sas.Core.Trading
         /// </summary>
         /// <param name="tradingCase">Case trường hợp đầu tư</param>
         /// <param name="indicatorSet">Tập hợp các chỉ báo của phiên trước đó</param>
-        /// <param name="tradingStockTransaction">Danh sách khớp lệnh ngày hôm này</param>
         /// <returns>bool</returns>
-        public static bool TodayIsSell(TradingCase tradingCase, IndicatorSet indicatorSet, TradingStockTransaction tradingStockTransaction)
+        public static bool TodayIsSell(TradingCase tradingCase, IndicatorSet indicatorSet)
         {
             if (indicatorSet is null)
             {
@@ -65,72 +44,52 @@ namespace Pl.Sas.Core.Trading
             //    return false;
             //}
 
-            if (tradingStockTransaction is null)
-            {
-                return indicatorSet.Values[$"ema-{tradingCase.FirstEmaSell}"] < indicatorSet.Values[$"ema-{tradingCase.SecondEmaSell}"];
-            }
-            else
-            {
-                var listMorning = tradingStockTransaction.Details.Where(q => q.Time.StartsWith("09") || q.Time.StartsWith("10") || q.Time.StartsWith("11"));
-                if (!listMorning.Any())
-                {
-                    listMorning = tradingStockTransaction.Details.Where(q => q.Time.StartsWith("13"));
-                }
-                if (!listMorning.Any())
-                {
-                    return indicatorSet.Values[$"ema-{tradingCase.FirstEmaSell}"] < indicatorSet.Values[$"ema-{tradingCase.SecondEmaSell}"];
-                }
-                var average = listMorning.Average(q => q.Price);
-                var firstEma = ExponentialMovingAverage.ExponentialMovingAverageFormula(average, indicatorSet.Values[$"ema-{tradingCase.FirstEmaSell}"], tradingCase.FirstEmaSell);
-                var secondEma = ExponentialMovingAverage.ExponentialMovingAverageFormula(average, indicatorSet.Values[$"ema-{tradingCase.SecondEmaSell}"], tradingCase.SecondEmaSell);
-                return firstEma < secondEma;
-            }
+            return indicatorSet.Values[$"ema-{tradingCase.FirstEmaSell}"] < indicatorSet.Values[$"ema-{tradingCase.SecondEmaSell}"];
         }
 
         /// <summary>
         /// Hàm tính toán giá tối ưu để mua
         /// </summary>
-        /// <param name="stockPriceAdj">Lịch sử phiên giao dịch trước đó</param>
+        /// <param name="stockPrice">Lịch sử phiên giao dịch trước đó</param>
         /// <returns>decimal</returns>
-        public static decimal CalculateOptimalBuyPrice(StockPriceAdj stockPriceAdj)
+        public static float CalculateOptimalBuyPrice(StockPrice stockPrice)
         {
-            var buyPrice = stockPriceAdj.ClosePrice - (stockPriceAdj.ClosePrice / 100 * Math.Abs(stockPriceAdj.LowestPrice.GetPercent(stockPriceAdj.OpenPrice)));
-            return Math.Round(buyPrice, 2);
+            var buyPrice = stockPrice.ClosePrice - (stockPrice.ClosePrice / 100 * Math.Abs(stockPrice.LowestPrice.GetPercent(stockPrice.OpenPrice)));
+            return (float)Math.Round(buyPrice, 2);
         }
 
         /// <summary>
         /// Hàm tính toán giá tối ưu để bán
         /// </summary>
-        /// <param name="stockPriceAdj">Lịch sử phiên giao dịch trước đó</param>
+        /// <param name="stockPrice">Lịch sử phiên giao dịch trước đó</param>
         /// <returns>decimal</returns>
-        public static decimal CalculateOptimalSellPriceOnLoss(StockPriceAdj stockPriceAdj)
+        public static float CalculateOptimalSellPriceOnLoss(StockPrice stockPrice)
         {
-            var sellPrice = stockPriceAdj.ClosePrice + (stockPriceAdj.ClosePrice / 100 * Math.Abs(stockPriceAdj.OpenPrice.GetPercent(stockPriceAdj.HighestPrice)));
-            return Math.Round(sellPrice, 2);
+            var sellPrice = stockPrice.ClosePrice + (stockPrice.ClosePrice / 100 * Math.Abs(stockPrice.OpenPrice.GetPercent(stockPrice.HighestPrice)));
+            return (float)Math.Round(sellPrice, 2);
         }
 
         /// <summary>
         /// Hàm giả lập quá trình mua bán cổ phiếu cho phương pháp đầu tu ngắn hạn
         /// </summary>
         /// <param name="tradingCase">Thông tin kiểm nghiệp giao dịch</param>
-        /// <param name="stockPriceAdjs">Danh sách lịch sử cổ phiểu cần giả lập mua bán. Chú ý đã được xắp xếp tăng dần ngày giao dịch OrderBy(q => q.TradingDate)</param>
+        /// <param name="stockPrices">Danh sách lịch sử cổ phiểu cần giả lập mua bán. Chú ý đã được xắp xếp tăng dần ngày giao dịch OrderBy(q => q.TradingDate)</param>
         /// <param name="indicatorSet">Tập hợp các chỉ báo</param>
-        /// <param name="tradingStockTransactions">Danh sách lịch sử khớp lệnh</param>
         /// <param name="isNoteTrading">Cho phép ghi lịch sử giao dịch</param>
         /// <returns>decimal profit</returns>
-        public static (bool IsBuy, bool IsSell) Trading(TradingCase tradingCase, List<StockPriceAdj> stockPriceAdjs, Dictionary<string, IndicatorSet> indicatorSet, List<TradingStockTransaction> tradingStockTransactions, bool isNoteTrading = false)
+        public static (bool IsBuy, bool IsSell) Trading(TradingCase tradingCase, List<StockPrice> stockPrices, Dictionary<string, IndicatorSet> indicatorSet, bool isNoteTrading = false)
         {
             var capital = tradingCase.FixedCapital;
-            var numberStock = 0M;
+            long numberStock = 0;
             var numberDayBuy = 0;
-            var tradingHistory = new List<StockPriceAdj>();
-            decimal? lastBuyPrice = null;
-            StockPriceAdj previousDay = null;
+            var tradingHistory = new List<StockPrice>();
+            float? lastBuyPrice = null;
+            StockPrice? previousDay = null;
 
-            foreach (var day in stockPriceAdjs)
+            foreach (var day in stockPrices)
             {
-                var hasIndicator = indicatorSet.TryGetValue(previousDay?.DatePath ?? "", out IndicatorSet indicator);
-                if (!hasIndicator)
+                var hasIndicator = indicatorSet.TryGetValue(previousDay?.DatePath ?? "", out IndicatorSet? indicator);
+                if (indicator is null)
                 {
                     if (isNoteTrading)
                     {
@@ -139,14 +98,20 @@ namespace Pl.Sas.Core.Trading
                     previousDay = day;
                     continue;
                 }
+
+                if (previousDay is null)
+                {
+                    previousDay = day;
+                    continue;
+                }
+
                 var subEmaSell = indicator.Values[$"ema-{tradingCase.FirstEmaSell}"] - indicator.Values[$"ema-{tradingCase.SecondEmaSell}"];
                 var subEmaBuy = indicator.Values[$"ema-{tradingCase.FirstEmaBuy}"] - indicator.Values[$"ema-{tradingCase.SecondEmaBuy}"];
                 var sh = indicator.Values[$"ema-{tradingCase.Stochastic}"];
-                //var transactions = tradingStockTransactions.FirstOrDefault(q => q.DatePath == day.DatePath);
 
                 if (lastBuyPrice is null)
                 {
-                    var isBuy = TodayIsBuy(tradingCase, indicator, null);
+                    var isBuy = TodayIsBuy(tradingCase, indicator);
                     if (isBuy)
                     {
                         var optimalBuyPrice = CalculateOptimalBuyPrice(previousDay);
@@ -179,7 +144,7 @@ namespace Pl.Sas.Core.Trading
                     numberDayBuy++;
                     if (numberDayBuy > 2)
                     {
-                        var isSell = TodayIsSell(tradingCase, indicator, null);
+                        var isSell = TodayIsSell(tradingCase, indicator);
                         if (isSell)
                         {
                             var optimalSellPrice = CalculateOptimalSellPriceOnLoss(previousDay);
@@ -187,7 +152,7 @@ namespace Pl.Sas.Core.Trading
                             {
                                 optimalSellPrice = day.ClosePrice;
                             }
-                            var (totalProfit, totalTax) = Sell(numberStock, SellTax, optimalSellPrice);
+                            var (totalProfit, totalTax) = Sell(numberStock, optimalSellPrice);
                             capital = totalProfit;
                             tradingCase.TotalTax += totalTax;
                             if (isNoteTrading)
@@ -218,19 +183,19 @@ namespace Pl.Sas.Core.Trading
                 previousDay = day;
                 tradingHistory.Add(day);
             }
-            var lastHistory = stockPriceAdjs[^1];
-            var lastIndicatorSet = indicatorSet[previousDay.DatePath];
+            var lastHistory = stockPrices[^1];
+            var lastIndicatorSet = indicatorSet[previousDay?.DatePath ?? stockPrices[^1].DatePath];
             var todayIsBuy = false;
             var todayIsSell = false;
             if (lastBuyPrice != null)
             {
-                tradingCase.Profit = capital + (numberStock * lastHistory.ClosePrice);
-                todayIsSell = numberDayBuy > 2 && TodayIsSell(tradingCase, lastIndicatorSet, null);
+                tradingCase.TradingTestResult = capital + (numberStock * lastHistory.ClosePrice);
+                todayIsSell = numberDayBuy > 2 && TodayIsSell(tradingCase, lastIndicatorSet);
             }
             else
             {
-                tradingCase.Profit = capital;
-                todayIsBuy = TodayIsBuy(tradingCase, lastIndicatorSet, null);
+                tradingCase.TradingTestResult = capital;
+                todayIsBuy = TodayIsBuy(tradingCase, lastIndicatorSet);
             }
 
             return (todayIsBuy, todayIsSell);
@@ -242,7 +207,7 @@ namespace Pl.Sas.Core.Trading
         /// <param name="exchangeFluctuationsRate">Tỉ lệ biến động trong một phiên của sàn giao dịch</param>
         /// <param name="fixedCapital">Vốn ban đầu</param>
         /// <returns>HashSet TradingCase</returns>
-        public static TradingCase[] BuildTradingCases(decimal fixedCapital = 10000000M)
+        public static TradingCase[] BuildTradingCases(float fixedCapital = 10000000)
         {
             var testCases = new List<TradingCase>();
             var stochastics = new int[] { 10, 14, 16, 20 };
@@ -268,7 +233,7 @@ namespace Pl.Sas.Core.Trading
                                 {
                                     TotalTax = 0,
                                     ExplainNotes = new(),
-                                    Profit = 0,
+                                    TradingTestResult = 0,
                                     FixedCapital = fixedCapital,
                                     FirstEmaSell = i,
                                     SecondEmaSell = j,

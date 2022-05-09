@@ -86,22 +86,22 @@ namespace Pl.Sas.Core.Services
 
                     case 208:
                         _logger.LogInformation("Run macroeconomics analytics => {DataKey}.", schedule.DataKey);
-                        await MacroeconomicsAnalyticsAsync(schedule);
+                        await MacroeconomicsAnalyticsAsync(schedule.DataKey ?? "");
                         break;
 
                     case 209:
                         _logger.LogInformation("Run company growth analytics => {DataKey}.", schedule.DataKey);
-                        await CompanyGrowthAnalyticsAsync(schedule.DataKey);
+                        await CompanyGrowthAnalyticsAsync(schedule.DataKey ?? "");
                         break;
 
                     case 210:
                         _logger.LogInformation("Run fiintrading analytics => {DataKey}.", schedule.DataKey);
-                        await FiinAnalyticsAsync(schedule.DataKey);
+                        await FiinAnalyticsAsync(schedule.DataKey ?? "");
                         break;
 
                     case 211:
                         _logger.LogInformation("Run vnd score analytics => {DataKey}.", schedule.DataKey);
-                        await VndScoreAnalyticsAsync(schedule.DataKey);
+                        await VndScoreAnalyticsAsync(schedule.DataKey ?? "");
                         break;
 
                     default:
@@ -426,7 +426,7 @@ namespace Pl.Sas.Core.Services
             var checkingKey = $"{symbol}-Analytics-TargetPrice";
             var lastStockPrice = await _marketData.GetLastStockPriceAsync(symbol);
             var stockPrice = await _marketData.GetLastStockPriceAsync(symbol);
-            if (stockPrice is null)
+            if (stockPrice is null || lastStockPrice is null)
             {
                 _logger.LogWarning("TargetPriceAnalyticsAsync can't get last stock price to check: {symbol}", symbol);
                 return await _systemData.SetKeyValueAsync(checkingKey, false);
@@ -497,12 +497,12 @@ namespace Pl.Sas.Core.Services
             foreach (var tradingCase in tradingCases)
             {
                 (isBuy, isSell) = EmaStochTrading.Trading(tradingCase.Value, stockPrices, indicatorSet, true);
-                var note = $"Đầu tư {Utilities.GetPrincipleName(tradingCase.Key).ToLower()} {tradingHistories.Count} phiên từ ngày {tradingHistories[0].TradingDate:dd/MM/yyyy}, {tradingCase.Value.ResultString()} xem chi tiết tại tab \"Lợi nhuận và đầu tư TN\".";
-                var optimalBuyPrice = EmaStochTrading.CalculateOptimalBuyPrice(tradingHistories[^1]);
-                var optimalSellPrice = EmaStochTrading.CalculateOptimalSellPriceOnLoss(tradingHistories[^1]);
+                var note = $"Đầu tư {Utilities.GetPrincipleName(tradingCase.Key).ToLower()} {stockPrices.Count} phiên từ ngày {stockPrices[0].TradingDate:dd/MM/yyyy}, {tradingCase.Value.ToString} xem chi tiết tại tab \"Lợi nhuận và đầu tư TN\".";
+                var optimalBuyPrice = EmaStochTrading.CalculateOptimalBuyPrice(stockPrices[^1]);
+                var optimalSellPrice = EmaStochTrading.CalculateOptimalSellPriceOnLoss(stockPrices[^1]);
                 var type = tradingCase.Value.FixedCapital < tradingCase.Value.TradingTestResult ? 1 : tradingCase.Value.FixedCapital == tradingCase.Value.TradingTestResult ? 0 : -1;
                 stockNotes.Add(note, 0, type, null);
-                await _operationRetry.Retry(() => _tradingResultData.SaveTestTradingResultAsync(new()
+                await _analyticsData.SaveTestTradingResultAsync(new()
                 {
                     Symbol = symbol,
                     Principle = tradingCase.Key,
@@ -513,10 +513,10 @@ namespace Pl.Sas.Core.Services
                     Capital = tradingCase.Value.FixedCapital,
                     Profit = tradingCase.Value.TradingTestResult,
                     TotalTax = tradingCase.Value.TotalTax,
-                    ZipExplainNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(tradingCase.Value.ExplainNotes)),
-                    ProfitPercent = tradingCase.Value.ProfitPercent
-                }), 10, TimeSpan.FromMilliseconds(100));
+                    TradingNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(tradingCase.Value.ExplainNotes)),
+                });
             }
+            return await _systemData.SetKeyValueAsync(checkingKey, true);
         }
 
         /// <summary>
@@ -706,7 +706,7 @@ namespace Pl.Sas.Core.Services
         /// </summary>
         /// <param name="fixedCapital">Số tiền vốn ban đầu</param>
         /// <returns></returns>
-        public static Dictionary<int, TradingCase> AnalyticsBuildTradingCases(decimal fixedCapital = 10000000M)
+        public static Dictionary<int, TradingCase> AnalyticsBuildTradingCases(float fixedCapital = 10000000)
         {
             var testCases = new Dictionary<int, TradingCase>()
             {
