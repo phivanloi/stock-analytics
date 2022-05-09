@@ -455,50 +455,48 @@ namespace Pl.Sas.Core.Services
         /// </summary>
         /// <param name="symbol">Mã cổ phiêu</param>
         /// <returns></returns>
-        public virtual async Task TestTradingAnalyticsAsync(string symbol)
+        public virtual async Task<bool> TestTradingAnalyticsAsync(string symbol)
         {
-            var stockNotes = new List<AnalyticsMessage>();
-            var tradingPath = Utilities.GetTradingDatePath();
-            var stock = await _operationRetry.Retry(() => _stockData.GetByCodeAsync(symbol), 10, TimeSpan.FromMilliseconds(100));
-            var stockPrices = await _operationRetry.Retry(() => _stockPriceData.FindAllAsync(symbol, 99999, Constants.StartTime), 10, TimeSpan.FromMilliseconds(100));
-            if (stock is null || stockPrices?.Count <= 2)
+            var stockNotes = new List<AnalyticsNote>();
+            var checkingKey = $"{symbol}-Analytics-TestTrading";
+            var stock = await _marketData.GetStockByCode(symbol);
+            var stockPrices = (await _marketData.GetAnalyticsTopStockPriceAsync(symbol, 90000)).OrderBy(q => q.TradingDate).ToList();
+            if (stock is null || stockPrices.Count <= 2)
             {
                 _logger.LogWarning("TestTradingAnalyticsAsync => stockPrices is null or stock is null for {symbol}", symbol);
-                return;
+                return await _systemData.SetKeyValueAsync(checkingKey, false);
             }
-            var tradingHistories = BaseTrading.ConvertStockPricesToStockPriceAdj(stockPrices.Where(q => q.ClosePrice > 0 && q.ClosePriceAdjusted > 0).OrderBy(q => q.TradingDate));
             var exchangeFluctuationsRate = BaseTrading.GetExchangeFluctuationsRate(stock.Exchange);
-            var indicatorSet = BaseTrading.BuildIndicatorSet(tradingHistories.OrderByDescending(q => q.TradingDate).ToList());
+            var indicatorSet = BaseTrading.BuildIndicatorSet(stockPrices.OrderByDescending(q => q.TradingDate).ToList());
             var isBuy = false;
             var isSell = false;
 
             #region Buy and wait
 
-            var startPrice = tradingHistories[0].ClosePrice;
-            var endPrice = tradingHistories[^1].ClosePrice;
-            var noteInvestment = $"Mua và nắm giữ {tradingHistories.Count} phiên từ ngày {tradingHistories[0].TradingDate:dd/MM/yyyy}: Giá đóng cửa đầu kỳ {startPrice:0,0} giá đóng cửa cuối kỳ {endPrice:0,0} lợi nhuận {endPrice.GetPercent(startPrice):0.00}%.";
+            var startPrice = stockPrices[0].ClosePrice;
+            var endPrice = stockPrices[^1].ClosePrice;
+            var noteInvestment = $"Mua và nắm giữ {stockPrices.Count} phiên từ ngày {stockPrices[0].TradingDate:dd/MM/yyyy}: Giá đóng cửa đầu kỳ {startPrice:0,0} giá đóng cửa cuối kỳ {endPrice:0,0} lợi nhuận {endPrice.GetPercent(startPrice):0.00}%.";
             stockNotes.Add(noteInvestment, 0, startPrice > endPrice ? -1 : startPrice < endPrice ? 1 : 0, null);
-            await _operationRetry.Retry(() => _tradingResultData.SaveTestTradingResultAsync(new()
+            await _analyticsData.SaveTestTradingResultAsync(new()
             {
                 Symbol = symbol,
                 Principle = 0,
                 IsBuy = false,
-                BuyPrice = tradingHistories[^1].ClosePrice,
+                BuyPrice = stockPrices[^1].ClosePrice,
                 IsSell = false,
-                SellPrice = tradingHistories[^1].ClosePrice,
+                SellPrice = stockPrices[^1].ClosePrice,
                 Capital = 10000000,
                 Profit = (10000000 / startPrice) * endPrice,
                 TotalTax = 0,
-                ZipExplainNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(new List<KeyValuePair<int, string>>() { new(startPrice > endPrice ? -1 : startPrice < endPrice ? 1 : 0, noteInvestment) })),
-                ProfitPercent = endPrice.GetPercent(startPrice)
-            }), 10, TimeSpan.FromMilliseconds(100));
+                TradingNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(new List<KeyValuePair<int, string>>() { new(startPrice > endPrice ? -1 : startPrice < endPrice ? 1 : 0, noteInvestment) })),
+            });
 
             #endregion Buy and wait
 
             var tradingCases = AnalyticsBuildTradingCases();
             foreach (var tradingCase in tradingCases)
             {
-                (isBuy, isSell) = EmaStochTrading.Trading(tradingCase.Value, tradingHistories, indicatorSet, true);
+                (isBuy, isSell) = EmaStochTrading.Trading(tradingCase.Value, stockPrices, indicatorSet, true);
                 var note = $"Đầu tư {Utilities.GetPrincipleName(tradingCase.Key).ToLower()} {tradingHistories.Count} phiên từ ngày {tradingHistories[0].TradingDate:dd/MM/yyyy}, {tradingCase.Value.ResultString()} xem chi tiết tại tab \"Lợi nhuận và đầu tư TN\".";
                 var optimalBuyPrice = EmaStochTrading.CalculateOptimalBuyPrice(tradingHistories[^1]);
                 var optimalSellPrice = EmaStochTrading.CalculateOptimalSellPriceOnLoss(tradingHistories[^1]);
@@ -683,9 +681,9 @@ namespace Pl.Sas.Core.Services
         {
             var stockPrice = await _marketData.GetLastStockPriceAsync(symbol);
             var company = await _marketData.GetCompanyAsync(symbol);
+            var checkingKey = $"{symbol}-Analytics-Macroeconomics";
             if (stockPrice is null || company is null)
             {
-                var checkingKey = $"{symbol}-Analytics-Macroeconomics";
                 _logger.LogWarning("MacroeconomicsAnalyticsAsync can't find last stock price and company with symbol: {symbol}", symbol);
                 return await _systemData.SetKeyValueAsync(checkingKey, false);
             }
@@ -699,12 +697,69 @@ namespace Pl.Sas.Core.Services
             score += MarketAnalyticsService.IndustryTrend(analyticsNotes, industry);
 
             var saveZipData = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(analyticsNotes));
-            var saveResult = await _operationRetry.Retry(() =>
-                _analyticsResultData.SaveMacroeconomicsScoreAsync(schedule.DataKey, Utilities.GetTradingDatePath(), score, saveZipData), 10, TimeSpan.FromMilliseconds(100));
-            if (!saveResult)
+            var check = await _analyticsData.SaveMacroeconomicsScoreAsync(symbol, stockPrice.TradingDate, score, saveZipData);
+            return await _systemData.SetKeyValueAsync(checkingKey, check);
+        }
+
+        /// <summary>
+        /// Xây dựng các trường hợp trading cho phân tích
+        /// </summary>
+        /// <param name="fixedCapital">Số tiền vốn ban đầu</param>
+        /// <returns></returns>
+        public static Dictionary<int, TradingCase> AnalyticsBuildTradingCases(decimal fixedCapital = 10000000M)
+        {
+            var testCases = new Dictionary<int, TradingCase>()
             {
-                _logger.LogWarning("MacroeconomicsAnalyticsAsync can't save result for symbol: {DataKey}", schedule.DataKey);
-            }
+                {1, new()
+                    {
+                        TotalTax = 0,
+                        ExplainNotes = new(),
+                        TradingTestResult = 0,
+                        FixedCapital = fixedCapital,
+                        FirstEmaSell = 2,
+                        SecondEmaSell = 60,
+                        FirstEmaBuy = 2,
+                        SecondEmaBuy = 60
+                    }
+                },
+                {2, new()
+                    {
+                        TotalTax = 0,
+                        ExplainNotes = new(),
+                        TradingTestResult = 0,
+                        FixedCapital = fixedCapital,
+                        FirstEmaSell = 2,
+                        SecondEmaSell = 36,
+                        FirstEmaBuy = 2,
+                        SecondEmaBuy = 36
+                    }
+                },
+                {3, new()
+                    {
+                        TotalTax = 0,
+                        ExplainNotes = new(),
+                        TradingTestResult = 0,
+                        FixedCapital = fixedCapital,
+                        FirstEmaSell = 2,
+                        SecondEmaSell = 5,
+                        FirstEmaBuy = 2,
+                        SecondEmaBuy = 5
+                    }
+                },
+                {4, new()
+                    {
+                        TotalTax = 0,
+                        ExplainNotes = new(),
+                        TradingTestResult = 0,
+                        FixedCapital = fixedCapital,
+                        FirstEmaSell = 1,
+                        SecondEmaSell = 3,
+                        FirstEmaBuy = 1,
+                        SecondEmaBuy = 3
+                    }
+                }
+            };
+            return testCases;
         }
     }
 }

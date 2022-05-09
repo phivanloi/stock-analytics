@@ -23,7 +23,7 @@ namespace Pl.Sas.Core.Trading
         /// TotalProfit tổng số tiền thu được
         /// TotalTax tổng số thuế phải trả
         /// </returns>
-        public static (float TotalProfit, float TotalTax) Sell(int stockCount, float stockPrice)
+        public static (float TotalProfit, float TotalTax) Sell(long stockCount, float stockPrice)
         {
             var totalMoney = stockCount * stockPrice;
             var totalTax = totalMoney * SellTax;
@@ -34,28 +34,24 @@ namespace Pl.Sas.Core.Trading
         /// Mua vào một cố phiếu
         /// </summary>
         /// <param name="totalMoney">Tổng số tiền dùng để mua cô phiếu</param>
+        /// <param name="tax">Thuế phí</param>
         /// <param name="stockPrice">Giá cổ phiếu mua vào</param>
         /// <returns>
-        /// StockCount số cổ  phiếu mua được, 0 thì là không mua được
+        /// StockCount số cổ  phiếu mua được
         /// ExcessCash số tiền dư còn lại
         /// TotalTax tổng số thuế phải trả
         /// </returns>
-        public static (float StockCount, float ExcessCash, float TotalTax) Buy(float totalMoney, float stockPrice)
+        public static (long StockCount, float ExcessCash, float TotalTax) Buy(float totalMoney, float tax, float stockPrice)
         {
             if (stockPrice == 0)
             {
                 return (0, totalMoney, 0);
             }
 
-            if (true)
-            {
-
-            }
-
-            var totalBuyMoney = totalMoney - (totalMoney * BuyTax);
-            var buyStockCount = Math.Floor(totalBuyMoney / stockPrice);
+            var totalBuyMoney = totalMoney - (totalMoney * tax);
+            var buyStockCount = (long)Math.Floor(totalBuyMoney / stockPrice);
             var totalValueStock = buyStockCount * stockPrice;
-            var totalTax = totalValueStock * BuyTax;
+            var totalTax = totalValueStock * tax;
             var excessCash = totalMoney - (totalValueStock + totalTax);
             return (buyStockCount, excessCash, totalTax);
         }

@@ -8,6 +8,13 @@ namespace Pl.Sas.Core.Interfaces
     public interface IAnalyticsData
     {
         /// <summary>
+        /// Ghi lại kết quả trading thử nghiệm
+        /// </summary>
+        /// <param name="tradingResult">Kết quả tradinh thử nghiệm</param>
+        /// <returns>bool</returns>
+        Task<bool> SaveTestTradingResultAsync(TradingResult tradingResult);
+
+        /// <summary>
         /// Lấy phân tích dòng tiền theo ngành
         /// </summary>
         /// <param name="code">Mã</param>

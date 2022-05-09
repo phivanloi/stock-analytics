@@ -234,7 +234,7 @@ namespace Pl.Sas.Infrastructure.Market
         public virtual async Task<List<StockPrice>> GetAnalyticsTopStockPriceAsync(string symbol, int top)
         {
             return (await _marketDbContext.StockPrices.OrderByDescending(q => q.TradingDate)
-                .Where(s => s.Symbol == symbol && s.ClosePrice > 0).Take(top).ToListAsync()).Select(q =>
+                .Where(s => s.Symbol == symbol && s.ClosePrice > 0 && s.ClosePriceAdjusted > 0).Take(top).ToListAsync()).Select(q =>
             {
                 var changePercent = (q.ClosePrice - q.ClosePriceAdjusted) / q.ClosePrice;
                 return new StockPrice()

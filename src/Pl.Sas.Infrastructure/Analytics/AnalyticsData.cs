@@ -21,6 +21,28 @@ namespace Pl.Sas.Infrastructure.Data
             _memoryCacheService = memoryCacheService;
         }
 
+        public virtual async Task<bool> SaveTestTradingResultAsync(TradingResult tradingResult)
+        {
+            var updateItem = _analyticsDbContext.TradingResults.FirstOrDefault(q => q.Symbol == tradingResult.Symbol && q.TradingDate == tradingResult.TradingDate && q.Principle == tradingResult.Principle);
+            if (updateItem is not null)
+            {
+                updateItem.IsBuy = tradingResult.IsBuy;
+                updateItem.BuyPrice = tradingResult.BuyPrice;
+                updateItem.IsSell = tradingResult.IsSell;
+                updateItem.SellPrice = tradingResult.SellPrice;
+                updateItem.Capital = tradingResult.Capital;
+                updateItem.Profit = tradingResult.Profit;
+                updateItem.TotalTax = tradingResult.TotalTax;
+                updateItem.TradingNotes = tradingResult.TradingNotes;
+                updateItem.UpdatedTime = DateTime.Now;
+            }
+            else
+            {
+                _analyticsDbContext.TradingResults.Add(tradingResult);
+            }
+            return await _analyticsDbContext.SaveChangesAsync() > 0;
+        }
+
         public virtual async Task<IndustryAnalytics?> GetIndustryAnalyticsAsync(string code)
         {
             return await _analyticsDbContext.IndustryAnalytics.FirstOrDefaultAsync(q => q.Code == code);
