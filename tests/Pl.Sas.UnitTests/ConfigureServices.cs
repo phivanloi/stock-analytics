@@ -11,12 +11,15 @@ using Pl.Sas.Infrastructure.Caching;
 using Pl.Sas.Infrastructure.Crawl;
 using Pl.Sas.Infrastructure.Data;
 using Pl.Sas.Infrastructure.Helper;
+using Pl.Sas.Infrastructure.Identity;
 using Pl.Sas.Infrastructure.Loging;
 using Pl.Sas.Infrastructure.Market;
 using Pl.Sas.Infrastructure.RabbitmqMessageQueue;
+using Pl.Sas.Infrastructure.System;
 using System;
 using System.IO;
 using System.Net.Http;
+using System.Reflection;
 
 namespace Pl.Sas.UnitTests
 {
@@ -56,6 +59,35 @@ namespace Pl.Sas.UnitTests
                 };
             });
 
+            services.AddDbContext<SystemDbContext>(options =>
+                options.UseSqlServer(configuration.GetConnectionString("SystemConnection"),
+                sqlServerOptionsAction: sqlOptions =>
+                {
+                    sqlOptions.MigrationsAssembly(typeof(ConfigureServices).GetTypeInfo().Assembly.GetName().Name);
+                    sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+                }));
+            services.AddDbContext<MarketDbContext>(options =>
+                options.UseSqlServer(configuration.GetConnectionString("MarketConnection"),
+                sqlServerOptionsAction: sqlOptions =>
+                {
+                    sqlOptions.MigrationsAssembly(typeof(ConfigureServices).GetTypeInfo().Assembly.GetName().Name);
+                    sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+                }));
+            services.AddDbContext<AnalyticsDbContext>(options =>
+                options.UseSqlServer(configuration.GetConnectionString("AnalyticsConnection"),
+                sqlServerOptionsAction: sqlOptions =>
+                {
+                    sqlOptions.MigrationsAssembly(typeof(ConfigureServices).GetTypeInfo().Assembly.GetName().Name);
+                    sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+                }));
+            services.AddDbContext<IdentityDbContext>(options =>
+                options.UseSqlServer(configuration.GetConnectionString("IdentityConnection"),
+                sqlServerOptionsAction: sqlOptions =>
+                {
+                    sqlOptions.MigrationsAssembly(typeof(ConfigureServices).GetTypeInfo().Assembly.GetName().Name);
+                    sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+                }));
+
             services.AddSingleton<IZipHelper, GZipHelper>();
             services.AddMemoryCacheService();
             services.AddRedisCacheService(option =>
@@ -84,6 +116,8 @@ namespace Pl.Sas.UnitTests
             services.AddSingleton<IDownloadData, DownloadData>();
             services.AddScoped<IMarketData, MarketData>();
             services.AddScoped<IAnalyticsData, AnalyticsData>();
+            services.AddScoped<ISystemData, SystemData>();
+            services.AddScoped<IIdentityData, IdentityData>();
             services.AddScoped<DownloadService>();
             return services;
         }
