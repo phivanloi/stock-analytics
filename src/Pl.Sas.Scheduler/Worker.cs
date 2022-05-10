@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.Options;
 using Pl.Sas.Core;
 using Pl.Sas.Core.Interfaces;
+using Pl.Sas.Infrastructure.Market;
+using Pl.Sas.Infrastructure.System;
 
 namespace Pl.Sas.Scheduler
 {
@@ -32,8 +34,8 @@ namespace Pl.Sas.Scheduler
             using var scope = _serviceScopeFactory.CreateScope();
             while (!stoppingToken.IsCancellationRequested)
             {
-                var marketDbContext = scope.ServiceProvider.GetRequiredService<MarketDbContext>();
-                var schedules = marketDbContext.Schedules.Where(q => q.ActiveTime <= DateTime.Now).OrderBy(q => q.ActiveTime).Take(10).ToList();
+                var systemDbContext = scope.ServiceProvider.GetRequiredService<SystemDbContext>();
+                var schedules = systemDbContext.Schedules.Where(q => q.ActiveTime <= DateTime.Now).OrderBy(q => q.ActiveTime).Take(10).ToList();
                 if (schedules.Count > 0)
                 {
                     foreach (var schedule in schedules)
@@ -45,7 +47,7 @@ namespace Pl.Sas.Scheduler
                         
                         schedule.ApplyActiveTime(DateTime.Now);
                     }
-                    marketDbContext.SaveChanges();
+                    systemDbContext.SaveChanges();
                 }
                 else
                 {

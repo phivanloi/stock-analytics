@@ -12,7 +12,7 @@ using Pl.Sas.Infrastructure.Analytics;
 namespace Pl.Sas.Scheduler.Migrations.AnalyticsDb
 {
     [DbContext(typeof(AnalyticsDbContext))]
-    [Migration("20220427152742_InitialCreate")]
+    [Migration("20220510162107_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -93,52 +93,35 @@ namespace Pl.Sas.Scheduler.Migrations.AnalyticsDb
                     b.ToTable("AnalyticsResults");
                 });
 
-            modelBuilder.Entity("Pl.Sas.Core.Entities.StockTracking", b =>
+            modelBuilder.Entity("Pl.Sas.Core.Entities.IndustryAnalytics", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(22)
                         .HasColumnType("nvarchar(22)");
 
-                    b.Property<DateTime>("AnalyticsDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("AnalyticsStatus")
+                    b.Property<string>("Code")
                         .IsRequired()
-                        .HasMaxLength(1024)
-                        .HasColumnType("nvarchar(1024)");
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
 
                     b.Property<DateTime>("CreatedTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("DataDate")
-                        .HasColumnType("datetime2");
+                    b.Property<float>("ManualScore")
+                        .HasColumnType("real");
 
-                    b.Property<string>("DataStatus")
-                        .IsRequired()
-                        .HasMaxLength(1024)
-                        .HasColumnType("nvarchar(1024)");
+                    b.Property<byte[]>("Notes")
+                        .HasColumnType("varbinary(max)");
 
-                    b.Property<DateTime>("DownloadDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("DownloadStatus")
-                        .IsRequired()
-                        .HasMaxLength(1024)
-                        .HasColumnType("nvarchar(1024)");
-
-                    b.Property<string>("Symbol")
-                        .IsRequired()
-                        .HasMaxLength(16)
-                        .HasColumnType("nvarchar(16)");
+                    b.Property<float>("Score")
+                        .HasColumnType("real");
 
                     b.Property<DateTime>("UpdatedTime")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Symbol");
-
-                    b.ToTable("StockTrackings");
+                    b.ToTable("IndustryAnalytics");
                 });
 
             modelBuilder.Entity("Pl.Sas.Core.Entities.TradingResult", b =>

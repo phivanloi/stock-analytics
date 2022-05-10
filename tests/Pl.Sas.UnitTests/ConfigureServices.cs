@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Pl.Sas.Core;
 using Pl.Sas.Core.Interfaces;
+using Pl.Sas.Core.Services;
 using Pl.Sas.Infrastructure;
 using Pl.Sas.Infrastructure.Analytics;
 using Pl.Sas.Infrastructure.Caching;
@@ -11,6 +12,7 @@ using Pl.Sas.Infrastructure.Crawl;
 using Pl.Sas.Infrastructure.Data;
 using Pl.Sas.Infrastructure.Helper;
 using Pl.Sas.Infrastructure.Loging;
+using Pl.Sas.Infrastructure.Market;
 using System;
 using System.IO;
 using System.Net.Http;
@@ -80,7 +82,7 @@ namespace Pl.Sas.UnitTests
             services.AddSingleton<IDownloadData, DownloadData>();
             services.AddScoped<IMarketData, MarketData>();
             services.AddScoped<IAnalyticsData, AnalyticsData>();
-            services.AddScoped<WorkerService>();
+            services.AddScoped<DownloadService>();
             return services;
         }
     }

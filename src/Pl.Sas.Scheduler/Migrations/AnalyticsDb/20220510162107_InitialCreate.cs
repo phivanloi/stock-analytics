@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -38,23 +39,20 @@ namespace Pl.Sas.Scheduler.Migrations.AnalyticsDb
                 });
 
             migrationBuilder.CreateTable(
-                name: "StockTrackings",
+                name: "IndustryAnalytics",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(22)", maxLength: 22, nullable: false),
-                    Symbol = table.Column<string>(type: "nvarchar(16)", maxLength: 16, nullable: false),
-                    DownloadStatus = table.Column<string>(type: "nvarchar(1024)", maxLength: 1024, nullable: false),
-                    DownloadDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    DataStatus = table.Column<string>(type: "nvarchar(1024)", maxLength: 1024, nullable: false),
-                    DataDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    AnalyticsStatus = table.Column<string>(type: "nvarchar(1024)", maxLength: 1024, nullable: false),
-                    AnalyticsDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ManualScore = table.Column<float>(type: "real", nullable: false),
+                    Score = table.Column<float>(type: "real", nullable: false),
+                    Notes = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
+                    Code = table.Column<string>(type: "nvarchar(16)", maxLength: 16, nullable: false),
                     CreatedTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedTime = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_StockTrackings", x => x.Id);
+                    table.PrimaryKey("PK_IndustryAnalytics", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -87,11 +85,6 @@ namespace Pl.Sas.Scheduler.Migrations.AnalyticsDb
                 columns: new[] { "Symbol", "TradingDate" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_StockTrackings_Symbol",
-                table: "StockTrackings",
-                column: "Symbol");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_TradingResults_Symbol_TradingDate_Principle",
                 table: "TradingResults",
                 columns: new[] { "Symbol", "TradingDate", "Principle" });
@@ -103,7 +96,7 @@ namespace Pl.Sas.Scheduler.Migrations.AnalyticsDb
                 name: "AnalyticsResults");
 
             migrationBuilder.DropTable(
-                name: "StockTrackings");
+                name: "IndustryAnalytics");
 
             migrationBuilder.DropTable(
                 name: "TradingResults");

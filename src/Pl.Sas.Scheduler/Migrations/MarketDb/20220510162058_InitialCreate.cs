@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -189,26 +190,6 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
                 });
 
             migrationBuilder.CreateTable(
-                name: "Schedules",
-                columns: table => new
-                {
-                    Id = table.Column<string>(type: "nvarchar(22)", maxLength: 22, nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
-                    DataKey = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
-                    Activated = table.Column<bool>(type: "bit", nullable: false),
-                    ActiveTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    IsError = table.Column<bool>(type: "bit", nullable: false),
-                    OptionsJson = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Type = table.Column<int>(type: "int", nullable: false),
-                    CreatedTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedTime = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Schedules", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "StockPrices",
                 columns: table => new
                 {
@@ -290,6 +271,22 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
                 });
 
             migrationBuilder.CreateTable(
+                name: "StockTransactions",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(22)", maxLength: 22, nullable: false),
+                    Symbol = table.Column<string>(type: "nvarchar(16)", maxLength: 16, nullable: false),
+                    TradingDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ZipDetails = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
+                    CreatedTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedTime = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StockTransactions", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "VndStockScores",
                 columns: table => new
                 {
@@ -352,11 +349,6 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
                 column: "Symbol");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Schedules_ActiveTime",
-                table: "Schedules",
-                column: "ActiveTime");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_StockPrices_Symbol",
                 table: "StockPrices",
                 column: "Symbol");
@@ -380,6 +372,11 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
                 name: "IX_Stocks_Symbol_Type",
                 table: "Stocks",
                 columns: new[] { "Symbol", "Type" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StockTransactions_Symbol_TradingDate",
+                table: "StockTransactions",
+                columns: new[] { "Symbol", "TradingDate" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_VndStockScores_Symbol",
@@ -411,9 +408,6 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
                 name: "Leaderships");
 
             migrationBuilder.DropTable(
-                name: "Schedules");
-
-            migrationBuilder.DropTable(
                 name: "StockPrices");
 
             migrationBuilder.DropTable(
@@ -421,6 +415,9 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
 
             migrationBuilder.DropTable(
                 name: "Stocks");
+
+            migrationBuilder.DropTable(
+                name: "StockTransactions");
 
             migrationBuilder.DropTable(
                 name: "VndStockScores");

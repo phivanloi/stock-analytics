@@ -33,7 +33,7 @@
         /// <param name="role">Role key</param>
         /// <param name="name">Resource name</param>
         /// <param name="permissions">Children permission</param>
-        public Permission(string role, string name, IEnumerable<Permission> permissions = null)
+        public Permission(string role, string name, IEnumerable<Permission>? permissions = null)
         {
             Role = role;
             Name = name;

@@ -14,7 +14,6 @@ namespace Pl.Sas.Core.Services
         private readonly IAsyncCacheService _asyncCacheService;
         private readonly ILogger<StockViewService> _logger;
         private readonly IMemoryCacheService _memoryCacheService;
-        private readonly IZipHelper _zipHelper;
         private readonly IMarketData _marketData;
         private readonly IAnalyticsData _analyticsData;
         private readonly ISystemData _systemData;
@@ -23,12 +22,10 @@ namespace Pl.Sas.Core.Services
             ISystemData systemData,
             IAnalyticsData analyticsData,
             IMarketData marketData,
-            IZipHelper zipHelper,
             ILogger<StockViewService> logger,
             IAsyncCacheService asyncCacheService,
             IMemoryCacheService memoryCacheService)
         {
-            _zipHelper = zipHelper;
             _asyncCacheService = asyncCacheService;
             _logger = logger;
             _memoryCacheService = memoryCacheService;
@@ -382,23 +379,23 @@ namespace Pl.Sas.Core.Services
 
                     #region Trading info
 
-                    var tradingResults = await _tradingResultData.GetForViewAsync(stock.Code, 10);
+                    var tradingResults = await _analyticsData.CacheGetTradingResultAsync(stock.Symbol, stockPrices[0].TradingDate);
                     var indicatorSet = BaseTrading.BuildIndicatorSet(stockPrices);
                     var tradingCases = AnalyticsService.AnalyticsBuildTradingCases();
                     var principles = new int[] { 0, 1, 2, 3, 4 };
 
                     foreach (var principle in principles)
                     {
-                        var sunTradingResults = tradingResults.Where(q => q.Principle == principle).OrderBy(q => q.TradingDate).ToList();
-                        if (sunTradingResults?.Count > 0)
+                        var tadingResult = tradingResults.FirstOrDefault(q => q.Principle == principle);
+                        if (tadingResult is not null)
                         {
                             var judgeResult = new JudgeResult()
                             {
-                                OptimalBuyPrice = sunTradingResults[^1].BuyPrice,
-                                OptimalSellPrice = sunTradingResults[^1].SellPrice,
-                                ProfitPercent = sunTradingResults[^1].ProfitPercent,
-                                TodayIsBuy = sunTradingResults[^1].IsBuy,
-                                TodayIsSell = sunTradingResults[^1].IsSell
+                                OptimalBuyPrice = tadingResult.BuyPrice,
+                                OptimalSellPrice = tadingResult.SellPrice,
+                                ProfitPercent = tadingResult.ProfitPercent,
+                                TodayIsBuy = tadingResult.IsBuy,
+                                TodayIsSell = tadingResult.IsSell
                             };
                             if (indicatorSet.ContainsKey(stockPrices[0].DatePath) && tradingCases.ContainsKey(principle))
                             {

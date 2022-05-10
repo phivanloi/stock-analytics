@@ -16,6 +16,10 @@
 	dotnet ef migrations add InitialCreate --context AnalyticsDbContext --output-dir "Migrations\AnalyticsDb"
 	dotnet ef migrations remove --context AnalyticsDbContext
 
+- Tạo db migrations cho db identity
+	dotnet ef migrations add InitialCreate --context IdentityDbContext --output-dir "Migrations\IdentityDb"
+	dotnet ef migrations remove --context IdentityDbContext
+
 - Tạo db migrations cho db logger
 	dotnet ef migrations add InitialCreate --context LogDbContext --output-dir "Data\Migrations"
 	dotnet ef migrations remove --context LogDbContext

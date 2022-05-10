@@ -63,12 +63,12 @@ namespace Pl.Sas.Infrastructure.Data
             }, Constants.DefaultCacheTime * 60 * 24);
         }
 
-        public virtual async Task<TradingResult?> CacheGetTradingResultAsync(string symbol, DateTime tradingDate)
+        public virtual async Task<List<TradingResult>> CacheGetTradingResultAsync(string symbol, DateTime tradingDate)
         {
             var cacheKey = $"{Constants.TradingResultCachePrefix}-SM{symbol}-DP{tradingDate:ddMMyyyy}";
             return await _memoryCacheService.GetOrCreateAsync(cacheKey, async () =>
             {
-                return await _analyticsDbContext.TradingResults.FirstOrDefaultAsync(q => q.Symbol == symbol && q.TradingDate == tradingDate);
+                return await _analyticsDbContext.TradingResults.Where(q => q.Symbol == symbol && q.TradingDate == tradingDate).ToListAsync();
             }, Constants.DefaultCacheTime * 60 * 24);
         }
 

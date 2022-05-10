@@ -81,7 +81,7 @@ namespace Pl.Sas.Infrastructure.Loging
                 var logBuilder = new StringBuilder();
 
                 var logLevelString = logLevel.ToString();
-                logBuilder.Append($"{DateTime.Now.ToString(new System.Globalization.CultureInfo("vi-VN"))} - {logLevelString} - {_name}");
+                logBuilder.Append($"{DateTime.Now.ToString()} - {logLevelString} - {_name}");
 
                 if (eventId.Id > 0)
                 {

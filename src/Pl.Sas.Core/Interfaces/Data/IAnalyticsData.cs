@@ -13,7 +13,7 @@ namespace Pl.Sas.Core.Interfaces
         /// <param name="symbol">Mã chứng khoán</param>
         /// <param name="tradingDate">Ngày chạy test</param>
         /// <returns>TradingResult</returns>
-        Task<TradingResult?> CacheGetTradingResultAsync(string symbol, DateTime tradingDate);
+        Task<List<TradingResult>> CacheGetTradingResultAsync(string symbol, DateTime tradingDate);
 
         /// <summary>
         /// Lấy toàn bộ phân tích ngành

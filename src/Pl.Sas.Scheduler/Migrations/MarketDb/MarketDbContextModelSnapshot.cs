@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Pl.Sas.Infrastructure.Data;
+using Pl.Sas.Infrastructure.Market;
 
 #nullable disable
 
@@ -220,7 +220,7 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
                     b.ToTable("CorporateActions");
                 });
 
-            modelBuilder.Entity("Pl.Sas.Core.Entities.FiinEvaluate", b =>
+            modelBuilder.Entity("Pl.Sas.Core.Entities.FiinEvaluated", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(22)
@@ -461,50 +461,6 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
                     b.ToTable("Leaderships");
                 });
 
-            modelBuilder.Entity("Pl.Sas.Core.Entities.Schedule", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasMaxLength(22)
-                        .HasColumnType("nvarchar(22)");
-
-                    b.Property<bool>("Activated")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("ActiveTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("CreatedTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("DataKey")
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
-                    b.Property<bool>("IsError")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
-
-                    b.Property<string>("OptionsJson")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedTime")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ActiveTime");
-
-                    b.ToTable("Schedules");
-                });
-
             modelBuilder.Entity("Pl.Sas.Core.Entities.Stock", b =>
                 {
                     b.Property<string>("Id")
@@ -709,6 +665,36 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
                     b.HasIndex("Symbol", "Analyst", "ReportDate");
 
                     b.ToTable("StockRecommendations");
+                });
+
+            modelBuilder.Entity("Pl.Sas.Core.Entities.StockTransaction", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(22)
+                        .HasColumnType("nvarchar(22)");
+
+                    b.Property<DateTime>("CreatedTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Symbol")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<DateTime>("TradingDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("UpdatedTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<byte[]>("ZipDetails")
+                        .HasColumnType("varbinary(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Symbol", "TradingDate");
+
+                    b.ToTable("StockTransactions");
                 });
 
             modelBuilder.Entity("Pl.Sas.Core.Entities.VndStockScore", b =>
