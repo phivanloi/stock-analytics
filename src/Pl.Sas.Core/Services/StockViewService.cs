@@ -66,7 +66,7 @@ namespace Pl.Sas.Core.Services
 
             if (!string.IsNullOrEmpty(symbol))
             {
-                query = query.Where(q => q.Code == symbol.ToUpper());
+                query = query.Where(q => q.Symbol == symbol.ToUpper());
             }
 
             if (!string.IsNullOrEmpty(zone))
@@ -76,7 +76,7 @@ namespace Pl.Sas.Core.Services
                     case "me":
                         if (followSymbols?.Count > 0)
                         {
-                            query = query.Where(q => followSymbols.Contains(q.Code));
+                            query = query.Where(q => followSymbols.Contains(q.Symbol));
                         }
                         break;
 
@@ -149,48 +149,48 @@ namespace Pl.Sas.Core.Services
         {
             var dictStockView = new Dictionary<string, StockView>();
             var companies = await _marketData.CacheGetCompaniesAsync();
-            var stocks = await _marketData.GetStockDictionaryAsync();
+            var stocks = await _marketData.GetStockByType("i");
             foreach (var stock in stocks)
             {
-                if (!dictStockView.ContainsKey(stock.Key))
+                if (!dictStockView.ContainsKey(stock.Symbol))
                 {
-                    var stockPrices = await _marketData.GetForStockViewAsync(stock.Key, 3840);
-                    if (stockPrices?.Count < 2)
+                    var stockPrices = await _marketData.GetForStockViewAsync(stock.Symbol, 3840);
+                    if (stockPrices.Count < 2)
                     {
-                        _logger.LogWarning("Can't build view data for stock code {Key} by stock price is lower five item.", stock.Key);
+                        _logger.LogWarning("Can't build view data for stock code {Key} by stock price is lower five item.", stock.Symbol);
                         continue;
                     }
-                    var company = companies.FirstOrDefault(q => q.Symbol == stock.Key);
+                    var company = companies.FirstOrDefault(q => q.Symbol == stock.Symbol);
                     if (company is null)
                     {
-                        _logger.LogWarning("Can't build view data for stock code {Key} by company info is null.", stock.Key);
+                        _logger.LogWarning("Can't build view data for stock code {Key} by company info is null.", stock.Symbol);
                         continue;
                     }
-                    var analyticsResults = await _analyticsData.FindAllAsync(stock.Code, tradingDatePath, 1), 10, TimeSpan.FromMilliseconds(100));
-                    if (analyticsResults?.Count < 1)
+                    var analyticsResults = await _analyticsData.CacheGetAnalyticsResultAsync(stock.Symbol, stockPrices[0].TradingDate);
+                    if (analyticsResults is null)
                     {
-                        _logger.LogWarning("Can't build view data for stock code {Code} by analytics result lower one item.", stock.Code);
+                        _logger.LogWarning("Can't build view data for stock code {Code} by analytics result lower one item.", stock.Symbol);
                         continue;
                     }
 
-                    var lastFinancialIndicator = await _financialIndicatorData.GetLastYearAsync(stock.Code);
-                    var topThreeFinancialIndicator = await _financialIndicatorData.GetTopYearlyAsync(stock.Code, 4);
-                    var stockPriceAdjs = BaseTrading.ConvertStockPricesToStockPriceAdj(stockPrices.Where(q => q.ClosePriceAdjusted > 0 && q.ClosePrice > 0));
-                    var industry = await _industryData.GetByCodeAsync(company.SubsectorCode);
+                    var financialIndicators = await _marketData.GetFinancialIndicatorsAsync(stock.Symbol);
+                    var lastFinancialIndicator = financialIndicators.OrderByDescending(q => q.YearReport).ThenByDescending(q => q.LengthReport).FirstOrDefault(q => q.LengthReport == 5);
+                    var topThreeFinancialIndicator = financialIndicators.OrderByDescending(q => q.YearReport).ThenByDescending(q => q.LengthReport).Where(q => q.LengthReport == 5).Take(4).ToList();
+                    var industry = await _analyticsData.GetIndustryAnalyticsAsync(company.SubsectorCode);
                     var topThreeHistories = stockPrices.Take(3).ToList();
                     var topFiveHistories = stockPrices.Take(5).ToList();
                     var topTenHistories = stockPrices.Take(10).ToList();
                     var stockView = new StockView()
                     {
-                        Code = stock.Code,
+                        Symbol = stock.Symbol,
                         IndustryCode = company.SubsectorCode,
-                        Description = $"{stock.Exchange} - {stock.Description} - {company.Supersector} - {company.Sector}",
+                        Description = $"{stock.Exchange} - {company.CompanyName} - {company.Supersector} - {company.Sector}",
                         Exchange = stock.Exchange,
 
-                        MacroeconomicsScore = analyticsResults[0].MacroeconomicsScore,
-                        IndustryRank = MacroeconomicsAnalyticsService.IndustryTrend(new(), industry),
+                        MacroeconomicsScore = analyticsResults.MarketScore,
+                        IndustryRank = MarketAnalyticsService.IndustryTrend(new(), industry),
 
-                        CompanyValueScore = analyticsResults[0].CompanyValueScore,
+                        CompanyValueScore = analyticsResults.CompanyValueScore,
                         Eps = lastFinancialIndicator?.Eps ?? company.Eps,
                         Pe = lastFinancialIndicator?.Pe ?? company.Pe,
                         Pb = lastFinancialIndicator?.Pb ?? company.Pb,
@@ -198,9 +198,9 @@ namespace Pl.Sas.Core.Services
                         Roa = (lastFinancialIndicator?.Roa ?? company.Roa) * 100,
                         MarketCap = company.MarketCap,
 
-                        CompanyGrowthScore = analyticsResults[0].CompanyGrowthScore,
+                        CompanyGrowthScore = analyticsResults.CompanyGrowthScore,
 
-                        StockScore = analyticsResults[0].StockScore,
+                        StockScore = analyticsResults.StockScore,
                         Beta = company.Beta,
                         LastClosePrice = topThreeHistories[0].ClosePrice,
                         LastOneClosePrice = topThreeHistories[1].ClosePrice,
@@ -214,21 +214,17 @@ namespace Pl.Sas.Core.Services
                         LastHistoryMinLowestPrice = topFiveHistories.Min(q => q.LowestPrice),
                         LastHistoryMinHighestPrice = topFiveHistories.Max(q => q.HighestPrice),
 
-                        FiinScore = analyticsResults[0].FiinScore,
-                        VndScore = analyticsResults[0].VndScore,
-                        TargetPrice = analyticsResults[0].TargetPrice,
-
-                        SsaPerdictPrice = analyticsResults[0].SsaPerdictPrice,
-                        FttPerdictPrice = analyticsResults[0].FttPerdictPrice,
-                        TrendPrediction = analyticsResults[0].SdcaPriceTrend,
+                        FiinScore = analyticsResults.FiinScore,
+                        VndScore = analyticsResults.VndScore,
+                        TargetPrice = analyticsResults.TargetPrice
                     };
 
-                    if (topThreeFinancialIndicator?.Count > 3)
+                    if (topThreeFinancialIndicator.Count > 3)
                     {
                         var (_, _, _, _, _, _, percents) = topThreeFinancialIndicator.GetFluctuationsTopDown(q => q.Revenue);
                         stockView.YearlyRevenueGrowthPercent = percents?.Average() ?? 0;
                     }
-                    if (topThreeFinancialIndicator?.Count > 3)
+                    if (topThreeFinancialIndicator.Count > 3)
                     {
                         var (_, _, _, _, _, _, percents) = topThreeFinancialIndicator.GetFluctuationsTopDown(q => q.Profit);
                         stockView.YearlyProfitGrowthPercent = percents?.Average() ?? 0;
@@ -387,7 +383,7 @@ namespace Pl.Sas.Core.Services
                     #region Trading info
 
                     var tradingResults = await _tradingResultData.GetForViewAsync(stock.Code, 10);
-                    var indicatorSet = BaseTrading.BuildIndicatorSet(stockPriceAdjs);
+                    var indicatorSet = BaseTrading.BuildIndicatorSet(stockPrices);
                     var tradingCases = AnalyticsService.AnalyticsBuildTradingCases();
                     var principles = new int[] { 0, 1, 2, 3, 4 };
 
@@ -444,15 +440,12 @@ namespace Pl.Sas.Core.Services
 
                     #endregion Trading info
 
-                    dictStockView.TryAdd(stock.Code, stockView);
+                    dictStockView.TryAdd(stock.Symbol, stockView);
                 }
             }
-            var cacheKey = CacheKeyService.GetAllStockViewCacheKey();
-            await _asyncCacheService.SetValueAsync(cacheKey, dictStockView, _defaultCacheTime * 3800);
-            return new()
-            {
-                Id = "UpdateStockView"
-            };
+            var cacheKey = $"{Constants.StockViewCachePrefix}-ALL";
+            await _asyncCacheService.SetValueAsync(cacheKey, dictStockView, Constants.DefaultCacheTime * 60 * 24);
+            return new("UpdateStockView");
         }
     }
 }

@@ -63,6 +63,15 @@ namespace Pl.Sas.Infrastructure.Data
             }, Constants.DefaultCacheTime * 60 * 24);
         }
 
+        public virtual async Task<TradingResult?> CacheGetTradingResultAsync(string symbol, DateTime tradingDate)
+        {
+            var cacheKey = $"{Constants.TradingResultCachePrefix}-SM{symbol}-DP{tradingDate:ddMMyyyy}";
+            return await _memoryCacheService.GetOrCreateAsync(cacheKey, async () =>
+            {
+                return await _analyticsDbContext.TradingResults.FirstOrDefaultAsync(q => q.Symbol == symbol && q.TradingDate == tradingDate);
+            }, Constants.DefaultCacheTime * 60 * 24);
+        }
+
         public virtual async Task<bool> SaveMacroeconomicsScoreAsync(string symbol, DateTime tradingDate, int marketScore, byte[] marketNote)
         {
             var updateItem = _analyticsDbContext.AnalyticsResults.FirstOrDefault(q => q.Symbol == symbol && q.TradingDate == tradingDate);

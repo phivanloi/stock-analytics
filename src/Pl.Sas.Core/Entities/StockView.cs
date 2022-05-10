@@ -6,7 +6,7 @@
         /// <summary>
         /// mã giao dịch
         /// </summary>
-        public string Code { get; set; } = null!;
+        public string Symbol { get; set; } = null!;
 
         /// <summary>
         /// Mã ngành hoạt động chính
@@ -324,35 +324,6 @@
         /// </summary>
         public float TenTotalMatchVolPercent => LastTotalMatchVol.GetPercent(LastAvgTenTotalMatchVol);
         #endregion
-
-        #region Ai Prediction
-
-        /// <summary>
-        /// Giá dự đoán bằng thuật toán ssa
-        /// </summary>
-        public float SsaPerdictPrice { get; set; }
-
-        /// <summary>
-        /// % giá dự báo ssa so với giá đóng cửa hôm trước
-        /// </summary>
-        public float SsaPerdictPricePercent => SsaPerdictPrice.GetPercent(LastClosePrice);
-
-        /// <summary>
-        /// Giá dự đoán bằng thuật toán Ftt
-        /// </summary>
-        public float FttPerdictPrice { get; set; }
-
-        /// <summary>
-        /// % giá dự báo ftt so với giá đóng cửa hôm trước
-        /// </summary>
-        public float FttPerdictPricePercent => FttPerdictPrice.GetPercent(LastClosePrice);
-
-        /// <summary>
-        /// 0 giảm, 1 giữ giá, 2 tăng 
-        /// </summary>
-        public int TrendPrediction { get; set; }
-
-        #endregion Ai prediction
 
         #region Foreign
 

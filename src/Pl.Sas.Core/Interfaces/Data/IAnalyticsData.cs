@@ -8,6 +8,14 @@ namespace Pl.Sas.Core.Interfaces
     public interface IAnalyticsData
     {
         /// <summary>
+        /// Lấy danh sách trading thử nghiệm
+        /// </summary>
+        /// <param name="symbol">Mã chứng khoán</param>
+        /// <param name="tradingDate">Ngày chạy test</param>
+        /// <returns>TradingResult</returns>
+        Task<TradingResult?> CacheGetTradingResultAsync(string symbol, DateTime tradingDate);
+
+        /// <summary>
         /// Lấy toàn bộ phân tích ngành
         /// </summary>
         /// <returns></returns>
