@@ -13,6 +13,7 @@ using Pl.Sas.Infrastructure.Data;
 using Pl.Sas.Infrastructure.Helper;
 using Pl.Sas.Infrastructure.Loging;
 using Pl.Sas.Infrastructure.Market;
+using Pl.Sas.Infrastructure.RabbitmqMessageQueue;
 using System;
 using System.IO;
 using System.Net.Http;
@@ -79,6 +80,7 @@ namespace Pl.Sas.UnitTests
                 })
             );
 
+            services.AddSingleton<IWorkerQueueService, WorkerQueueService>();
             services.AddSingleton<IDownloadData, DownloadData>();
             services.AddScoped<IMarketData, MarketData>();
             services.AddScoped<IAnalyticsData, AnalyticsData>();
