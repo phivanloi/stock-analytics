@@ -7,12 +7,12 @@ namespace Pl.Sas.WebDashboard.Models
         [Display(Name = "Email")]
         [Required(ErrorMessage = "Email không được bỏ trống.")]
         [EmailAddress(ErrorMessage = "Email không đúng định dạng.")]
-        public string Email { get; set; }
+        public string Email { get; set; } = null!;
 
         [Display(Name = "Mật khẩu")]
         [Required(ErrorMessage = "Mật khẩu không được bỏ trống.")]
         [DataType(DataType.Password)]
-        public string Password { get; set; }
+        public string Password { get; set; } = null!;
 
         [Display(Name = "Ghi nhớ")]
         public bool RememberMe { get; set; }

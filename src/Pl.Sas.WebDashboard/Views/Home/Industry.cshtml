@@ -1,4 +1,4 @@
-﻿@model IndustryViewModel
+﻿@model List<IndustryViewModel>
 @{
     ViewData["Title"] = "Lĩnh vực";
     ViewData["ActiveMenu"] = "industry";
@@ -16,15 +16,15 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var industry in Model.Industries)
+                    @foreach (var industry in Model)
                     {
                         <tr>
                             <td>@industry.Code</td>
                             <td>@industry.Name</td>
                             <td>
-                                <input id="@industry.Id" type="number" value="@industry.Rank" onchange="RankChange(this)" class="form-control invest-control" />
+                                <input id="@industry.Code" type="number" value="@industry.ManualScore" onchange="RankChange(this)" class="form-control invest-control" />
                             </td>
-                            <td style="text-align:right">@industry.AutoRank</td>
+                            <td style="text-align:right">@industry.Score</td>
                         </tr>
                     }
                 </tbody>
@@ -39,7 +39,7 @@
                 cache: false,
                 type: "POST",
                 dataType: 'json',
-                url: "/home/industrysave?id=" + $(textbox).attr('id') + '&rank=' + $(textbox).val(),
+                url: "/home/industrysave?code=" + $(textbox).attr('id') + '&rank=' + $(textbox).val(),
                 success: function (data) {
                     if (data.status == 1) {
                         OpenToast('<span class="text-success">' + data.message + '</span>');

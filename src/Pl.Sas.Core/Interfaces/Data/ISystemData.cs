@@ -58,5 +58,13 @@ namespace Pl.Sas.Core.Interfaces
         /// <param name="schedule">Thông tin lịch cần update</param>
         /// <returns>bool</returns>
         Task<bool> UpdateScheduleAsync(Schedule schedule);
+
+        /// <summary>
+        /// kích hoạt lịch
+        /// </summary>
+        /// <param name="type">Loại lịch</param>
+        /// <param name="symbol">Mã chứng khoán</param>
+        /// <returns></returns>
+        Task<bool> UtilityUpdateAsync(int type, string symbol);
     }
 }

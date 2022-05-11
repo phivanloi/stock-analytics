@@ -250,8 +250,9 @@ namespace Pl.Sas.Infrastructure.Market
 
         public virtual async Task<List<StockPrice>> GetAnalyticsTopStockPriceAsync(string symbol, int top)
         {
-            return (await _marketDbContext.StockPrices.OrderByDescending(q => q.TradingDate)
-                .Where(s => s.Symbol == symbol && s.ClosePrice > 0 && s.ClosePriceAdjusted > 0).Take(top).ToListAsync()).Select(q =>
+            return (await _marketDbContext.StockPrices.Where(s => s.Symbol == symbol && s.ClosePrice > 0 && s.ClosePriceAdjusted > 0)
+                .OrderByDescending(q => q.TradingDate)
+                .Take(top).ToListAsync()).Select(q =>
             {
                 var changePercent = (q.ClosePrice - q.ClosePriceAdjusted) / q.ClosePrice;
                 return new StockPrice()
@@ -269,21 +270,9 @@ namespace Pl.Sas.Infrastructure.Market
 
         public virtual async Task<List<StockPrice>> GetAnalyticsTopIndexPriceAsync(string index, int top)
         {
-            return (await _marketDbContext.StockPrices.OrderByDescending(q => q.TradingDate)
-                .Where(s => s.Symbol == index && s.ClosePrice > 0).Take(top).ToListAsync()).Select(q =>
-                {
-                    var changePercent = (q.ClosePrice - q.ClosePriceAdjusted) / q.ClosePrice;
-                    return new StockPrice()
-                    {
-                        Symbol = q.Symbol,
-                        TradingDate = q.TradingDate,
-                        OpenPrice = q.OpenPrice,
-                        HighestPrice = q.HighestPrice,
-                        LowestPrice = q.LowestPrice,
-                        ClosePrice = q.ClosePriceAdjusted,
-                        TotalMatchVol = q.TotalMatchVol
-                    };
-                }).ToList();
+            return (await _marketDbContext.StockPrices.Where(s => s.Symbol == index && s.ClosePrice > 0 && s.ClosePriceAdjusted > 0)
+                .OrderByDescending(q => q.TradingDate)
+                .Take(top).ToListAsync());
         }
 
         public virtual async Task<StockPrice?> GetLastStockPriceAsync(string symbol)
@@ -300,7 +289,7 @@ namespace Pl.Sas.Infrastructure.Market
 
         public virtual async Task<List<StockPrice>> GetForStockViewAsync(string symbol, int numberItem = 10000)
         {
-            return await _marketDbContext.StockPrices.AsNoTracking().OrderByDescending(q => q.TradingDate).Where(s => s.Symbol == symbol).Take(numberItem).Select(q=> new StockPrice()
+            return await _marketDbContext.StockPrices.AsNoTracking().OrderByDescending(q => q.TradingDate).Where(s => s.Symbol == symbol).Take(numberItem).Select(q => new StockPrice()
             {
                 Symbol = q.Symbol,
                 TradingDate = q.TradingDate,
@@ -482,6 +471,24 @@ namespace Pl.Sas.Infrastructure.Market
                 EventCode = q.EventCode,
                 ExrightDate = q.ExrightDate
             }).ToListAsync();
+        }
+
+        public virtual async Task<List<CorporateAction>> GetCorporateActionsAsync(string? symbol = null, string? exchange = null, string[]? eventCode = null)
+        {
+            var query = _marketDbContext.CorporateActions.Where(q => q.ExrightDate >= DateTime.Now.Date);
+            if (!string.IsNullOrEmpty(exchange))
+            {
+                query = query.Where(q => q.Exchange == exchange);
+            }
+            if (!string.IsNullOrEmpty(symbol))
+            {
+                query = query.Where(q => q.Symbol == symbol);
+            }
+            if (eventCode is not null && eventCode.Length > 0)
+            {
+                query = query.Where(q => eventCode.Contains(q.EventCode));
+            }
+            return await query.ToListAsync();
         }
 
         public virtual async Task<List<CorporateAction>> GetCorporateActionTradingByExrightDateAsync()

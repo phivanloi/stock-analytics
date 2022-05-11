@@ -4,14 +4,9 @@ using Pl.Sas.WebDashboard.Models;
 using Pl.Sas.Core;
 using Pl.Sas.Core.Entities;
 using Pl.Sas.Core.Interfaces;
-using Pl.Sas.Infrastructure;
 using Pl.Sas.Infrastructure.Identity;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Pl.Sas.Core.Services;
 
 namespace Pl.Sas.WebDashboard.Controllers
@@ -85,14 +80,11 @@ namespace Pl.Sas.WebDashboard.Controllers
 
         public async Task<IActionResult> StockDetailsAsync(string symbol)
         {
-            var userId = HttpContext.GetUserId();
-            var lastStockPrice = _marketData.GetLastStockPriceAsync(symbol);
             var stockTask = _marketData.CacheGetStockByCodeAsync(symbol);
-            var analyticsResultTask = _analyticsData.CacheGetAnalyticsResultAsync(symbol, datePath);
-            var userStockNoteTask = _userStockNoteData.FindAsync(userId, symbol);
-            var allStockPricesTask = _stockViewService.CacheGetStockPricesForDetailPageAsync(symbol);
-            var companyTask = _stockViewService.CacheGetCompanyByCodeAsync(symbol);
-            var tradingResultsTask = _tradingResultData.FindAllAsync(symbol, datePath);
+            var analyticsResultTask = _analyticsData.CacheGetAnalyticsResultAsync(symbol);
+            var allStockPricesTask = _marketData.CacheGetAllStockPricesAsync(symbol);
+            var companyTask = _marketData.CacheGetCompanyByCodeAsync(symbol);
+            var tradingResultsTask = _analyticsData.CacheGetTradingResultAsync(symbol);
             var stock = await stockTask;
             if (stock is null)
             {
@@ -111,7 +103,6 @@ namespace Pl.Sas.WebDashboard.Controllers
                 StockPrices = await allStockPricesTask,
                 AnalyticsResultInfo = analyticsResult,
                 CompanyInfo = await companyTask,
-                Note = (await userStockNoteTask)?.Note ?? ""
             };
 
             foreach (var tradingResult in await tradingResultsTask)
@@ -120,7 +111,7 @@ namespace Pl.Sas.WebDashboard.Controllers
                 {
                     model.TradingResults.Add(tradingResult.Principle, new()
                     {
-                        TradingExplainNotes = JsonSerializer.Deserialize<List<KeyValuePair<int, string>>>(_zipHelper.UnZipByte(tradingResult.ZipExplainNotes)),
+                        TradingExplainNotes = tradingResult.TradingNotes is not null ? JsonSerializer.Deserialize<List<KeyValuePair<int, string>>>(_zipHelper.UnZipByte(tradingResult.TradingNotes)) : new List<KeyValuePair<int, string>>(),
                         Capital = tradingResult.Capital,
                         Profit = tradingResult.Profit,
                         ProfitPercent = tradingResult.ProfitPercent,
@@ -129,78 +120,39 @@ namespace Pl.Sas.WebDashboard.Controllers
                 }
             }
 
-            if (analyticsResult.MacroeconomicsNote is not null)
+            if (analyticsResult.MarketNotes is not null)
             {
-                model.MacroeconomicsNote = JsonSerializer.Deserialize<List<AnalyticsMessage>>(_zipHelper.UnZipByte(analyticsResult.MacroeconomicsNote));
+                model.MacroeconomicsNote = JsonSerializer.Deserialize<List<AnalyticsNote>>(_zipHelper.UnZipByte(analyticsResult.MarketNotes));
             }
-            if (analyticsResult.CompanyValueNote is not null)
+            if (analyticsResult.CompanyValueNotes is not null)
             {
-                model.CompanyValueNote = JsonSerializer.Deserialize<List<AnalyticsMessage>>(_zipHelper.UnZipByte(analyticsResult.CompanyValueNote));
+                model.CompanyValueNote = JsonSerializer.Deserialize<List<AnalyticsNote>>(_zipHelper.UnZipByte(analyticsResult.CompanyValueNotes));
             }
-            if (analyticsResult.CompanyGrowthNote is not null)
+            if (analyticsResult.CompanyGrowthNotes is not null)
             {
-                model.CompanyGrowthNote = JsonSerializer.Deserialize<List<AnalyticsMessage>>(_zipHelper.UnZipByte(analyticsResult.CompanyGrowthNote));
+                model.CompanyGrowthNote = JsonSerializer.Deserialize<List<AnalyticsNote>>(_zipHelper.UnZipByte(analyticsResult.CompanyGrowthNotes));
             }
-            if (analyticsResult.StockNote is not null)
+            if (analyticsResult.StockNotes is not null)
             {
-                model.StockNote = JsonSerializer.Deserialize<List<AnalyticsMessage>>(_zipHelper.UnZipByte(analyticsResult.StockNote));
+                model.StockNote = JsonSerializer.Deserialize<List<AnalyticsNote>>(_zipHelper.UnZipByte(analyticsResult.StockNotes));
             }
-            if (analyticsResult.FiinNote is not null)
+            if (analyticsResult.FiinNotes is not null)
             {
-                model.FiinNote = JsonSerializer.Deserialize<List<AnalyticsMessage>>(_zipHelper.UnZipByte(analyticsResult.FiinNote));
+                model.FiinNote = JsonSerializer.Deserialize<List<AnalyticsNote>>(_zipHelper.UnZipByte(analyticsResult.FiinNotes));
             }
             if (analyticsResult.VndNote is not null)
             {
-                model.VndNote = JsonSerializer.Deserialize<List<AnalyticsMessage>>(_zipHelper.UnZipByte(analyticsResult.VndNote));
+                model.VndNote = JsonSerializer.Deserialize<List<AnalyticsNote>>(_zipHelper.UnZipByte(analyticsResult.VndNote));
             }
             if (analyticsResult.TargetPriceNotes is not null)
             {
-                model.TargetPriceNotes = JsonSerializer.Deserialize<List<AnalyticsMessage>>(_zipHelper.UnZipByte(analyticsResult.TargetPriceNotes));
+                model.TargetPriceNotes = JsonSerializer.Deserialize<List<AnalyticsNote>>(_zipHelper.UnZipByte(analyticsResult.TargetPriceNotes));
             }
-            if (model.CompanyInfo is not null && model.CompanyInfo.CompanyProfileZip is not null)
+            if (model.CompanyInfo is not null && model.CompanyInfo.CompanyProfile is not null)
             {
-                model.CompanyProfile = Encoding.UTF8.GetString(_zipHelper.UnZipByte(model.CompanyInfo.CompanyProfileZip));
+                model.CompanyProfile = Encoding.UTF8.GetString(_zipHelper.UnZipByte(model.CompanyInfo.CompanyProfile));
             }
             return PartialView(model);
-        }
-
-        public async Task<IActionResult> UserStockDetailsSaveAsync([FromBody] UserStockDetailsSaveModel userStockDetailsSaveModel)
-        {
-            if (string.IsNullOrEmpty(userStockDetailsSaveModel.Symbol))
-            {
-                return Json(new { status = 0, message = "Dữ liệu không hợp lệ." });
-            }
-
-            if (string.IsNullOrEmpty(userStockDetailsSaveModel.Note))
-            {
-                return Json(new { status = 1, message = "Ghi thành công." });
-            }
-
-            var userId = HttpContext.GetUserId();
-            var userStockNote = await _userStockNoteData.FindAsync(userId, userStockDetailsSaveModel.Symbol);
-
-            string message;
-            int status;
-            if (userStockNote is null)
-            {
-                userStockNote = new()
-                {
-                    Symbol = userStockDetailsSaveModel.Symbol,
-                    Note = userStockDetailsSaveModel.Note,
-                    UserId = userId
-                };
-                var insertResult = await _userStockNoteData.InsertAsync(userStockNote);
-                message = insertResult ? "Thêm mới thành công." : "Thêm mới không thành công.";
-                status = insertResult ? 1 : 0;
-            }
-            else
-            {
-                userStockNote.Note = userStockDetailsSaveModel.Note;
-                var updateResult = await _userStockNoteData.UpdateAsync(userStockNote);
-                message = updateResult ? "Thêm mới thành công." : "Thêm mới không thành công.";
-                status = updateResult ? 1 : 0;
-            }
-            return Json(new { status, message });
         }
 
         public IActionResult IndexChart()
@@ -210,40 +162,45 @@ namespace Pl.Sas.WebDashboard.Controllers
 
         public async Task<IActionResult> IndustryAsync()
         {
-            var model = new IndustryViewModel()
+            var industries = await _marketData.GetIndustriesAsync();
+            var industryAnalytics = await _analyticsData.GetIndustryAnalyticsAsync();
+            var model = new List<IndustryViewModel>();
+            foreach (var item in industries)
             {
-                Industries = (await _industryData.FindAllAsync()).OrderByDescending(q => q.Rank).ThenByDescending(q => q.AutoRank).ToList()
-            };
+                var analiticsItem = industryAnalytics.FirstOrDefault(q => q.Code == item.Code);
+                model.Add(new IndustryViewModel()
+                {
+                    Code = item.Code,
+                    Name = item.Name,
+                    ManualScore = analiticsItem?.ManualScore ?? 0,
+                    Score = analiticsItem?.Score ?? 0,
+                });
+            }
             return View(model);
         }
 
         [HttpPost]
-        public async Task<IActionResult> IndustrySaveAsync(string id, int rank)
+        public async Task<IActionResult> IndustrySaveAsync(string code, float rank)
         {
             var message = "Thay đổi không thành công.";
             var updateResult = false;
-            var industry = await _industryData.GetByIdAsync(id);
-            if (industry is not null)
+            var check = await _analyticsData.SaveManualScoreAsync(code, rank);
+            if (check)
             {
-                industry.Rank = rank;
-                updateResult = await _industryData.UpdateAsync(industry);
-                if (updateResult)
-                {
-                    message = $"Thay đổi lĩnh vực '{industry.Name}' thành công.";
-                }
+                message = $"Thay đổi điểm đánh giá thành công.";
             }
             return Json(new { status = updateResult ? 1 : 0, message });
         }
 
         public async Task<IActionResult> CorporateActionAsync()
         {
-            return View(await _stockViewService.CacheGetExchangesAsync());
+            return View(await _marketData.CacheGetExchangesAsync());
         }
 
         [HttpPost]
         public async Task<IActionResult> CorporateActionAsync(string symbol, string evenCode, string exchange)
         {
-            var corporateActions = await _corporateActionData.FindAllForViewPageAsync(symbol, evenCode?.Split(','), exchange);
+            var corporateActions = await _marketData.GetCorporateActionsAsync(symbol, exchange, evenCode?.Split(','));
             corporateActions = corporateActions.OrderBy(q => q.ExrightDate).ThenByDescending(q => q.PublicDate).ToList();
             var responseList = new List<CorporateActionViewModel>();
             foreach (var item in corporateActions)
@@ -258,17 +215,11 @@ namespace Pl.Sas.WebDashboard.Controllers
                     PublicDate = item.PublicDate.ToString("dd/MM/yyyy"),
                     EventTitle = item.EventTitle,
                     Exchange = item.Exchange,
-                    Content = Encoding.UTF8.GetString(_zipHelper.UnZipByte(item.ZipDescription)),
+                    Content = item.Description is not null ? Encoding.UTF8.GetString(_zipHelper.UnZipByte(item.Description)) : "",
                     EventCode = item.EventCode
                 });
             }
             return Json(responseList);
-        }
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
     }
 }

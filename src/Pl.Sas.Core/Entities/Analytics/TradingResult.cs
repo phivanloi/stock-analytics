@@ -20,11 +20,6 @@
         public int Principle { get; set; } = 1;
 
         /// <summary>
-        /// Ngày trading
-        /// </summary>
-        public DateTime TradingDate { get; set; } = Utilities.GetTradingDate();
-
-        /// <summary>
         /// Đánh giá mua cho phiên này
         /// </summary>
         public bool IsBuy { get; set; } = false;

@@ -49,7 +49,7 @@ namespace Pl.Sas.Infrastructure.Identity
         /// <param name="user">User cần kiểm tra</param>
         /// <param name="role">Quyền</param>
         /// <returns>Task bool</returns>
-        public virtual async Task<bool> UserIsInRoleAsync(User user, string role)
+        public virtual async Task<bool> UserIsInRoleAsync(User? user, string role)
         {
             if (user is null || string.IsNullOrEmpty(role))
             {

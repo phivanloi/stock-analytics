@@ -119,6 +119,11 @@ app.MigrateDbContext<AnalyticsDbContext>((context, services) =>
 {
     app.Logger.LogInformation("AnalyticsDbContext migrations at {Now}", DateTime.Now);
 });
+app.MigrateDbContext<IdentityDbContext>((context, services) =>
+{
+    services.IdentitySeed(context);
+    app.Logger.LogInformation("IdentityDbContext migrations at {Now}", DateTime.Now);
+});
 
 
 app.MapGet("/", () =>

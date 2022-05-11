@@ -15,7 +15,7 @@
         /// <summary>
         /// Mã cố phiếu
         /// </summary>
-        public string Code { get; set; }
+        public string Code { get; set; } = null!;
 
         /// <summary>
         /// Id loại lịch trong trường hợp kích hoạt lịch
@@ -29,12 +29,12 @@
         /// <summary>
         /// Email hoặc id người dùng
         /// </summary>
-        public string EmailOrId { get; set; }
+        public string EmailOrId { get; set; } = null!;
 
         /// <summary>
         /// Mật khẩu muốn đổi
         /// </summary>
-        public string NewPassword { get; set; }
+        public string NewPassword { get; set; } = null!;
 
         #endregion Type = 3
 
@@ -43,22 +43,22 @@
         /// <summary>
         /// Tên đầy đủ trong trường hợp thêm mới người dùng
         /// </summary>
-        public string FullName { get; set; }
+        public string FullName { get; set; } = null!;
 
         /// <summary>
         /// Avatar của người dùng trong trường hợp thêm mới người dùng
         /// </summary>
-        public string Avatar { get; set; }
+        public string Avatar { get; set; } = null!;
 
         /// <summary>
         /// Mật khẩu
         /// </summary>
-        public string Password { get; set; }
+        public string Password { get; set; } = null!;
 
         /// <summary>
         /// Mật khẩu
         /// </summary>
-        public string Email { get; set; }
+        public string Email { get; set; } = null!;
 
         #endregion Type = 2
     }

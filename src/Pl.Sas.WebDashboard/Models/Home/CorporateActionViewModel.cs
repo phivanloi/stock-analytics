@@ -2,27 +2,27 @@
 {
     public class CorporateActionViewModel
     {
-        public string Id { get; set; }
+        public string Id { get; set; } = null!;
 
         /// <summary>
         /// Mã chứng khoán
         /// </summary>
-        public string Symbol { get; set; }
+        public string Symbol { get; set; } = null!;
 
         /// <summary>
         /// Tiêu dề sự kiện
         /// </summary>
-        public string EventTitle { get; set; }
+        public string? EventTitle { get; set; }
 
         /// <summary>
         /// Mã sàn chứng khoán
         /// </summary>
-        public string Exchange { get; set; }
+        public string Exchange { get; set; } = null!;
 
         /// <summary>
         /// Mô tả sự kiện
         /// </summary>
-        public string Content { get; set; }
+        public string Content { get; set; } = null!;
 
         /// <summary>
         /// Mã sự kiện
@@ -33,26 +33,26 @@
         /// <para>KQCT,KQQY,KQSB’ => Kết quả kinh doanh</para>
         /// <para>AMEN,LIQUI,MA,MOVE,OTHE => Sự kiện khác</para>
         /// </summary>
-        public string EventCode { get; set; }
+        public string EventCode { get; set; } = null!;
 
         /// <summary>
         /// Ngày giao dịch không hướng quyền GDKHQ
         /// </summary>
-        public string ExrightDate { get; set; }
+        public string ExrightDate { get; set; } = null!;
 
         /// <summary>
         /// Ngày chốt
         /// </summary>
-        public string RecordDate { get; set; }
+        public string RecordDate { get; set; } = null!;
 
         /// <summary>
         /// Ngày thực hiện
         /// </summary>
-        public string IssueDate { get; set; }
+        public string IssueDate { get; set; } = null!;
 
         /// <summary>
         /// Ngày phát hành, ngày công bố
         /// </summary>
-        public string PublicDate { get; set; }
+        public string PublicDate { get; set; } = null!;
     }
 }

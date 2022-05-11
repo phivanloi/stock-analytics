@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Pl.Sas.Core.Entities;
 using Pl.Sas.Core.Interfaces;
-using Pl.Sas.Infrastructure.Analytics;
 
 namespace Pl.Sas.Infrastructure.Identity
 {

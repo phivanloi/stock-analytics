@@ -1,10 +1,11 @@
-﻿@using Pl.Sas.Infrastructure.Identity
+﻿@using Pl.Sas.Core
+@using Pl.Sas.Infrastructure.Identity
 @inject Microsoft.Extensions.Options.IOptions<AppSettings> appSettingsOptions
 @inject Pl.Sas.Infrastructure.Identity.UserService userService
 @{
     var appSettings = appSettingsOptions.Value;
     var userInfo = await userService.CacheGetUserInfoAsync(Context.User);
-    var activeMenuId = ViewData["ActiveMenu"];
+    var activeMenuId = ViewData["ActiveMenu"] ?? "";
 }
 <!DOCTYPE html>
 <html lang="vi">
@@ -40,9 +41,9 @@
             </ul>
         </nav>
         <aside class="main-sidebar sidebar-dark-primary">
-            <input type="hidden" id="user-key" value="@userInfo.Id" />
+            <input type="hidden" id="user-key" value="@userInfo?.Id" />
             <a href="/" class="brand-link">
-                @if (string.IsNullOrEmpty(userInfo.Avatar))
+                @if (string.IsNullOrEmpty(userInfo?.Avatar))
                 {
                     <i class="fas fa-user mr-1" style="margin-left:20px"></i>
                 }
@@ -50,7 +51,7 @@
                 {
                     <img src="@userInfo.Avatar" alt="@userInfo.FullName" class="brand-image img-circle" style="opacity: .8">
                 }
-                <span class="brand-text font-weight-light"> @userInfo.FullName</span>
+                <span class="brand-text font-weight-light"> @userInfo?.FullName</span>
             </a>
             <div class="sidebar">
                 <nav class="mt-2">

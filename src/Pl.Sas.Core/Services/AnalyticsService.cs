@@ -199,7 +199,7 @@ namespace Pl.Sas.Core.Services
             }
 
             var saveZipData = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(companyValueNotes));
-            var check = await _analyticsData.SaveCompanyValueScoreAsync(symbol, stockPrice.TradingDate, score, saveZipData);
+            var check = await _analyticsData.SaveCompanyValueScoreAsync(symbol, score, saveZipData);
             return await _systemData.SetKeyValueAsync(checkingKey, check);
         }
 
@@ -247,7 +247,7 @@ namespace Pl.Sas.Core.Services
             }
 
             var saveZipData = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(companyGrowthNotes));
-            var check = await _analyticsData.SaveCompanyGrowthScoreAsync(symbol, stockPrice.TradingDate, score, saveZipData);
+            var check = await _analyticsData.SaveCompanyGrowthScoreAsync(symbol, score, saveZipData);
             return await _systemData.SetKeyValueAsync(checkingKey, check);
         }
 
@@ -285,7 +285,7 @@ namespace Pl.Sas.Core.Services
             score += StockAnalyticsService.FiinCheck(stockNotes, fiinEvaluate);
 
             var saveZipData = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(stockNotes));
-            var check = await _analyticsData.SaveStockScoreAsync(symbol, stockPrices[0].TradingDate, score, saveZipData);
+            var check = await _analyticsData.SaveStockScoreAsync(symbol, score, saveZipData);
             return await _systemData.SetKeyValueAsync(checkingKey, check);
         }
 
@@ -343,7 +343,7 @@ namespace Pl.Sas.Core.Services
                 notes.Add($"Fiin đánh giá giá trị của cổ phiếu điểm {fiinEvaluate.Vgm}, ", -2, type);
             }
             var saveZipData = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(notes));
-            var check = await _analyticsData.SaveFiinScoreAsync(symbol, stockPrice.TradingDate, score, saveZipData);
+            var check = await _analyticsData.SaveFiinScoreAsync(symbol, score, saveZipData);
             return await _systemData.SetKeyValueAsync(checkingKey, check);
         }
 
@@ -407,7 +407,7 @@ namespace Pl.Sas.Core.Services
             }
 
             var saveZipData = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(notes));
-            var check = await _analyticsData.SaveVndScoreAsync(symbol, stockPrice.TradingDate, score, saveZipData);
+            var check = await _analyticsData.SaveVndScoreAsync(symbol, score, saveZipData);
             return await _systemData.SetKeyValueAsync(checkingKey, check);
         }
 
@@ -443,7 +443,7 @@ namespace Pl.Sas.Core.Services
             }
 
             var saveZipData = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(notes));
-            var check = await _analyticsData.SaveTargetPriceAsync(symbol, stockPrice.TradingDate, targetPrice, saveZipData);
+            var check = await _analyticsData.SaveTargetPriceAsync(symbol, targetPrice, saveZipData);
             return await _systemData.SetKeyValueAsync(checkingKey, check);
         }
 
@@ -694,7 +694,7 @@ namespace Pl.Sas.Core.Services
             score += MarketAnalyticsService.IndustryTrend(analyticsNotes, industry);
 
             var saveZipData = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(analyticsNotes));
-            var check = await _analyticsData.SaveMacroeconomicsScoreAsync(symbol, stockPrice.TradingDate, score, saveZipData);
+            var check = await _analyticsData.SaveMacroeconomicsScoreAsync(symbol, score, saveZipData);
             return await _systemData.SetKeyValueAsync(checkingKey, check);
         }
 

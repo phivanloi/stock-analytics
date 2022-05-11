@@ -1,5 +1,4 @@
 ﻿using Pl.Sas.Core.Entities;
-using System.Collections.Generic;
 
 namespace Pl.Sas.WebDashboard.Models
 {

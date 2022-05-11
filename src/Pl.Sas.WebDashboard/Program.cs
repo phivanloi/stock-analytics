@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.WebEncoders;
@@ -23,7 +22,6 @@ using StackExchange.Redis;
 using System.Net;
 using System.Reflection;
 using System.Text.Encodings.Web;
-using System.Text.Json;
 using System.Text.Unicode;
 
 var builder = WebApplication.CreateBuilder(args);

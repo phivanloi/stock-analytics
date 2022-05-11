@@ -132,7 +132,6 @@
                 <td title="Đánh giá của fiintrading">FIIN</td>
                 <td title="Đánh giá của vndirect">VND</td>
                 <td title="Giá dự phóng của các công ty chứng khoán">Giá DP</td>
-                <td title="Đánh giá trend(Sdca) bằng ai và dự báo giá ngắn hạn FFT, giá dài hạn SSA">AI</td>
 
                 <td title="% Lợi nhuận thu được khi cho đầu tư thử nghiệm từ ngày @Pl.Sas.Core.Constants.StartTime.ToString("dd/MM/yyyy")">% LN</td>
                 <td title="% Lợi nhuận thu được khi mua và nắm giữ từ ngày @Pl.Sas.Core.Constants.StartTime.ToString("dd/MM/yyyy")">% BĐ</td>
@@ -143,7 +142,7 @@
         </thead>
         <tbody id="user-invest-table-body">
             <tr>
-                <td colspan="30" class="text-center"><p class="fas fa-sync-alt fa-spin"></p></td>
+                <td colspan="29" class="text-center"><p class="fas fa-sync-alt fa-spin"></p></td>
             </tr>
         </tbody>
     </table>
@@ -162,7 +161,7 @@
 
         function LoadMarket() {
             var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            $('#user-invest-table-body').html('<tr><td colspan="30" class="text-center"><p class="fas fa-sync-alt fa-spin"></p></td></tr>');
+            $('#user-invest-table-body').html('<tr><td colspan="29" class="text-center"><p class="fas fa-sync-alt fa-spin"></p></td></tr>');
             $('#number-row').html('Mã');
             var postData = JSON.stringify({
                 Principle: $('#principle').val(),

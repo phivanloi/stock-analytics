@@ -4,7 +4,6 @@ using Pl.Sas.Core.Interfaces;
 using Pl.Sas.Core.Trading;
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Text;
 
 namespace Pl.Sas.Core.Services
 {
@@ -163,7 +162,7 @@ namespace Pl.Sas.Core.Services
                         _logger.LogWarning("Can't build view data for stock code {Key} by company info is null.", stock.Symbol);
                         continue;
                     }
-                    var analyticsResults = await _analyticsData.CacheGetAnalyticsResultAsync(stock.Symbol, stockPrices[0].TradingDate);
+                    var analyticsResults = await _analyticsData.CacheGetAnalyticsResultAsync(stock.Symbol);
                     if (analyticsResults is null)
                     {
                         _logger.LogWarning("Can't build view data for stock code {Code} by analytics result lower one item.", stock.Symbol);
@@ -379,7 +378,7 @@ namespace Pl.Sas.Core.Services
 
                     #region Trading info
 
-                    var tradingResults = await _analyticsData.CacheGetTradingResultAsync(stock.Symbol, stockPrices[0].TradingDate);
+                    var tradingResults = await _analyticsData.CacheGetTradingResultAsync(stock.Symbol);
                     var indicatorSet = BaseTrading.BuildIndicatorSet(stockPrices);
                     var tradingCases = AnalyticsService.AnalyticsBuildTradingCases();
                     var principles = new int[] { 0, 1, 2, 3, 4 };

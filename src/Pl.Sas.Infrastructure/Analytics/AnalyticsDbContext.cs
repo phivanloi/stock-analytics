@@ -19,7 +19,7 @@ namespace Pl.Sas.Infrastructure.Analytics
             {
                 b.Property(c => c.Id).HasMaxLength(22).IsRequired();
                 b.Property(p => p.Symbol).HasMaxLength(16).IsRequired();
-                b.HasIndex(p => new { p.Symbol, p.TradingDate });
+                b.HasIndex(p => new { p.Symbol });
             });
 
             #endregion AnalyticsResult
@@ -30,7 +30,7 @@ namespace Pl.Sas.Infrastructure.Analytics
             {
                 b.Property(c => c.Id).HasMaxLength(22).IsRequired();
                 b.Property(p => p.Symbol).HasMaxLength(16).IsRequired();
-                b.HasIndex(p => new { p.Symbol, p.TradingDate, p.Principle });
+                b.HasIndex(p => new { p.Symbol, p.Principle });
             });
 
             #endregion TradingResult

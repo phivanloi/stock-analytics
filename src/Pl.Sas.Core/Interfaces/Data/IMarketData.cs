@@ -8,6 +8,15 @@ namespace Pl.Sas.Core.Interfaces
     public interface IMarketData
     {
         /// <summary>
+        /// Lấy danh sách sự kiện
+        /// </summary>
+        /// <param name="symbol">Mã chứng khoán</param>
+        /// <param name="exchange">mã sàn giao dịch</param>
+        /// <param name="eventCode">Danh sách mã sự kiện</param>
+        /// <returns>List CorporateAction</returns>
+        Task<List<CorporateAction>> GetCorporateActionsAsync(string? symbol = null, string? exchange = null, string[]? eventCode = null);
+
+        /// <summary>
         /// Lấy danh sách lịch sử giá cổ phiểu
         /// </summary>
         /// <param name="symbol">Mã chứng khoán</param>

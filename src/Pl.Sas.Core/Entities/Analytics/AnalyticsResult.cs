@@ -8,11 +8,6 @@
         public string Symbol { get; set; } = null!;
 
         /// <summary>
-        /// Ngày phân tích, mỗi ngày giao dịch sẽ có một phân tích
-        /// </summary>
-        public DateTime TradingDate { get; set; }
-
-        /// <summary>
         /// Điểm đánh giá tâm lý thị trường, dòng tiền
         /// </summary>
         public int MarketScore { get; set; } = -100;

@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using System;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 
 namespace Pl.Sas.WebDashboard
 {
@@ -107,7 +105,7 @@ namespace Pl.Sas.WebDashboard
         /// <param name="first">Số cần kiểm tra</param>
         /// <param name="second">Số lấy mốc kiểm tra</param>
         /// <returns>string</returns>
-        public static string GetTextColorCss(this decimal first, decimal second = 0)
+        public static string GetTextColorCss(this float first, float second = 0)
         {
             if (first > second)
             {
@@ -173,7 +171,7 @@ namespace Pl.Sas.WebDashboard
         /// <param name="start">Giá trị nền mặc định 20</param>
         /// <param name="end">Giá trị đỉnh mặc định 80</param>
         /// <returns>string</returns>
-        public static string GetStochasticColorCss(this decimal value, int start = 20, int end = 80)
+        public static string GetStochasticColorCss(this float value, int start = 20, int end = 80)
         {
             if (value < start)
             {
@@ -194,7 +192,7 @@ namespace Pl.Sas.WebDashboard
         /// <param name="start">Chỉ số bắt đầu</param>
         /// <param name="end">Chỉ số kết thúc</param>
         /// <returns>string</returns>
-        public static string GetRangeTextColorCss(this decimal value, decimal start = -1, decimal end = 1)
+        public static string GetRangeTextColorCss(this float value, float start = -1, float end = 1)
         {
             if (value < start)
             {
@@ -213,7 +211,7 @@ namespace Pl.Sas.WebDashboard
         /// <param name="money">Số tiền cần hiển thị</param>
         /// <param name="rate">Tỉ lệ</param>
         /// <returns>string</returns>
-        public static string ShowMoney(this decimal money, int rate = 1000)
+        public static string ShowMoney(this float money, int rate = 1000)
         {
             return $"{money / rate:0,0}";
         }
@@ -224,7 +222,7 @@ namespace Pl.Sas.WebDashboard
         /// <param name="money">Số tiền cần hiển thị</param>
         /// <param name="rate">Tỉ lệ</param>
         /// <returns>string</returns>
-        public static string ShowPrice(this decimal money, int rate = 1000)
+        public static string ShowPrice(this float money, int rate = 1000)
         {
             return $"{money / rate:0.00}";
         }
@@ -235,7 +233,7 @@ namespace Pl.Sas.WebDashboard
         /// <param name="money">Số tiền cần hiển thị</param>
         /// <param name="rate">Tỉ lệ</param>
         /// <returns>string</returns>
-        public static string ShowPriceZezoToNull(this decimal money, int rate = 1000)
+        public static string ShowPriceZezoToNull(this float money, int rate = 1000)
         {
             if (money == 0)
             {
@@ -250,7 +248,7 @@ namespace Pl.Sas.WebDashboard
         /// <param name="percent">% cần hiển thị</param>
         /// <param name="format">cách hiển thị</param>
         /// <returns>string</returns>
-        public static string ShowPercent(this decimal percent, string format = "0.0")
+        public static string ShowPercent(this float percent, string format = "0.0")
         {
             return $"{percent.ToString(format)}";
         }

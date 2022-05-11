@@ -1,12 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Pl.Sas.WebDashboard.Models;
 using Pl.Sas.Core.Interfaces;
 using Pl.Sas.Infrastructure.Identity;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace Pl.Sas.WebDashboard.Controllers
 {
@@ -14,26 +12,26 @@ namespace Pl.Sas.WebDashboard.Controllers
     public class SystemController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly IScheduleData _scheduleData;
         private readonly UserManager<User> _userManager;
         private readonly UserService _userService;
         private readonly IMemoryCacheService _memoryCacheService;
         private readonly IAsyncCacheService _asyncCacheService;
+        private readonly ISystemData _systemData;
 
         public SystemController(
+            ISystemData systemData,
             IAsyncCacheService asyncCacheService,
             IMemoryCacheService memoryCacheService,
             UserService userService,
             UserManager<User> userManager,
-            IScheduleData scheduleData,
             ILogger<HomeController> logger)
         {
             _logger = logger;
-            _scheduleData = scheduleData;
             _userManager = userManager;
             _userService = userService;
             _memoryCacheService = memoryCacheService;
             _asyncCacheService = asyncCacheService;
+            _systemData = systemData;
         }
 
         public IActionResult SystemLog()
@@ -54,11 +52,11 @@ namespace Pl.Sas.WebDashboard.Controllers
 
             if (utilitiesModel is not null)
             {
-                _logger.LogWarning("Utilities active => :" + JsonSerializer.Serialize(utilitiesModel));
+                _logger.LogWarning("Utilities active => : {json}", JsonSerializer.Serialize(utilitiesModel));
                 switch (utilitiesModel.Type)
                 {
                     case 1:
-                        var updateResult = await _scheduleData.UtilityUpdateAsync(utilitiesModel.SchedulerType, utilitiesModel.Code);
+                        var updateResult = await _systemData.UtilityUpdateAsync(utilitiesModel.SchedulerType, utilitiesModel.Code);
                         message = updateResult ? "Kích hoạt lịch thành công." : "Kích hoạt lịch không thành công.";
                         status = updateResult ? 1 : 0;
                         break;
@@ -103,26 +101,8 @@ namespace Pl.Sas.WebDashboard.Controllers
                         if (deleteUser is not null)
                         {
                             var deleteResult = await _userManager.DeleteAsync(deleteUser);
-                            if (deleteResult.Succeeded)
-                            {
-                                await _userService.DeleteUserScheduleAsync(deleteUser.Id);
-                            }
                             status = deleteResult.Succeeded ? 1 : 0;
                             message = deleteResult.Succeeded ? "Xóa người dùng thành công." : "Xóa người dùng không thành công.";
-                        }
-                        break;
-
-                    case 6:
-                        var userForCreateNotification = await _userManager.FindByEmailAsync(utilitiesModel.EmailOrId);
-                        if (userForCreateNotification is null)
-                        {
-                            userForCreateNotification = await _userManager.FindByIdAsync(utilitiesModel.EmailOrId);
-                        }
-                        if (userForCreateNotification is not null)
-                        {
-                            var checkCreateScheduler = await _userService.CreateUserScheduleAsync(userForCreateNotification.Id);
-                            status = checkCreateScheduler ? 1 : 0;
-                            message = checkCreateScheduler ? "Tạo thông báo thành công." : "Tạo thông báo không thành công.";
                         }
                         break;
 

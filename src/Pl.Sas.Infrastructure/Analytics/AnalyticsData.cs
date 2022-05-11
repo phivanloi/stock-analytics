@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Ardalis.GuardClauses;
+using Microsoft.EntityFrameworkCore;
 using Pl.Sas.Core;
 using Pl.Sas.Core.Entities;
 using Pl.Sas.Core.Interfaces;
@@ -24,7 +25,7 @@ namespace Pl.Sas.Infrastructure.Data
 
         public virtual async Task<bool> SaveTestTradingResultAsync(TradingResult tradingResult)
         {
-            var updateItem = _analyticsDbContext.TradingResults.FirstOrDefault(q => q.Symbol == tradingResult.Symbol && q.TradingDate == tradingResult.TradingDate && q.Principle == tradingResult.Principle);
+            var updateItem = _analyticsDbContext.TradingResults.FirstOrDefault(q => q.Symbol == tradingResult.Symbol && q.Principle == tradingResult.Principle);
             if (updateItem is not null)
             {
                 updateItem.IsBuy = tradingResult.IsBuy;
@@ -54,27 +55,38 @@ namespace Pl.Sas.Infrastructure.Data
             return await _analyticsDbContext.IndustryAnalytics.ToListAsync();
         }
 
-        public virtual async Task<AnalyticsResult?> CacheGetAnalyticsResultAsync(string symbol, DateTime tradingDate)
+        public virtual async Task<bool> SaveManualScoreAsync(string code, float manualScore)
         {
-            var cacheKey = $"{Constants.AnalyticsResultCachePrefix}-SM{symbol}-DP{tradingDate:ddMMyyyy}";
+            Guard.Against.NullOrEmpty(code, nameof(code));
+            var updateItem = await _analyticsDbContext.IndustryAnalytics.FirstOrDefaultAsync(q => q.Code == code);
+            if (updateItem is not null)
+            {
+                updateItem.ManualScore = manualScore;
+            }
+            return await _analyticsDbContext.SaveChangesAsync() > 0;
+        }
+
+        public virtual async Task<AnalyticsResult?> CacheGetAnalyticsResultAsync(string symbol)
+        {
+            var cacheKey = $"{Constants.AnalyticsResultCachePrefix}-SM{symbol}";
             return await _memoryCacheService.GetOrCreateAsync(cacheKey, async () =>
             {
-                return await _analyticsDbContext.AnalyticsResults.FirstOrDefaultAsync(q => q.Symbol == symbol && q.TradingDate == tradingDate);
+                return await _analyticsDbContext.AnalyticsResults.FirstOrDefaultAsync(q => q.Symbol == symbol);
             }, Constants.DefaultCacheTime * 60 * 24);
         }
 
-        public virtual async Task<List<TradingResult>> CacheGetTradingResultAsync(string symbol, DateTime tradingDate)
+        public virtual async Task<List<TradingResult>> CacheGetTradingResultAsync(string symbol)
         {
-            var cacheKey = $"{Constants.TradingResultCachePrefix}-SM{symbol}-DP{tradingDate:ddMMyyyy}";
+            var cacheKey = $"{Constants.TradingResultCachePrefix}-SM{symbol}";
             return await _memoryCacheService.GetOrCreateAsync(cacheKey, async () =>
             {
-                return await _analyticsDbContext.TradingResults.Where(q => q.Symbol == symbol && q.TradingDate == tradingDate).ToListAsync();
+                return await _analyticsDbContext.TradingResults.Where(q => q.Symbol == symbol).ToListAsync();
             }, Constants.DefaultCacheTime * 60 * 24);
         }
 
-        public virtual async Task<bool> SaveMacroeconomicsScoreAsync(string symbol, DateTime tradingDate, int marketScore, byte[] marketNote)
+        public virtual async Task<bool> SaveMacroeconomicsScoreAsync(string symbol, int marketScore, byte[] marketNote)
         {
-            var updateItem = _analyticsDbContext.AnalyticsResults.FirstOrDefault(q => q.Symbol == symbol && q.TradingDate == tradingDate);
+            var updateItem = _analyticsDbContext.AnalyticsResults.FirstOrDefault(q => q.Symbol == symbol);
             if (updateItem is not null)
             {
                 updateItem.MarketScore = marketScore;
@@ -86,7 +98,6 @@ namespace Pl.Sas.Infrastructure.Data
                 _analyticsDbContext.AnalyticsResults.Add(new()
                 {
                     Symbol = symbol,
-                    TradingDate = tradingDate,
                     MarketScore = marketScore,
                     MarketNotes = marketNote
                 });
@@ -94,9 +105,9 @@ namespace Pl.Sas.Infrastructure.Data
             return await _analyticsDbContext.SaveChangesAsync() > 0;
         }
 
-        public virtual async Task<bool> SaveCompanyValueScoreAsync(string symbol, DateTime tradingDate, int companyValueScore, byte[] companyValueNote)
+        public virtual async Task<bool> SaveCompanyValueScoreAsync(string symbol, int companyValueScore, byte[] companyValueNote)
         {
-            var updateItem = _analyticsDbContext.AnalyticsResults.FirstOrDefault(q => q.Symbol == symbol && q.TradingDate == tradingDate);
+            var updateItem = _analyticsDbContext.AnalyticsResults.FirstOrDefault(q => q.Symbol == symbol);
             if (updateItem is not null)
             {
                 updateItem.CompanyValueScore = companyValueScore;
@@ -108,7 +119,6 @@ namespace Pl.Sas.Infrastructure.Data
                 _analyticsDbContext.AnalyticsResults.Add(new()
                 {
                     Symbol = symbol,
-                    TradingDate = tradingDate,
                     CompanyValueScore = companyValueScore,
                     CompanyValueNotes = companyValueNote
                 });
@@ -116,9 +126,9 @@ namespace Pl.Sas.Infrastructure.Data
             return await _analyticsDbContext.SaveChangesAsync() > 0;
         }
 
-        public virtual async Task<bool> SaveCompanyGrowthScoreAsync(string symbol, DateTime tradingDate, int companyGrowthScore, byte[] companyGrowthNote)
+        public virtual async Task<bool> SaveCompanyGrowthScoreAsync(string symbol, int companyGrowthScore, byte[] companyGrowthNote)
         {
-            var updateItem = _analyticsDbContext.AnalyticsResults.FirstOrDefault(q => q.Symbol == symbol && q.TradingDate == tradingDate);
+            var updateItem = _analyticsDbContext.AnalyticsResults.FirstOrDefault(q => q.Symbol == symbol);
             if (updateItem is not null)
             {
                 updateItem.CompanyGrowthScore = companyGrowthScore;
@@ -130,7 +140,6 @@ namespace Pl.Sas.Infrastructure.Data
                 _analyticsDbContext.AnalyticsResults.Add(new()
                 {
                     Symbol = symbol,
-                    TradingDate = tradingDate,
                     CompanyGrowthScore = companyGrowthScore,
                     CompanyGrowthNotes = companyGrowthNote
                 });
@@ -138,9 +147,9 @@ namespace Pl.Sas.Infrastructure.Data
             return await _analyticsDbContext.SaveChangesAsync() > 0;
         }
 
-        public virtual async Task<bool> SaveStockScoreAsync(string symbol, DateTime tradingDate, int stockScore, byte[] stockNote)
+        public virtual async Task<bool> SaveStockScoreAsync(string symbol, int stockScore, byte[] stockNote)
         {
-            var updateItem = _analyticsDbContext.AnalyticsResults.FirstOrDefault(q => q.Symbol == symbol && q.TradingDate == tradingDate);
+            var updateItem = _analyticsDbContext.AnalyticsResults.FirstOrDefault(q => q.Symbol == symbol);
             if (updateItem is not null)
             {
                 updateItem.StockScore = stockScore;
@@ -152,7 +161,6 @@ namespace Pl.Sas.Infrastructure.Data
                 _analyticsDbContext.AnalyticsResults.Add(new()
                 {
                     Symbol = symbol,
-                    TradingDate = tradingDate,
                     StockScore = stockScore,
                     StockNotes = stockNote
                 });
@@ -160,9 +168,9 @@ namespace Pl.Sas.Infrastructure.Data
             return await _analyticsDbContext.SaveChangesAsync() > 0;
         }
 
-        public virtual async Task<bool> SaveFiinScoreAsync(string symbol, DateTime tradingDate, int fiinScore, byte[] fiinNote)
+        public virtual async Task<bool> SaveFiinScoreAsync(string symbol, int fiinScore, byte[] fiinNote)
         {
-            var updateItem = _analyticsDbContext.AnalyticsResults.FirstOrDefault(q => q.Symbol == symbol && q.TradingDate == tradingDate);
+            var updateItem = _analyticsDbContext.AnalyticsResults.FirstOrDefault(q => q.Symbol == symbol);
             if (updateItem is not null)
             {
                 updateItem.FiinScore = fiinScore;
@@ -174,7 +182,6 @@ namespace Pl.Sas.Infrastructure.Data
                 _analyticsDbContext.AnalyticsResults.Add(new()
                 {
                     Symbol = symbol,
-                    TradingDate = tradingDate,
                     FiinScore = fiinScore,
                     FiinNotes = fiinNote
                 });
@@ -182,9 +189,9 @@ namespace Pl.Sas.Infrastructure.Data
             return await _analyticsDbContext.SaveChangesAsync() > 0;
         }
 
-        public virtual async Task<bool> SaveVndScoreAsync(string symbol, DateTime tradingDate, int vndScore, byte[] vndNote)
+        public virtual async Task<bool> SaveVndScoreAsync(string symbol, int vndScore, byte[] vndNote)
         {
-            var updateItem = _analyticsDbContext.AnalyticsResults.FirstOrDefault(q => q.Symbol == symbol && q.TradingDate == tradingDate);
+            var updateItem = _analyticsDbContext.AnalyticsResults.FirstOrDefault(q => q.Symbol == symbol);
             if (updateItem is not null)
             {
                 updateItem.VndScore = vndScore;
@@ -196,7 +203,6 @@ namespace Pl.Sas.Infrastructure.Data
                 _analyticsDbContext.AnalyticsResults.Add(new()
                 {
                     Symbol = symbol,
-                    TradingDate = tradingDate,
                     VndScore = vndScore,
                     VndNote = vndNote
                 });
@@ -204,9 +210,9 @@ namespace Pl.Sas.Infrastructure.Data
             return await _analyticsDbContext.SaveChangesAsync() > 0;
         }
 
-        public virtual async Task<bool> SaveTargetPriceAsync(string symbol, DateTime tradingDate, float targetPrice, byte[] targetPriceNote)
+        public virtual async Task<bool> SaveTargetPriceAsync(string symbol, float targetPrice, byte[] targetPriceNote)
         {
-            var updateItem = _analyticsDbContext.AnalyticsResults.FirstOrDefault(q => q.Symbol == symbol && q.TradingDate == tradingDate);
+            var updateItem = _analyticsDbContext.AnalyticsResults.FirstOrDefault(q => q.Symbol == symbol);
             if (updateItem is not null)
             {
                 updateItem.TargetPrice = targetPrice;
@@ -218,7 +224,6 @@ namespace Pl.Sas.Infrastructure.Data
                 _analyticsDbContext.AnalyticsResults.Add(new()
                 {
                     Symbol = symbol,
-                    TradingDate = tradingDate,
                     TargetPrice = targetPrice,
                     TargetPriceNotes = targetPriceNote
                 });

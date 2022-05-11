@@ -4,18 +4,18 @@
 @model MarketListViewModel
 @for (int i = 0; i < Model.StockViews.Count; i++)
 {
-    var isOutOfDate = Model.StockViews[i].TradingViews.TryGetValue(Model.Principle, out JudgeResult judgeResult);
-    if (!isOutOfDate)
+    Model.StockViews[i].TradingViews.TryGetValue(Model.Principle, out JudgeResult? judgeResult);
+    if (judgeResult is null)
     {
         <tr>
-            <td class="s-c text-white" fo="@(Model.UserFollowSymbols.Contains(Model.StockViews[i].Code) ? "1" : "0")" title="@Model.StockViews[i].Description">@Model.StockViews[i].Code</td>
-            <td colspan="27" class="text-danger text-center">Không có dữ liệu phân tích hoặc thiếu thông tin lịch sử giá.</td>
+            <td class="s-c text-white" fo="@(Model.UserFollowSymbols.Contains(Model.StockViews[i].Symbol) ? "1" : "0")" title="@Model.StockViews[i].Description">@Model.StockViews[i].Symbol</td>
+            <td colspan="26" class="text-danger text-center">Không có dữ liệu phân tích hoặc thiếu thông tin lịch sử giá.</td>
         </tr>
         continue;
     }
 
     <tr>
-        <td class="s-c text-white" fo="@(Model.UserFollowSymbols.Contains(Model.StockViews[i].Code) ? "1" : "0")" title="@Model.StockViews[i].Description">@Model.StockViews[i].Code</td>
+        <td class="s-c text-white" fo="@(Model.UserFollowSymbols.Contains(Model.StockViews[i].Symbol) ? "1" : "0")" title="@Model.StockViews[i].Description">@Model.StockViews[i].Symbol</td>
 
         <td class="text-right @Model.StockViews[i].MacroeconomicsScore.GetTextColorCss(0)">@Model.StockViews[i].MacroeconomicsScore.ToString("0")</td>
         <td class="text-right @Model.StockViews[i].IndustryRank.GetTextColorCss(0)">@Model.StockViews[i].IndustryRank.ToString("0")</td>
@@ -49,9 +49,6 @@
         <td class="text-right @Model.StockViews[i].FiinScore.GetTextColorCss()">@Model.StockViews[i].FiinScore.ToString("0")</td>
         <td class="text-right @Model.StockViews[i].VndScore.GetTextColorCss()">@Model.StockViews[i].VndScore.ToString("0")</td>
         <td class="text-right @Model.StockViews[i].TargetPrice.GetTextColorCss(Model.StockViews[i].LastClosePrice / 1000)">@Model.StockViews[i].TargetPrice.ShowPriceZezoToNull(1)</td>
-        <td class="text-right @Model.StockViews[i].FttPerdictPricePercent.GetTextColorCss(0)" title="Ftt: @Model.StockViews[i].FttPerdictPrice.ShowPrice() (@Model.StockViews[i].FttPerdictPricePercent.ShowPercent()%), Ssa: @Model.StockViews[i].SsaPerdictPrice.ShowPrice() (@Model.StockViews[i].SsaPerdictPricePercent.ShowPercent()%)">
-            <i class="fas @(Model.StockViews[i].FttPerdictPricePercent > 0 ? "fa-arrow-up" : Model.StockViews[i].FttPerdictPricePercent < 1 ? "fa-arrow-down" : "fa-arrows-alt-h")"></i>
-        </td>
 
         <td class="text-right @judgeResult.ProfitPercent.GetTextColorCss(Model.BankInterestRate12)">@judgeResult.ProfitPercent.ShowPercent()</td>
         <td class="text-right @Model.StockViews[i].PricePercentConvulsionStartTrading.GetTextColorCss(Model.BankInterestRate12)">@Model.StockViews[i].PricePercentConvulsionStartTrading.ShowPercent()</td>

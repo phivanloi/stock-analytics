@@ -3,8 +3,6 @@ using Microsoft.Extensions.Hosting;
 using Pl.Sas.Core.Services;
 using Pl.Sas.Infrastructure.Loging;
 using System;
-using System.Collections.Generic;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;

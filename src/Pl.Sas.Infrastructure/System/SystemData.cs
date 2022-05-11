@@ -83,5 +83,16 @@ namespace Pl.Sas.Infrastructure.System
             }
             return false;
         }
+
+        public virtual async Task<bool> UtilityUpdateAsync(int type, string symbol)
+        {
+            var query = _systemDbContext.Schedules.Where(q => q.Type == type);
+            if (!string.IsNullOrEmpty(symbol))
+            {
+                query = query.Where(q => q.DataKey == symbol);
+            }
+            query.ToList().ForEach(q => q.ActiveTime = DateTime.Now);
+            return await _systemDbContext.SaveChangesAsync() > 0;
+        }
     }
 }
