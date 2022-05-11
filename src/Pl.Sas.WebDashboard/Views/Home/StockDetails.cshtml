@@ -1,0 +1,378 @@
+﻿@using Pl.Sas.Core
+@using Pl.Sas.Infrastructure
+@model StockDetailsModel
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <link rel="stylesheet" href="~/lib/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" href="~/lib/datatables-bs4/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="~/lib/datatables-responsive/css/responsive.bootstrap4.min.css">
+    <link rel="stylesheet" href="~/css/adminlte.min.css" />
+    <link rel="stylesheet" href="~/css/site.min.css" />
+</head>
+<body style="background-color:#000;color:#b4b4b4; overflow-x:hidden; font-size:14px">
+    <div class="container-fluid">
+        <ul class="nav nav-tabs stoc-detail-nav" role="tablist">
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="summary-tab" data-toggle="tab" href="#summary" role="tab" aria-controls="summary" aria-selected="false">
+                    Tổng quan
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link active" id="chart-history-tab" data-toggle="tab" href="#chart-history" role="tab" aria-controls="chart-history" aria-selected="true">
+                    Biểu đồ
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="macroeconomics-tab" data-toggle="tab" href="#macroeconomics" role="tab" aria-controls="macroeconomics" aria-selected="false">
+                    Vĩ mô
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="companyvalues-tab" data-toggle="tab" href="#companyvalues" role="tab" aria-controls="companyvalues" aria-selected="false">
+                    Giá trị DN
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="companygrowth-tab" data-toggle="tab" href="#companygrowth" role="tab" aria-controls="companygrowth" aria-selected="false">
+                    Tăng trưởng DN
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="stockgrowth-tab" data-toggle="tab" href="#stockgrowth" role="tab" aria-controls="stockgrowth" aria-selected="false">
+                    Thị giá
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="profit-trading-tab" data-toggle="tab" href="#profit-trading" role="tab" aria-controls="profit-trading" aria-selected="false">
+                    GD thử nhiệm
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="description-tab" data-toggle="tab" href="#description" role="tab" aria-controls="note" aria-selected="false">Giới thiệu</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="note-tab" data-toggle="tab" href="#note" role="tab" aria-controls="note" aria-selected="false">Ghi chú</a>
+            </li>
+        </ul>
+        <div class="tab-content" id="stock-tab-content">
+            <div class="tab-pane fade" id="summary" role="tabpanel" aria-labelledby="summary-tab">
+                <div class="col-12">
+                    <a href="https://www.bsc.com.vn/Companies/AnalysisReport/@Model.Symbol">Báo cáo chi tiết.</a>
+                </div>
+            </div>
+            <div class="tab-pane fade show active" id="chart-history" role="tabpanel" aria-labelledby="chart-history-tab">
+                <div class="row">
+                    <div class="col-12">
+                        <iframe src="https://iboard.ssi.com.vn/chart/?symbol=@Model.Symbol&language=vi&theme=dark" style="border:0; width:100%; min-height:550px" frameborder="0" allowfullscreen=""></iframe>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <table id="price-history" style="display:none" class="table table-bordered table-hover">
+                            <thead>
+                                <tr class="text-center">
+                                    <th>Ngày</th>
+                                    <th title="Giá đóng cửa(% thay đổi)">Đóng cửa</th>
+                                    <th title="Giá đóng cửa điều chỉnh">ĐC ĐC</th>
+                                    <th title="Giá mở cửa">Mở</th>
+                                    <th title="Giá cao nhất và % so với giá mở cửa">Cao</th>
+                                    <th title="Giá thấp nhất và % so với giá mở cửa">Thấp</th>
+                                    <th title="Giá trần">Trần</th>
+                                    <th title="Giá sàn">Sàn</th>
+                                    <th title="Khối lượng khớp lệnh">KL KL</th>
+                                    <th title="Khối lượng thỏa thuận">KL TT</th>
+                                    <th title="Mua dòng khối ngoại">MD KN</th>
+                                    <th title="Số lệnh mua">SLM</th>
+                                    <th title="Số lệnh bán">SLB</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (int i = 0; i < Model.StockPrices.Count; i++)
+                                {
+                                    if ((i + 1) >= Model.StockPrices.Count)
+                                    {
+                                        break;
+                                    }
+                                    <tr>
+                                        <td>@Model.StockPrices[i].TradingDate.ToString("dd-MM-yy")</td>
+                                        <td class="text-right @Model.StockPrices[i].ClosePrice.GetTextColorCss(Model.StockPrices[i + 1].ClosePrice)">@Model.StockPrices[i].ClosePrice.ShowPrice() (@Model.StockPrices[i].ClosePrice.GetPercent(Model.StockPrices[i + 1].ClosePrice).ShowPercent()%)</td>
+                                        <td class="text-right @Model.StockPrices[i].ClosePriceAdjusted.GetTextColorCss(Model.StockPrices[i + 1].ClosePriceAdjusted)">@Model.StockPrices[i].ClosePriceAdjusted.ShowPrice() (@Model.StockPrices[i].ClosePriceAdjusted.GetPercent(Model.StockPrices[i + 1].ClosePriceAdjusted).ShowPercent()%)</td>
+                                        <td class="text-right">@Model.StockPrices[i].OpenPrice.ShowPrice()</td>
+                                        <td class="text-right">@Model.StockPrices[i].HighestPrice.ShowPrice() (@Model.StockPrices[i].HighestPrice.GetPercent(Model.StockPrices[i].OpenPrice).ShowPercent()%)</td>
+                                        <td class="text-right">@Model.StockPrices[i].LowestPrice.ShowPrice() (@Model.StockPrices[i].LowestPrice.GetPercent(Model.StockPrices[i].OpenPrice).ShowPercent()%)</td>
+                                        <td class="text-right">@Model.StockPrices[i].CeilingPrice.ShowPrice()</td>
+                                        <td class="text-right">@Model.StockPrices[i].FloorPrice.ShowPrice()</td>
+                                        <td class="text-right">@Model.StockPrices[i].TotalMatchVol.ShowMoney(1)</td>
+                                        <td class="text-right">@Model.StockPrices[i].TotalDealVol.ShowMoney(1)</td>
+                                        <td class="text-right">@((Model.StockPrices[i].ForeignBuyVolTotal - Model.StockPrices[i].ForeignSellVolTotal).ShowMoney(1))</td>
+                                        <td class="text-right">@Model.StockPrices[i].TotalBuyTrade.ShowMoney(1)</td>
+                                        <td class="text-right">@Model.StockPrices[i].TotalSellTrade.ShowMoney(1)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="macroeconomics" role="tabpanel" aria-labelledby="macroeconomics-tab">
+                <div class="row">
+                    <div class="col-12">
+                        <h4 class="mt-2">Điểm đánh giá vĩ mô: <span class="@Model.AnalyticsResultInfo.MacroeconomicsScore.GetTextColorCss()">@Model.AnalyticsResultInfo.MacroeconomicsScore</span></h4>
+                        <hr style="margin-bottom:10px; border-top:1px solid #343434; margin-top:10px" />
+                    </div>
+                    @if (Model.MacroeconomicsNote?.Count > 0)
+                    {
+                        <div class="col-12">
+                            <div class="card card-default bg-black">
+                                <div class="card-header">
+                                    <h3 class="card-title" style="color:#919191">
+                                        <i class="fas fa-notes-medical"></i>
+                                        Diễn giải quá trình đánh giá:
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+                                    @foreach (var item in Model.MacroeconomicsNote)
+                                    {
+                                        <div class="callout callout-@item.Type.GetAnalyticsTypeColorCss()">
+                                            <p class="mr-0 text-@item.Type.GetAnalyticsTypeColorCss()" data-type="@item.Type">
+                                                @item.Score: @item.Message
+                                                @if (!string.IsNullOrEmpty(item.GuideLink))
+                                                {
+                                                    <a href="@item.GuideLink" target="_blank" class="text-info"><i class="fas fa-info-circle"></i> Tìm hiểu</a>
+                                                }
+                                            </p>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="tab-pane fade" id="companyvalues" role="tabpanel" aria-labelledby="companyvalues-tab">
+                <div class="row">
+                    <div class="col-12">
+                        <h4 class="mt-2">Điểm đánh giá giá trị doanh nghiệp: <span class="@Model.AnalyticsResultInfo.CompanyValueScore.GetTextColorCss()">@Model.AnalyticsResultInfo.CompanyValueScore</span></h4>
+                        <hr style="margin-bottom:10px; border-top:1px solid #343434; margin-top:10px" />
+                    </div>
+                    @if (Model.CompanyValueNote?.Count > 0)
+                    {
+                        <div class="col-12">
+                            <div class="card card-default bg-black">
+                                <div class="card-header">
+                                    <h3 class="card-title" style="color:#919191">
+                                        <i class="fas fa-notes-medical"></i>
+                                        Diễn giải quá trình đánh giá:
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+                                    @foreach (var item in Model.CompanyValueNote)
+                                    {
+                                        <div class="callout callout-@item.Type.GetAnalyticsTypeColorCss()">
+                                            <p class="mr-0 text-@item.Type.GetAnalyticsTypeColorCss()" data-type="@item.Type">
+                                                @item.Score: @item.Message
+                                                @if (!string.IsNullOrEmpty(item.GuideLink))
+                                                {
+                                                    <a href="@item.GuideLink" target="_blank" class="text-info"><i class="fas fa-info-circle"></i> Tìm hiểu</a>
+                                                }
+                                            </p>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="tab-pane fade" id="companygrowth" role="tabpanel" aria-labelledby="companygrowth-tab">
+                <div class="row">
+                    <div class="col-12">
+                        <h4 class="mt-2 @Model.AnalyticsResultInfo.CompanyGrowthScore.GetTextColorCss()">
+                            Điểm đánh giá tăng trưởng doanh nghiệp: <span class="@Model.AnalyticsResultInfo.CompanyGrowthScore.GetTextColorCss()">@Model.AnalyticsResultInfo.CompanyGrowthScore</span>
+                        </h4>
+                        <hr style="margin-bottom:10px; border-top:1px solid #343434; margin-top:10px" />
+                    </div>
+                    @if (Model.CompanyGrowthNote?.Count > 0)
+                    {
+                        <div class="col-12">
+                            <div class="card card-default bg-black">
+                                <div class="card-header">
+                                    <h3 class="card-title" style="color:#919191">
+                                        <i class="fas fa-notes-medical"></i>
+                                        Diễn giải quá trình đánh giá:
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+                                    @foreach (var item in Model.CompanyGrowthNote)
+                                    {
+                                        <div class="callout callout-@item.Type.GetAnalyticsTypeColorCss()">
+                                            <p class="mr-0 text-@item.Type.GetAnalyticsTypeColorCss()" data-type="@item.Type">
+                                                @item.Score: @item.Message
+                                                @if (!string.IsNullOrEmpty(item.GuideLink))
+                                                {
+                                                    <a href="@item.GuideLink" target="_blank" class="text-info"><i class="fas fa-info-circle"></i> Tìm hiểu</a>
+                                                }
+                                            </p>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="tab-pane fade" id="stockgrowth" role="tabpanel" aria-labelledby="stockgrowth-tab">
+                <div class="row">
+                    <div class="col-12">
+                        <h4 class="mt-2">
+                            Điểm đánh giá tăng trưởng thị giá: <span class="@Model.AnalyticsResultInfo.StockScore.GetTextColorCss()">@Model.AnalyticsResultInfo.StockScore</span>
+                        </h4>
+                        <hr style="margin-bottom:10px; border-top:1px solid #343434; margin-top:10px" />
+                    </div>
+                    @if (Model.StockNote?.Count > 0)
+                    {
+                        <div class="col-12">
+                            <div class="card card-default bg-black">
+                                <div class="card-header">
+                                    <h3 class="card-title" style="color:#919191">
+                                        <i class="fas fa-notes-medical"></i>
+                                        Diễn giải quá trình đánh giá:
+                                    </h3>
+                                </div>
+                                <div class="card-body">
+                                    @foreach (var item in Model.StockNote)
+                                    {
+                                        <div class="callout callout-@item.Type.GetAnalyticsTypeColorCss()">
+                                            <p class="mr-0 text-@item.Type.GetAnalyticsTypeColorCss()" data-type="@item.Type">
+                                                @item.Score: @item.Message
+                                                @if (!string.IsNullOrEmpty(item.GuideLink))
+                                                {
+                                                    <a href="@item.GuideLink" target="_blank" class="text-info"><i class="fas fa-info-circle"></i> Tìm hiểu</a>
+                                                }
+                                            </p>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="tab-pane fade" id="profit-trading" role="tabpanel" aria-labelledby="profit-trading-tab">
+                <ul class="nav nav-tabs stoc-detail-nav" id="tradingTab" role="tablist" style="margin-top:10px">
+                    @foreach (var tradingResult in Model.TradingResults)
+                    {
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link @(tradingResult.Key == 4 ? "active" : "")" id="trading-tab-@tradingResult.Key" data-toggle="tab" href="#tab-@tradingResult.Key" role="tab" aria-controls="tab-@tradingResult.Key" aria-selected="true">@Utilities.GetPrincipleName(tradingResult.Key)</a>
+                        </li>
+                    }
+                </ul>
+                <div class="tab-content" id="tradingTabContent">
+                    @foreach (var tradingResult in Model.TradingResults)
+                    {
+                        <div class="tab-pane fade @(tradingResult.Key == 4 ? "active show" : "")" id="tab-@tradingResult.Key" role="tabpanel" aria-labelledby="tab-@tradingResult.Key-tab">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="card card-default bg-black">
+                                        <div class="card-header">
+                                            <h3 class="card-title" style="color:#b4b4b4">
+                                                <i class="fas fa-notes-medical"></i>
+                                                Diễn giải quá trình đầu tư với số vốn ban đâu @tradingResult.Value.Capital.ShowMoney(1):
+                                            </h3>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="callout callout-info callout-trading-note shadow-none">
+                                                @if (tradingResult.Value.Profit <= @tradingResult.Value.Capital)
+                                                {
+                                                    <p class="mr-0 text-danger">Lợi nhuận: @tradingResult.Value.Profit.ShowMoney(1) (@tradingResult.Value.ProfitPercent.ShowPercent()%)</p>
+                                                }
+                                                else
+                                                {
+                                                    <p class="mr-0 text-success">Lợi nhuận: @tradingResult.Value.Profit.ShowMoney(1) (@tradingResult.Value.ProfitPercent.ShowPercent()%)</p>
+                                                }
+                                            </div>
+                                            <div class="callout callout-info callout-trading-note shadow-none">
+                                                <p class="mr-0 text-warning">Phí và thuế giao dịch: @tradingResult.Value.TotalTax.ShowMoney(1)</p>
+                                            </div>
+                                            @if (tradingResult.Value.TradingExplainNotes?.Count > 0)
+                                            {
+                                                foreach (var item in tradingResult.Value.TradingExplainNotes)
+                                                {
+                                                    <div class="callout callout-info callout-trading-note shadow-none">
+                                                        @if (item.Key == -1)
+                                                        {
+                                                            <p class="mr-0 text-danger">@item.Value</p>
+                                                        }
+                                                        else if (item.Key == 0)
+                                                        {
+                                                            <p class="mr-0">@item.Value</p>
+                                                        }
+                                                        else
+                                                        {
+                                                            <p class="mr-0 text-success">@item.Value</p>
+                                                        }
+                                                    </div>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="tab-pane fade" id="description" role="tabpanel" aria-labelledby="description-tab">
+                <h4 class="mt-2">Giới thiệu: @Model.CompanyInfo?.CompanyName</h4>
+                <div style="font-size:16px;">
+                    @Html.Raw(Model.CompanyProfile)
+                </div>
+            </div>
+            <div class="tab-pane fade" id="note" role="tabpanel" aria-labelledby="note-tab">
+                <h4 class="mt-2">Viết ghi chú cho cổ phiếu này và sẽ tự động lưu.</h4>
+                <hr style="margin-bottom:10px; border-top:1px solid #616161" />
+                <textarea id="stock-user-note" rows="20" class="form-control invest-control" onchange="UpdateDetailsOnChange()">@Model.Note</textarea>
+            </div>
+            <input type="hidden" id="stock-details-symbol" value="@Model.Symbol" />
+        </div>
+    </div>
+    <script src="~/lib/jquery/jquery.min.js"></script>
+    <script src="~/lib/signalr/dist/browser/signalr.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/datatables/jquery.dataTables.min.js"></script>
+    <script src="~/lib/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+    <script src="~/lib/datatables-responsive/js/dataTables.responsive.min.js"></script>
+    <script src="~/lib/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+    <script src="~/js/adminlte.min.js"></script>
+    <script src="~/js/admin.min.js"></script>
+    <script>
+        $(function () {
+            $('#price-history').DataTable({
+                "paging": true,
+                "lengthChange": false,
+                "pageLength": 15,
+                "searching": false,
+                "ordering": false,
+                "info": false,
+                "autoWidth": false,
+                "responsive": false,
+                "language": {
+                    "paginate": {
+                        "previous": "Trang trước",
+                        "next": "Trang tiếp",
+                        "last": "Trang cuối",
+                        "first": "Trang đầu"
+                    }
+                },
+                "fnInitComplete": function () {
+                    $("#price-history").show();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

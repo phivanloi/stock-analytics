@@ -1,0 +1,138 @@
+﻿@model List<string>
+@{
+    ViewData["Title"] = "Sự kiện";
+    ViewData["ActiveMenu"] = "corporateaction";
+}
+<section class="content table-responsive" style="padding:10px; color:#e2e2e2">
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="form-group">
+                <select id="evencode" onchange="LoadCorporateAction()" class="form-control seach-control">
+                    <option value="">Tất cả loại sự kiện</option>
+                    <option value="DIV,ISS" selected="selected">Trả cổ tức</option>
+                    <option value="KQCT,KQQY,KQSB">Kết quả kinh doanh</option>
+                    <option value="AIS,NLIS,RETU,SUSP,TS">Niêm yết</option>
+                    <option value="AGME,AGMR,BALLOT,BCHA,BOME,EGME">Đại hội Đồng Cổ đông</option>
+                    <option value="AMEN,LIQUI,MA,MOVE,OTHE">Sự kiện khác</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="form-group">
+                <select id="exchange" onchange="LoadCorporateAction()" class="form-control seach-control">
+                    <option value="" selected="selected">Tất cả sàn niêm yết</option>
+                    @foreach (var exchange in Model)
+                    {
+                        <option value="@exchange">@exchange</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="input-group">
+                <input type="text" class="form-control seach-control" id="code" placeholder="Mã">
+                <div class="input-group-append">
+                    <button type="button" onclick="LoadCorporateAction()" class="btn btn-primary" style="max-height:33px; border-color:#aabcbb; line-height:19px"><i class="fas fa-search"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <table class="table table-bordered table-hover">
+        <thead>
+            <tr style="text-align:center; color:#fff">
+                <td style="width: 120px" title="Mã chứng khoán của sự kiện và thông tin sàn chứng khoán">Mã - Sàn</td>
+                <td title="Tiêu đề của sự kiện">Tiêu đề</td>
+                <td style="width: 120px" title="Mã sự kiện">Mã sự kiện</td>
+                <td style="width: 120px" title="Ngày giao dịch không hưởng quyền">Ngày GDKHQ</td>
+                <td style="width: 120px" title="Ngày thực hiện">Ngày thực hiện</td>
+                <td style="width: 120px" title="Ngày chốt">Ngày chốt</td>
+                <td style="width: 120px" title="Ngày xuất bản của sự kiện">Ngày đăng</td>
+                <td style="width: 100px" title="Popup chi tiết sự kiện">Chi tiết</td>
+            </tr>
+        </thead>
+        <tbody id="corporateaction-table-body">
+            <tr>
+                <td colspan="7" class="text-center"><p class="fas fa-sync-alt fa-spin"></p></td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="modal fade" id="corporateaction-modal" data-backdrop="static" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header" style="margin-bottom:10px">
+                    <h5 class="modal-title" id="corporateaction-modal-title">Chi tiết cổ phiếu</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span style="color:#fff" aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="corporateaction-modal-body">
+
+                </div>
+                <div class="modal-footer" style="margin-top:10px">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+@section Scripts{
+    <script>
+        var responseData;
+
+        $(function () {
+            LoadCorporateAction();
+
+            $('#code').keypress(function (e) {
+                if (e.which == 13) {
+                    LoadCorporateAction();
+                }
+            });
+        });
+
+        function LoadCorporateAction() {
+            var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            $('#corporateaction-table-body').html('<tr><td colspan="8" class="text-center"><p class="fas fa-sync-alt fa-spin"></p></td></tr>');
+            $.ajax({
+                type: "POST",
+                contentType: "application/json",
+                dataType: 'json',
+                cache: false,
+                url: '/home/corporateaction?symbol=' + $('#code').val() + '&evenCode=' + $('#evencode').val() + '&exchange=' + $('#exchange').val(),
+                success: function (data) {
+                    responseData = data;
+                    var appenHtml = '';
+                    $.each(data, function (index, value) {
+                        appenHtml += '<tr>';
+                        appenHtml += '<td style="cursor:pointer" onclick="OpenModalDetails(\'' + value.symbol + '\', \'' + value.symbol + ' - ' + value.exchange + '\', 0)">' + value.symbol + ' - ' + value.exchange + '</td>';
+                        appenHtml += '<td>' + value.eventTitle + '</td>';
+                        appenHtml += '<td class="text-center">' + value.eventCode + '</td>';
+                        appenHtml += '<td class="text-right">' + value.exrightDate + '</td>';
+                        appenHtml += '<td class="text-right">' + value.issueDate + '</td>';
+                        appenHtml += '<td class="text-right">' + value.recordDate + '</td>';
+                        appenHtml += '<td class="text-right">' + value.publicDate + '</td>';
+                        appenHtml += '<td class="text-center"><a onclick="OpenCorporateactionModal(\'' + value.id + '\')" style="cursor:pointer"><i class="fas fa-info-circle"></i> Chi tiết</a></td>';
+                        appenHtml += '</tr>';
+                    });
+                    $('#corporateaction-table-body').html(appenHtml);
+                    document.documentElement.scrollTop = document.body.scrollTop = scrollTop;
+                },
+                error: function (ex) {
+                    $('#corporateaction-table-body').html('<tr><td colspan="7" class="text-center">Lỗi lấy dữ liệu</td></tr>');
+                    console.log(ex);
+                }
+            });
+        }
+
+        function OpenCorporateactionModal(id) {
+            $.each(responseData, function (index, value) {
+                if (value.id == id) {
+                    $('#corporateaction-modal-title').text(value.eventTitle);
+                    var content = new DOMParser().parseFromString(value.content, "text/html").body.innerHTML;
+                    $('#corporateaction-modal-body').html(content);
+                    $('#corporateaction-modal').modal('toggle');
+                    return false;
+                }
+            });
+        }
+    </script>
+}

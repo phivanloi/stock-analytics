@@ -1,0 +1,204 @@
+﻿@{
+    ViewData["Title"] = "Tiện ích hệ thống";
+    ViewData["ActiveMenu"] = "utilities";
+}
+<section class="content table-responsive" style="padding:10px; color:#e2e2e2;">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card card-success">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="fas fa-bolt"></i> Yêu cầu lịch làm việc ngay</h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body bg-dark">
+                    <div class="form-group">
+                        <label for="schedule-type">Loại lịch:</label>
+                        <select class="form-control" id="schedule-type">
+                            <option value="204">204 - Xử lý đánh giá su thế ngành</option>
+                            <option value="207">207 - Đánh giá tâm lý thị trường</option>
+                            <option value="208">208 - Phân tích vĩ mô</option>
+                            <option value="200">200 - Phân tích giá trị doanh nghiệp</option>
+                            <option value="209">209 - Phân tích tăng trưởng doanh nghiệp</option>
+                            <option value="201">201 - Phân tăng trưởng thị giá</option>
+                            <option value="202" selected="selected">202 - Trading thử nghiệm trên dữ liệu cũ</option>
+                            <option value="210">210 - Phân tích đánh giá của fiintrading</option>
+                            <option value="211">211 - Phân tích đánh giá của vnd</option>
+                            <option value="203">203 - Tính giá cổ phiếu dự phóng của các công ty chứng khoán</option>
+                            <option value="400">400 - Tìm kiếm các chỉ báo kỹ thuật phù hợp cho chứng khoán.</option>
+                            <option value="5">5 - Bổ sung lịch sử giá cổ phiếu</option>
+                            <option value="9">9 - Tải lịch sử giao dịch của các chỉ báo thị trường</option>
+                            <option value="300">300 - Xử lý hiển thị dữ liệu chứng khoán cho hiển thị</option>
+                            
+                            <option value="0">0 - Bổ sung mã cổ phiếu cho hệ thống</option>
+                            <option value="1">1 - Bổ sung thông tin doanh nghiệp</option>
+                            <option value="2">2 - Bổ sung thông tin lãnh đạo doanh nghiệp</option>
+                            <option value="3">3 - Bổ sung thông tin vốn và cổ tức cho doanh nghiệp</option>
+                            <option value="4">4 - Bổ sung thông tin tài chính của danh nghiệp</option>
+                            
+                            <option value="6">6 - Bổ sung lịch sử sự kiện của công ty</option>
+                            <option value="7">7 - Bổ sung lịch sử khớp lệnh của tất cả các mã chứng khoán</option>
+                            <option value="8">8 - Bổ sung đánh giá cổ phiếu của fiintrading</option>
+                            
+                            <option value="10">10 - Bổ sung lãi suất ngân hàng cao nhất tại thời điểm hiện tại.</option>
+                            <option value="11">11 - Bổ sung chỉ số tài chính cơ bản của các chỉ số của thị trường</option>
+                            <option value="12">12 - Thu thập giá tài nguyên, nguyên vật liệu</option>
+                            <option value="13">13 - Thu thập dữ liệu chiến tranh</option>
+                            <option value="14">14 - Thu thập dữ liệu dịch bệnh</option>
+                            <option value="15">15 - Thu thập dữ liệu thiên tai</option>
+                            <option value="16">16 - Thu thập dữ liệu đánh giá thể chế, chính sách</option>
+                            <option value="17">17 - Thu thập đánh giá kỹ thuật của vnd</option>
+                            <option value="18">18 - Thu thập kết quả khuyến nghị của các công ty chứng khoán</option>
+                            <option value="19">19 - Thu thập đánh giá cổ phiếu của VND</option>
+                            <option value="20">20 - Kiểm tra và bổ sung lịch sử giá cổ phiếu của ssi nếu thiếu</option>
+
+                            <option value="100">100 - Dự đoán giá cố phiếu cho mô hình AI FTT</option>
+                            <option value="101">101 - Dự đoán giá cố phiếu cho mô hình AI SSA</option>
+                            <option value="102">102 - Phân loại su hướng của cổ phiếu mô hình Sdca.</option>
+
+                            <option value="300">301 - Xử lý thông báo cho người dùng</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="stock-code">Mã cổ phiếu:</label>
+                        <input type="text" class="form-control" id="stock-code" placeholder="Để trống để update chỉ theo loại">
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-primary" id="schedule-active" onclick="PostRequest(this, 1)"><i class="fas fa-calendar-alt"></i> Kích hoạt</button>
+                    </div>
+                </div>
+                <div class="card-footer bg-dark">
+                    Hệ thống sẽ update thời gian kích hoạt của loại lịch với mã cổ phiếu bạn nhập vào về thời điểm hiện tại. Sau đó beater worker sẽ lên lịch công việc của bạn ngay sau đó.
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card card-warning ">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="fas fa-lock-open"></i> Đổi mật khẩu</h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body bg-dark">
+                    <div class="form-group">
+                        <label for="stock-code">Email hoặc Id người dùng:</label>
+                        <input type="text" class="form-control" id="user-email-or-id">
+                    </div>
+                    <div class="form-group">
+                        <label for="stock-code">Mật khẩu mới:</label>
+                        <input type="text" class="form-control" id="new-password">
+                    </div>
+                    <div class="form-group">
+                        <button id="change-password" class="btn btn-primary mr-2" onclick="PostRequest(this, 3)"><i class="fas fa-lock-open"></i> Đổi mật khẩu</button>
+                        <button class="btn btn-info" onclick="PostRequest(this, 6)"><i class="fas fa-bell"></i> Tạo lịch thông báo</button>
+                    </div>
+                </div>
+                <div class="card-footer bg-dark">
+                    Tính năng này dùng để đổi mật khẩu cho một tài khoản bất kỳ, dùng trong trường hợp muốn đổi hoặc đặt lại mật khẩu.
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card card-primary collapsed-card">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="fas fa-user"></i> Thêm mới người dùng</h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body bg-dark">
+                    <div class="form-group">
+                        <label for="schedule-type">Email:</label>
+                        <input type="text" class="form-control" id="user-email" placeholder="Email">
+                    </div>
+                    <div class="form-group">
+                        <label for="stock-code">Tên hiển thị:</label>
+                        <input type="text" class="form-control" id="user-full-name" placeholder="Tên đầy đủ">
+                    </div>
+                    <div class="form-group">
+                        <label for="stock-code">Ảnh đại diện:</label>
+                        <input type="text" class="form-control" id="user-avatar" placeholder="Avatar">
+                    </div>
+                    <div class="form-group">
+                        <label for="stock-code">Mật khẩu:</label>
+                        <input type="text" class="form-control" id="user-password" placeholder="Mật khẩu">
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-primary mr-2" onclick="PostRequest(this, 2)"><i class="fas fa-user-plus"></i> Tạo người dùng</button>
+                        <button class="btn btn-danger" onclick="PostRequest(this, 5)"><i class="fas fa-user-ban"></i> Xóa người dùng</button>
+                    </div>
+                </div>
+                <div class="card-footer bg-dark">
+                    Thêm mới một người dùng vào hệ thống.
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card card-primary collapsed-card">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="fas fa-toolbox"></i> Công cụ</h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body bg-dark">
+                    <div class="form-group">
+                        <button class="btn btn-primary" onclick="PostRequest(this, 4)"><i class="fas fa-eraser"></i> Xóa cache</button>
+                    </div>
+                </div>
+                <div class="card-footer bg-dark">
+                    Bộ tiện ích của hệ thống.
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+@section Scripts{
+    <script>
+        function PostRequest(btnAction, type) {
+            $(btnAction).prop('disabled', 'disabled');
+            $.ajax({
+                cache: false,
+                type: "POST",
+                contentType: "application/json",
+                dataType: 'json',
+                url: "/system/utilities",
+                data: JSON.stringify({
+                    Type: type,
+                    SchedulerType: $('#schedule-type').val(),
+                    Code: $('#stock-code').val(),
+                    EmailOrId: $('#user-email-or-id').val(),
+                    NewPassword: $('#new-password').val(),
+
+                    Email: $('#user-email').val(),
+                    FullName: $('#user-full-name').val(),
+                    Avatar: $('#user-avatar').val(),
+                    Password: $('#user-password').val()
+                }),
+                success: function (data) {
+                    if (data.status == 1) {
+                        OpenToast('<span class="text-success">' + data.message + '</span>');
+                    }
+                    else {
+                        OpenToast('<span class="text-danger">' + data.message + '</span>');
+                    }
+                    $(btnAction).prop('disabled', false);
+                },
+                error: function () {
+                    OpenToast('<span class="text-danger">Gặp lỗi trong quá trình xử lý yêu cầu.</span>');
+                    $(btnAction).prop('disabled', false);
+                }
+            });
+        }
+    </script>
+}

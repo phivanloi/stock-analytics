@@ -1,0 +1,76 @@
+﻿@using Pl.Sas.Core
+@using Pl.Sas.Core.Entities
+@using Pl.Sas.Infrastructure
+@model MarketListViewModel
+@for (int i = 0; i < Model.StockViews.Count; i++)
+{
+    var isOutOfDate = Model.StockViews[i].TradingViews.TryGetValue(Model.Principle, out JudgeResult judgeResult);
+    if (!isOutOfDate)
+    {
+        <tr>
+            <td class="s-c text-white" fo="@(Model.UserFollowSymbols.Contains(Model.StockViews[i].Code) ? "1" : "0")" title="@Model.StockViews[i].Description">@Model.StockViews[i].Code</td>
+            <td colspan="27" class="text-danger text-center">Không có dữ liệu phân tích hoặc thiếu thông tin lịch sử giá.</td>
+        </tr>
+        continue;
+    }
+
+    <tr>
+        <td class="s-c text-white" fo="@(Model.UserFollowSymbols.Contains(Model.StockViews[i].Code) ? "1" : "0")" title="@Model.StockViews[i].Description">@Model.StockViews[i].Code</td>
+
+        <td class="text-right @Model.StockViews[i].MacroeconomicsScore.GetTextColorCss(0)">@Model.StockViews[i].MacroeconomicsScore.ToString("0")</td>
+        <td class="text-right @Model.StockViews[i].IndustryRank.GetTextColorCss(0)">@Model.StockViews[i].IndustryRank.ToString("0")</td>
+
+        <td class="text-right @Model.StockViews[i].CompanyValueScore.GetRangeTextColorCss(0, 5)" title="Vốn hóa: @Model.StockViews[i].MarketCap.ShowPercent(), Roe: @Model.StockViews[i].Roe.ShowPercent(), Roa: @Model.StockViews[i].Roa.ShowPercent()">@Model.StockViews[i].CompanyValueScore.ToString("0")</td>
+        <td class="text-right">@Model.StockViews[i].Eps.ShowMoney(1)</td>
+        <td class="text-right">@Model.StockViews[i].Pe.ShowPercent()</td>
+        <td class="text-right">@Model.StockViews[i].Pb.ShowPercent()</td>
+
+        <td class="text-right @Model.StockViews[i].CompanyGrowthScore.GetRangeTextColorCss(0, 15)">@Model.StockViews[i].CompanyGrowthScore.ToString("0")</td>
+        <td class="text-right @Model.StockViews[i].YearlyRevenueGrowthPercent.GetTextColorCss(Model.BankInterestRate12)">@Model.StockViews[i].YearlyRevenueGrowthPercent.ShowPercent()</td>
+        <td class="text-right @Model.StockViews[i].YearlyProfitGrowthPercent.GetTextColorCss(Model.BankInterestRate12)">@Model.StockViews[i].YearlyProfitGrowthPercent.ShowPercent()</td>
+
+        <td class="text-right @Model.StockViews[i].StockScore.GetRangeTextColorCss(-2, 1)">@Model.StockViews[i].StockScore.ToString("0")</td>
+        <td class="text-right">@Model.StockViews[i].Beta.ShowPercent()</td>
+        <td class="text-right @Model.StockViews[i].LastTotalMatchVol.GetTextColorCss(Model.StockViews[i].LastOneTotalMatchVol)" title="Phiên trước @Model.StockViews[i].LastOneTotalMatchVol.ShowMoney(1), TB 3P @Model.StockViews[i].LastAvgThreeTotalMatchVol.ShowMoney(1) (@Model.StockViews[i].ThreeTotalMatchVolPercent.ShowPercent()%), TB 5P @Model.StockViews[i].LastAvgFiveTotalMatchVol.ShowMoney(1) (@Model.StockViews[i].FiveTotalMatchVolPercent.ShowPercent()%), TB 10P @Model.StockViews[i].LastAvgTenTotalMatchVol.ShowMoney(1) (@Model.StockViews[i].TenTotalMatchVolPercent.ShowPercent()%)">
+            @Model.StockViews[i].LastTotalMatchVol.ShowMoney(1)
+        </td>
+        <td class="text-right @Model.StockViews[i].LastClosePrice.GetTextColorCss(Model.StockViews[i].LastOneClosePrice)" title="Phiên trước @Model.StockViews[i].LastOneClosePrice.ShowPrice(), @Model.StockViews[i].GetClosePriceTrend">
+            @Model.StockViews[i].LastClosePrice.ShowPrice()
+        </td>
+        <td class="text-right @Model.StockViews[i].PricePercentConvulsion1.GetTextColorCss()">@Model.StockViews[i].PricePercentConvulsion1.ShowPercent()</td>
+        <td class="text-right @Model.StockViews[i].PricePercentConvulsion5.GetTextColorCss()">@Model.StockViews[i].PricePercentConvulsion5.ShowPercent()</td>
+        <td class="text-right @Model.StockViews[i].PricePercentConvulsion10.GetTextColorCss()">@Model.StockViews[i].PricePercentConvulsion10.ShowPercent()</td>
+        <td class="text-right @Model.StockViews[i].PricePercentConvulsion30.GetTextColorCss()">@Model.StockViews[i].PricePercentConvulsion30.ShowPercent()</td>
+        <td class="text-right @Model.StockViews[i].PricePercentConvulsion60.GetTextColorCss()">@Model.StockViews[i].PricePercentConvulsion60.ShowPercent()</td>
+        <td class="text-right @Model.StockViews[i].PricePercentConvulsion120.GetTextColorCss()">@Model.StockViews[i].PricePercentConvulsion120.ShowPercent()</td>
+        <td class="text-right @Model.StockViews[i].PricePercentConvulsion240.GetTextColorCss()">@Model.StockViews[i].PricePercentConvulsion240.ShowPercent()</td>
+        <td class="text-right @Model.StockViews[i].PricePercentConvulsion480.GetTextColorCss()" title="960P: @Model.StockViews[i].PricePercentConvulsion960.ShowPercent(), 1920P: @Model.StockViews[i].PricePercentConvulsion1920.ShowPercent(), 3840P: @Model.StockViews[i].PricePercentConvulsion3840.ShowPercent()">@Model.StockViews[i].PricePercentConvulsion480.ShowPercent()</td>
+
+        <td class="text-right @Model.StockViews[i].FiinScore.GetTextColorCss()">@Model.StockViews[i].FiinScore.ToString("0")</td>
+        <td class="text-right @Model.StockViews[i].VndScore.GetTextColorCss()">@Model.StockViews[i].VndScore.ToString("0")</td>
+        <td class="text-right @Model.StockViews[i].TargetPrice.GetTextColorCss(Model.StockViews[i].LastClosePrice / 1000)">@Model.StockViews[i].TargetPrice.ShowPriceZezoToNull(1)</td>
+        <td class="text-right @Model.StockViews[i].FttPerdictPricePercent.GetTextColorCss(0)" title="Ftt: @Model.StockViews[i].FttPerdictPrice.ShowPrice() (@Model.StockViews[i].FttPerdictPricePercent.ShowPercent()%), Ssa: @Model.StockViews[i].SsaPerdictPrice.ShowPrice() (@Model.StockViews[i].SsaPerdictPricePercent.ShowPercent()%)">
+            <i class="fas @(Model.StockViews[i].FttPerdictPricePercent > 0 ? "fa-arrow-up" : Model.StockViews[i].FttPerdictPricePercent < 1 ? "fa-arrow-down" : "fa-arrows-alt-h")"></i>
+        </td>
+
+        <td class="text-right @judgeResult.ProfitPercent.GetTextColorCss(Model.BankInterestRate12)">@judgeResult.ProfitPercent.ShowPercent()</td>
+        <td class="text-right @Model.StockViews[i].PricePercentConvulsionStartTrading.GetTextColorCss(Model.BankInterestRate12)">@Model.StockViews[i].PricePercentConvulsionStartTrading.ShowPercent()</td>
+
+        @if (judgeResult.TodayIsBuy)
+        {
+            <td class="text-danger" title="@judgeResult.OptimalBuyPrice.GetPercent(Model.StockViews[i].LastClosePrice).ShowPercent()%">Mua(@judgeResult.OptimalBuyPrice.ShowPrice())</td>
+        }
+        else
+        {
+            <td title="@judgeResult.OptimalBuyPrice.GetPercent(Model.StockViews[i].LastClosePrice).ShowPercent()%">TD(@judgeResult.OptimalBuyPrice.ShowPrice())</td>
+        }
+        @if (judgeResult.TodayIsSell)
+        {
+            <td class="text-success" title="@judgeResult.OptimalSellPrice.GetPercent(Model.StockViews[i].LastClosePrice).ShowPercent()%">Bán(@judgeResult.OptimalSellPrice.ShowPrice())</td>
+        }
+        else
+        {
+            <td title="@judgeResult.OptimalSellPrice.GetPercent(Model.StockViews[i].LastClosePrice).ShowPercent()%">TD(@judgeResult.OptimalSellPrice.ShowPrice())</td>
+        }
+    </tr>
+}

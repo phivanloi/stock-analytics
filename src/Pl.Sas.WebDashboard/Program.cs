@@ -18,6 +18,7 @@ using Pl.Sas.Infrastructure.Loging;
 using Pl.Sas.Infrastructure.Market;
 using Pl.Sas.Infrastructure.RabbitmqMessageQueue;
 using Pl.Sas.Infrastructure.System;
+using Pl.Sas.WebDashboard;
 using StackExchange.Redis;
 using System.Net;
 using System.Reflection;
@@ -124,8 +125,11 @@ builder.Services.AddRedisCacheService(option =>
 
 builder.Services.AddResponseCompression();
 builder.Services.Configure<WebEncoderOptions>(webEncoderOptions => webEncoderOptions.TextEncoderSettings = new TextEncoderSettings(UnicodeRanges.All));
+
 builder.Services.AddSingleton<IWebDashboardQueueService, WebDashboardQueueService>();
+builder.Services.AddScoped<IMarketData, MarketData>();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddHostedService<Worker>();
 
 builder.Services.AddControllersWithViews();
 

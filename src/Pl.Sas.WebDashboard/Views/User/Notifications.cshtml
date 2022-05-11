@@ -1,0 +1,87 @@
+﻿@model NotificationViewModel
+@{
+    ViewData["Title"] = "Thông báo";
+    ViewData["ActiveMenu"] = "thongbao";
+}
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-12">
+                <h1 style="color:#fff"><i class="fas fa-bell"></i> Dòng thông báo</h1>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                @if (Model.Notifications?.Count <= 0)
+                {
+                    <h4 class="text-center">không có thông báo nào.</h4>
+                }
+                else
+                {
+                    <div class="timeline">
+                        @foreach (var groupItem in Model.Notifications.GroupBy(q => q.CreatedTime.Date))
+                        {
+                            <div class="time-label">
+                                <span class="bg-green">@groupItem.Key.ToString("dd/MM/yyyy")</span>
+                            </div>
+                            foreach (var notification in groupItem)
+                            {
+                                <div class="content-id-@notification.Id">
+                                    <i class="fas bg-purple user-noti-item">@notification.Symbol</i>
+                                    <div class="timeline-item">
+                                        <span class="time"><i class="fas fa-clock"></i> @notification.CreatedTime.ToString("HH:mm")</span>
+                                        <h3 class="timeline-header">@notification.Title</h3>
+                                        <div class="timeline-body">
+                                            <textarea style="display:none">@Html.Raw(notification.Content)</textarea>
+                                        </div>
+                                        <div class="timeline-footer">
+                                            <a class="btn btn-danger btn-sm" onclick="DeleteNotification(this, '@notification.Id')"><i class="fas fa-trash"></i> Xóa</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        <div>
+                            <i class="fas fa-clock bg-gray"></i>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+@section Scripts{
+    <script>
+        $(function () {
+            $(".timeline-body textarea").each(function (index) {
+                var content = $(this).val();
+                content = new DOMParser().parseFromString(content, "text/html").body.innerHTML;
+                $(this).parent().html(content);
+            });
+        });
+        function DeleteNotification(btnAction, id) {
+            $(btnAction).prop('disabled', 'disabled');
+            $.ajax({
+                cache: false,
+                type: "GET",
+                dataType: 'json',
+                url: "/user/deletenotifications?id=" + id,
+                success: function (data) {
+                    if (data == 1) {
+                        $('.content-id-' + id).remove();
+                        OpenToast('<span class="text-info">Xóa thông báo thành công.</span>');
+                    }
+                    $(btnAction).prop('disabled', false);
+                },
+                error: function () {
+                    OpenToast('<span class="text-danger">Gặp lỗi trong quá trình xử lý yêu cầu.</span>');
+                    $(btnAction).prop('disabled', false);
+                }
+            });
+        }
+    </script>
+}

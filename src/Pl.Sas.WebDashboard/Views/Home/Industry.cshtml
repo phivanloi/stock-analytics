@@ -1,0 +1,57 @@
+﻿@model IndustryViewModel
+@{
+    ViewData["Title"] = "Lĩnh vực";
+    ViewData["ActiveMenu"] = "industry";
+}
+<section class="content table-responsive" style="padding:10px; color:#e2e2e2;">
+    <div class="row">
+        <div class="col-12 industry-edit">
+            <table class="table table-bordered table-hover text-nowrap">
+                <thead>
+                    <tr style="text-align:center; color:#fff">
+                        <th style="width:100px">Mã</th>
+                        <th>Tên lĩnh vực</th>
+                        <th style="width:150px">Điểm đánh giá</th>
+                        <th style="width:250px">Điểm đánh giá tự động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var industry in Model.Industries)
+                    {
+                        <tr>
+                            <td>@industry.Code</td>
+                            <td>@industry.Name</td>
+                            <td>
+                                <input id="@industry.Id" type="number" value="@industry.Rank" onchange="RankChange(this)" class="form-control invest-control" />
+                            </td>
+                            <td style="text-align:right">@industry.AutoRank</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+@section Scripts{
+    <script>
+        function RankChange(textbox) {
+            $.ajax({
+                cache: false,
+                type: "POST",
+                dataType: 'json',
+                url: "/home/industrysave?id=" + $(textbox).attr('id') + '&rank=' + $(textbox).val(),
+                success: function (data) {
+                    if (data.status == 1) {
+                        OpenToast('<span class="text-success">' + data.message + '</span>');
+                    }
+                    else {
+                        OpenToast('<span class="text-danger">' + data.message + '</span>');
+                    }
+                },
+                error: function () {
+                    OpenToast('<span class="text-danger">Thay đổi không thành công.</span>');
+                }
+            });
+        }
+    </script>
+}

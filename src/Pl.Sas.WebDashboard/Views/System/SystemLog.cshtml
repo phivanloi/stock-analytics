@@ -1,0 +1,16 @@
+﻿@{
+    ViewData["Title"] = "Nhật ký xử lý";
+    ViewData["ActiveMenu"] = "showlog";
+}
+
+<section class="content table-responsive" style="padding:10px; color:#e2e2e2;">
+    <iframe id="log-view" style="width:100%; min-height:320%; border:none;" src="http://log.vuigreens.com"></iframe>
+</section>
+@section Scripts{
+    <script>
+        $(document).ready(function () {
+            var contentHeight = $('.content-wrapper').innerHeight() + 40;
+            $('#log-view').css('height', contentHeight + 'px');
+        });
+    </script>
+}
