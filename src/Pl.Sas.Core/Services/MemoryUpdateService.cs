@@ -26,6 +26,24 @@ namespace Pl.Sas.Core.Services
                 case "Stocks":
                     _memoryCacheService.RemoveByPrefix(Constants.StockCachePrefix);
                     break;
+                case "StockPrice":
+                    _memoryCacheService.RemoveByPrefix(Constants.StockPriceCachePrefix);
+                    break;
+                case "FinancialIndicator":
+                    _memoryCacheService.RemoveByPrefix(Constants.FinancialIndicatorCachePrefix);
+                    break;
+                case "Industry":
+                    _memoryCacheService.RemoveByPrefix(Constants.IndustryCachePrefix);
+                    break;
+                case "StockView":
+                    _memoryCacheService.RemoveByPrefix(Constants.StockViewCachePrefix);
+                    break;
+                case "AnalyticsResult":
+                    _memoryCacheService.RemoveByPrefix(Constants.AnalyticsResultCachePrefix);
+                    break;
+                case "TradingResult":
+                    _memoryCacheService.RemoveByPrefix(Constants.TradingResultCachePrefix);
+                    break;
             }
         }
     }

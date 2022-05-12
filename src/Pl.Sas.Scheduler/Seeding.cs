@@ -34,7 +34,7 @@ namespace Pl.Sas.Scheduler
                     },
                     new Schedule()
                     {
-                        Type = 200,
+                        Type = 205,
                         Name = "Xử lý ngày giao dịch không hưởng quyền chi trả cổ tức thì xóa và import lại lịch sử giá.",
                         ActiveTime = DateTime.Now.Date.AddDays(1).AddHours(2).AddMinutes(50)
                     },

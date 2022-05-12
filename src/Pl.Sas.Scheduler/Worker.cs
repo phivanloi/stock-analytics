@@ -13,10 +13,10 @@ namespace Pl.Sas.Scheduler
         private readonly ILogger<Worker> _logger;
         private readonly ISchedulerQueueService _schedulerQueueService;
         private readonly AppSettings _appSettings;
-        private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly IServiceProvider _serviceProvider;
 
         public Worker(
-            IServiceScopeFactory serviceScopeFactory,
+            IServiceProvider serviceProvider,
             ISchedulerQueueService schedulerQueueService,
             IOptions<AppSettings> optionsAppSettings,
             ILogger<Worker> logger)
@@ -24,13 +24,13 @@ namespace Pl.Sas.Scheduler
             _schedulerQueueService = schedulerQueueService;
             _logger = logger;
             _appSettings = optionsAppSettings.Value;
-            _serviceScopeFactory = serviceScopeFactory;
+            _serviceProvider = serviceProvider;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("Scheduler running at: {time}", DateTimeOffset.Now);
-            using var scope = _serviceScopeFactory.CreateScope();
+            var scope = _serviceProvider.CreateScope();
             while (!stoppingToken.IsCancellationRequested)
             {
                 var systemDbContext = scope.ServiceProvider.GetRequiredService<SystemDbContext>();
@@ -39,18 +39,27 @@ namespace Pl.Sas.Scheduler
                 {
                     foreach (var schedule in schedules)
                     {
-                        if (schedule.Type < 99)
+                        if (schedule.Type >= 300)
+                        {
+                            _schedulerQueueService.PublishViewWorkerTask(new(schedule.Id));
+                        }
+                        else if (schedule.Type >= 200)
+                        {
+                            _schedulerQueueService.PublishAnalyticsWorkerTask(new(schedule.Id));
+                        }
+                        else
                         {
                             _schedulerQueueService.PublishDownloadTask(new(schedule.Id));
                         }
-                        
                         schedule.ApplyActiveTime(DateTime.Now);
                     }
                     systemDbContext.SaveChanges();
                 }
                 else
                 {
+                    scope.Dispose();
                     await Task.Delay(1000 * 3, stoppingToken);
+                    scope = _serviceProvider.CreateScope();
                 }
             }
         }

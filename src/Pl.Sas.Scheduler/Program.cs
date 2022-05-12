@@ -125,7 +125,6 @@ app.MigrateDbContext<IdentityDbContext>((context, services) =>
     app.Logger.LogInformation("IdentityDbContext migrations at {Now}", DateTime.Now);
 });
 
-
 app.MapGet("/", () =>
 {
     return $"Scheduler version: {builder.Configuration["AppSettings:AppVersion"]}, published date: {builder.Configuration["AppSettings:AppPublishedDate"]}";
