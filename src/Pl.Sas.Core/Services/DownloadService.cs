@@ -24,6 +24,7 @@ namespace Pl.Sas.Core.Services
         private readonly DateTimeOffset _indexStartDownloadTime = new(2000, 1, 1, 0, 0, 0, TimeSpan.FromMilliseconds(0));
 
         public DownloadService(
+            IMemoryCacheService memoryCacheService,
             IWorkerQueueService workerQueueService,
             IZipHelper zipHelper,
             ISystemData systemData,
@@ -37,6 +38,7 @@ namespace Pl.Sas.Core.Services
             _workerQueueService = workerQueueService;
             _zipHelper = zipHelper;
             _systemData = systemData;
+            _memoryCacheService = memoryCacheService;
         }
 
         public async Task HandleEventAsync(QueueMessage queueMessage)

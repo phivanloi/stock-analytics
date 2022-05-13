@@ -1,6 +1,7 @@
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Pl.Sas.Core;
@@ -59,6 +60,10 @@ builder.Services.AddDbContext<IdentityDbContext>(options =>
         sqlOptions.MigrationsAssembly(typeof(Program).GetTypeInfo().Assembly.GetName().Name);
         sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
     }));
+builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = true)
+               .AddRoles<IdentityRole>()
+               .AddEntityFrameworkStores<IdentityDbContext>()
+               .AddErrorDescriber<Pl.Sas.Infrastructure.Identity.IdentityErrorDescriber>();
 
 builder.Services.AddHealthChecks()
     .AddCheck("self", () => HealthCheckResult.Healthy())

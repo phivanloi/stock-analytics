@@ -71,7 +71,7 @@ namespace Pl.Sas.Scheduler
                     PhoneNumber = "0906282026"
                 };
                 AddRoleToSystemAsync(PermissionConstants.AdministratorRoles).Wait();
-                var createUserResult = _userManager.CreateAsync(user, "liemtinmoi2413").Result;
+                var createUserResult = _userManager.CreateAsync(user, "Liemtinmoi@2413").Result;
                 if (createUserResult.Succeeded)
                 {
                     _userManager.AddToRolesAsync(user, new List<string>() { PermissionConstants.CmsDashbroad, PermissionConstants.SystemManager }).Wait();

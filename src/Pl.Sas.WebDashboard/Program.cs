@@ -8,6 +8,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.WebEncoders;
 using Pl.Sas.Core;
 using Pl.Sas.Core.Interfaces;
+using Pl.Sas.Core.Services;
 using Pl.Sas.Infrastructure;
 using Pl.Sas.Infrastructure.Analytics;
 using Pl.Sas.Infrastructure.Caching;
@@ -67,7 +68,7 @@ builder.Services.AddDbContext<Pl.Sas.Infrastructure.Identity.IdentityDbContext>(
 
 builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = true)
                .AddRoles<IdentityRole>()
-               .AddEntityFrameworkStores<Pl.Sas.Infrastructure.Identity.IdentityDbContext>()
+               .AddEntityFrameworkStores<IdentityDbContext>()
                .AddErrorDescriber<Pl.Sas.Infrastructure.Identity.IdentityErrorDescriber>();
 builder.Services.Configure<IdentityOptions>(options =>
 {
@@ -124,11 +125,15 @@ builder.Services.AddRedisCacheService(option =>
 builder.Services.AddResponseCompression();
 builder.Services.Configure<WebEncoderOptions>(webEncoderOptions => webEncoderOptions.TextEncoderSettings = new TextEncoderSettings(UnicodeRanges.All));
 
-builder.Services.AddSingleton<IWebDashboardQueueService, WebDashboardQueueService>();
 builder.Services.AddScoped<IMarketData, MarketData>();
+builder.Services.AddScoped<ISystemData, SystemData>();
+builder.Services.AddScoped<IIdentityData, IdentityData>();
+builder.Services.AddScoped<IAnalyticsData, AnalyticsData>();
+builder.Services.AddSingleton<IMemoryUpdateService, MemoryUpdateService>();
+builder.Services.AddSingleton<IWebDashboardQueueService, WebDashboardQueueService>();
+builder.Services.AddScoped<StockViewService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddHostedService<Worker>();
-
 builder.Services.AddControllersWithViews();
 
 

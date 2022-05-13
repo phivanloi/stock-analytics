@@ -13,7 +13,7 @@ namespace Pl.Sas.Core.Services
             _memoryCacheService = memoryCacheService;
         }
 
-        public virtual void HandleUpdateByQueueMessage(QueueMessage queueMessage)
+        public virtual void HandleUpdate(QueueMessage queueMessage)
         {
             switch (queueMessage.Id)
             {

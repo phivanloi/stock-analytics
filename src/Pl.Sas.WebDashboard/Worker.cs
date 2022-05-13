@@ -12,19 +12,19 @@ namespace Pl.Sas.WebDashboard
     {
         private readonly ILogger<Worker> _logger;
         private readonly AppSettings _appSettings;
-        private readonly IWorkerQueueService _workerQueueService;
-        private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly IWebDashboardQueueService _webDashboardQueueService;
+        private readonly IMemoryUpdateService _memoryUpdateService;
 
         public Worker(
-            IServiceScopeFactory serviceScopeFactory,
-            IWorkerQueueService workerQueueService,
+            IMemoryUpdateService memoryUpdateService,
+            IWebDashboardQueueService webDashboardQueueService,
             IOptions<AppSettings> optionsAppSettings,
             ILogger<Worker> logger)
         {
-            _workerQueueService = workerQueueService;
+            _webDashboardQueueService = webDashboardQueueService;
             _logger = logger;
             _appSettings = optionsAppSettings.Value;
-            _serviceScopeFactory = serviceScopeFactory;
+            _memoryUpdateService = memoryUpdateService;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -40,20 +40,9 @@ namespace Pl.Sas.WebDashboard
         {
             _logger.LogDebug("Worker {version} starting at: {time}", _appSettings.AppVersion, DateTimeOffset.Now);
 
-            _workerQueueService.SubscribeDownloadTask(async (message) =>
+            _webDashboardQueueService.SubscribeUpdateMemoryTask((message) =>
             {
-                using var scope = _serviceScopeFactory.CreateScope();
-                var downloadService = scope.ServiceProvider.GetRequiredService<DownloadService>();
-                await downloadService.HandleEventAsync(message);
-                scope.Dispose();
-            });
-
-            _workerQueueService.SubscribeAnalyticsTask(async (message) =>
-            {
-                using var scope = _serviceScopeFactory.CreateScope();
-                var analyticsService = scope.ServiceProvider.GetRequiredService<AnalyticsService>();
-                await analyticsService.HandleEventAsync(message);
-                scope.Dispose();
+                _memoryUpdateService.HandleUpdate(message);
             });
 
             return base.StartAsync(cancellationToken);
@@ -62,7 +51,7 @@ namespace Pl.Sas.WebDashboard
         public override Task StopAsync(CancellationToken cancellationToken)
         {
             _logger.LogDebug("Worker {version} stopping at: {time}", _appSettings.AppVersion, DateTimeOffset.Now);
-            _workerQueueService.Dispose();
+            _webDashboardQueueService.Dispose();
             return base.StopAsync(cancellationToken);
         }
     }
