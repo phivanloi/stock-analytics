@@ -45,7 +45,7 @@ namespace Pl.Sas.Core.Entities
         public string AddOrUpdateOptions(string key, string value)
         {
             var options = JsonSerializer.Deserialize<Dictionary<string, string>>(OptionsJson) ?? throw new Exception("null OptionsJson");
-            if (options.ContainsKey("key"))
+            if (options.ContainsKey(key))
             {
                 options[key] = value;
             }

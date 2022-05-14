@@ -74,7 +74,7 @@ namespace Pl.Sas.Core.Services
                             await UpdateCorporateActionInfoAsync(schedule);
                             break;
                         case 7:
-                            await UpdateCorporateActionInfoAsync(schedule);
+                            await UpdateStockTransactionAsync(schedule);
                             break;
                         case 8:
                             await UpdateFiinStockEvaluatesAsync(schedule);
@@ -928,7 +928,7 @@ namespace Pl.Sas.Core.Services
                             Type = 200,
                             Name = $"Phân tích giá trị doanh nghiệp cho mã: {stockCode}",
                             DataKey = stockCode,
-                            ActiveTime = currentTime.Date.AddHours(1).AddMinutes(5)
+                            ActiveTime = currentTime.AddHours(1).AddMinutes(5)
                         });
 
                         insertSchedules.Add(new()
@@ -936,56 +936,56 @@ namespace Pl.Sas.Core.Services
                             Type = 201,
                             Name = $"Phân tích chỉ số kỹ thuật cho mã: {stockCode}",
                             DataKey = stockCode,
-                            ActiveTime = currentTime.Date.AddHours(1).AddMinutes(5)
+                            ActiveTime = currentTime.AddHours(1).AddMinutes(5)
                         });
                         insertSchedules.Add(new()
                         {
                             Type = 202,
                             Name = $"Trading thư nghiệm cho mã: {stockCode}",
                             DataKey = stockCode,
-                            ActiveTime = currentTime.Date.AddHours(1).AddMinutes(6)
+                            ActiveTime = currentTime.AddHours(1).AddMinutes(6)
                         });
                         insertSchedules.Add(new()
                         {
                             Type = 203,
                             Name = $"Tính toán giá dự phóng của các công ty chứng khoán cho mã: {stockCode}",
                             DataKey = stockCode,
-                            ActiveTime = currentTime.Date.AddHours(1).AddMinutes(5)
+                            ActiveTime = currentTime.AddHours(1).AddMinutes(5)
                         });
                         insertSchedules.Add(new()
                         {
                             Type = 208,
                             Name = $"Phân tích các yếu tố vĩ mô tác động đến cổ phiếu: {stockCode}",
                             DataKey = stockCode,
-                            ActiveTime = currentTime.Date.AddHours(1).AddMinutes(5)
+                            ActiveTime = currentTime.AddHours(1).AddMinutes(5)
                         });
                         insertSchedules.Add(new()
                         {
                             Type = 209,
                             Name = $"Đánh giá tăng trưởng doanh nghiệp: {stockCode}",
                             DataKey = stockCode,
-                            ActiveTime = currentTime.Date.AddHours(1).AddMinutes(5)
+                            ActiveTime = currentTime.AddHours(1).AddMinutes(5)
                         });
                         insertSchedules.Add(new()
                         {
                             Type = 210,
                             Name = $"Phân tích đánh giá của fiintrading: {stockCode}",
                             DataKey = stockCode,
-                            ActiveTime = currentTime.Date.AddHours(1).AddMinutes(5)
+                            ActiveTime = currentTime.AddHours(1).AddMinutes(5)
                         });
                         insertSchedules.Add(new()
                         {
                             Type = 211,
                             Name = $"Phân tích đánh giá của vnd: {stockCode}",
                             DataKey = stockCode,
-                            ActiveTime = currentTime.Date.AddHours(1).AddMinutes(5)
+                            ActiveTime = currentTime.AddHours(1).AddMinutes(5)
                         });
                         insertSchedules.Add(new()
                         {
                             Type = 212,
                             Name = $"Tìm kiếm các đặc trưng của cô phiếu cho mã: {stockCode}",
                             DataKey = stockCode,
-                            ActiveTime = currentTime.Date.AddHours(1).AddMinutes(5)
+                            ActiveTime = currentTime.AddHours(1).AddMinutes(5)
                         });
                     }
                     else
@@ -995,7 +995,7 @@ namespace Pl.Sas.Core.Services
                             Type = 207,
                             Name = $"Phân tích tâm lý, kỹ thuật cho chỉ số: {stockCode}",
                             DataKey = stockCode,
-                            ActiveTime = currentTime.Date.AddHours(1).AddMinutes(4)
+                            ActiveTime = currentTime.AddHours(1).AddMinutes(4)
                         });
                         insertSchedules.Add(new()
                         {

@@ -21,11 +21,19 @@ using System.Reflection;
 using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
+if (builder.Environment.IsProduction())
+{
+    builder.Logging.ClearProviders();
+}
 builder.Services.AddDistributeLogService(option =>
 {
     option.BaseUrl = builder.Configuration["LoggingSettings:BaseUrl"];
     option.Secret = builder.Configuration["LoggingSettings:Secret"];
     option.ServerName = builder.Configuration["LoggingSettings:ServerName"] ?? Utilities.IdentityServer();
+    if (!builder.Environment.IsProduction())
+    {
+        option.FilterLogLevels = new HashSet<LogLevel>();
+    }
 });
 
 builder.Services.AddOptions();

@@ -153,7 +153,7 @@ namespace Pl.Sas.Infrastructure.Crawl
 
         public virtual async Task<SsiTransaction?> DownloadTransactionAsync(string stockNo)
         {
-            var requestUrl = "https://gateway-iboard.ssi.com.vn/graphql";
+            var requestUrl = "https://wgateway-iboard.ssi.com.vn/graphql";
             var stockPriceSendQuery = new
             {
                 operationName = "leTables",
@@ -161,7 +161,7 @@ namespace Pl.Sas.Infrastructure.Crawl
                 {
                     stockNo
                 },
-                query = "query leTables($stockNo: String) {\n  leTables(stockNo: $stockNo) {\n    stockNo\n    price\n    vol\n    accumulatedVol\n    time\n    ref\n    side\n    __typename\n  }\n  stockRealtime(stockNo: $stockNo) {\n    stockNo\n    ceiling\n    floor\nrefPrice\n    stockSymbol\n    __typename\n  }\n}\n"
+                query = "query leTables($stockNo: String) {\n  leTables(stockNo: $stockNo) {\n    stockNo\n    price\n    vol\n    accumulatedVol\n    time\n    ref\n    side\n    priceChange\n    priceChangePercent\n    changeType\n    __typename\n  }\n  stockRealtime(stockNo: $stockNo) {\n    stockNo\n    ceiling\n    floor\n    refPrice\n    stockSymbol\n    __typename\n  }\n}\n"
             };
             return await _httpClient.PostJsonAsync<SsiTransaction>(requestUrl, new StringContent(JsonSerializer.Serialize(stockPriceSendQuery), Encoding.UTF8, "application/json"));
         }
