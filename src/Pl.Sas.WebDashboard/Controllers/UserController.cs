@@ -3,29 +3,26 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Pl.Sas.WebDashboard.Models;
 using Pl.Sas.Infrastructure.Identity;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Pl.Sas.Core.Entities.Security;
 
 namespace Pl.Sas.WebDashboard.Controllers
 {
     public class UserController : Controller
     {
-        private readonly ILogger<UserController> _logger;
-        private readonly SignInManager<User> _signInManager;
-        private readonly UserManager<User> _userManager;
+        private readonly IdentityDbContext _identityDbContext;
 
         public UserController(
-            UserManager<User> userManager,
-            SignInManager<User> signInManager,
-            ILogger<UserController> logger)
+            IdentityDbContext identityDbContext)
         {
-            _userManager = userManager;
-            _logger = logger;
-            _signInManager = signInManager;
+            _identityDbContext = identityDbContext;
         }
 
         [HttpGet("/dang-nhap")]
-        public async Task<IActionResult> LoginAsync(string? returnUrl = null)
+        public IActionResult Login(string? returnUrl = null)
         {
-            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
             ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
@@ -35,30 +32,22 @@ namespace Pl.Sas.WebDashboard.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = await _userManager.FindByNameAsync(loginViewModel.Email);
-                if (user is null)
+                var user = await _identityDbContext.Users.FirstOrDefaultAsync(q => q.UserName == loginViewModel.Email);
+                if (user is not null && user.Active && !user.Deleted && user.Password == Cryptography.CreateMd5Password(loginViewModel.Password))
                 {
-                    user = await _userManager.FindByEmailAsync(loginViewModel.Email);
-                }
-
-                if (user is not null && !user.Deleted)
-                {
-                    var result = await _signInManager.PasswordSignInAsync(user, loginViewModel.Password, loginViewModel.RememberMe, lockoutOnFailure: false);
-                    if (result.Succeeded)
+                    var identitys = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
+                    identitys.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
+                    identitys.AddClaim(new Claim(ClaimTypes.IsPersistent, loginViewModel.RememberMe ? "1" : "0"));
+                    ClaimsPrincipal userPrincipal = new(identitys);
+                    AuthenticationProperties authenticationProperties = new()
                     {
-                        _logger.LogWarning("User {Email} logged in at {Now}.", user.Email, DateTime.Now);
-                        returnUrl ??= "/";
-                        return LocalRedirect(returnUrl);
-                    }
-                    if (result.RequiresTwoFactor)
-                    {
-                        return RedirectToPage("./LoginWith2fa", new { ReturnUrl = returnUrl, loginViewModel.RememberMe });
-                    }
-                    if (result.IsLockedOut)
-                    {
-                        _logger.LogWarning("User account locked out.");
-                        return RedirectToPage("./Lockout");
-                    }
+                        IsPersistent = loginViewModel.RememberMe,
+                        IssuedUtc = DateTime.UtcNow,
+                        AllowRefresh = true,
+                    };
+                    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, userPrincipal, authenticationProperties);
+                    returnUrl ??= "/";
+                    return LocalRedirect(returnUrl);
                 }
                 ModelState.AddModelError(string.Empty, "Đăng nhập không thành công.");
             }
@@ -69,8 +58,7 @@ namespace Pl.Sas.WebDashboard.Controllers
         public async Task<IActionResult> LogoutAsync(string? returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
-            await _signInManager.SignOutAsync();
-            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+            await HttpContext.SignOutAsync();
             return LocalRedirect(returnUrl);
         }
     }

@@ -5,7 +5,7 @@ using Pl.Sas.Core.Interfaces;
 namespace Pl.Sas.Infrastructure.Identity
 {
     /// <summary>
-    /// Lớp xử lỹ liệu cho analytic
+    /// Lớp xử lỹ liệu cho identity
     /// </summary>
     public class IdentityData : IIdentityData
     {

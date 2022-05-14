@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Pl.Sas.WebDashboard.Models;
 using Pl.Sas.Core.Interfaces;
@@ -8,11 +7,10 @@ using System.Text.Json;
 
 namespace Pl.Sas.WebDashboard.Controllers
 {
-    [Authorize(Roles = PermissionConstants.SystemManager)]
+    [Authorize]
     public class SystemController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly UserManager<User> _userManager;
         private readonly UserService _userService;
         private readonly IMemoryCacheService _memoryCacheService;
         private readonly IAsyncCacheService _asyncCacheService;
@@ -23,11 +21,9 @@ namespace Pl.Sas.WebDashboard.Controllers
             IAsyncCacheService asyncCacheService,
             IMemoryCacheService memoryCacheService,
             UserService userService,
-            UserManager<User> userManager,
             ILogger<HomeController> logger)
         {
             _logger = logger;
-            _userManager = userManager;
             _userService = userService;
             _memoryCacheService = memoryCacheService;
             _asyncCacheService = asyncCacheService;
@@ -68,21 +64,9 @@ namespace Pl.Sas.WebDashboard.Controllers
                         break;
 
                     case 3:
-                        var changeUser = await _userManager.FindByEmailAsync(utilitiesModel.EmailOrId);
-                        if (changeUser is null)
-                        {
-                            changeUser = await _userManager.FindByIdAsync(utilitiesModel.EmailOrId);
-                        }
-                        if (changeUser is not null)
-                        {
-                            var removePasswordResult = await _userManager.RemovePasswordAsync(changeUser);
-                            if (removePasswordResult.Succeeded)
-                            {
-                                var updatePasswordResult = await _userManager.AddPasswordAsync(changeUser, utilitiesModel.NewPassword);
-                                status = updatePasswordResult.Succeeded ? 1 : 0;
-                                message = updatePasswordResult.Succeeded ? "Đổi mật khẩu thành công." : "Đổi mật khẩu không thành công.";
-                            }
-                        }
+                        var check = await _userService.SetPassowrdAsync(utilitiesModel.EmailOrId, utilitiesModel.NewPassword);
+                        status = check ? 1 : 0;
+                        message = check ? "Đổi mật khẩu thành công." : "Đổi mật khẩu không thành công.";
                         break;
 
                     case 4:
@@ -93,17 +77,9 @@ namespace Pl.Sas.WebDashboard.Controllers
                         break;
 
                     case 5:
-                        var deleteUser = await _userManager.FindByEmailAsync(utilitiesModel.Email);
-                        if (deleteUser is null)
-                        {
-                            deleteUser = await _userManager.FindByIdAsync(utilitiesModel.Email);
-                        }
-                        if (deleteUser is not null)
-                        {
-                            var deleteResult = await _userManager.DeleteAsync(deleteUser);
-                            status = deleteResult.Succeeded ? 1 : 0;
-                            message = deleteResult.Succeeded ? "Xóa người dùng thành công." : "Xóa người dùng không thành công.";
-                        }
+                        var checkDelete = await _userService.DeleteAsync(utilitiesModel.EmailOrId);
+                        status = checkDelete ? 1 : 0;
+                        message = checkDelete ? "Xóa người dùng thành công." : "Xóa người dùng không thành công.";
                         break;
 
                     default:

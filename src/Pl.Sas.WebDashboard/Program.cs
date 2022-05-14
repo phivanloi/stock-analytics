@@ -1,8 +1,8 @@
 using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.WebEncoders;
@@ -21,7 +21,6 @@ using Pl.Sas.Infrastructure.System;
 using Pl.Sas.WebDashboard;
 using StackExchange.Redis;
 using System.Net;
-using System.Reflection;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
 
@@ -50,69 +49,42 @@ builder.Services.AddDbContext<SystemDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("SystemConnection"),
     sqlServerOptionsAction: sqlOptions =>
     {
-        sqlOptions.MigrationsAssembly(typeof(Program).GetTypeInfo().Assembly.GetName().Name);
         sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
     }));
 builder.Services.AddDbContext<MarketDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("MarketConnection"),
     sqlServerOptionsAction: sqlOptions =>
     {
-        sqlOptions.MigrationsAssembly(typeof(Program).GetTypeInfo().Assembly.GetName().Name);
         sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
     }));
 builder.Services.AddDbContext<AnalyticsDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("AnalyticsConnection"),
     sqlServerOptionsAction: sqlOptions =>
     {
-        sqlOptions.MigrationsAssembly(typeof(Program).GetTypeInfo().Assembly.GetName().Name);
         sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
     }));
 builder.Services.AddDbContext<Pl.Sas.Infrastructure.Identity.IdentityDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConnection"),
     sqlServerOptionsAction: sqlOptions =>
     {
-        sqlOptions.MigrationsAssembly(typeof(Program).GetTypeInfo().Assembly.GetName().Name);
         sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
     }));
-
-builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = true)
-               .AddRoles<IdentityRole>()
-               .AddEntityFrameworkStores<IdentityDbContext>()
-               .AddErrorDescriber<Pl.Sas.Infrastructure.Identity.IdentityErrorDescriber>();
-builder.Services.Configure<IdentityOptions>(options =>
-{
-    options.Stores.MaxLengthForKeys = 36;
-    options.Password.RequireDigit = false;
-    options.Password.RequireLowercase = false;
-    options.Password.RequireNonAlphanumeric = false;
-    options.Password.RequireUppercase = false;
-    options.Password.RequiredLength = 6;
-    options.Password.RequiredUniqueChars = 1;
-
-    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
-    options.Lockout.MaxFailedAccessAttempts = 5;
-    options.Lockout.AllowedForNewUsers = true;
-
-    options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
-    options.User.RequireUniqueEmail = false;
-});
-
-builder.Services.ConfigureApplicationCookie(options =>
-{
-    options.Cookie.HttpOnly = true;
-    options.Cookie.Name = "pliuddashboard";
-    options.ExpireTimeSpan = TimeSpan.FromMinutes(86400);
-
-    options.LoginPath = "/dang-nhap";
-    options.LogoutPath = "/dang-xuat";
-    options.AccessDeniedPath = "/accessdenied.html";
-    options.SlidingExpiration = true;
-});
 
 builder.Services.AddDataProtection(opts =>
 {
     opts.ApplicationDiscriminator = "PLSASIDENTITY";
 }).PersistKeysToStackExchangeRedis(ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("CacheConnection")), "dashboard-dataprotection");
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+{
+    options.Cookie.Name = "pliuddashboard";
+    options.Cookie.HttpOnly = true;
+    options.SlidingExpiration = true;
+    options.LoginPath = "/dang-nhap";
+    options.LogoutPath = "/dang-xuat";
+    options.AccessDeniedPath = "/accessdenied.html";
+    options.Cookie.SecurePolicy = CookieSecurePolicy.None;
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(86400);
+});
 
 builder.Services.AddHealthChecks()
     .AddCheck("self", () => HealthCheckResult.Healthy())
@@ -189,8 +161,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-app.UseAuthorization();
 app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapHealthChecks("/hc", new HealthCheckOptions()
 {

@@ -1,48 +1,42 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Pl.Sas.Core.Entities;
 
 namespace Pl.Sas.Infrastructure.Identity
 {
-    public class IdentityDbContext : IdentityDbContext<User>
+    public class IdentityDbContext : DbContext
     {
         public IdentityDbContext(DbContextOptions<IdentityDbContext> options) : base(options) { }
 
-
         public virtual DbSet<FollowStock> FollowStocks { get; set; } = null!;
-
+        public virtual DbSet<User> Users { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
 
             #region FollowStock
-
             builder.Entity<FollowStock>(b =>
             {
-                b.Property(c => c.Id).HasMaxLength(36).IsRequired();
-                b.Property(p => p.UserId).HasMaxLength(36).IsRequired();
-                b.Property(p => p.Symbol).HasMaxLength(36).IsRequired();
+                b.Property(c => c.Id).HasMaxLength(22).IsRequired();
+                b.Property(p => p.UserId).HasMaxLength(22).IsRequired();
+                b.Property(p => p.Symbol).HasMaxLength(16).IsRequired();
                 b.HasIndex(p => new { p.UserId, p.Symbol });
             });
+            #endregion
 
-            #endregion FollowStock
-
+            #region User
             builder.Entity<User>(b =>
             {
-                b.Property(p => p.Avatar).HasMaxLength(128);
-                b.Property(p => p.FullName).HasMaxLength(64);
-                b.ToTable("Users");
+                b.Property(c => c.Id).HasMaxLength(22).IsRequired();
+                b.Property(p => p.UserName).HasMaxLength(128).IsRequired();
+                b.Property(p => p.Email).HasMaxLength(128);
+                b.Property(p => p.Phone).HasMaxLength(16);
+                b.Property(p => p.Password).HasMaxLength(512);
+                b.Property(p => p.Avatar).HasMaxLength(1024);
+                b.Property(p => p.FullName).HasMaxLength(64).IsRequired();
+                b.HasIndex(p => new { p.UserName });
             });
-
-            builder.Entity<IdentityRole>().ToTable("Roles");
-            builder.Entity<IdentityUserRole<string>>().ToTable("UserRoles");
-            builder.Entity<IdentityRoleClaim<string>>().ToTable("UserClaims");
-            builder.Entity<IdentityUserLogin<string>>().ToTable("UserLogins");
-            builder.Entity<IdentityRoleClaim<string>>().ToTable("RoleClaims");
-            builder.Entity<IdentityUserToken<string>>().ToTable("UserTokens");
-            builder.Entity<IdentityUserClaim<string>>().ToTable("UserClaims");
+            #endregion
         }
     }
 }

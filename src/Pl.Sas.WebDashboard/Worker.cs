@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using Pl.Sas.Core;
 using Pl.Sas.Core.Interfaces;
-using Pl.Sas.Core.Services;
 
 namespace Pl.Sas.WebDashboard
 {

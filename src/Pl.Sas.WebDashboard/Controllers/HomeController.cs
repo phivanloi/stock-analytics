@@ -4,14 +4,13 @@ using Pl.Sas.WebDashboard.Models;
 using Pl.Sas.Core;
 using Pl.Sas.Core.Entities;
 using Pl.Sas.Core.Interfaces;
-using Pl.Sas.Infrastructure.Identity;
 using System.Text;
 using System.Text.Json;
 using Pl.Sas.Core.Services;
 
 namespace Pl.Sas.WebDashboard.Controllers
 {
-    [Authorize(Roles = PermissionConstants.CmsDashbroad)]
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly StockViewService _stockViewService;

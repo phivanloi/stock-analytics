@@ -97,7 +97,6 @@ namespace Pl.Sas.Core.Entities
         /// <para>102 Phân loại su thế giá.</para>
         ///
         /// <para>300 Xử lý hiển thị dữ liệu chứng khoán cho hiển thị.</para>
-        /// <para>301 Xử lý thông báo cho người dùng.</para>
         /// </summary>
         public int Type { get; set; }
 

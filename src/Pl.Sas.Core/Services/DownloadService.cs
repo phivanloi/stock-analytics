@@ -439,6 +439,12 @@ namespace Pl.Sas.Core.Services
                 }
             }
 
+            if (size > 10)
+            {
+                schedule.AddOrUpdateOptions("CorporateActionCrawlSize", "10");
+                await _systemData.UpdateScheduleAsync(schedule);
+            }
+
             await _systemData.SetKeyValueAsync(checkingKey, true);
             return await _marketData.InsertCorporateActionAsync(insertList);
         }

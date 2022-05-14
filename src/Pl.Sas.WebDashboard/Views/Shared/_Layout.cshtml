@@ -80,7 +80,7 @@
                                 <p>Biểu đồ chỉ số</p>
                             </a>
                         </li>
-                        @if (await userService.UserIsInRoleAsync(userInfo, PermissionConstants.SystemManager))
+                        @if (userInfo?.IsAdministator == true)
                         {
                             <li class="nav-item">
                                 <a href="/system/utilities" class="nav-link @(activeMenuId.Equals("utilities") ? "active" : "")">

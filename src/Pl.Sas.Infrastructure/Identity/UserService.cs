@@ -1,7 +1,8 @@
 ﻿using Ardalis.GuardClauses;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Pl.Sas.Core;
+using Pl.Sas.Core.Entities;
+using Pl.Sas.Core.Entities.Security;
 using Pl.Sas.Core.Interfaces;
 using System.Security.Claims;
 
@@ -9,97 +10,15 @@ namespace Pl.Sas.Infrastructure.Identity
 {
     public class UserService
     {
-        private readonly UserManager<User> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IdentityDbContext _identityDbContext;
         private readonly IMemoryCacheService _memoryCacheService;
 
         public UserService(
-            RoleManager<IdentityRole> roleManager,
-            IMemoryCacheService memoryCacheService,
-            UserManager<User> userManager)
+           IdentityDbContext identityDbContext,
+            IMemoryCacheService memoryCacheService)
         {
-            _userManager = userManager;
-            _roleManager = roleManager;
+            _identityDbContext = identityDbContext;
             _memoryCacheService = memoryCacheService;
-        }
-
-        /// <summary>
-        /// Kiểm tra xem thông tin đăng nhập hiện tại có quyền truy cập vào một role hay không
-        /// </summary>
-        /// <param name="claimsPrincipal">Thông tin đăng nhập</param>
-        /// <param name="role">Quyền</param>
-        /// <returns>bool</returns>
-        public virtual async Task<bool> UserIsInRoleAsync(ClaimsPrincipal claimsPrincipal, string role)
-        {
-            if (claimsPrincipal is null || string.IsNullOrEmpty(role))
-            {
-                return false;
-            }
-            var user = await _userManager.GetUserAsync(claimsPrincipal);
-            if (user is null)
-            {
-                return false;
-            }
-            return await _userManager.IsInRoleAsync(user, role);
-        }
-
-        /// <summary>
-        /// Kiểm tra xem người dùng hiện tạ có quyền không
-        /// </summary>
-        /// <param name="user">User cần kiểm tra</param>
-        /// <param name="role">Quyền</param>
-        /// <returns>Task bool</returns>
-        public virtual async Task<bool> UserIsInRoleAsync(User? user, string role)
-        {
-            if (user is null || string.IsNullOrEmpty(role))
-            {
-                return false;
-            }
-            return await _userManager.IsInRoleAsync(user, role);
-        }
-
-        /// <summary>
-        /// Create default user for test
-        /// </summary>
-        /// <returns>Task</returns>
-        public virtual async Task<string> CreateDefaultUserAsync()
-        {
-            if (_userManager.Users.Any())
-            {
-                return string.Empty;
-            }
-
-            User user = new()
-            {
-                UserName = "phivanloi@gmail.com",
-                Email = "phivanloi@gmail.com",
-                Active = true,
-                EmailConfirmed = true,
-                Deleted = false,
-                FullName = "Quản trị viên",
-                Avatar = "http://s120-ava-talk.zadn.vn/a/4/2/3/1/120/e874de0ca7c1ac55ddb4c1e047e463d8.jpg",
-                PhoneNumber = "0906282026"
-            };
-
-            await AddRoleToSystemAsync(PermissionConstants.AdministratorRoles);
-            var createUserResult = await _userManager.CreateAsync(user, "liemtinmoi2413");
-            if (createUserResult.Succeeded)
-            {
-                await _userManager.AddToRolesAsync(user, new List<string>() { PermissionConstants.CmsDashbroad, PermissionConstants.SystemManager });
-            }
-            return user.Id;
-
-            async Task AddRoleToSystemAsync(IEnumerable<Permission> permissions)
-            {
-                foreach (var permission in permissions)
-                {
-                    if (!await _roleManager.RoleExistsAsync(permission.Role))
-                    {
-                        await _roleManager.CreateAsync(new IdentityRole(permission.Role));
-                    }
-                    await AddRoleToSystemAsync(permission.Permissions);
-                }
-            }
         }
 
         public virtual async Task<bool> CreateUser(string email, string fullName, string password, string avatar = "")
@@ -114,14 +33,45 @@ namespace Pl.Sas.Infrastructure.Identity
                 UserName = email,
                 Email = email,
                 Active = true,
-                EmailConfirmed = true,
                 Deleted = false,
                 FullName = fullName,
-                Avatar = avatar
+                Avatar = avatar,
+                Password = Cryptography.CreateMd5Password(password)
             };
-            var createUserResult = await _userManager.CreateAsync(user, password);
-            await _userManager.AddToRolesAsync(user, new List<string>() { PermissionConstants.CmsDashbroad });
-            return createUserResult.Succeeded;
+            _identityDbContext.Users.Add(user);
+            return await _identityDbContext.SaveChangesAsync() > 0;
+        }
+
+        public virtual async Task<bool> SetPassowrdAsync(string email, string password)
+        {
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+            {
+                return false;
+            }
+
+            var user = await _identityDbContext.Users.FirstOrDefaultAsync(q => q.UserName == email || q.Id == email);
+            if (user is not null)
+            {
+                user.Password = Cryptography.CreateMd5Password(password);
+                return await _identityDbContext.SaveChangesAsync() > 0;
+            }
+            return false;
+        }
+
+        public virtual async Task<bool> DeleteAsync(string email)
+        {
+            if (string.IsNullOrEmpty(email))
+            {
+                return false;
+            }
+
+            var user = await _identityDbContext.Users.FirstOrDefaultAsync(q => q.UserName == email || q.Id == email);
+            if (user is not null)
+            {
+                _identityDbContext.Users.Remove(user);
+                return await _identityDbContext.SaveChangesAsync() > 0;
+            }
+            return false;
         }
 
         /// <summary>
@@ -147,7 +97,7 @@ namespace Pl.Sas.Infrastructure.Identity
             var cacheKey = $"cgui-usi{userId}";
             return await _memoryCacheService.GetOrCreateAsync(cacheKey, async () =>
             {
-                return await _userManager.Users.AsNoTracking().FirstOrDefaultAsync(q => q.Id == userId);
+                return await _identityDbContext.Users.AsNoTracking().FirstOrDefaultAsync(q => q.Id == userId);
             }, Constants.DefaultCacheTime * 60 * 24);
         }
     }

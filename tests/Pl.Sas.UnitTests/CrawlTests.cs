@@ -50,7 +50,7 @@ namespace Pl.Sas.UnitTests
             var hostedService = serviceProvider.GetService<IHostedService>() as LoggingQueuedHostedService ?? throw new Exception("Can't get LoggingQueuedHostedService");
             await hostedService.StartAsync(CancellationToken.None);
 
-            var capitalAndDividend = await crawlData.DownloadCapitalAndDividendAsync("TVC");
+            var capitalAndDividend = await crawlData.DownloadCapitalAndDividendAsync("HTH");
             Assert.True(capitalAndDividend != null);
 
             await hostedService.StopAsync(CancellationToken.None);
