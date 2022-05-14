@@ -8,6 +8,6 @@ namespace Pl.Sas.Core.Interfaces
         /// Xử lý cập nhập bộ nhớ với queue message
         /// </summary>
         /// <param name="queueMessage"></param>
-        void HandleUpdateByQueueMessage(QueueMessage queueMessage);
+        void HandleUpdate(QueueMessage queueMessage);
     }
 }

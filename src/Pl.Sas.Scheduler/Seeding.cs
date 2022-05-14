@@ -34,7 +34,7 @@ namespace Pl.Sas.Scheduler
                     },
                     new Schedule()
                     {
-                        Type = 200,
+                        Type = 205,
                         Name = "Xử lý ngày giao dịch không hưởng quyền chi trả cổ tức thì xóa và import lại lịch sử giá.",
                         ActiveTime = DateTime.Now.Date.AddDays(1).AddHours(2).AddMinutes(50)
                     },
@@ -71,7 +71,7 @@ namespace Pl.Sas.Scheduler
                     PhoneNumber = "0906282026"
                 };
                 AddRoleToSystemAsync(PermissionConstants.AdministratorRoles).Wait();
-                var createUserResult = _userManager.CreateAsync(user, "liemtinmoi2413").Result;
+                var createUserResult = _userManager.CreateAsync(user, "Liemtinmoi@2413").Result;
                 if (createUserResult.Succeeded)
                 {
                     _userManager.AddToRolesAsync(user, new List<string>() { PermissionConstants.CmsDashbroad, PermissionConstants.SystemManager }).Wait();

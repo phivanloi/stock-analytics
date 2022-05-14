@@ -12,7 +12,7 @@ using Pl.Sas.Infrastructure.System;
 namespace Pl.Sas.Scheduler.Migrations.SystemDb
 {
     [DbContext(typeof(SystemDbContext))]
-    [Migration("20220510162052_InitialCreate")]
+    [Migration("20220512234257_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

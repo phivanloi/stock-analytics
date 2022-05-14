@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -14,7 +15,6 @@ namespace Pl.Sas.Scheduler.Migrations.AnalyticsDb
                 {
                     Id = table.Column<string>(type: "nvarchar(22)", maxLength: 22, nullable: false),
                     Symbol = table.Column<string>(type: "nvarchar(16)", maxLength: 16, nullable: false),
-                    TradingDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     MarketScore = table.Column<int>(type: "int", nullable: false),
                     MarketNotes = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
                     CompanyValueScore = table.Column<int>(type: "int", nullable: false),
@@ -61,7 +61,6 @@ namespace Pl.Sas.Scheduler.Migrations.AnalyticsDb
                     Id = table.Column<string>(type: "nvarchar(22)", maxLength: 22, nullable: false),
                     Symbol = table.Column<string>(type: "nvarchar(16)", maxLength: 16, nullable: false),
                     Principle = table.Column<int>(type: "int", nullable: false),
-                    TradingDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     IsBuy = table.Column<bool>(type: "bit", nullable: false),
                     BuyPrice = table.Column<float>(type: "real", nullable: false),
                     IsSell = table.Column<bool>(type: "bit", nullable: false),
@@ -79,14 +78,14 @@ namespace Pl.Sas.Scheduler.Migrations.AnalyticsDb
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_AnalyticsResults_Symbol_TradingDate",
+                name: "IX_AnalyticsResults_Symbol",
                 table: "AnalyticsResults",
-                columns: new[] { "Symbol", "TradingDate" });
+                column: "Symbol");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TradingResults_Symbol_TradingDate_Principle",
+                name: "IX_TradingResults_Symbol_Principle",
                 table: "TradingResults",
-                columns: new[] { "Symbol", "TradingDate", "Principle" });
+                columns: new[] { "Symbol", "Principle" });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

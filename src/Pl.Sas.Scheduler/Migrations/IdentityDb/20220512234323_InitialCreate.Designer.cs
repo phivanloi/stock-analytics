@@ -12,7 +12,7 @@ using Pl.Sas.Infrastructure.Identity;
 namespace Pl.Sas.Scheduler.Migrations.IdentityDb
 {
     [DbContext(typeof(IdentityDbContext))]
-    [Migration("20220510162557_InitialCreate")]
+    [Migration("20220512234323_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

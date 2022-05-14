@@ -12,7 +12,7 @@ using Pl.Sas.Infrastructure.Market;
 namespace Pl.Sas.Scheduler.Migrations.MarketDb
 {
     [DbContext(typeof(MarketDbContext))]
-    [Migration("20220510162058_InitialCreate")]
+    [Migration("20220512234310_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

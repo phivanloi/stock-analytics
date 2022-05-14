@@ -5,7 +5,7 @@ using Pl.Sas.Core.Entities;
 using Pl.Sas.Core.Interfaces;
 using Pl.Sas.Infrastructure.Analytics;
 
-namespace Pl.Sas.Infrastructure.Data
+namespace Pl.Sas.Infrastructure.Analytics
 {
     /// <summary>
     /// Lớp xử lỹ liệu cho analytic

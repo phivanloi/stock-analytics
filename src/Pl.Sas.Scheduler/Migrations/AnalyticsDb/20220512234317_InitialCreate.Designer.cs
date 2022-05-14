@@ -12,7 +12,7 @@ using Pl.Sas.Infrastructure.Analytics;
 namespace Pl.Sas.Scheduler.Migrations.AnalyticsDb
 {
     [DbContext(typeof(AnalyticsDbContext))]
-    [Migration("20220510162107_InitialCreate")]
+    [Migration("20220512234317_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -74,9 +74,6 @@ namespace Pl.Sas.Scheduler.Migrations.AnalyticsDb
                     b.Property<byte[]>("TargetPriceNotes")
                         .HasColumnType("varbinary(max)");
 
-                    b.Property<DateTime>("TradingDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<DateTime>("UpdatedTime")
                         .HasColumnType("datetime2");
 
@@ -88,7 +85,7 @@ namespace Pl.Sas.Scheduler.Migrations.AnalyticsDb
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Symbol", "TradingDate");
+                    b.HasIndex("Symbol");
 
                     b.ToTable("AnalyticsResults");
                 });
@@ -162,9 +159,6 @@ namespace Pl.Sas.Scheduler.Migrations.AnalyticsDb
                     b.Property<float>("TotalTax")
                         .HasColumnType("real");
 
-                    b.Property<DateTime>("TradingDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<byte[]>("TradingNotes")
                         .HasColumnType("varbinary(max)");
 
@@ -173,7 +167,7 @@ namespace Pl.Sas.Scheduler.Migrations.AnalyticsDb
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Symbol", "TradingDate", "Principle");
+                    b.HasIndex("Symbol", "Principle");
 
                     b.ToTable("TradingResults");
                 });
