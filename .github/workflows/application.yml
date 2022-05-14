@@ -8,6 +8,7 @@ jobs:
   application:
     runs-on: sasapp
     steps:
+    - uses: actions/checkout@v3
     - name: docker-compose.yml up
       run: docker-compose -f docker-compose.yml -p pl_application up -d --build
   restarthaproxy:
