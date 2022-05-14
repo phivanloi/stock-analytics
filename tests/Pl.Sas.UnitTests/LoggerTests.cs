@@ -29,5 +29,4 @@ namespace Pl.Sas.UnitTests
             Assert.True(response.IsSuccessStatusCode);
         }
     }
-
 }

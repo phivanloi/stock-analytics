@@ -100,5 +100,20 @@ namespace Pl.Sas.UnitTests
 
             await hostedService.StopAsync(CancellationToken.None);
         }
+
+        [Fact]
+        public async Task DownloadBankInterestRateTestAsync()
+        {
+            var services = ConfigureServices.GetConfigureServices();
+            var serviceProvider = services.BuildServiceProvider();
+            var crawlData = serviceProvider.GetService<IDownloadData>() ?? throw new Exception("Can't get ICrawlData");
+            var hostedService = serviceProvider.GetService<IHostedService>() as LoggingQueuedHostedService ?? throw new Exception("Can't get LoggingQueuedHostedService");
+            await hostedService.StartAsync(CancellationToken.None);
+
+            var bankInterestRate = await crawlData.DownloadBankInterestRateAsync();
+            Assert.True(bankInterestRate != null);
+
+            await hostedService.StopAsync(CancellationToken.None);
+        }
     }
 }

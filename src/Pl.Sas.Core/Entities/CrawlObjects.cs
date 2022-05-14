@@ -711,22 +711,22 @@ namespace Pl.Sas.Core.Entities.CrawlObjects
     public class SsiIndexPrice
     {
         [JsonPropertyName("t")]
-        public int[] Time { get; set; } = null!;
+        public long[] Time { get; set; } = null!;
 
         [JsonPropertyName("c")]
-        public float[] Close { get; set; } = null!;
+        public string[] Close { get; set; } = null!;
 
         [JsonPropertyName("o")]
-        public float[] Open { get; set; } = null!;
+        public string[] Open { get; set; } = null!;
 
         [JsonPropertyName("h")]
-        public float[] Highest { get; set; } = null!;
+        public string[] Highest { get; set; } = null!;
 
         [JsonPropertyName("l")]
-        public float[] Lowest { get; set; } = null!;
+        public string[] Lowest { get; set; } = null!;
 
         [JsonPropertyName("v")]
-        public int[] Volumes { get; set; } = null!;
+        public string[] Volumes { get; set; } = null!;
 
         [JsonPropertyName("s")]
         public string Status { get; set; } = null!;

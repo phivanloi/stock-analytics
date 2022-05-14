@@ -80,20 +80,17 @@ namespace Pl.Sas.Core.Services
                             await UpdateFiinStockEvaluatesAsync(schedule);
                             break;
                         case 9:
-                            await UpdateStockRecommendationsAsync(schedule);
-                            break;
-                        case 10:
-                            await UpdateVndStockScoreAsync(schedule);
-                            break;
-
-                        case 30:
                             await UpdateIndexPricesAsync(schedule);
                             break;
-
-                        case 50:
+                        case 10:
                             await UpdateBankInterestRateAsync(schedule);
                             break;
-
+                        case 11:
+                            await UpdateStockRecommendationsAsync(schedule);
+                            break;
+                        case 12:
+                            await UpdateVndStockScoreAsync(schedule);
+                            break;
                         default:
                             _logger.LogWarning("Worker process schedule id {Id}, type {Type} don't match any function", schedule.Id, schedule.Type);
                             break;
@@ -126,7 +123,6 @@ namespace Pl.Sas.Core.Services
         public virtual async Task<bool> UpdateBankInterestRateAsync(Schedule schedule)
         {
             var checkingKey = $"Download-BankInterestRate";
-            var configTime = long.Parse(schedule.Options["DateCrawlStartTime"]);
             var bankInterestRates = await _crawlData.DownloadBankInterestRateAsync(schedule.Options["Length"]);
             if (bankInterestRates is null || bankInterestRates.Count < 0)
             {
@@ -177,12 +173,12 @@ namespace Pl.Sas.Core.Services
                             {
                                 Symbol = schedule.DataKey,
                                 TradingDate = tradingDate,
-                                ClosePrice = block.Close[i],
-                                ClosePriceAdjusted = block.Close[i],
-                                OpenPrice = block.Open[i],
-                                HighestPrice = block.Highest[i],
-                                LowestPrice = block.Lowest[i],
-                                TotalMatchVol = block.Volumes[i],
+                                ClosePrice = string.IsNullOrEmpty(block.Close[i]) ? 0 : float.Parse(block.Close[i]),
+                                ClosePriceAdjusted = string.IsNullOrEmpty(block.Close[i]) ? 0 : float.Parse(block.Close[i]),
+                                OpenPrice = string.IsNullOrEmpty(block.Open[i]) ? 0 : float.Parse(block.Open[i]),
+                                HighestPrice = string.IsNullOrEmpty(block.Highest[i]) ? 0 : float.Parse(block.Highest[i]),
+                                LowestPrice = string.IsNullOrEmpty(block.Lowest[i]) ? 0 : float.Parse(block.Lowest[i]),
+                                TotalMatchVol = string.IsNullOrEmpty(block.Volumes[i]) ? 0 : float.Parse(block.Volumes[i]),
                             });
                         }
                     }
@@ -199,10 +195,7 @@ namespace Pl.Sas.Core.Services
             {
                 var check = await _marketData.SaveStockPriceAsync(stockPrices, new List<StockPrice>());
                 schedule.AddOrUpdateOptions("DateCrawlStartTime", DateTimeOffset.Now.AddMonths(-1).ToUnixTimeSeconds().ToString());
-                if (check)
-                {
-                    await _systemData.UpdateScheduleAsync(schedule);
-                }
+                await _systemData.UpdateScheduleAsync(schedule);
                 return await _systemData.SetKeyValueAsync(checkingKey, check);
             }
             else
@@ -319,7 +312,7 @@ namespace Pl.Sas.Core.Services
         /// <exception cref="Exception">Schedule Null DataKey</exception>
         public virtual async Task<bool> UpdateVndStockScoreAsync(Schedule schedule)
         {
-            var symbol = schedule.DataKey ?? throw new Exception("Schedule Null DataKey");
+            var symbol = schedule.DataKey ?? throw new Exception($"Schedule Null DataKey {schedule.Id}");
             var checkingKey = $"{symbol}-Download-VndStockScore";
             var vndStockScoreResponse = await _crawlData.DownloadVndStockScoringsAsync(symbol);
             if (vndStockScoreResponse is null || vndStockScoreResponse.Data.Length < 0)
@@ -901,7 +894,7 @@ namespace Pl.Sas.Core.Services
                         insertSchedules.Add(new()
                         {
                             Type = 7,
-                            Name = $"Bổ sung lịch sử khớp lệnh cho mã: {stockCode}",
+                            Name = $"Bổ sung lịch sử gia dịch cho mã: {stockCode}",
                             DataKey = stockCode,
                             ActiveTime = currentTime.AddMinutes(random.Next(0, 10)),
                             OptionsJson = JsonSerializer.Serialize(new Dictionary<string, string>() { { "SsiStockNo", datum.StockNo } })
@@ -915,14 +908,14 @@ namespace Pl.Sas.Core.Services
                         });
                         insertSchedules.Add(new()
                         {
-                            Type = 9,
+                            Type = 11,
                             Name = $"Thu thập khuyến nghị của các công ty chứng khoán cho mã: {stockCode}",
                             DataKey = stockCode,
                             ActiveTime = currentTime.AddMinutes(random.Next(0, 10))
                         });
                         insertSchedules.Add(new()
                         {
-                            Type = 10,
+                            Type = 12,
                             Name = $"Thu thập đánh giá cổ phiếu của vndirect cho mã: {stockCode}",
                             DataKey = stockCode,
                             ActiveTime = currentTime.AddMinutes(random.Next(0, 10))
