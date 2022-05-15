@@ -56,7 +56,7 @@ namespace Pl.Sas.Core
         /// </summary>
         /// <param name="tradingCase">Trường hợp đầu tư cần lấy</param>
         /// <returns>string</returns>
-        public static string ResultString(this TradingCase tradingCase)
+        public static string ResultString(this TradingCaseV3 tradingCase)
         {
             return $"Lợi nhuận {tradingCase.ProfitPercent:0,0.00}%, thuế {tradingCase.TotalTax:0,0}";
         }

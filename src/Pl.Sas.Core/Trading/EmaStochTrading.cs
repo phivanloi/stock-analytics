@@ -10,7 +10,7 @@ namespace Pl.Sas.Core.Trading
         /// <param name="tradingCase">Case trường hợp đầu tư</param>
         /// <param name="indicatorSet">Tập hợp các chỉ báo của phiên trước đó</param>
         /// <returns>bool</returns>
-        public static bool TodayIsBuy(TradingCase tradingCase, IndicatorSet indicatorSet)
+        public static bool TodayIsBuy(TradingCaseV3 tradingCase, IndicatorSet indicatorSet)
         {
             if (indicatorSet is null)
             {
@@ -29,7 +29,7 @@ namespace Pl.Sas.Core.Trading
         /// <param name="tradingCase">Case trường hợp đầu tư</param>
         /// <param name="indicatorSet">Tập hợp các chỉ báo của phiên trước đó</param>
         /// <returns>bool</returns>
-        public static bool TodayIsSell(TradingCase tradingCase, IndicatorSet indicatorSet)
+        public static bool TodayIsSell(TradingCaseV3 tradingCase, IndicatorSet indicatorSet)
         {
             if (indicatorSet is null)
             {
@@ -72,7 +72,7 @@ namespace Pl.Sas.Core.Trading
         /// <param name="indicatorSet">Tập hợp các chỉ báo</param>
         /// <param name="isNoteTrading">Cho phép ghi lịch sử giao dịch</param>
         /// <returns>decimal profit</returns>
-        public static (bool IsBuy, bool IsSell) Trading(TradingCase tradingCase, List<StockPrice> stockPrices, Dictionary<string, IndicatorSet> indicatorSet, bool isNoteTrading = false)
+        public static (bool IsBuy, bool IsSell) Trading(TradingCaseV3 tradingCase, List<StockPrice> stockPrices, Dictionary<string, IndicatorSet> indicatorSet, bool isNoteTrading = false)
         {
             var capital = tradingCase.FixedCapital;
             long numberStock = 0;
@@ -201,9 +201,9 @@ namespace Pl.Sas.Core.Trading
         /// <param name="exchangeFluctuationsRate">Tỉ lệ biến động trong một phiên của sàn giao dịch</param>
         /// <param name="fixedCapital">Vốn ban đầu</param>
         /// <returns>HashSet TradingCase</returns>
-        public static TradingCase[] BuildTradingCases(float fixedCapital = 10000000)
+        public static TradingCaseV3[] BuildTradingCases(float fixedCapital = 10000000)
         {
-            var testCases = new List<TradingCase>();
+            var testCases = new List<TradingCaseV3>();
             for (int i = 1; i <= 100; i++)
             {
                 for (int j = 1; j <= 100; j++)

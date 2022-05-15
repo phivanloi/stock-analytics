@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Pl.Sas.UnitTests
 {
-    public class WorkerServiceTests
+    public class DownloadServiceTests
     {
 
         [Fact]
@@ -78,11 +78,12 @@ namespace Pl.Sas.UnitTests
             {
                 Name = $"Tải dữ liệu chỉ số: VNINDEX",
                 Type = 9,
-                DataKey = "VNINDEX",
+                DataKey = "FPT",
                 ActiveTime = DateTime.Now,
                 OptionsJson = JsonSerializer.Serialize(new Dictionary<string, string>()
                 {
-                    {"DateCrawlStartTime", new DateTimeOffset(2000, 1, 1, 0, 0, 0, TimeSpan.FromMilliseconds(0)).ToUnixTimeSeconds().ToString() }
+                    {"StartTime", new DateTimeOffset(2000, 1, 1, 0, 0, 0, TimeSpan.FromMilliseconds(0)).ToUnixTimeSeconds().ToString() },
+                    {"ChartType", "D" }
                 })
             });
             Assert.True(1 == 1);

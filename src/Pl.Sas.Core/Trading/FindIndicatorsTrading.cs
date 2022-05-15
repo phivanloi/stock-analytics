@@ -10,7 +10,7 @@ namespace Pl.Sas.Core.Trading
         /// <param name="tradingCase">Case trường hợp đầu tư</param>
         /// <param name="indicatorSet">Tập hợp các chỉ báo của phiên trước đó</param>
         /// <returns>bool</returns>
-        public static bool TodayIsBuy(TradingCase tradingCase, IndicatorSet indicatorSet)
+        public static bool TodayIsBuy(TradingCaseV3 tradingCase, IndicatorSet indicatorSet)
         {
             if (indicatorSet is null)
             {
@@ -31,7 +31,7 @@ namespace Pl.Sas.Core.Trading
         /// <param name="tradingCase">Case trường hợp đầu tư</param>
         /// <param name="indicatorSet">Tập hợp các chỉ báo của phiên trước đó</param>
         /// <returns>bool</returns>
-        public static bool TodayIsSell(TradingCase tradingCase, IndicatorSet indicatorSet)
+        public static bool TodayIsSell(TradingCaseV3 tradingCase, IndicatorSet indicatorSet)
         {
             if (indicatorSet is null)
             {
@@ -76,7 +76,7 @@ namespace Pl.Sas.Core.Trading
         /// <param name="indicatorSet">Tập hợp các chỉ báo</param>
         /// <param name="isNoteTrading">Cho phép ghi lịch sử giao dịch</param>
         /// <returns>decimal profit</returns>
-        public static (bool IsBuy, bool IsSell) Trading(TradingCase tradingCase, List<StockPrice> stockPrices, Dictionary<string, IndicatorSet> indicatorSet, bool isNoteTrading = false)
+        public static (bool IsBuy, bool IsSell) Trading(TradingCaseV3 tradingCase, List<StockPrice> stockPrices, Dictionary<string, IndicatorSet> indicatorSet, bool isNoteTrading = false)
         {
             var capital = tradingCase.FixedCapital;
             long numberStock = 0;
@@ -204,7 +204,7 @@ namespace Pl.Sas.Core.Trading
         /// </summary>
         /// <param name="fixedCapital">Vốn ban đầu</param>
         /// <returns>HashSet TradingCase</returns>
-        public static IEnumerable<TradingCase> BuildTradingCases(float fixedCapital = 10000000)
+        public static IEnumerable<TradingCaseV3> BuildTradingCases(float fixedCapital = 10000000)
         {
             foreach (var i in Emas)
             {
@@ -296,7 +296,7 @@ namespace Pl.Sas.Core.Trading
         /// </summary>
         /// <param name="fixedCapital">Vốn ban đầu</param>
         /// <returns>HashSet TradingCase</returns>
-        public static IEnumerable<TradingCase> BuildTradingCasesV1(float fixedCapital = 10000000)
+        public static IEnumerable<TradingCaseV3> BuildTradingCasesV1(float fixedCapital = 10000000)
         {
             foreach (var i in Emas)
             {

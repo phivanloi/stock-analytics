@@ -19,5 +19,7 @@ namespace Pl.Sas.Core.Entities
         /// Tập hợp các chỉ báo tên chỉ báo và giá trị
         /// </summary>
         public Dictionary<string, float> Values { get; set; } = new Dictionary<string, float>();
+
+        public float S(string f, string l) => Values[f] - Values[l];
     }
 }

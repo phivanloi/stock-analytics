@@ -702,9 +702,9 @@ namespace Pl.Sas.Core.Services
         /// </summary>
         /// <param name="fixedCapital">Số tiền vốn ban đầu</param>
         /// <returns></returns>
-        public static Dictionary<int, TradingCase> AnalyticsBuildTradingCases(float fixedCapital = 10000000)
+        public static Dictionary<int, TradingCaseV3> AnalyticsBuildTradingCases(float fixedCapital = 10000000)
         {
-            var testCases = new Dictionary<int, TradingCase>()
+            var testCases = new Dictionary<int, TradingCaseV3>()
             {
                 {1, new()
                     {

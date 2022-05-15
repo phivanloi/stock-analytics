@@ -2,64 +2,68 @@
 {
     public class TradingCase
     {
+        public TradingCase(bool isNote = false, float fixedCapital = 100000000)
+        {
+            IsNote = isNote;
+            FixedCapital = fixedCapital;
+            TradingMoney = fixedCapital;
+        }
+
+        #region Capital
         /// <summary>
-        /// Vốn cố định ban đầu
+        /// Vốn cố định ban đầu 
         /// </summary>
         public float FixedCapital { get; set; }
 
         /// <summary>
-        /// Kết quả sau khi chạy quá trình test
+        /// Tiền mặt
         /// </summary>
-        public float TradingTestResult { get; set; }
+        public float TradingMoney { get; set; } = 0;
 
         /// <summary>
-        /// Ghi chú diễn giải đầu tư với key -1, thua, 0 hòa hoặc không giao dịch, 1 là thắng. Value là nội dung ghi chú
+        /// Số cổ phiếu
         /// </summary>
-        public List<KeyValuePair<int, string>> ExplainNotes { get; set; } = new();
+        public long NumberStock { get; set; } = 0;
 
         /// <summary>
-        /// Tổng thuế phí giao dịch
+        /// Kết quả tradding
+        /// </summary>
+        public float Profit(float closePrice) => (NumberStock * closePrice * 1000) + TradingMoney;
+
+        /// <summary>
+        /// Tổng thuế phí, giao dịch
         /// </summary>
         public float TotalTax { get; set; }
 
         /// <summary>
         /// Phần trăm lợi nhuận
         /// </summary>
-        public float ProfitPercent => (TradingTestResult - FixedCapital) * 100 / FixedCapital;
+        public float ProfitPercent(float closePrice) => (Profit(closePrice) - FixedCapital) * 100 / FixedCapital;
+        #endregion
+
+        #region Note
+        /// <summary>
+        /// Ghi chú diễn giải đầu tư với key -1, thua, 0 hòa hoặc không giao dịch, 1 là thắng. Value là nội dung ghi chú
+        /// </summary>
+        public List<KeyValuePair<int, string>> ExplainNotes { get; set; } = new();
 
         /// <summary>
-        /// Số phiên chỉ báo ema đầu cho lênh mua
+        /// Trạng thái có cho phép note ghi chú hay không
         /// </summary>
-        public int FirstEmaBuy { get; set; }
+        public bool IsNote { get; private set; }
 
         /// <summary>
-        /// Số phiên chỉ báo ema sau cho lệnh mua
+        /// Thêm ghi chú
         /// </summary>
-        public int SecondEmaBuy { get; set; }
-
-        /// <summary>
-        /// Số phiên chỉ báo ema đầu
-        /// </summary>
-        public int FirstEmaSell { get; set; }
-
-        /// <summary>
-        /// Số phiên chỉ báo ema sau
-        /// </summary>
-        public int SecondEmaSell { get; set; }
-
-        /// <summary>
-        /// Chỉ báo Stochastic được sử dụng trong phương pháp
-        /// </summary>
-        public int Stochastic { get; set; } = 14;
-
-        /// <summary>
-        /// Mức chặn chỉ báo stochastic để bán không được thấp hơn mức này
-        /// </summary>
-        public int HighestStochasticSell { get; set; } = 60;
-
-        /// <summary>
-        /// Mức chặn cho chỉ báo stochastic để mua không được vượt quá mức này
-        /// </summary>
-        public int LowestStochasticBuy { get; set; } = 30;
+        /// <param name="key">Trạng thái win/lose</param>
+        /// <param name="message">Nội dung ghi chú</param>
+        public void AddNote(int key, string message)
+        {
+            if (IsNote)
+            {
+                ExplainNotes.Add(new KeyValuePair<int, string>(key, message));
+            }
+        }
+        #endregion
     }
 }

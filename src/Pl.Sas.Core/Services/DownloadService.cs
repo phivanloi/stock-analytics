@@ -152,15 +152,15 @@ namespace Pl.Sas.Core.Services
             var symbol = schedule.DataKey ?? throw new Exception($"Schedule Null DataKey, di: {schedule.Id}, type: {schedule.Type}");
             var checkingKey = $"{symbol}-Download-ChartPrices";
             var configTime = long.Parse(schedule.Options["StartTime"]);
-            var indexPrices = await _crawlData.DownloadIndexPricesAsync(symbol, configTime, schedule.Options["ChartType"]);
-            if (indexPrices is null || indexPrices.Count < 0)
+            var ssiChartPrices = await _crawlData.DownloadIndexPricesAsync(symbol, configTime, schedule.Options["ChartType"]);
+            if (ssiChartPrices is null || ssiChartPrices.Count < 0)
             {
                 _logger.LogWarning("UpdateChartPricesAsync => indexPrices null info for index: {symbol}", symbol);
                 return await _systemData.SetKeyValueAsync(checkingKey, false);
             }
 
             var chartPrices = new List<ChartPrice>();
-            foreach (var block in indexPrices)
+            foreach (var block in ssiChartPrices)
             {
                 if (block?.Time?.Length > 0)
                 {

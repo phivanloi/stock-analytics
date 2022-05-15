@@ -212,7 +212,7 @@ namespace Pl.Sas.Infrastructure.Market
         }
         #endregion
 
-        #region StockPrice
+        #region ChartPrice
         public virtual async Task<bool> SaveChartPriceAsync(List<ChartPrice> chartPrices, string symbol, string type = "D")
         {
             if (chartPrices.Count > 0)
@@ -221,6 +221,15 @@ namespace Pl.Sas.Infrastructure.Market
                 _marketDbContext.ChartPrices.AddRange(chartPrices);
             }
             return await _marketDbContext.SaveChangesAsync() > 0;
+        }
+
+        public virtual async Task<List<ChartPrice>> GetChartPricesAsync(string symbol, string type = "D", DateTime? fromDate = null, DateTime? toDate = null)
+        {
+            return await _marketDbContext.ChartPrices.Where(s =>
+                s.Symbol == symbol
+                && s.Type == type
+                && (!fromDate.HasValue || s.TradingDate > fromDate)
+                && (!toDate.HasValue || s.TradingDate <= toDate)).ToListAsync();
         }
         #endregion
 

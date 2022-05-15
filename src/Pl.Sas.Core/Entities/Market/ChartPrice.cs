@@ -16,6 +16,11 @@
         public DateTime TradingDate { get; set; } = DateTime.Now;
 
         /// <summary>
+        /// trading date path
+        /// </summary>
+        public string DatePath => TradingDate.ToString("yyyyMMdd");
+
+        /// <summary>
         /// Loại chart
         /// D => ngày
         /// </summary>
