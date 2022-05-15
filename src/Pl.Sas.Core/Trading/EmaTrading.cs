@@ -27,7 +27,7 @@ namespace Pl.Sas.Core.Trading
                     continue;
                 }
 
-                var hasIndicator = indicatorSet.TryGetValue(previousChart.DatePath ?? "", out IndicatorSet? indicator);
+                indicatorSet.TryGetValue(previousChart.DatePath, out IndicatorSet? indicator);
                 if (indicator is null)
                 {
                     tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản:{tradingCase.Profit(day.ClosePrice):0,0}, không giao dịch do không có chỉ báo");
@@ -147,15 +147,15 @@ namespace Pl.Sas.Core.Trading
                 return 0;
             }
 
-            if (indicatorSet.Values["ema-12"] < indicatorSet.Values["ema-36"])
+            if (indicatorSet.Values["ema-12"] < indicatorSet.Values["ema-20"])
             {
                 return 0;
             }
 
-            if (indicatorSet.Values["ema-9"] < indicatorSet.Values["ema-20"])
-            {
-                return 0;
-            }
+            //if (indicatorSet.Values["ema-9"] < indicatorSet.Values["ema-12"])
+            //{
+            //    return 0;
+            //}
 
             //if (indicatorSet.Values["ema-5"] < indicatorSet.Values["ema-9"])
             //{
@@ -180,7 +180,7 @@ namespace Pl.Sas.Core.Trading
 
         public static int SellCondition(IndicatorSet indicatorSet)
         {
-            if (indicatorSet.Values["ema-12"] > indicatorSet.Values["ema-36"])
+            if (indicatorSet.Values["ema-12"] > indicatorSet.Values["ema-20"])
             {
                 return 0;
             }
