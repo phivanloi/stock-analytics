@@ -260,8 +260,7 @@ namespace Pl.Sas.Core.Services
                         }
                     }
 
-                    #endregion Count change
-
+                    #endregion
                     #region Convulsion
                     if (stockPrices.Count >= 1)
                     {
@@ -374,8 +373,7 @@ namespace Pl.Sas.Core.Services
                         stockView.PricePercentConvulsionStartTrading = stockView.PricePercentConvulsion960;
                     }
 
-                    #endregion Convulsion
-
+                    #endregion
                     #region Trading info
 
                     var tradingResults = await _analyticsData.CacheGetTradingResultAsync(stock.Symbol);
@@ -434,8 +432,7 @@ namespace Pl.Sas.Core.Services
                         }
                     }
 
-                    #endregion Trading info
-
+                    #endregion
                     dictStockView.TryAdd(stock.Symbol, stockView);
                 }
             }

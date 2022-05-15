@@ -9,8 +9,6 @@
 		<Product>Stock Analytics System</Product>
 		<Company>NganChiCorp</Company>
 		<Description>Worker service</Description>
-		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-		<DockerfileContext>..\..</DockerfileContext>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -19,7 +17,6 @@
 		<PackageReference Include="AspNetCore.HealthChecks.Redis" Version="6.0.4" />
 		<PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="6.0.4" />
 		<PackageReference Include="Microsoft.AspNetCore.HealthChecks" Version="1.0.0" />
-		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.15.1" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -74,7 +74,7 @@ namespace Pl.Sas.UnitTests
             var hostedService = serviceProvider.GetService<IHostedService>() as LoggingQueuedHostedService ?? throw new Exception("Can't get LoggingQueuedHostedService");
             await hostedService.StartAsync(CancellationToken.None);
 
-            await workerService.UpdateIndexPricesAsync(new()
+            await workerService.UpdateChartPricesAsync(new()
             {
                 Name = $"Tải dữ liệu chỉ số: VNINDEX",
                 Type = 9,

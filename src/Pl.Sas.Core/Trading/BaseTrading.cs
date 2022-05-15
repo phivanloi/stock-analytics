@@ -84,7 +84,7 @@ namespace Pl.Sas.Core.Trading
         /// <summary>
         /// Build tập hợp các chỉ báo theo lịch sử giá
         /// </summary>
-        /// <param name="stockPriceAdjs">Danh sach lịch sử giá đã được điều chỉnh khi chia cổ tức sắp xếp theo phiên mới mất lên đầu</param>
+        /// <param name="stockPrices">Danh sach lịch sử giá đã được điều chỉnh khi chia cổ tức sắp xếp theo phiên mới mất lên đầu</param>
         /// <returns>Dictionary string, IndicatorSet</returns>
         public static Dictionary<string, IndicatorSet> BuildIndicatorSet(List<StockPrice> stockPrices)
         {
@@ -102,7 +102,6 @@ namespace Pl.Sas.Core.Trading
                 var addItem = new IndicatorSet()
                 {
                     TradingDate = stockPrices[i].TradingDate,
-                    Symbol = stockPrices[i].Symbol,
                     Values = new Dictionary<string, float>()
                 };
                 if (indicatorSet.Count <= 0)
@@ -139,6 +138,48 @@ namespace Pl.Sas.Core.Trading
                         addItem.Values.Add($"ema-{index}", ExponentialMovingAverage.ExponentialMovingAverageFormula(stockPrices[i].ClosePrice, yesterdaySet.Values[$"ema-{index}"], index));
                     }
                 }
+                indicatorSet.Add(stockPrices[i].DatePath, addItem);
+            }
+            return indicatorSet;
+        }
+
+        /// <summary>
+        /// Build tập hợp các chỉ báo theo lịch sử giá
+        /// </summary>
+        /// <param name="stockPrices">Danh sách lịch sử giá săp sếp theo giảm dần trading date</param>
+        /// <returns>Dictionary string, IndicatorSet</returns>
+        public static Dictionary<string, IndicatorSet> BuildIndicatorSetV2(List<StockPrice> stockPrices)
+        {
+            var indicatorSet = new Dictionary<string, IndicatorSet>();
+            var maPeriod = new List<int>();
+            for (int p = 1; p <= 50; p++)
+            {
+                maPeriod.Add(p);
+            }
+            maPeriod.AddRange(new List<int>() { 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200 });
+            for (int i = 0; i < stockPrices.Count; i++)
+            {
+                var addItem = new IndicatorSet()
+                {
+                    TradingDate = stockPrices[i].TradingDate,
+                    Values = new Dictionary<string, float>(),
+                    ClosePrice = stockPrices[i].ClosePrice,
+                };
+
+                foreach (var maIndex in maPeriod)
+                {
+                    if ((i + 1) == maIndex)
+                    {
+                        addItem.Values.Add($"ema-{maIndex}", stockPrices.Skip(i + 1 - maIndex).Take(maIndex).Average(q => q.ClosePrice));
+                    }
+                    else if ((i + 1) > maIndex)
+                    {
+                        var yesterdaySet = indicatorSet[stockPrices[i - 1].DatePath];
+                        var emaValue = ExponentialMovingAverage.ExponentialMovingAverageFormula(stockPrices[i].ClosePrice, yesterdaySet.Values[$"ema-{maIndex}"], maIndex);
+                        addItem.Values.Add($"ema-{maIndex}", emaValue);
+                    }
+                }
+
                 indicatorSet.Add(stockPrices[i].DatePath, addItem);
             }
             return indicatorSet;

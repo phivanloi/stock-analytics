@@ -8,6 +8,24 @@ namespace Pl.Sas.Core.Interfaces
     public interface IMarketData
     {
         /// <summary>
+        /// Ghi lại dữ liệu chart
+        /// </summary>
+        /// <param name="chartPrices">dữ liệu chart</param>
+        /// <param name="symbol">mã</param>
+        /// <param name="type">loại chart</param>
+        /// <returns>bool</returns>
+        Task<bool> SaveChartPriceAsync(List<ChartPrice> chartPrices, string symbol, string type = "D");
+
+        /// <summary>
+        /// Lấy lịch sử giá cho trading
+        /// </summary>
+        /// <param name="symbol">Mã chứng khoán</param>
+        /// <param name="fromDate">Từ ngày</param>
+        /// <param name="toDate">Đến ngày</param>
+        /// <returns></returns>
+        Task<List<StockPrice>> GetForTradingAsync(string symbol, DateTime fromDate, DateTime? toDate = null);
+
+        /// <summary>
         /// Lấy danh sách sự kiện
         /// </summary>
         /// <param name="symbol">Mã chứng khoán</param>

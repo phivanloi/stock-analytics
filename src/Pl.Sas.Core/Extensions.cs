@@ -50,5 +50,15 @@ namespace Pl.Sas.Core
                 return (startNum - endNum) / Math.Abs(endNum) * 100;
             }
         }
+
+        /// <summary>
+        /// Lấy mô tả kết quả dạng string
+        /// </summary>
+        /// <param name="tradingCase">Trường hợp đầu tư cần lấy</param>
+        /// <returns>string</returns>
+        public static string ResultString(this TradingCase tradingCase)
+        {
+            return $"Lợi nhuận {tradingCase.ProfitPercent:0,0.00}%, thuế {tradingCase.TotalTax:0,0}";
+        }
     }
 }

@@ -22,6 +22,57 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
 
+            modelBuilder.Entity("Pl.Sas.Core.Entities.ChartPrice", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(22)
+                        .HasColumnType("nvarchar(22)");
+
+                    b.Property<float>("ClosePrice")
+                        .HasColumnType("real");
+
+                    b.Property<DateTime>("CreatedTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<float>("HighestPrice")
+                        .HasColumnType("real");
+
+                    b.Property<float>("LowestPrice")
+                        .HasColumnType("real");
+
+                    b.Property<float>("OpenPrice")
+                        .HasColumnType("real");
+
+                    b.Property<string>("Symbol")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<float>("TotalMatchVol")
+                        .HasColumnType("real");
+
+                    b.Property<DateTime>("TradingDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("nvarchar(8)");
+
+                    b.Property<DateTime>("UpdatedTime")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Symbol");
+
+                    b.HasIndex("TradingDate");
+
+                    b.HasIndex("Symbol", "Type", "TradingDate");
+
+                    b.ToTable("ChartPrices");
+                });
+
             modelBuilder.Entity("Pl.Sas.Core.Entities.Company", b =>
                 {
                     b.Property<string>("Id")

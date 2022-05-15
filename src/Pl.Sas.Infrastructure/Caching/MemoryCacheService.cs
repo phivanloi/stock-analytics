@@ -23,8 +23,7 @@ namespace Pl.Sas.Infrastructure.Caching
             _memoryCache = memoryCache;
         }
 
-        #endregion Properties And Constructor
-
+        #endregion
         #region Utilities
 
         protected MemoryCacheEntryOptions GetMemoryCacheEntryOptions(int cacheTime = 60)
@@ -76,8 +75,7 @@ namespace Pl.Sas.Infrastructure.Caching
             TryRemoveKey(key?.ToString() ?? "");
         }
 
-        #endregion Utilities
-
+        #endregion
         #region Get Method
 
         public virtual TItem GetByKey<TItem>(string key)
@@ -132,8 +130,7 @@ namespace Pl.Sas.Infrastructure.Caching
             return await Task.FromResult(DateTime.Now);
         }
 
-        #endregion Get Method
-
+        #endregion
         #region Set Method
 
         public virtual TItem SetValue<TItem>(string key, TItem value)
@@ -146,8 +143,7 @@ namespace Pl.Sas.Infrastructure.Caching
             return _memoryCache.Set(AddKey(key), value, GetMemoryCacheEntryOptions(time));
         }
 
-        #endregion Set Method
-
+        #endregion
         #region Remove Method
 
         public virtual void Remove(string key)
@@ -169,6 +165,6 @@ namespace Pl.Sas.Infrastructure.Caching
             _cancellationTokenSource = new CancellationTokenSource();
         }
 
-        #endregion Remove Method
+        #endregion
     }
 }

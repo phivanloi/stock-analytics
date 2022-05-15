@@ -121,14 +121,14 @@ namespace Pl.Sas.Core.Trading
                         if (isNoteTrading)
                         {
                             var showCapital = capital + (numberStock * day.ClosePrice);
-                            tradingCase.ExplainNotes.Add(new(0, $"Ngày {day.TradingDate:dd/MM/yyyy}: O: {day.OpenPrice / 1000:0,0.00}, H:{day.HighestPrice / 1000:0,0.00}, L:{day.LowestPrice / 1000:0,0.00}, C: {day.ClosePrice / 1000:0,0.00}, ema {tradingCase.FirstEmaSell}-{tradingCase.SecondEmaSell}: {subEma:0.0} => Mua {numberStock:0,0} cổ phiếu với giá {buyPrice / 1000:0,0.00} ({optimalBuyPrice / 1000:0,0.00}), thuế {totalTax:0,0}. Tổng tài sản {showCapital:0,0}"));
+                            tradingCase.ExplainNotes.Add(new(0, $"Ngày {day.TradingDate:dd/MM/yyyy}: O: {day.OpenPrice / 1000:0,0.00}, H:{day.HighestPrice / 1000:0,0.00}, L:{day.LowestPrice / 1000:0,0.00}, C: {day.ClosePrice / 1000:0,0.00}, ema {tradingCase.FirstEmaSell}({indicator.Values[$"ema-{tradingCase.FirstEmaSell}"]})-{tradingCase.SecondEmaSell}(({indicator.Values[$"ema-{tradingCase.SecondEmaSell}"]})): {subEma:0.0} => Mua {numberStock:0,0} cổ phiếu với giá {buyPrice / 1000:0,0.00} ({optimalBuyPrice / 1000:0,0.00}), thuế {totalTax:0,0}. Tổng tài sản {showCapital:0,0}"));
                         }
                     }
                     else
                     {
                         if (isNoteTrading)
                         {
-                            tradingCase.ExplainNotes.Add(new(0, $"Ngày {day.TradingDate:dd/MM/yyyy}: O: {day.OpenPrice / 1000:0,0.00}, H:{day.HighestPrice / 1000:0,0.00}, L:{day.LowestPrice / 1000:0,0.00}, C: {day.ClosePrice / 1000:0,0.00}, ema {tradingCase.FirstEmaSell}-{tradingCase.SecondEmaSell}: {subEma:0.0} => Không giao dịch. Tổng tài sản {capital:0,0}"));
+                            tradingCase.ExplainNotes.Add(new(0, $"Ngày {day.TradingDate:dd/MM/yyyy}: O: {day.OpenPrice / 1000:0,0.00}, H:{day.HighestPrice / 1000:0,0.00}, L:{day.LowestPrice / 1000:0,0.00}, C: {day.ClosePrice / 1000:0,0.00}, ema {tradingCase.FirstEmaSell}({indicator.Values[$"ema-{tradingCase.FirstEmaSell}"]})-{tradingCase.SecondEmaSell}(({indicator.Values[$"ema-{tradingCase.SecondEmaSell}"]})): {subEma:0.0} => Không giao dịch. Tổng tài sản {capital:0,0}"));
                         }
                     }
                 }
@@ -151,7 +151,7 @@ namespace Pl.Sas.Core.Trading
                             tradingCase.TotalTax += totalTax;
                             if (isNoteTrading)
                             {
-                                tradingCase.ExplainNotes.Add(new(lastBuyPrice < sellPrice ? 1 : -1, $"Ngày {day.TradingDate:dd/MM/yyyy}: O: {day.OpenPrice / 1000:0,0.00}, H:{day.HighestPrice / 1000:0,0.00}, L:{day.LowestPrice / 1000:0,0.00}, C: {day.ClosePrice / 1000:0,0.00}, ema {tradingCase.FirstEmaSell}-{tradingCase.SecondEmaSell}: {subEma:0.0}, bán {numberStock:0,0} cổ phiếu với giá {sellPrice / 1000:0,0.00} ({optimalSellPrice / 1000:0,0.00}), thuế {totalTax:0,0}. Tổng tài sản {capital:0,0}."));
+                                tradingCase.ExplainNotes.Add(new(lastBuyPrice < sellPrice ? 1 : -1, $"Ngày {day.TradingDate:dd/MM/yyyy}: O: {day.OpenPrice / 1000:0,0.00}, H:{day.HighestPrice / 1000:0,0.00}, L:{day.LowestPrice / 1000:0,0.00}, C: {day.ClosePrice / 1000:0,0.00}, ema {tradingCase.FirstEmaSell}({indicator.Values[$"ema-{tradingCase.FirstEmaSell}"]})-{tradingCase.SecondEmaSell}(({indicator.Values[$"ema-{tradingCase.SecondEmaSell}"]})): {subEma:0.0}, bán {numberStock:0,0} cổ phiếu với giá {sellPrice / 1000:0,0.00} ({optimalSellPrice / 1000:0,0.00}), thuế {totalTax:0,0}. Tổng tài sản {capital:0,0}."));
                             }
                             lastBuyPrice = null;
                         }
@@ -160,7 +160,7 @@ namespace Pl.Sas.Core.Trading
                             if (isNoteTrading)
                             {
                                 var showCapital = capital + (numberStock * day.ClosePrice);
-                                tradingCase.ExplainNotes.Add(new(0, $"Ngày {day.TradingDate:dd/MM/yyyy}: O: {day.OpenPrice / 1000:0,0.00}, H:{day.HighestPrice / 1000:0,0.00}, L:{day.LowestPrice / 1000:0,0.00}, C: {day.ClosePrice / 1000:0,0.00}, ema {tradingCase.FirstEmaSell}-{tradingCase.SecondEmaSell}: {subEma:0.0} => Không giao dịch, số cổ phiếu {numberStock}. Tổng tài sản {showCapital:0,0}."));
+                                tradingCase.ExplainNotes.Add(new(0, $"Ngày {day.TradingDate:dd/MM/yyyy}: O: {day.OpenPrice / 1000:0,0.00}, H:{day.HighestPrice / 1000:0,0.00}, L:{day.LowestPrice / 1000:0,0.00}, C: {day.ClosePrice / 1000:0,0.00}, ema {tradingCase.FirstEmaSell}({indicator.Values[$"ema-{tradingCase.FirstEmaSell}"]})-{tradingCase.SecondEmaSell}(({indicator.Values[$"ema-{tradingCase.SecondEmaSell}"]})): {subEma:0.0} => Không giao dịch, số cổ phiếu {numberStock}. Tổng tài sản {showCapital:0,0}."));
                             }
                         }
                     }
@@ -169,7 +169,7 @@ namespace Pl.Sas.Core.Trading
                         if (isNoteTrading)
                         {
                             var showCapital = capital + (numberStock * day.ClosePrice);
-                            tradingCase.ExplainNotes.Add(new(0, $"Ngày {day.TradingDate:dd/MM/yyyy}: O: {day.OpenPrice / 1000:0,0.00}, H:{day.HighestPrice / 1000:0,0.00}, L:{day.LowestPrice / 1000:0,0.00}, C: {day.ClosePrice / 1000:0,0.00}, ema {tradingCase.FirstEmaSell}-{tradingCase.SecondEmaSell}: {subEma:0.0} => Không giao dịch, số cổ phiếu {numberStock}. Tổng tài sản {showCapital:0,0}."));
+                            tradingCase.ExplainNotes.Add(new(0, $"Ngày {day.TradingDate:dd/MM/yyyy}: O: {day.OpenPrice / 1000:0,0.00}, H:{day.HighestPrice / 1000:0,0.00}, L:{day.LowestPrice / 1000:0,0.00}, C: {day.ClosePrice / 1000:0,0.00}, ema {tradingCase.FirstEmaSell}({indicator.Values[$"ema-{tradingCase.FirstEmaSell}"]})-{tradingCase.SecondEmaSell}(({indicator.Values[$"ema-{tradingCase.SecondEmaSell}"]})): {subEma:0.0} => Không giao dịch, số cổ phiếu {numberStock}. Tổng tài sản {showCapital:0,0}."));
                         }
                     }
                 }

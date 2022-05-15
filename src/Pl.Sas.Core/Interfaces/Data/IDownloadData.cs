@@ -88,8 +88,9 @@ namespace Pl.Sas.Core.Interfaces
         /// </summary>
         /// <param name="symbol">Mã chỉ số</param>
         /// <param name="configTime">Cấu hình thời gian bắt đầu lấy</param>
+        /// <param name="type">Loại chart</param>
         /// <returns>List SsiIndexPrice</returns>
-        Task<List<SsiIndexPrice>> DownloadIndexPricesAsync(string symbol, long configTime);
+        Task<List<SsiIndexPrice>> DownloadIndexPricesAsync(string symbol, long configTime, string type = "D");
 
         /// <summary>
         /// Lấy lãi suất ngân hàng cao nhất với các kỳ hạn được chuyền vào

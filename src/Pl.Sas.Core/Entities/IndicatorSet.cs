@@ -6,14 +6,14 @@ namespace Pl.Sas.Core.Entities
     public class IndicatorSet
     {
         /// <summary>
-        /// mã chứng khoán
-        /// </summary>
-        public string Symbol { get; set; } = null!;
-
-        /// <summary>
         /// ngày giao dịch
         /// </summary>
         public DateTime TradingDate { get; set; } = Utilities.GetTradingDate();
+
+        /// <summary>
+        /// Giá đóng cửa
+        /// </summary>
+        public float ClosePrice { get; set; }
 
         /// <summary>
         /// Tập hợp các chỉ báo tên chỉ báo và giá trị

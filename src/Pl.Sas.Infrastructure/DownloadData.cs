@@ -166,7 +166,7 @@ namespace Pl.Sas.Infrastructure.Crawl
             return await _httpClient.PostJsonAsync<SsiTransaction>(requestUrl, new StringContent(JsonSerializer.Serialize(stockPriceSendQuery), Encoding.UTF8, "application/json"));
         }
 
-        public virtual async Task<List<SsiIndexPrice>> DownloadIndexPricesAsync(string symbol, long configTime)
+        public virtual async Task<List<SsiIndexPrice>> DownloadIndexPricesAsync(string symbol, long configTime, string type = "D")
         {
             var result = new List<SsiIndexPrice>();
             var startTime = DateTimeOffset.FromUnixTimeSeconds(configTime);
@@ -175,7 +175,7 @@ namespace Pl.Sas.Infrastructure.Crawl
                 await Task.Delay(100);
                 var fromTime = startTime.ToUnixTimeSeconds();
                 var toTime = startTime.AddYears(1).AddDays(1).ToUnixTimeSeconds();
-                var requestUrl = $"https://iboard.ssi.com.vn/dchart/api/history?resolution=D&symbol={symbol}&from={fromTime}&to={toTime}";
+                var requestUrl = $"https://iboard.ssi.com.vn/dchart/api/history?resolution={type}&symbol={symbol}&from={fromTime}&to={toTime}";
                 var ssiIndexPrices = await _httpClient.GetJsonAsync<SsiIndexPrice>(requestUrl);
                 if (ssiIndexPrices is not null)
                 {

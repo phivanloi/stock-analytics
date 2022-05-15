@@ -73,10 +73,11 @@ namespace Pl.Sas.Core.Entities
         /// <para>6 Lấy danh sách lịch sử sự kiện công ty theo ssi api</para>
         /// <para>7 Lấy lịch sử khớp lệnh của cổ phiếu</para>
         /// <para>8 Bổ sung đánh giá cổ phiếu của fiin</para>
-        /// <para>9 Thu thập lịch sử giá chỉ số</para>
+        /// <para>9 Thu thập dữ liệu chart price</para>
         /// <para>10 Bổ sung lãi xuất ngân hàng cao nhất</para>
         /// <para>11 Thu thập khuyến nghị của các công ty chứng khoán.</para>
         /// <para>12 Thu thập đánh giá cổ phiếu của vndirect.</para>
+        /// <para>13 Thu thập dữ liêu chart của chỉ số và mã chứng khoán.</para>
         ///
         /// <para>200 Đánh giá giá trị của doanh nghiệp</para>
         /// <para>201 Phân tích kỹ thuật</para>
@@ -118,7 +119,7 @@ namespace Pl.Sas.Core.Entities
                 6 => baseTime.Date.AddDays(1).AddHours(1).AddMinutes(random.Next(0, 60)),//lấy danh sách lịch sử sự kiện công ty theo ssi api
                 7 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(31, 60)),//lấy lịch sử khớp lệnh cổ phiếu
                 8 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 60)),//Bổ sung đánh giá cổ phiếu của fiin
-                9 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 60)),//Thu thập lịch sử giá chỉ số
+                9 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 60)),//Thu thập dữ liệu chart price
                 10 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 60)),//Lấy lãi suất ngân hàng lớn nhất
                 11 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 60)),//Thu thập khuyến nghị của các công ty chứng khoán
                 12 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 60)),//Thu thập đánh giá cổ phiếu của vndirect

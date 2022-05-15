@@ -213,6 +213,18 @@ namespace Pl.Sas.Infrastructure.Market
         #endregion
 
         #region StockPrice
+        public virtual async Task<bool> SaveChartPriceAsync(List<ChartPrice> chartPrices, string symbol, string type = "D")
+        {
+            if (chartPrices.Count > 0)
+            {
+                _marketDbContext.Database.ExecuteSqlRaw($"DELETE ChartPrices WHERE Symbol = '{symbol}' AND [Type] = '{type}'");
+                _marketDbContext.ChartPrices.AddRange(chartPrices);
+            }
+            return await _marketDbContext.SaveChangesAsync() > 0;
+        }
+        #endregion
+
+        #region StockPrice
         public virtual async Task<bool> SaveStockPriceAsync(List<StockPrice> insertItems, List<StockPrice> updateItems)
         {
             if (insertItems.Count > 0)
@@ -266,6 +278,31 @@ namespace Pl.Sas.Infrastructure.Market
                     TotalMatchVol = q.TotalMatchVol
                 };
             }).ToList();
+        }
+
+        public virtual async Task<List<StockPrice>> GetForTradingAsync(string symbol, DateTime fromDate, DateTime? toDate = null)
+        {
+            return (await _marketDbContext.StockPrices.Where(s =>
+                s.Symbol == symbol
+                && s.ClosePrice > 0
+                && s.ClosePriceAdjusted > 0
+                && s.TradingDate >= fromDate
+                && (!toDate.HasValue || s.TradingDate <= toDate))
+                .OrderByDescending(q => q.TradingDate)
+                .ToListAsync()).Select(q =>
+                {
+                    var changePercent = (q.ClosePrice - q.ClosePriceAdjusted) / q.ClosePrice;
+                    return new StockPrice()
+                    {
+                        Symbol = q.Symbol,
+                        TradingDate = q.TradingDate,
+                        OpenPrice = q.OpenPrice - (q.OpenPrice * changePercent),
+                        HighestPrice = q.HighestPrice - (q.HighestPrice * changePercent),
+                        LowestPrice = q.LowestPrice - (q.LowestPrice * changePercent),
+                        ClosePrice = q.ClosePriceAdjusted,
+                        TotalMatchVol = q.TotalMatchVol
+                    };
+                }).ToList();
         }
 
         public virtual async Task<List<StockPrice>> GetAnalyticsTopIndexPriceAsync(string index, int top)

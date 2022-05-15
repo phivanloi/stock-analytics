@@ -80,7 +80,7 @@ namespace Pl.Sas.Core.Services
                             await UpdateFiinStockEvaluatesAsync(schedule);
                             break;
                         case 9:
-                            await UpdateIndexPricesAsync(schedule);
+                            await UpdateChartPricesAsync(schedule);
                             break;
                         case 10:
                             await UpdateBankInterestRateAsync(schedule);
@@ -147,19 +147,19 @@ namespace Pl.Sas.Core.Services
         /// <param name="schedule">thông tin lịch</param>
         /// <returns>bool</returns>
         /// <exception cref="Exception">Schedule Null DataKey</exception>
-        public virtual async Task<bool> UpdateIndexPricesAsync(Schedule schedule)
+        public virtual async Task<bool> UpdateChartPricesAsync(Schedule schedule)
         {
-            var symbol = schedule.DataKey ?? throw new Exception("Schedule Null DataKey");
-            var checkingKey = $"{symbol}-Download-IndexPrices";
-            var configTime = long.Parse(schedule.Options["DateCrawlStartTime"]);
-            var indexPrices = await _crawlData.DownloadIndexPricesAsync(symbol, configTime);
+            var symbol = schedule.DataKey ?? throw new Exception($"Schedule Null DataKey, di: {schedule.Id}, type: {schedule.Type}");
+            var checkingKey = $"{symbol}-Download-ChartPrices";
+            var configTime = long.Parse(schedule.Options["StartTime"]);
+            var indexPrices = await _crawlData.DownloadIndexPricesAsync(symbol, configTime, schedule.Options["ChartType"]);
             if (indexPrices is null || indexPrices.Count < 0)
             {
-                _logger.LogWarning("UpdateIndexPricesAsync => indexPrices null info for index: {symbol}", symbol);
+                _logger.LogWarning("UpdateChartPricesAsync => indexPrices null info for index: {symbol}", symbol);
                 return await _systemData.SetKeyValueAsync(checkingKey, false);
             }
 
-            var stockPrices = new List<StockPrice>();
+            var chartPrices = new List<ChartPrice>();
             foreach (var block in indexPrices)
             {
                 if (block?.Time?.Length > 0)
@@ -167,62 +167,32 @@ namespace Pl.Sas.Core.Services
                     for (int i = 0; i < block.Time.Length; i++)
                     {
                         var tradingDate = DateTimeOffset.FromUnixTimeSeconds(block.Time[i]).Date;
-                        if (!stockPrices.Any(q => q.TradingDate == tradingDate))
+                        if (!chartPrices.Any(q => q.TradingDate == tradingDate))
                         {
-                            stockPrices.Add(new()
+                            chartPrices.Add(new()
                             {
                                 Symbol = schedule.DataKey,
                                 TradingDate = tradingDate,
                                 ClosePrice = string.IsNullOrEmpty(block.Close[i]) ? 0 : float.Parse(block.Close[i]),
-                                ClosePriceAdjusted = string.IsNullOrEmpty(block.Close[i]) ? 0 : float.Parse(block.Close[i]),
                                 OpenPrice = string.IsNullOrEmpty(block.Open[i]) ? 0 : float.Parse(block.Open[i]),
                                 HighestPrice = string.IsNullOrEmpty(block.Highest[i]) ? 0 : float.Parse(block.Highest[i]),
                                 LowestPrice = string.IsNullOrEmpty(block.Lowest[i]) ? 0 : float.Parse(block.Lowest[i]),
                                 TotalMatchVol = string.IsNullOrEmpty(block.Volumes[i]) ? 0 : float.Parse(block.Volumes[i]),
+                                Type = "D"
                             });
                         }
                     }
                 }
             }
 
-            if (stockPrices.Count <= 0)
+            if (chartPrices.Count <= 0)
             {
-                _logger.LogWarning("UpdateIndexPricesAsync => indexPrices null info for index: {symbol}", symbol);
+                _logger.LogWarning("UpdateChartPricesAsync => indexPrices null info for index: {symbol}", symbol);
                 return await _systemData.SetKeyValueAsync(checkingKey, false);
             }
 
-            if (schedule.Options["DateCrawlStartTime"] == _indexStartDownloadTime.ToUnixTimeSeconds().ToString())
-            {
-                var check = await _marketData.SaveStockPriceAsync(stockPrices, new List<StockPrice>());
-                schedule.AddOrUpdateOptions("DateCrawlStartTime", DateTimeOffset.Now.AddMonths(-1).ToUnixTimeSeconds().ToString());
-                await _systemData.UpdateScheduleAsync(schedule);
-                return await _systemData.SetKeyValueAsync(checkingKey, check);
-            }
-            else
-            {
-                var insertList = new List<StockPrice>();
-                var updateList = new List<StockPrice>();
-                foreach (var stockPrice in stockPrices)
-                {
-                    var updateItem = await _marketData.GetStockPriceAsync(symbol, stockPrice.TradingDate);
-                    if (updateItem != null)
-                    {
-                        updateItem.ClosePrice = stockPrice.ClosePrice;
-                        updateItem.ClosePriceAdjusted = stockPrice.ClosePriceAdjusted;
-                        updateItem.OpenPrice = stockPrice.OpenPrice;
-                        updateItem.HighestPrice = stockPrice.HighestPrice;
-                        updateItem.LowestPrice = stockPrice.LowestPrice;
-                        updateItem.TotalMatchVol = stockPrice.TotalMatchVol;
-                        updateList.Add(updateItem);
-                    }
-                    else
-                    {
-                        insertList.Add(stockPrice);
-                    }
-                }
-                var check = await _marketData.SaveStockPriceAsync(insertList, updateList);
-                return await _systemData.SetKeyValueAsync(checkingKey, check);
-            }
+            var check = await _marketData.SaveChartPriceAsync(chartPrices, symbol, schedule.Options["ChartType"]);
+            return await _systemData.SetKeyValueAsync(checkingKey, check);
         }
 
         /// <summary>
@@ -233,7 +203,7 @@ namespace Pl.Sas.Core.Services
         /// <exception cref="Exception">Can't fiinStock evaluate info.</exception>
         public virtual async Task<bool> UpdateFiinStockEvaluatesAsync(Schedule schedule)
         {
-            var symbol = schedule.DataKey ?? throw new Exception("Schedule Null DataKey");
+            var symbol = schedule.DataKey ?? throw new Exception($"Schedule Null DataKey, di: {schedule.Id}, type: {schedule.Type}");
             var checkingKey = $"{symbol}-Download-FiinStockEvaluates";
             var fiinStockEvaluate = await _crawlData.DownloadFiinStockEvaluatesAsync(symbol);
             if (fiinStockEvaluate is null || fiinStockEvaluate.Items[0] is null)
@@ -270,7 +240,7 @@ namespace Pl.Sas.Core.Services
         /// <exception cref="Exception">Can't stock recommendation info</exception>
         public virtual async Task<bool> UpdateStockRecommendationsAsync(Schedule schedule)
         {
-            var symbol = schedule.DataKey ?? throw new Exception("Schedule Null DataKey");
+            var symbol = schedule.DataKey ?? throw new Exception($"Schedule Null DataKey, di: {schedule.Id}, type: {schedule.Type}");
             var checkingKey = $"{symbol}-Download-StockRecommendations";
             var recommendations = await _crawlData.DownloadStockRecommendationsAsync(symbol);
             if (recommendations is null || recommendations.Data.Length < 0)
@@ -349,7 +319,7 @@ namespace Pl.Sas.Core.Services
         /// <returns></returns>
         public virtual async Task<bool> UpdateStockTransactionAsync(Schedule schedule)
         {
-            var symbol = schedule.DataKey ?? throw new Exception("Schedule Null DataKey");
+            var symbol = schedule.DataKey ?? throw new Exception($"Schedule Null DataKey, di: {schedule.Id}, type: {schedule.Type}");
             var checkingKey = $"{symbol}-Download-StockTransaction";
             var ssiTransactions = await _crawlData.DownloadTransactionAsync(schedule.Options["SsiStockNo"]);
             if (ssiTransactions is null || ssiTransactions.Data.LeTables.Length < 0)
@@ -390,7 +360,7 @@ namespace Pl.Sas.Core.Services
         /// <exception cref="Exception">Can't corporate action info.</exception>
         public virtual async Task<bool> UpdateCorporateActionInfoAsync(Schedule schedule)
         {
-            var symbol = schedule.DataKey ?? throw new Exception("Schedule Null DataKey");
+            var symbol = schedule.DataKey ?? throw new Exception($"Schedule Null DataKey, di: {schedule.Id}, type: {schedule.Type}");
             var checkingKey = $"{symbol}-Download-CorporateAction";
             var size = int.Parse(schedule.Options["CorporateActionCrawlSize"]);
             var ssiCorporateAction = await _crawlData.DownloadCorporateActionAsync(symbol, size);
@@ -450,7 +420,7 @@ namespace Pl.Sas.Core.Services
         /// <exception cref="Exception">Schedule Null DataKey.</exception>
         public virtual async Task<bool> UpdateStockPriceHistoryAsync(Schedule schedule)
         {
-            var symbol = schedule.DataKey ?? throw new Exception("Schedule Null DataKey");
+            var symbol = schedule.DataKey ?? throw new Exception($"Schedule Null DataKey, di: {schedule.Id}, type: {schedule.Type}");
             var checkingKey = $"{symbol}-Download-CorporateAction";
             var size = int.Parse(schedule.Options["StockPricesCrawlSize"]);
             var stockPriceHistory = await _crawlData.DownloadStockPricesAsync(symbol, size);
@@ -521,7 +491,7 @@ namespace Pl.Sas.Core.Services
         /// <exception cref="Exception">Schedule Null DataKey.</exception>
         public virtual async Task<bool> UpdateFinancialIndicatorAsync(Schedule schedule)
         {
-            var symbol = schedule.DataKey ?? throw new Exception("Schedule Null DataKey");
+            var symbol = schedule.DataKey ?? throw new Exception($"Schedule Null DataKey, di: {schedule.Id}, type: {schedule.Type}");
             var checkingKey = $"{symbol}-Download-FinancialIndicator";
             var ssiFinancialIndicators = await _crawlData.DownloadFinancialIndicatorAsync(symbol);
             if (ssiFinancialIndicators is null || ssiFinancialIndicators.Data.FinancialIndicator.DataList.Length < 0)
@@ -603,7 +573,7 @@ namespace Pl.Sas.Core.Services
         /// <exception cref="Exception">Schedule Null DataKey</exception>
         public virtual async Task<bool> UpdateCapitalAndDividendAsync(Schedule schedule)
         {
-            var symbol = schedule.DataKey ?? throw new Exception("Schedule Null DataKey");
+            var symbol = schedule.DataKey ?? throw new Exception($"Schedule Null DataKey, di: {schedule.Id}, type: {schedule.Type}");
             var checkingKey = $"{symbol}-Download-CapitalAndDividend";
             var ssiCapitalAndDividend = await _crawlData.DownloadCapitalAndDividendAsync(symbol);
             if (ssiCapitalAndDividend is null || ssiCapitalAndDividend.Data.CapAndDividend.TabcapitalDividendResponse.DataGroup.AssetlistList.Length <= 0)
@@ -687,7 +657,7 @@ namespace Pl.Sas.Core.Services
         /// <exception cref="Exception">Schedule Null DataKey</exception>
         public virtual async Task<bool> UpdateLeadershipInfoAsync(Schedule schedule)
         {
-            var symbol = schedule.DataKey ?? throw new Exception("Schedule Null DataKey");
+            var symbol = schedule.DataKey ?? throw new Exception($"Schedule Null DataKey, di: {schedule.Id}, type: {schedule.Type}");
             var checkingKey = $"{symbol}-Download-LeadershipInfo";
             var ssiLeadership = await _crawlData.DownloadLeadershipAsync(symbol);
             if (ssiLeadership is null || ssiLeadership.Data.Leaderships.Datas.Length < 0)
@@ -730,7 +700,7 @@ namespace Pl.Sas.Core.Services
         /// <exception cref="Exception">Can't download company info.</exception>
         public virtual async Task<bool> UpdateCompanyInfoAsync(Schedule schedule)
         {
-            var symbol = schedule.DataKey ?? throw new Exception("Schedule Null DataKey");
+            var symbol = schedule.DataKey ?? throw new Exception($"Schedule Null DataKey, di: {schedule.Id}, type: {schedule.Type}");
             var checkingKey = $"{symbol}-Download-FiinStockEvaluates";
             var ssiCompanyInfo = await _crawlData.DownloadCompanyInfoAsync(symbol);
             if (ssiCompanyInfo is null || ssiCompanyInfo.Data.CompanyStatistics is null)
@@ -908,6 +878,18 @@ namespace Pl.Sas.Core.Services
                         });
                         insertSchedules.Add(new()
                         {
+                            Name = $"Tải dữ liệu chart price: {stockCode}",
+                            Type = 9,
+                            DataKey = stockCode,
+                            ActiveTime = currentTime.AddMinutes(random.Next(0, 10)),
+                            OptionsJson = JsonSerializer.Serialize(new Dictionary<string, string>()
+                            {
+                                {"StartTime", _indexStartDownloadTime.ToUnixTimeSeconds().ToString() },
+                                {"ChartType", "D" }
+                            })
+                        });
+                        insertSchedules.Add(new()
+                        {
                             Type = 11,
                             Name = $"Thu thập khuyến nghị của các công ty chứng khoán cho mã: {stockCode}",
                             DataKey = stockCode,
@@ -1004,7 +986,8 @@ namespace Pl.Sas.Core.Services
                             ActiveTime = currentTime.AddMinutes(random.Next(0, 10)),
                             OptionsJson = JsonSerializer.Serialize(new Dictionary<string, string>()
                             {
-                                {"DateCrawlStartTime", _indexStartDownloadTime.ToUnixTimeSeconds().ToString() }
+                                {"StartTime", _indexStartDownloadTime.ToUnixTimeSeconds().ToString() },
+                                {"ChartType", "D" }
                             })
                         });
                     }

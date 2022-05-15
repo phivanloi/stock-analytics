@@ -22,8 +22,7 @@
         /// </summary>
         public int SchedulerType { get; set; }
 
-        #endregion Type = 1
-
+        #endregion
         #region Type = 3
 
         /// <summary>
@@ -36,8 +35,7 @@
         /// </summary>
         public string NewPassword { get; set; } = null!;
 
-        #endregion Type = 3
-
+        #endregion
         #region Type = 2
 
         /// <summary>
@@ -60,6 +58,6 @@
         /// </summary>
         public string Email { get; set; } = null!;
 
-        #endregion Type = 2
+        #endregion
     }
 }

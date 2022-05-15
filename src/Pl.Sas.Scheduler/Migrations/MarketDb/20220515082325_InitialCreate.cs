@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -8,6 +9,27 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "ChartPrices",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(22)", maxLength: 22, nullable: false),
+                    Symbol = table.Column<string>(type: "nvarchar(16)", maxLength: 16, nullable: false),
+                    TradingDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Type = table.Column<string>(type: "nvarchar(8)", maxLength: 8, nullable: false),
+                    OpenPrice = table.Column<float>(type: "real", nullable: false),
+                    HighestPrice = table.Column<float>(type: "real", nullable: false),
+                    LowestPrice = table.Column<float>(type: "real", nullable: false),
+                    ClosePrice = table.Column<float>(type: "real", nullable: false),
+                    TotalMatchVol = table.Column<float>(type: "real", nullable: false),
+                    CreatedTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedTime = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ChartPrices", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Companies",
                 columns: table => new
@@ -308,6 +330,21 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_ChartPrices_Symbol",
+                table: "ChartPrices",
+                column: "Symbol");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChartPrices_Symbol_Type_TradingDate",
+                table: "ChartPrices",
+                columns: new[] { "Symbol", "Type", "TradingDate" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChartPrices_TradingDate",
+                table: "ChartPrices",
+                column: "TradingDate");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Companies_Symbol_SubsectorCode",
                 table: "Companies",
                 columns: new[] { "Symbol", "SubsectorCode" });
@@ -385,6 +422,9 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "ChartPrices");
+
             migrationBuilder.DropTable(
                 name: "Companies");
 

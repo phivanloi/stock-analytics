@@ -199,6 +199,6 @@
         /// </summary>
         public float FinanciallEverage { get; set; }
 
-        #endregion Statistics
+        #endregion
     }
 }

@@ -19,7 +19,7 @@ namespace Pl.Sas.Infrastructure.Market
         public virtual DbSet<StockRecommendation> StockRecommendations { get; set; } = null!;
         public virtual DbSet<VndStockScore> VndStockScores { get; set; } = null!;
         public virtual DbSet<StockTransaction> StockTransactions { get; set; } = null!;
-
+        public virtual DbSet<ChartPrice> ChartPrices { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -36,8 +36,7 @@ namespace Pl.Sas.Infrastructure.Market
                 b.HasIndex(p => new { p.Symbol, p.Type });
             });
 
-            #endregion Stock
-
+            #endregion
             #region Company
 
             modelBuilder.Entity<Company>(b =>
@@ -53,8 +52,7 @@ namespace Pl.Sas.Infrastructure.Market
                 b.HasIndex(p => new { p.Symbol, p.SubsectorCode });
             });
 
-            #endregion Company
-
+            #endregion
             #region Industry
 
             modelBuilder.Entity<Industry>(b =>
@@ -78,7 +76,21 @@ namespace Pl.Sas.Infrastructure.Market
                 b.HasIndex(p => new { p.Symbol, p.TradingDate });
             });
 
-            #endregion StockPrice
+            #endregion
+
+            #region ChartPrice
+
+            modelBuilder.Entity<ChartPrice>(b =>
+            {
+                b.Property(c => c.Id).HasMaxLength(22).IsRequired();
+                b.Property(p => p.Symbol).HasMaxLength(16).IsRequired();
+                b.Property(p => p.Type).HasMaxLength(8).IsRequired();
+                b.HasIndex(p => p.Symbol);
+                b.HasIndex(p => p.TradingDate);
+                b.HasIndex(p => new { p.Symbol, p.Type, p.TradingDate });
+            });
+
+            #endregion
 
             #region Leadership
 
@@ -92,8 +104,7 @@ namespace Pl.Sas.Infrastructure.Market
                 b.HasIndex(p => p.Symbol);
             });
 
-            #endregion Leadership
-
+            #endregion
             #region FinancialGrowth
 
             modelBuilder.Entity<FinancialGrowth>(b =>
@@ -103,8 +114,7 @@ namespace Pl.Sas.Infrastructure.Market
                 b.HasIndex(p => p.Symbol);
             });
 
-            #endregion FinancialGrowth
-
+            #endregion
             #region FinancialIndicator
 
             modelBuilder.Entity<FinancialIndicator>(b =>
@@ -114,8 +124,7 @@ namespace Pl.Sas.Infrastructure.Market
                 b.HasIndex(p => p.Symbol);
             });
 
-            #endregion FinancialIndicator
-
+            #endregion
             #region CorporateAction
 
             modelBuilder.Entity<CorporateAction>(b =>
@@ -131,8 +140,7 @@ namespace Pl.Sas.Infrastructure.Market
                 b.HasIndex(p => new { p.EventCode, p.Symbol, p.Exchange });
             });
 
-            #endregion CorporateAction
-
+            #endregion
             #region FiinEvaluated
 
             modelBuilder.Entity<FiinEvaluated>(b =>
@@ -142,8 +150,7 @@ namespace Pl.Sas.Infrastructure.Market
                 b.HasIndex(p => p.Symbol);
             });
 
-            #endregion FiinEvaluate
-
+            #endregion
             #region StockRecommendation
 
             modelBuilder.Entity<StockRecommendation>(b =>
@@ -157,8 +164,7 @@ namespace Pl.Sas.Infrastructure.Market
                 b.HasIndex(p => new { p.Symbol, p.Analyst, p.ReportDate });
             });
 
-            #endregion StockRecommendation
-
+            #endregion
             #region VndStockScore
 
             modelBuilder.Entity<VndStockScore>(b =>
@@ -175,8 +181,7 @@ namespace Pl.Sas.Infrastructure.Market
                 b.Property(p => p.Locale).HasMaxLength(8);
             });
 
-            #endregion VndStockScore
-
+            #endregion
             #region StockTransaction
 
             modelBuilder.Entity<StockTransaction>(b =>

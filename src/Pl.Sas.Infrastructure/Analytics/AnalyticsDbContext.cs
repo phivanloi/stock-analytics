@@ -22,8 +22,7 @@ namespace Pl.Sas.Infrastructure.Analytics
                 b.HasIndex(p => new { p.Symbol });
             });
 
-            #endregion AnalyticsResult
-
+            #endregion
             #region TradingResult
 
             modelBuilder.Entity<TradingResult>(b =>
@@ -33,8 +32,7 @@ namespace Pl.Sas.Infrastructure.Analytics
                 b.HasIndex(p => new { p.Symbol, p.Principle });
             });
 
-            #endregion TradingResult
-
+            #endregion
             #region StockTracking
 
             modelBuilder.Entity<IndustryAnalytics>(b =>
@@ -43,7 +41,7 @@ namespace Pl.Sas.Infrastructure.Analytics
                 b.Property(p => p.Code).HasMaxLength(16).IsRequired();
             });
 
-            #endregion StockTracking
+            #endregion     
         }
     }
 }

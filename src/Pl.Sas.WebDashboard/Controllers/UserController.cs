@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Pl.Sas.WebDashboard.Models;
 using Pl.Sas.Infrastructure.Identity;

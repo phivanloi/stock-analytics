@@ -62,6 +62,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "haproxy", "haproxy", "{97A5
 		haproxy\haproxy.cfg = haproxy\haproxy.cfg
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pl.Sas.InvestmentPrinciplesTests", "tests\Pl.Sas.InvestmentPrinciplesTests\Pl.Sas.InvestmentPrinciplesTests.csproj", "{78F01769-306A-4128-AAC2-E1377D9ABFD1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -104,6 +106,10 @@ Global
 		{4E8FDFAC-B427-4D2F-9BA1-6C40520CB227}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4E8FDFAC-B427-4D2F-9BA1-6C40520CB227}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4E8FDFAC-B427-4D2F-9BA1-6C40520CB227}.Release|Any CPU.Build.0 = Release|Any CPU
+		{78F01769-306A-4128-AAC2-E1377D9ABFD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{78F01769-306A-4128-AAC2-E1377D9ABFD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{78F01769-306A-4128-AAC2-E1377D9ABFD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{78F01769-306A-4128-AAC2-E1377D9ABFD1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -119,6 +125,7 @@ Global
 		{7049B459-9474-4857-BC12-A258F2870F15} = {E849D658-A03B-4D48-8705-1B5A430ABE1F}
 		{20E0D103-E49C-4362-BEF2-D758EE229E3A} = {B8FA2656-22ED-4CD6-855B-F24BE502112C}
 		{4E8FDFAC-B427-4D2F-9BA1-6C40520CB227} = {F46ADCF5-5D32-4267-88A1-0C324F75B697}
+		{78F01769-306A-4128-AAC2-E1377D9ABFD1} = {B8FA2656-22ED-4CD6-855B-F24BE502112C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {11B9F141-100C-443A-A6CF-456299169F3D}

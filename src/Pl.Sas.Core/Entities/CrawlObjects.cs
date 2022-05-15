@@ -152,8 +152,7 @@ namespace Pl.Sas.Core.Entities.CrawlObjects
         public string NetBuySellVal { get; set; } = null!;
     }
 
-    #endregion StockPrice
-
+    #endregion
     #region Company Info
 
     public class SsiCompanyInfo
@@ -314,8 +313,7 @@ namespace Pl.Sas.Core.Entities.CrawlObjects
         public string PositionLevel { get; set; } = null!;
     }
 
-    #endregion Leadership
-
+    #endregion
     #region Capital and Dividend
 
     public class SsiCapitalAndDividend
@@ -381,8 +379,7 @@ namespace Pl.Sas.Core.Entities.CrawlObjects
         public string OwnerCapital { get; set; } = null!;
     }
 
-    #endregion Capital and Dividend
-
+    #endregion
     #region Financial Indicator
 
     public class SsiFinancialIndicator
@@ -460,8 +457,7 @@ namespace Pl.Sas.Core.Entities.CrawlObjects
         public string Pb { get; set; } = null!;
     }
 
-    #endregion Financial Indicator
-
+    #endregion
     #region Corporate Action
 
     public class SsiCorporateAction
@@ -524,8 +520,7 @@ namespace Pl.Sas.Core.Entities.CrawlObjects
         public string EventCode { get; set; } = null!;
     }
 
-    #endregion CorporateAction
-
+    #endregion
     #region Fiintrading Evaluate
 
     public class FiintradingEvaluate
@@ -704,8 +699,7 @@ namespace Pl.Sas.Core.Entities.CrawlObjects
         public int RefPrice { get; set; }
     }
 
-    #endregion Transaction
-
+    #endregion
     #region Index price
 
     public class SsiIndexPrice

@@ -488,8 +488,7 @@ namespace Pl.Sas.Core.Services
                 TradingNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(new List<KeyValuePair<int, string>>() { new(startPrice > endPrice ? -1 : startPrice < endPrice ? 1 : 0, noteInvestment) })),
             });
 
-            #endregion Buy and wait
-
+            #endregion
             var tradingCases = AnalyticsBuildTradingCases();
             foreach (var tradingCase in tradingCases)
             {
