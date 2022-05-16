@@ -29,7 +29,7 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 Console.OutputEncoding = Encoding.UTF8;
                 using var scope = _serviceProvider.CreateScope();
                 _marketData = scope.ServiceProvider.GetRequiredService<IMarketData>();
-                DateTime fromDate = new(2018, 5, 1);
+                DateTime fromDate = new(2021, 1, 1);
                 DateTime toDate = new(2020, 5, 1);
                 var symbol = "FPT";
                 var chartPrices = (await _marketData.GetChartPricesAsync(symbol)).OrderBy(q => q.TradingDate).ToList();

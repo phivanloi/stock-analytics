@@ -9,12 +9,13 @@ namespace Pl.Sas.Core.Trading
         public const float SellTax = 0.35f / 100;
         public const float AdvanceTax = 0.35f / 100;
         public const int batch = 100;
-        public static readonly int[] Emas = new int[] { 5, 9, 12, 20, 36, 50, 100, 200 };
+        public static readonly int[] Emas = new int[] { 2, 3, 5, 9, 12, 20, 36, 50, 100, 200 };
 
         public static (bool IsBuy, bool IsSell) Trading(TradingCase tradingCase, List<ChartPrice> chartPrices, Dictionary<string, IndicatorSet> indicatorSet)
         {
             var numberChangeDay = 10;
             var tradingHistory = new List<ChartPrice>();
+            var tradingIndicator = new List<IndicatorSet>();
             float? lastBuyPrice = null;
             ChartPrice? previousChart = null;
 
@@ -24,6 +25,7 @@ namespace Pl.Sas.Core.Trading
                 {
                     tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản:{tradingCase.Profit(day.ClosePrice):0,0}, không giao dịch ngày đầu tiên");
                     previousChart = day;
+                    tradingHistory.Add(day);
                     continue;
                 }
 
@@ -32,12 +34,17 @@ namespace Pl.Sas.Core.Trading
                 {
                     tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản:{tradingCase.Profit(day.ClosePrice):0,0}, không giao dịch do không có chỉ báo");
                     previousChart = day;
+                    tradingHistory.Add(day);
                     continue;
+                }
+                else
+                {
+                    tradingIndicator.Add(indicator);
                 }
 
                 if (lastBuyPrice is null)
                 {
-                    var isBuy = BuyCondition(indicator);
+                    var isBuy = BuyCondition(tradingIndicator);
                     if (isBuy > 0)
                     {
                         var optimalBuyPrice = CalculateOptimalBuyPrice(previousChart);
@@ -104,7 +111,7 @@ namespace Pl.Sas.Core.Trading
             }
             else
             {
-                todayIsBuy = BuyCondition(lastIndicatorSet) > 0;
+                todayIsBuy = BuyCondition(tradingIndicator) > 0;
             }
 
             return (todayIsBuy, todayIsSell);
@@ -136,22 +143,38 @@ namespace Pl.Sas.Core.Trading
             return (buyStockCount, excessCash, totalTax);
         }
 
-        public static int BuyCondition(IndicatorSet indicatorSet)
+        public static int BuyCondition(List<IndicatorSet> indicatorSets)
         {
-            if (indicatorSet.Values["ema-100"] < indicatorSet.Values["ema-200"])
-            {
-                return 0;
-            }
-            if (indicatorSet.Values["ema-50"] < indicatorSet.Values["ema-100"])
+            if (indicatorSets.Count < 3)
             {
                 return 0;
             }
 
-            if (indicatorSet.Values["ema-12"] < indicatorSet.Values["ema-20"])
+            var lastItem = indicatorSets.Last();
+            if (lastItem.Values["ema-100"] < lastItem.Values["ema-200"])
+            {
+                return 0;
+            }
+            if (lastItem.Values["ema-50"] < lastItem.Values["ema-100"])
             {
                 return 0;
             }
 
+            if (lastItem.Values["ema-12"] < lastItem.Values["ema-36"])
+            {
+                return 0;
+            }
+
+            if (lastItem.Values["ema-5"] < lastItem.Values["ema-12"])
+            {
+                return 0;
+            }
+
+            var avg = indicatorSets.Skip(indicatorSets.Count - 3).Take(3).Average(q => q.Values["ema-5"]);
+            if (avg > lastItem.Values["ema-5"])
+            {
+                return 0;
+            }
             //if (indicatorSet.Values["ema-9"] < indicatorSet.Values["ema-12"])
             //{
             //    return 0;
@@ -161,7 +184,6 @@ namespace Pl.Sas.Core.Trading
             //{
             //    return 0;
             //}
-
             return 100;
         }
 
@@ -180,7 +202,12 @@ namespace Pl.Sas.Core.Trading
 
         public static int SellCondition(IndicatorSet indicatorSet)
         {
-            if (indicatorSet.Values["ema-12"] > indicatorSet.Values["ema-20"])
+            //if (indicatorSet.Values["ema-12"] > indicatorSet.Values["ema-20"])
+            //{
+            //    return 0;
+            //}
+
+            if (indicatorSet.Values["ema-5"] > indicatorSet.Values["ema-12"])
             {
                 return 0;
             }
