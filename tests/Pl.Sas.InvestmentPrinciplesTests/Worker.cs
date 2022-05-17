@@ -33,19 +33,15 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 DateTime toDate = new(2020, 5, 1);
                 var symbol = "FPT";
                 var chartPrices = (await _marketData.GetChartPricesAsync(symbol)).OrderBy(q => q.TradingDate).ToList();
-                if (chartPrices.Count < 100)// bỏ qua nếu có ít hơn 5 phiên giao dịch
-                {
-                    Console.WriteLine($"Không thực hiện test do chưa đủ 100 phiên giao dịch");
-                }
-                var indicatorSet = EmaTrading.BuildIndicatorSet(chartPrices);
-                var tradingCase = EmaTrading.BuildCase(true);
+                var indicatorSet = BTrading.BuildIndicatorSet(chartPrices);
+                var tradingCase = BTrading.BuildCase(true);
                 var tradingHistories = chartPrices.Where(q => q.TradingDate >= fromDate).OrderBy(q => q.TradingDate).ToList();
                 var startPrice = tradingHistories[0].ClosePrice;
                 var endPrice = tradingHistories[^1].ClosePrice;
-                var (isBuy, isSell) = EmaTrading.Trading(tradingCase, tradingHistories, indicatorSet);
+                var (isBuy, isSell) = BTrading.Trading(tradingCase, tradingHistories, indicatorSet);
                 var lastChartPrice = tradingHistories[^1];
-                var optimalBuyPrice = EmaTrading.CalculateOptimalBuyPrice(lastChartPrice);
-                var optimalSellPrice = EmaTrading.CalculateOptimalSellPrice(lastChartPrice);
+                var optimalBuyPrice = BTrading.CalculateOptimalBuyPrice(lastChartPrice);
+                var optimalSellPrice = BTrading.CalculateOptimalSellPrice(lastChartPrice);
                 Console.WriteLine($"Quá trình đầu tư ngắn hạn:");
                 Console.WriteLine($"Bắt đầu--------------------------------");
                 foreach (var note in tradingCase.ExplainNotes)

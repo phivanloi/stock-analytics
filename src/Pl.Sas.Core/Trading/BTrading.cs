@@ -1,15 +1,15 @@
 ﻿using Pl.Sas.Core.Entities;
 using Pl.Sas.Core.Indicators;
+using Skender.Stock.Indicators;
 
 namespace Pl.Sas.Core.Trading
 {
-    public class EmaTrading
+    public class BTrading
     {
         public const float BuyTax = 0.25f / 100;
         public const float SellTax = 0.35f / 100;
         public const float AdvanceTax = 0.35f / 100;
         public const int batch = 100;
-        public static readonly int[] Emas = new int[] { 2, 3, 5, 9, 12, 20, 36, 50, 100, 200 };
 
         public static (bool IsBuy, bool IsSell) Trading(TradingCase tradingCase, List<ChartPrice> chartPrices, Dictionary<string, IndicatorSet> indicatorSet)
         {
@@ -226,34 +226,19 @@ namespace Pl.Sas.Core.Trading
             return new TradingCase(isNoteTrading);
         }
 
-        public static Dictionary<string, IndicatorSet> BuildIndicatorSet(List<ChartPrice> chartPrices)
+        public static void BuildIndicatorSet(List<ChartPrice> chartPrices)
         {
-            var indicatorSet = new Dictionary<string, IndicatorSet>();
-            for (int i = 0; i < chartPrices.Count; i++)
+            var quotes = chartPrices.Select(q => new Quote()
             {
-                var addItem = new IndicatorSet()
-                {
-                    TradingDate = chartPrices[i].TradingDate,
-                    Values = new Dictionary<string, float>(),
-                    ClosePrice = chartPrices[i].ClosePrice,
-                };
-
-                foreach (var ema in Emas)
-                {
-                    if ((i + 1) == ema)
-                    {
-                        addItem.Values.Add($"ema-{ema}", chartPrices.Skip(i + 1 - ema).Take(ema).Average(q => q.ClosePrice));
-                    }
-                    else if ((i + 1) > ema)
-                    {
-                        var yesterdaySet = indicatorSet[chartPrices[i - 1].DatePath];
-                        var emaValue = ExponentialMovingAverage.ExponentialMovingAverageFormula(chartPrices[i].ClosePrice, yesterdaySet.Values[$"ema-{ema}"], ema);
-                        addItem.Values.Add($"ema-{ema}", emaValue);
-                    }
-                }
-                indicatorSet.Add(chartPrices[i].DatePath, addItem);
-            }
-            return indicatorSet;
+                Close = (decimal)q.ClosePrice,
+                Open = (decimal)q.OpenPrice,
+                High = (decimal)q.HighestPrice,
+                Low = (decimal)q.LowestPrice,
+                Volume = (decimal)q.TotalMatchVol,
+                Date = q.TradingDate
+            });
+            var df = new Quote();
+            IEnumerable<MacdResult> results = quotes.GetMacd(12, 26, 9);
         }
     }
 }
