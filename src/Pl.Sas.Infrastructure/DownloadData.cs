@@ -1,4 +1,4 @@
-﻿using Pl.Sas.Core.Entities.CrawlObjects;
+﻿using Pl.Sas.Core.Entities.DownloadObjects;
 using Pl.Sas.Core.Interfaces;
 using Pl.Sas.Infrastructure.Helper;
 using System.Text;
@@ -166,9 +166,9 @@ namespace Pl.Sas.Infrastructure.Crawl
             return await _httpClient.PostJsonAsync<SsiTransaction>(requestUrl, new StringContent(JsonSerializer.Serialize(stockPriceSendQuery), Encoding.UTF8, "application/json"));
         }
 
-        public virtual async Task<List<SsiIndexPrice>> DownloadIndexPricesAsync(string symbol, long configTime, string type = "D")
+        public virtual async Task<List<SsiChartPrice>> DownloadSsiChartPricesAsync(string symbol, long configTime, string type = "D")
         {
-            var result = new List<SsiIndexPrice>();
+            var result = new List<SsiChartPrice>();
             var startTime = DateTimeOffset.FromUnixTimeSeconds(configTime);
             for (int i = startTime.Year; i <= (DateTimeOffset.Now.Year + 1); i++)
             {
@@ -176,13 +176,35 @@ namespace Pl.Sas.Infrastructure.Crawl
                 var fromTime = startTime.ToUnixTimeSeconds();
                 var toTime = startTime.AddYears(1).AddDays(1).ToUnixTimeSeconds();
                 var requestUrl = $"https://iboard.ssi.com.vn/dchart/api/history?resolution={type}&symbol={symbol}&from={fromTime}&to={toTime}";
-                var ssiIndexPrices = await _httpClient.GetJsonAsync<SsiIndexPrice>(requestUrl);
+                var ssiIndexPrices = await _httpClient.GetJsonAsync<SsiChartPrice>(requestUrl);
                 if (ssiIndexPrices is not null)
                 {
                     result.Add(ssiIndexPrices);
                 }
                 startTime = startTime.AddYears(1);
             }
+            return result;
+        }
+
+        public virtual async Task<List<VndChartPrice>> DownloadVndChartPricesAsync(string symbol, long configTime, string type = "D")
+        {
+            var result = new List<VndChartPrice>();
+            var startTime = DateTimeOffset.FromUnixTimeSeconds(configTime);
+            _httpClient.DefaultRequestHeaders.Add("Origin", $"https://dchart.vndirect.com.vn/?symbol={symbol}");
+            for (int i = startTime.Year; i <= (DateTimeOffset.Now.Year + 1); i++)
+            {
+                await Task.Delay(100);
+                var fromTime = startTime.ToUnixTimeSeconds();
+                var toTime = startTime.AddYears(1).AddDays(1).ToUnixTimeSeconds();
+                var requestUrl = $"https://dchart-api.vndirect.com.vn/dchart/history?resolution={type}&symbol={symbol}&from={fromTime}&to={toTime}";
+                var ssiIndexPrices = await _httpClient.GetJsonAsync<VndChartPrice>(requestUrl);
+                if (ssiIndexPrices is not null)
+                {
+                    result.Add(ssiIndexPrices);
+                }
+                startTime = startTime.AddYears(1);
+            }
+            _httpClient.DefaultRequestHeaders.Remove("Origin");
             return result;
         }
 

@@ -6,16 +6,29 @@ namespace Pl.Sas.Core.Trading
 {
     public class BTrading
     {
-        public const float BuyTax = 0.25f / 100;
-        public const float SellTax = 0.35f / 100;
-        public const float AdvanceTax = 0.35f / 100;
-        public const int batch = 100;
+        private const float _buyTax = 0.25f / 100;
+        private const float SellTax = 0.35f / 100;
+        private const float AdvanceTax = 0.35f / 100;
+        private static List<MacdResult> _macd_12_26_9 = new();
+        private static List<EmaResult> _ema_200 = new();
+        private static List<EmaResult> _ema_100 = new();
+        private static List<EmaResult> _ema_50 = new();
+        private static List<EmaResult> _ema_36 = new();
+        private static List<EmaResult> _ema_30 = new();
+        private static List<EmaResult> _ema_26 = new();
+        private static List<EmaResult> _ema_20 = new();
+        private static List<EmaResult> _ema_15 = new();
+        private static List<EmaResult> _ema_12 = new();
+        private static List<EmaResult> _ema_9 = new();
+        private static List<EmaResult> _ema_5 = new();
+        private static List<EmaResult> _ema_3 = new();
+        private static List<ChartPrice> _chartPrices = new();
 
-        public static (bool IsBuy, bool IsSell) Trading(TradingCase tradingCase, List<ChartPrice> chartPrices, Dictionary<string, IndicatorSet> indicatorSet)
+
+        public static (bool IsBuy, bool IsSell) Trading(TradingCase tradingCase, List<ChartPrice> chartPrices)
         {
             var numberChangeDay = 10;
             var tradingHistory = new List<ChartPrice>();
-            var tradingIndicator = indicatorSet.Where(q => q.Value.TradingDate < chartPrices[0].TradingDate).Select(q => q.Value).OrderBy(q => q.TradingDate).ToList();
             float? lastBuyPrice = null;
             ChartPrice? previousChart = null;
 
@@ -29,25 +42,12 @@ namespace Pl.Sas.Core.Trading
                     continue;
                 }
 
-                indicatorSet.TryGetValue(previousChart.DatePath, out IndicatorSet? indicator);
-                if (indicator is null)
-                {
-                    tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản:{tradingCase.Profit(day.ClosePrice):0,0}, không giao dịch do không có chỉ báo");
-                    previousChart = day;
-                    tradingHistory.Add(day);
-                    continue;
-                }
-                else
-                {
-                    tradingIndicator.Add(indicator);
-                }
-
                 if (lastBuyPrice is null)
                 {
-                    var isBuy = BuyCondition(tradingIndicator);
+                    var isBuy = BuyCondition(day.TradingDate);
                     if (isBuy > 0)
                     {
-                        var optimalBuyPrice = CalculateOptimalBuyPrice(previousChart);
+                        var optimalBuyPrice = CalculateOptimalBuyPrice(day);
                         if (optimalBuyPrice <= day.LowestPrice)
                         {
                             optimalBuyPrice = day.ClosePrice;
@@ -58,21 +58,21 @@ namespace Pl.Sas.Core.Trading
                         tradingCase.NumberStock += stockCount;
                         lastBuyPrice = optimalBuyPrice;
                         numberChangeDay = 0;
-                        tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, ema-12:{indicator.Values["ema-12"]:0,0.00}, ema-36:{indicator.Values["ema-36"]:0,0.00}, sub:{indicator.S("ema-12", "ema-36"):0,0.00} chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản:{tradingCase.Profit(day.ClosePrice):0,0}, Mua {tradingCase.NumberStock:0,0} cổ giá {optimalBuyPrice * 1000:0,0} thuế {totalTax:0,0}");
+                        tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản:{tradingCase.Profit(day.ClosePrice):0,0}, Mua {tradingCase.NumberStock:0,0} cổ giá {optimalBuyPrice * 1000:0,0} thuế {totalTax:0,0}");
                     }
                     else
                     {
-                        tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, ema-12:{indicator.Values["ema-12"]:0,0.00}, ema-36:{indicator.Values["ema-36"]:0,0.00}, sub:{indicator.S("ema-12", "ema-36"):0,0.00} chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản:{tradingCase.Profit(day.ClosePrice):0,0}, Không gia dịch.");
+                        tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản:{tradingCase.Profit(day.ClosePrice):0,0}, Không giao dịch.");
                     }
                 }
                 else
                 {
                     if (numberChangeDay > 2)
                     {
-                        var isSell = SellCondition(indicator);
+                        var isSell = SellCondition(day.TradingDate);
                         if (isSell > 0)
                         {
-                            var optimalSellPrice = CalculateOptimalSellPrice(previousChart);
+                            var optimalSellPrice = CalculateOptimalSellPrice(day);
                             if (optimalSellPrice >= day.HighestPrice)
                             {
                                 optimalSellPrice = day.ClosePrice;
@@ -83,17 +83,17 @@ namespace Pl.Sas.Core.Trading
                             var selNumberStock = tradingCase.NumberStock;
                             tradingCase.NumberStock = 0;
                             numberChangeDay = 0;
-                            tradingCase.AddNote(optimalSellPrice > lastBuyPrice ? 1 : -1, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, ema-12:{indicator.Values["ema-12"]:0,0.00}, ema-36:{indicator.Values["ema-36"]:0,0.00}, sub:{indicator.S("ema-12", "ema-36"):0,0.00} chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản:{tradingCase.Profit(day.ClosePrice):0,0}, Bán {selNumberStock:0,0} cổ giá {optimalSellPrice * 1000:0,0} thuế {totalTax:0,0}");
+                            tradingCase.AddNote(optimalSellPrice > lastBuyPrice ? 1 : -1, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản:{tradingCase.Profit(day.ClosePrice):0,0}, Bán {selNumberStock:0,0} cổ giá {optimalSellPrice * 1000:0,0} thuế {totalTax:0,0}");
                             lastBuyPrice = null;
                         }
                         else
                         {
-                            tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, ema-12:{indicator.Values["ema-12"]:0,0.00}, ema-36:{indicator.Values["ema-36"]:0,0.00}, sub:{indicator.S("ema-12", "ema-36"):0,0.00} chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản:{tradingCase.Profit(day.ClosePrice):0,0}, Không giao dịch");
+                            tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản:{tradingCase.Profit(day.ClosePrice):0,0}, Không giao dịch");
                         }
                     }
                     else
                     {
-                        tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, ema-12:{indicator.Values["ema-12"]:0,0.00}, ema-36:{indicator.Values["ema-36"]:0,0.00}, sub:{indicator.S("ema-12", "ema-36"):0,0.00} chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản:{tradingCase.Profit(day.ClosePrice):0,0}, Không giao dịch do mới mua {numberChangeDay} ngày");
+                        tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản:{tradingCase.Profit(day.ClosePrice):0,0}, Không giao dịch do mới mua {numberChangeDay} ngày");
                     }
                 }
 
@@ -102,16 +102,15 @@ namespace Pl.Sas.Core.Trading
                 tradingHistory.Add(day);
             }
             var lastHistory = chartPrices[^1];
-            var lastIndicatorSet = indicatorSet[lastHistory.DatePath];
             var todayIsBuy = false;
             var todayIsSell = false;
             if (lastBuyPrice != null)
             {
-                todayIsSell = numberChangeDay > 2 && SellCondition(lastIndicatorSet) > 0;
+                todayIsSell = numberChangeDay > 2 && SellCondition(lastHistory.TradingDate) > 0;
             }
             else
             {
-                todayIsBuy = BuyCondition(tradingIndicator) > 0;
+                todayIsBuy = BuyCondition(lastHistory.TradingDate) > 0;
             }
 
             return (todayIsBuy, todayIsSell);
@@ -124,7 +123,7 @@ namespace Pl.Sas.Core.Trading
                 return (0, totalMoney, 0);
             }
 
-            var buyTax = BuyTax;
+            var buyTax = _buyTax;
             if (numberChangeDay < 3)
             {
                 buyTax += AdvanceTax;
@@ -143,47 +142,65 @@ namespace Pl.Sas.Core.Trading
             return (buyStockCount, excessCash, totalTax);
         }
 
-        public static int BuyCondition(List<IndicatorSet> indicatorSets)
+        public static int BuyCondition(DateTime tradingDate)
         {
-            if (indicatorSets.Count < 3)
-            {
-                return 0;
-            }
+            //var ema200 = _ema_200.Find(tradingDate);
+            //var ema100 = _ema_100.Find(tradingDate);
 
-            var lastItem = indicatorSets.Last();
-            if (lastItem.Values["ema-100"] < lastItem.Values["ema-200"])
-            {
-                return 0;
-            }
-            if (lastItem.Values["ema-50"] < lastItem.Values["ema-100"])
-            {
-                return 0;
-            }
-
-            if (lastItem.Values["ema-12"] < lastItem.Values["ema-36"])
-            {
-                return 0;
-            }
-
-            if (lastItem.Values["ema-5"] < lastItem.Values["ema-12"])
-            {
-                return 0;
-            }
-
-            var avg = indicatorSets.Skip(indicatorSets.Count - 3).Take(3).Average(q => q.Values["ema-5"]);
-            if (avg > lastItem.Values["ema-5"])
-            {
-                return 0;
-            }
-            //if (indicatorSet.Values["ema-9"] < indicatorSet.Values["ema-12"])
+            //if (ema200 is null || ema100 is null || ema100.Ema < ema200.Ema)
             //{
             //    return 0;
             //}
 
-            //if (indicatorSet.Values["ema-5"] < indicatorSet.Values["ema-9"])
+
+            //var ema50 = _ema_50.Find(tradingDate);
+            ////if (ema50 is null || ema50.Ema < ema100.Ema)
+            ////{
+            ////    return 0;
+            ////}
+
+            //var topFiveEma50 = _ema_50.Where(q => q.Date <= tradingDate && q.Ema.HasValue).OrderByDescending(q => q.Date).Take(5);
+            //if (topFiveEma50.Count() < 5 || topFiveEma50.Average(q => q.Ema) > ema50.Ema)
             //{
             //    return 0;
             //}
+
+            var macd = _macd_12_26_9.Find(tradingDate);
+            if (macd is null || macd.Macd < macd.Signal)
+            {
+                return 0;
+            }
+
+            //var ema12 = _ema_12.Find(tradingDate);
+            //var ema5 = _ema_5.Find(tradingDate);
+            //if (ema5 is null || ema12 is null || ema5.Ema < ema12.Ema)
+            //{
+            //    return 0;
+            //}
+
+            //var ema36 = _ema_36.Find(tradingDate);
+            //var ema12 = _ema_12.Find(tradingDate);
+            //if (ema36 is null || ema12 is null || ema12.Ema < ema36.Ema)
+            //{
+            //    return 0;
+            //}
+
+            //var ema5 = _ema_5.Find(tradingDate);
+            //if (ema5 is null || ema5.Ema < ema12.Ema)
+            //{
+            //    return 0;
+            //}
+
+            //var topThree = _ema_5.Where(q => q.Date <= tradingDate && q.Ema.HasValue).OrderByDescending(q => q.Date).Take(3);
+            //if (topThree.Count() < 3)
+            //{
+            //    return 0;
+            //}
+            //if (topThree.Average(q => q.Ema) > ema5.Ema)
+            //{
+            //    return 0;
+            //}
+
             return 100;
         }
 
@@ -200,17 +217,20 @@ namespace Pl.Sas.Core.Trading
             return (totalMoney - totalTax, totalTax);
         }
 
-        public static int SellCondition(IndicatorSet indicatorSet)
+        public static int SellCondition(DateTime tradingDate)
         {
-            //if (indicatorSet.Values["ema-12"] > indicatorSet.Values["ema-20"])
-            //{
-            //    return 0;
-            //}
-
-            if (indicatorSet.Values["ema-5"] > indicatorSet.Values["ema-12"])
+            var macd = _macd_12_26_9.Find(tradingDate);
+            if (macd is null || macd.Macd > macd.Signal)
             {
                 return 0;
             }
+
+            //var ema36 = _ema_36.Find(tradingDate);
+            //var ema12 = _ema_12.Find(tradingDate);
+            //if (ema36 is null || ema12 is null || ema12.Ema > ema36.Ema)
+            //{
+            //    return 0;
+            //}
 
             return 100;
         }
@@ -228,6 +248,7 @@ namespace Pl.Sas.Core.Trading
 
         public static void BuildIndicatorSet(List<ChartPrice> chartPrices)
         {
+            _chartPrices = chartPrices;
             var quotes = chartPrices.Select(q => new Quote()
             {
                 Close = (decimal)q.ClosePrice,
@@ -236,9 +257,40 @@ namespace Pl.Sas.Core.Trading
                 Low = (decimal)q.LowestPrice,
                 Volume = (decimal)q.TotalMatchVol,
                 Date = q.TradingDate
-            });
-            var df = new Quote();
-            IEnumerable<MacdResult> results = quotes.GetMacd(12, 26, 9);
+            }).OrderBy(q => q.Date).ToList();
+            _macd_12_26_9 = quotes.GetMacd(12, 36, 9, CandlePart.Close).ToList();
+
+            _ema_200 = quotes.GetEma(200, CandlePart.Close).ToList();
+            _ema_100 = quotes.GetEma(100, CandlePart.Close).ToList();
+            _ema_50 = quotes.GetEma(50, CandlePart.Close).ToList();
+            _ema_36 = quotes.GetEma(36, CandlePart.Close).ToList();
+            _ema_30 = quotes.GetEma(30, CandlePart.Close).ToList();
+            _ema_26 = quotes.GetEma(26, CandlePart.Close).ToList();
+            _ema_20 = quotes.GetEma(20, CandlePart.Close).ToList();
+            _ema_15 = quotes.GetEma(15, CandlePart.Close).ToList();
+            _ema_12 = quotes.GetEma(12, CandlePart.Close).ToList();
+            _ema_9 = quotes.GetEma(9, CandlePart.Close).ToList();
+            _ema_5 = quotes.GetEma(5, CandlePart.Close).ToList();
+            _ema_3 = quotes.GetEma(3, CandlePart.Close).ToList();
+        }
+
+        public static void ShowIndicator()
+        {
+            foreach (var chartPrice in _chartPrices)
+            {
+                var ema200 = _ema_200.Find(chartPrice.TradingDate);
+                var ema100 = _ema_100.Find(chartPrice.TradingDate);
+                var ema50 = _ema_50.Find(chartPrice.TradingDate);
+                var ema36 = _ema_36.Find(chartPrice.TradingDate);
+                var ema26 = _ema_26.Find(chartPrice.TradingDate);
+                var ema12 = _ema_12.Find(chartPrice.TradingDate);
+                var ema9 = _ema_9.Find(chartPrice.TradingDate);
+                var ema5 = _ema_5.Find(chartPrice.TradingDate);
+                $"{chartPrice.TradingDate:yyy/MM/dd}, ema200: {ema200?.Ema:00.0000}, ema100: {ema100?.Ema:00.0000}, ema50: {ema50?.Ema:00.0000}, ema36: {ema36?.Ema:00.0000}, ema26: {ema26?.Ema:00.0000}, ema12: {ema12?.Ema:00.0000}, ema9: {ema9?.Ema:00.0000}, ema5: {ema5?.Ema:00.0000}".WriteConsole(ConsoleColor.White);
+
+                var macd = _macd_12_26_9.Find(chartPrice.TradingDate);
+                $"{chartPrice.TradingDate:yyy/MM/dd}, macd_12_26_9: {macd?.Macd:00.0000} {macd?.Signal:00.0000} {macd?.Histogram:00.0000}".WriteConsole(ConsoleColor.White);
+            }
         }
     }
 }

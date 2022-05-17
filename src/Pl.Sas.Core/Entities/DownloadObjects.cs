@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Pl.Sas.Core.Entities.CrawlObjects
+namespace Pl.Sas.Core.Entities.DownloadObjects
 {
     #region All stock import
 
@@ -153,6 +153,7 @@ namespace Pl.Sas.Core.Entities.CrawlObjects
     }
 
     #endregion
+
     #region Company Info
 
     public class SsiCompanyInfo
@@ -314,6 +315,7 @@ namespace Pl.Sas.Core.Entities.CrawlObjects
     }
 
     #endregion
+
     #region Capital and Dividend
 
     public class SsiCapitalAndDividend
@@ -380,6 +382,7 @@ namespace Pl.Sas.Core.Entities.CrawlObjects
     }
 
     #endregion
+
     #region Financial Indicator
 
     public class SsiFinancialIndicator
@@ -458,6 +461,7 @@ namespace Pl.Sas.Core.Entities.CrawlObjects
     }
 
     #endregion
+
     #region Corporate Action
 
     public class SsiCorporateAction
@@ -521,6 +525,7 @@ namespace Pl.Sas.Core.Entities.CrawlObjects
     }
 
     #endregion
+
     #region Fiintrading Evaluate
 
     public class FiintradingEvaluate
@@ -700,9 +705,10 @@ namespace Pl.Sas.Core.Entities.CrawlObjects
     }
 
     #endregion
+
     #region Index price
 
-    public class SsiIndexPrice
+    public class SsiChartPrice
     {
         [JsonPropertyName("t")]
         public long[] Time { get; set; } = null!;
@@ -721,6 +727,30 @@ namespace Pl.Sas.Core.Entities.CrawlObjects
 
         [JsonPropertyName("v")]
         public string[] Volumes { get; set; } = null!;
+
+        [JsonPropertyName("s")]
+        public string Status { get; set; } = null!;
+    }
+
+    public class VndChartPrice
+    {
+        [JsonPropertyName("t")]
+        public long[] Time { get; set; } = null!;
+
+        [JsonPropertyName("c")]
+        public float[] Close { get; set; } = null!;
+
+        [JsonPropertyName("o")]
+        public float[] Open { get; set; } = null!;
+
+        [JsonPropertyName("h")]
+        public float[] Highest { get; set; } = null!;
+
+        [JsonPropertyName("l")]
+        public float[] Lowest { get; set; } = null!;
+
+        [JsonPropertyName("v")]
+        public int[] Volumes { get; set; } = null!;
 
         [JsonPropertyName("s")]
         public string Status { get; set; } = null!;

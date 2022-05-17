@@ -1,4 +1,4 @@
-﻿using Pl.Sas.Core.Entities.CrawlObjects;
+﻿using Pl.Sas.Core.Entities.DownloadObjects;
 
 namespace Pl.Sas.Core.Interfaces
 {
@@ -90,7 +90,7 @@ namespace Pl.Sas.Core.Interfaces
         /// <param name="configTime">Cấu hình thời gian bắt đầu lấy</param>
         /// <param name="type">Loại chart</param>
         /// <returns>List SsiIndexPrice</returns>
-        Task<List<SsiIndexPrice>> DownloadIndexPricesAsync(string symbol, long configTime, string type = "D");
+        Task<List<SsiChartPrice>> DownloadSsiChartPricesAsync(string symbol, long configTime, string type = "D");
 
         /// <summary>
         /// Lấy lãi suất ngân hàng cao nhất với các kỳ hạn được chuyền vào

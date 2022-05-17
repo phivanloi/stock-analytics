@@ -152,7 +152,7 @@ namespace Pl.Sas.Core.Services
             var symbol = schedule.DataKey ?? throw new Exception($"Schedule Null DataKey, di: {schedule.Id}, type: {schedule.Type}");
             var checkingKey = $"{symbol}-Download-ChartPrices";
             var configTime = long.Parse(schedule.Options["StartTime"]);
-            var ssiChartPrices = await _crawlData.DownloadIndexPricesAsync(symbol, configTime, schedule.Options["ChartType"]);
+            var ssiChartPrices = await _crawlData.DownloadSsiChartPricesAsync(symbol, configTime, schedule.Options["ChartType"]);
             if (ssiChartPrices is null || ssiChartPrices.Count < 0)
             {
                 _logger.LogWarning("UpdateChartPricesAsync => indexPrices null info for index: {symbol}", symbol);
@@ -1011,7 +1011,7 @@ namespace Pl.Sas.Core.Services
         /// </summary>
         /// <param name="stockPrice">Dữ liệu cần lưu</param>
         /// <param name="stockPriceDl">Dữ liệu gốc</param>
-        private static void StockPriceBindValue(ref StockPrice stockPrice, Entities.CrawlObjects.StockPriceSsi stockPriceDl)
+        private static void StockPriceBindValue(ref StockPrice stockPrice, Entities.DownloadObjects.StockPriceSsi stockPriceDl)
         {
             stockPrice.PriceChange = float.Parse(stockPriceDl.PriceChange);
             stockPrice.PerPriceChange = float.Parse(stockPriceDl.PerPriceChange);
