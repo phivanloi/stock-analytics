@@ -15,7 +15,7 @@ namespace Pl.Sas.Core.Trading
         {
             var numberChangeDay = 10;
             var tradingHistory = new List<ChartPrice>();
-            var tradingIndicator = new List<IndicatorSet>();
+            var tradingIndicator = indicatorSet.Where(q => q.Value.TradingDate < chartPrices[0].TradingDate).Select(q => q.Value).OrderBy(q => q.TradingDate).ToList();
             float? lastBuyPrice = null;
             ChartPrice? previousChart = null;
 

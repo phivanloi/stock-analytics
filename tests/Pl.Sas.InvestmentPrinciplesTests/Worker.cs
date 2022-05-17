@@ -33,6 +33,10 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 DateTime toDate = new(2020, 5, 1);
                 var symbol = "FPT";
                 var chartPrices = (await _marketData.GetChartPricesAsync(symbol)).OrderBy(q => q.TradingDate).ToList();
+                if (chartPrices.Count < 100)// bỏ qua nếu có ít hơn 5 phiên giao dịch
+                {
+                    Console.WriteLine($"Không thực hiện test do chưa đủ 100 phiên giao dịch");
+                }
                 var indicatorSet = EmaTrading.BuildIndicatorSet(chartPrices);
                 var tradingCase = EmaTrading.BuildCase(true);
                 var tradingHistories = chartPrices.Where(q => q.TradingDate >= fromDate).OrderBy(q => q.TradingDate).ToList();
