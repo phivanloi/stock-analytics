@@ -31,7 +31,7 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 _marketData = scope.ServiceProvider.GetRequiredService<IMarketData>();
                 DateTime fromDate = new(2015, 1, 1);
                 DateTime toDate = new(2019, 10, 1);
-                var symbol = "SSI";
+                var symbol = "VND";
                 var chartPrices = (await _marketData.GetChartPricesAsync(symbol)).OrderBy(q => q.TradingDate).ToList();
                 BTrading.BuildIndicatorSet(chartPrices);
                 //BTrading.ShowIndicator();
