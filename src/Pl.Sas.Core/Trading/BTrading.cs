@@ -10,6 +10,7 @@ namespace Pl.Sas.Core.Trading
         private const float SellTax = 0.35f / 100;
         private const float AdvanceTax = 0.35f / 100;
         private static List<MacdResult> _macd_12_26_9 = new();
+        private static List<StochRsiResult> _stochRsi_14_14_3_3 = new();
         private static List<EmaResult> _ema_200 = new();
         private static List<EmaResult> _ema_100 = new();
         private static List<EmaResult> _ema_50 = new();
@@ -44,10 +45,10 @@ namespace Pl.Sas.Core.Trading
 
                 if (lastBuyPrice is null)
                 {
-                    var isBuy = BuyCondition(day.TradingDate);
+                    var isBuy = BuyCondition(previousChart.TradingDate);
                     if (isBuy > 0)
                     {
-                        var optimalBuyPrice = CalculateOptimalBuyPrice(day);
+                        var optimalBuyPrice = CalculateOptimalBuyPrice(previousChart);
                         if (optimalBuyPrice <= day.LowestPrice)
                         {
                             optimalBuyPrice = day.ClosePrice;
@@ -69,10 +70,10 @@ namespace Pl.Sas.Core.Trading
                 {
                     if (numberChangeDay > 2)
                     {
-                        var isSell = SellCondition(day.TradingDate);
+                        var isSell = SellCondition(previousChart.TradingDate);
                         if (isSell > 0)
                         {
-                            var optimalSellPrice = CalculateOptimalSellPrice(day);
+                            var optimalSellPrice = CalculateOptimalSellPrice(previousChart);
                             if (optimalSellPrice >= day.HighestPrice)
                             {
                                 optimalSellPrice = day.ClosePrice;
@@ -165,10 +166,24 @@ namespace Pl.Sas.Core.Trading
             //    return 0;
             //}
 
-            var macd = _macd_12_26_9.Find(tradingDate);
-            if (macd is null || macd.Macd < macd.Signal)
+            var rsi = _stochRsi_14_14_3_3.Find(tradingDate);
+            if (rsi is null)
             {
                 return 0;
+            }
+
+            if (rsi.StochRsi > rsi.Signal)
+            {
+                var macds = _macd_12_26_9.Where(q => q.Date <= tradingDate && q.Macd.HasValue).OrderByDescending(q => q.Date).Take(3).ToList();
+                if (macds.Count < 3)
+                {
+                    return 0;
+                }
+
+                if ((macds[0].Macd > macds[1].Macd && macds[1].Macd > macds[2].Macd) || (Math.Abs(macds[0]?.Histogram ?? 0) < Math.Abs(macds[1]?.Histogram ?? 0) && Math.Abs(macds[1]?.Histogram ?? 0) < Math.Abs(macds[2]?.Histogram ?? 0)) || macds[0].Macd > macds[0].Signal)
+                {
+                    return 100;
+                }
             }
 
             //var ema12 = _ema_12.Find(tradingDate);
@@ -201,7 +216,7 @@ namespace Pl.Sas.Core.Trading
             //    return 0;
             //}
 
-            return 100;
+            return 0;
         }
 
         public static float CalculateOptimalBuyPrice(ChartPrice chartPrice)
@@ -219,10 +234,24 @@ namespace Pl.Sas.Core.Trading
 
         public static int SellCondition(DateTime tradingDate)
         {
-            var macd = _macd_12_26_9.Find(tradingDate);
-            if (macd is null || macd.Macd > macd.Signal)
+            var rsi = _stochRsi_14_14_3_3.Find(tradingDate);
+            if (rsi is null)
             {
                 return 0;
+            }
+
+            if (rsi.StochRsi < rsi.Signal)
+            {
+                var macds = _macd_12_26_9.Where(q => q.Date <= tradingDate && q.Macd.HasValue).OrderByDescending(q => q.Date).Take(3).ToList();
+                if (macds.Count < 3)
+                {
+                    return 0;
+                }
+
+                if ((macds[0].Macd < macds[1].Macd && macds[1].Macd < macds[2].Macd) || (Math.Abs(macds[0]?.Histogram ?? 0) < Math.Abs(macds[1]?.Histogram ?? 0) && Math.Abs(macds[1]?.Histogram ?? 0) < Math.Abs(macds[2]?.Histogram ?? 0)) || macds[0].Macd < macds[0].Signal)
+                {
+                    return 100;
+                }
             }
 
             //var ema36 = _ema_36.Find(tradingDate);
@@ -232,7 +261,7 @@ namespace Pl.Sas.Core.Trading
             //    return 0;
             //}
 
-            return 100;
+            return 0;
         }
 
         public static float CalculateOptimalSellPrice(ChartPrice chartPrice)
@@ -272,6 +301,8 @@ namespace Pl.Sas.Core.Trading
             _ema_9 = quotes.GetEma(9, CandlePart.Close).ToList();
             _ema_5 = quotes.GetEma(5, CandlePart.Close).ToList();
             _ema_3 = quotes.GetEma(3, CandlePart.Close).ToList();
+
+            _stochRsi_14_14_3_3 = quotes.GetStochRsi(14, 14, 3, 3).ToList();
         }
 
         public static void ShowIndicator()

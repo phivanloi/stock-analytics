@@ -29,9 +29,9 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 Console.OutputEncoding = Encoding.UTF8;
                 using var scope = _serviceProvider.CreateScope();
                 _marketData = scope.ServiceProvider.GetRequiredService<IMarketData>();
-                DateTime fromDate = new(2015, 1, 1);
+                DateTime fromDate = new(2021, 6, 1);
                 DateTime toDate = new(2019, 10, 1);
-                var symbol = "VND";
+                var symbol = "HPG";
                 var chartPrices = (await _marketData.GetChartPricesAsync(symbol)).OrderBy(q => q.TradingDate).ToList();
                 BTrading.BuildIndicatorSet(chartPrices);
                 //BTrading.ShowIndicator();
