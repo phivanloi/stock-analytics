@@ -29,20 +29,20 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 Console.OutputEncoding = Encoding.UTF8;
                 using var scope = _serviceProvider.CreateScope();
                 _marketData = scope.ServiceProvider.GetRequiredService<IMarketData>();
-                DateTime fromDate = new(2021, 6, 1);
+                DateTime fromDate = new(2018, 6, 1);
                 DateTime toDate = new(2019, 10, 1);
-                var symbol = "HPG";
+                var symbol = "FPT";
                 var chartPrices = (await _marketData.GetChartPricesAsync(symbol)).OrderBy(q => q.TradingDate).ToList();
-                BTrading.BuildIndicatorSet(chartPrices);
+                MacdTrading.BuildIndicatorSet(chartPrices);
                 //BTrading.ShowIndicator();
-                var tradingCase = BTrading.BuildCase(true);
+                var tradingCase = MacdTrading.BuildCase(true);
                 var tradingHistories = chartPrices.Where(q => q.TradingDate >= fromDate).OrderBy(q => q.TradingDate).ToList();
                 var startPrice = tradingHistories[0].ClosePrice;
                 var endPrice = tradingHistories[^1].ClosePrice;
-                var (isBuy, isSell) = BTrading.Trading(tradingCase, tradingHistories);
+                var (isBuy, isSell) = MacdTrading.Trading(tradingCase, tradingHistories);
                 var lastChartPrice = tradingHistories[^1];
-                var optimalBuyPrice = BTrading.CalculateOptimalBuyPrice(lastChartPrice);
-                var optimalSellPrice = BTrading.CalculateOptimalSellPrice(lastChartPrice);
+                var optimalBuyPrice = MacdTrading.CalculateOptimalBuyPrice(lastChartPrice.OpenPrice, lastChartPrice.LowestPrice, lastChartPrice.ClosePrice);
+                var optimalSellPrice = MacdTrading.CalculateOptimalSellPrice(lastChartPrice.OpenPrice, lastChartPrice.HighestPrice, lastChartPrice.ClosePrice);
                 Console.WriteLine($"Quá trình đầu tư ngắn hạn:");
                 Console.WriteLine($"Bắt đầu--------------------------------");
                 foreach (var note in tradingCase.ExplainNotes)
