@@ -166,6 +166,25 @@ namespace Pl.Sas.Infrastructure.Crawl
             return await _httpClient.PostJsonAsync<SsiTransaction>(requestUrl, new StringContent(JsonSerializer.Serialize(stockPriceSendQuery), Encoding.UTF8, "application/json"));
         }
 
+        public virtual async Task<VndChartPrice?> DownloadVndChartPricesRealTimeAsync(string symbol, string type = "D")
+        {
+            var toTime = DateTimeOffset.Now;
+            var fromTime = toTime.AddDays(-1);
+            _httpClient.DefaultRequestHeaders.Add("Origin", $"https://dchart.vndirect.com.vn/?symbol={symbol}");
+            var requestUrl = $"https://iboard.ssi.com.vn/dchart/api/history?resolution={type}&symbol={symbol}&from={fromTime}&to={toTime}";
+            var vndChartPrice = await _httpClient.GetJsonAsync<VndChartPrice>(requestUrl);
+            _httpClient.DefaultRequestHeaders.Remove("Origin");
+            return vndChartPrice;
+        }
+
+        public virtual async Task<SsiChartPrice?> DownloadSsiChartPricesRealTimeAsync(string symbol, string type = "D")
+        {
+            var toTime = DateTimeOffset.Now.ToUnixTimeSeconds();
+            var fromTime = DateTimeOffset.Now.AddDays(-2).ToUnixTimeSeconds();
+            var requestUrl = $"https://iboard.ssi.com.vn/dchart/api/history?resolution={type}&symbol={symbol}&from={fromTime}&to={toTime}";
+            return await _httpClient.GetJsonAsync<SsiChartPrice>(requestUrl);
+        }
+
         public virtual async Task<List<SsiChartPrice>> DownloadSsiChartPricesAsync(string symbol, long configTime, string type = "D")
         {
             var result = new List<SsiChartPrice>();

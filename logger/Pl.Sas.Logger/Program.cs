@@ -61,7 +61,7 @@ if (app.Environment.IsProduction())
     app.Use(async (context, next) =>
     {
         context.Response.Headers.Add("X-Frame-Options", "sameorigin");
-        context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
+        context.Response.Headers.Add("X-Content-Type-Options", "SAMEORIGIN");
         context.Response.Headers.Add("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
         context.Response.Headers.Add("Content-Security-Policy", "default-src 'self'; connect-src *; font-src * data:; frame-src *; img-src * data:; media-src *; object-src *; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline';");
         context.Response.Headers.Add("X-Xss-Protection", "1; mode=block");

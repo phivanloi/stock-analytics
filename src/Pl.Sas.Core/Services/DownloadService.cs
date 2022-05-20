@@ -116,6 +116,73 @@ namespace Pl.Sas.Core.Services
         }
 
         /// <summary>
+        /// download dữ liệu chart price realtime
+        /// </summary>
+        /// <param name="schedule">thông tin lịch</param>
+        /// <returns>bool</returns>
+        /// <exception cref="Exception">Schedule Null DataKey</exception>
+        public virtual async Task<bool> UpdateChartPricesRealtimeAsync(Schedule schedule)
+        {
+            var symbol = schedule.DataKey ?? throw new Exception($"Schedule Null DataKey, di: {schedule.Id}, type: {schedule.Type}");
+            var checkingKey = $"{symbol}-Download-ChartPricesRealTime";
+            var chartPrices = new List<ChartPrice>();
+            Random random = new();
+            if (random.Next(0, 2000) > 1000)
+            {
+                var ssiChartPrices = await _crawlData.DownloadSsiChartPricesRealTimeAsync(symbol, "D");
+                if (ssiChartPrices is not null && ssiChartPrices.Time?.Length > 0)
+                {
+                    for (int i = 0; i < ssiChartPrices.Time.Length; i++)
+                    {
+                        var tradingDate = DateTimeOffset.FromUnixTimeSeconds(ssiChartPrices.Time[i]).Date;
+                        if (!chartPrices.Any(q => q.TradingDate == tradingDate))
+                        {
+                            chartPrices.Add(new()
+                            {
+                                Symbol = schedule.DataKey,
+                                TradingDate = tradingDate,
+                                ClosePrice = string.IsNullOrEmpty(ssiChartPrices.Close[i]) ? 0 : float.Parse(ssiChartPrices.Close[i]),
+                                OpenPrice = string.IsNullOrEmpty(ssiChartPrices.Open[i]) ? 0 : float.Parse(ssiChartPrices.Open[i]),
+                                HighestPrice = string.IsNullOrEmpty(ssiChartPrices.Highest[i]) ? 0 : float.Parse(ssiChartPrices.Highest[i]),
+                                LowestPrice = string.IsNullOrEmpty(ssiChartPrices.Lowest[i]) ? 0 : float.Parse(ssiChartPrices.Lowest[i]),
+                                TotalMatchVol = string.IsNullOrEmpty(ssiChartPrices.Volumes[i]) ? 0 : float.Parse(ssiChartPrices.Volumes[i]),
+                                Type = "D"
+                            });
+                        }
+                    }
+                }
+            }
+            else
+            {
+                var vndChartPrices = await _crawlData.DownloadVndChartPricesRealTimeAsync(symbol, "D");
+                if (vndChartPrices is not null && vndChartPrices.Time?.Length > 0)
+                {
+                    for (int i = 0; i < vndChartPrices.Time.Length; i++)
+                    {
+                        var tradingDate = DateTimeOffset.FromUnixTimeSeconds(vndChartPrices.Time[i]).Date;
+                        if (!chartPrices.Any(q => q.TradingDate == tradingDate))
+                        {
+                            chartPrices.Add(new()
+                            {
+                                Symbol = schedule.DataKey,
+                                TradingDate = tradingDate,
+                                ClosePrice = vndChartPrices.Close[i],
+                                OpenPrice = vndChartPrices.Open[i],
+                                HighestPrice = vndChartPrices.Highest[i],
+                                LowestPrice = vndChartPrices.Lowest[i],
+                                TotalMatchVol = vndChartPrices.Volumes[i],
+                                Type = "D"
+                            });
+                        }
+                    }
+                }
+            }
+
+            var check = await _marketData.SaveChartPriceAsync(chartPrices);
+            return await _systemData.SetKeyValueAsync(checkingKey, check);
+        }
+
+        /// <summary>
         /// download dữ liệu lãi suất ngân hàng
         /// </summary>
         /// <param name="schedule">thông tin lịch</param>
@@ -191,7 +258,7 @@ namespace Pl.Sas.Core.Services
                 return await _systemData.SetKeyValueAsync(checkingKey, false);
             }
 
-            var check = await _marketData.SaveChartPriceAsync(chartPrices, symbol, schedule.Options["ChartType"]);
+            var check = await _marketData.ResetChartPriceAsync(chartPrices, symbol, schedule.Options["ChartType"]);
             return await _systemData.SetKeyValueAsync(checkingKey, check);
         }
 
@@ -899,6 +966,13 @@ namespace Pl.Sas.Core.Services
                         {
                             Type = 12,
                             Name = $"Thu thập đánh giá cổ phiếu của vndirect cho mã: {stockCode}",
+                            DataKey = stockCode,
+                            ActiveTime = currentTime.AddMinutes(random.Next(0, 10))
+                        });
+                        insertSchedules.Add(new()
+                        {
+                            Type = 14,
+                            Name = $"Thu thập giá realtime: {stockCode}",
                             DataKey = stockCode,
                             ActiveTime = currentTime.AddMinutes(random.Next(0, 10))
                         });

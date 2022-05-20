@@ -2,12 +2,6 @@
 connection.on("UpdateStockView", function () {
     LoadMarket();
 });
-connection.on("UpdateNotification", function (key) {
-    var userKey = $('#user-key').val();
-    if (userKey == key) {
-        GetNotificationCount();
-    }
-});
 
 $(function () {
     connection.start().then(function () {
@@ -15,8 +9,6 @@ $(function () {
     }).catch(function (err) {
         return console.error(err.toString());
     });
-
-    GetNotificationCount();
 
     $(document).on('click', '.s-c', function (e) {
         OpenModalDetails(e.target.innerText, e.target.attributes['title'].nodeValue, e.target.attributes['fo'].nodeValue);
@@ -31,48 +23,6 @@ function OpenToast(message) {
         autohide: true,
         position: 'bottomRight'
     })
-}
-
-function GetNotificationCount() {
-    $.ajax({
-        cache: false,
-        type: "GET",
-        contentType: "application/json",
-        dataType: 'json',
-        url: "/user/newnotificationscount",
-        success: function (data) {
-            $('#user-notification-bell').text(data);
-            if (data == '0') {
-                $('#user-notification-bell').hide();
-            } else {
-                $('#user-notification-bell').show();
-            }
-        },
-        error: function () {
-            console.log('Get user notification count error.');
-        }
-    });
-}
-
-function UpdateDetailsOnChange() {
-    var postData = JSON.stringify({
-        Note: $('#stock-user-note').val(),
-        Symbol: $('#stock-details-symbol').val()
-    });
-    $.ajax({
-        cache: false,
-        type: "POST",
-        contentType: "application/json",
-        dataType: 'json',
-        url: "/home/userstockdetailssave",
-        data: postData,
-        success: function (data) {
-            console.log(data);
-        },
-        error: function () {
-            console.log('Save details stock on close error');
-        }
-    });
 }
 
 function OpenModalDetails(symbol, title, isFollow) {

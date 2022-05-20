@@ -115,5 +115,20 @@ namespace Pl.Sas.UnitTests
 
             await hostedService.StopAsync(CancellationToken.None);
         }
+
+        [Fact]
+        public async Task DownloadSsiChartPricesRealTimeTestAsync()
+        {
+            var services = ConfigureServices.GetConfigureServices();
+            var serviceProvider = services.BuildServiceProvider();
+            var crawlData = serviceProvider.GetService<IDownloadData>() ?? throw new Exception("Can't get ICrawlData");
+            var hostedService = serviceProvider.GetService<IHostedService>() as LoggingQueuedHostedService ?? throw new Exception("Can't get LoggingQueuedHostedService");
+            await hostedService.StartAsync(CancellationToken.None);
+
+            var chartRealtime = await crawlData.DownloadSsiChartPricesRealTimeAsync("VND");
+            Assert.True(chartRealtime != null);
+
+            await hostedService.StopAsync(CancellationToken.None);
+        }
     }
 }

@@ -18,13 +18,20 @@ namespace Pl.Sas.Core.Interfaces
         Task<List<ChartPrice>> GetChartPricesAsync(string symbol, string type = "D", DateTime? fromDate = null, DateTime? toDate = null);
 
         /// <summary>
-        /// Ghi lại dữ liệu chart
+        /// Ghh lai chat prite realtime
+        /// </summary>
+        /// <param name="chartPrices"></param>
+        /// <returns></returns>
+        Task<bool> SaveChartPriceAsync(List<ChartPrice> chartPrices);
+
+        /// <summary>
+        /// làm lại dữ liệu chart
         /// </summary>
         /// <param name="chartPrices">dữ liệu chart</param>
         /// <param name="symbol">mã</param>
         /// <param name="type">loại chart</param>
         /// <returns>bool</returns>
-        Task<bool> SaveChartPriceAsync(List<ChartPrice> chartPrices, string symbol, string type = "D");
+        Task<bool> ResetChartPriceAsync(List<ChartPrice> chartPrices, string symbol, string type = "D");
 
         /// <summary>
         /// Lấy lịch sử giá cho trading

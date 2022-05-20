@@ -16,6 +16,16 @@
         public float FixedCapital { get; set; }
 
         /// <summary>
+        /// Số lần thắng
+        /// </summary>
+        public int WinNumber { get; set; }
+
+        /// <summary>
+        /// Số lần thua
+        /// </summary>
+        public int LoseNumber { get; set; }
+
+        /// <summary>
         /// Tiền mặt
         /// </summary>
         public float TradingMoney { get; set; } = 0;
@@ -59,6 +69,14 @@
         /// <param name="message">Nội dung ghi chú</param>
         public void AddNote(int key, string message)
         {
+            if (key == 1)
+            {
+                WinNumber++;
+            }
+            if (key == -1)
+            {
+                LoseNumber++;
+            }
             if (IsNote)
             {
                 ExplainNotes.Add(new KeyValuePair<int, string>(key, message));

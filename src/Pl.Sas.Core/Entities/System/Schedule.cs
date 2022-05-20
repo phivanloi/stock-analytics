@@ -78,6 +78,7 @@ namespace Pl.Sas.Core.Entities
         /// <para>11 Thu thập khuyến nghị của các công ty chứng khoán.</para>
         /// <para>12 Thu thập đánh giá cổ phiếu của vndirect.</para>
         /// <para>13 Thu thập dữ liêu chart của chỉ số và mã chứng khoán.</para>
+        /// <para>14 Cập nhập dữ liệu chart realtime.</para>
         ///
         /// <para>200 Đánh giá giá trị của doanh nghiệp</para>
         /// <para>201 Phân tích kỹ thuật</para>
@@ -123,6 +124,8 @@ namespace Pl.Sas.Core.Entities
                 10 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 60)),//Lấy lãi suất ngân hàng lớn nhất
                 11 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 60)),//Thu thập khuyến nghị của các công ty chứng khoán
                 12 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 60)),//Thu thập đánh giá cổ phiếu của vndirect
+                13 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 60)),//Thu thập lại dữ liệu chart
+                14 => RealtimeSchedule(baseTime),//Thu thập dự liệu realtime
 
                 200 => baseTime.Date.AddDays(1).AddHours(4).AddMinutes(10),//đánh giá giá trị của doanh nghiệp
                 201 => baseTime.Date.AddDays(1).AddHours(4).AddMinutes(20),//phân tích kỹ thuật
@@ -141,6 +144,18 @@ namespace Pl.Sas.Core.Entities
                 300 => baseTime.AddMinutes(120),//Xử lý hiển thị dữ liệu chứng khoán cho hiển thị.
                 _ => baseTime.AddHours(1),
             };
+        }
+
+        private static DateTime RealtimeSchedule(DateTime baseTime)
+        {
+            var random = new Random();
+            return baseTime.AddSeconds(random.Next(100, 150));
+
+            //if (DateTime.Now.Hour > 9 && DateTime.Now.Hour < 15)
+            //{
+            //    return baseTime.AddSeconds(random.Next(100, 150));
+            //}
+            //return baseTime.Date.AddHours(8).AddMinutes(random.Next(50, 60));
         }
     }
 }

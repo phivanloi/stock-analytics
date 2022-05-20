@@ -213,12 +213,36 @@ namespace Pl.Sas.Infrastructure.Market
         #endregion
 
         #region ChartPrice
-        public virtual async Task<bool> SaveChartPriceAsync(List<ChartPrice> chartPrices, string symbol, string type = "D")
+        public virtual async Task<bool> ResetChartPriceAsync(List<ChartPrice> chartPrices, string symbol, string type = "D")
         {
             if (chartPrices.Count > 0)
             {
                 _marketDbContext.Database.ExecuteSqlRaw($"DELETE ChartPrices WHERE Symbol = '{symbol}' AND [Type] = '{type}'");
                 _marketDbContext.ChartPrices.AddRange(chartPrices);
+            }
+            return await _marketDbContext.SaveChangesAsync() > 0;
+        }
+
+        public virtual async Task<bool> SaveChartPriceAsync(List<ChartPrice> chartPrices)
+        {
+            if (chartPrices.Count > 0)
+            {
+                foreach (var chartPrice in chartPrices)
+                {
+                    var updateItem = await _marketDbContext.ChartPrices.FirstOrDefaultAsync(q => q.Symbol == chartPrice.Symbol && q.TradingDate == chartPrice.TradingDate && q.Type == chartPrice.Type);
+                    if (updateItem is null)
+                    {
+                        _marketDbContext.ChartPrices.Add(chartPrice);
+                    }
+                    else
+                    {
+                        updateItem.OpenPrice = chartPrice.OpenPrice;
+                        updateItem.HighestPrice = chartPrice.HighestPrice;
+                        updateItem.LowestPrice = chartPrice.LowestPrice;
+                        updateItem.ClosePrice = chartPrice.ClosePrice;
+                        updateItem.TotalMatchVol = chartPrice.TotalMatchVol;
+                    }
+                }
             }
             return await _marketDbContext.SaveChangesAsync() > 0;
         }

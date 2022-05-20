@@ -90,5 +90,6 @@ namespace Pl.Sas.UnitTests
 
             await hostedService.StopAsync(CancellationToken.None);
         }
+
     }
 }

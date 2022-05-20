@@ -31,7 +31,7 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 _marketData = scope.ServiceProvider.GetRequiredService<IMarketData>();
                 DateTime fromDate = new(2018, 6, 1);
                 DateTime toDate = new(2019, 10, 1);
-                var symbol = "FPT";
+                var symbol = "HPG";
                 var chartPrices = (await _marketData.GetChartPricesAsync(symbol)).OrderBy(q => q.TradingDate).ToList();
                 MacdTrading.BuildIndicatorSet(chartPrices);
                 //BTrading.ShowIndicator();
@@ -59,11 +59,12 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 tradingCase.ExplainNotes = new();
                 JsonSerializer.Serialize(tradingCase, new JsonSerializerOptions() { WriteIndented = true }).WriteConsole(ConsoleColor.Yellow);
                 Console.WriteLine();
-                Console.WriteLine($"kết quả -----------------------------------------------");
+                Console.WriteLine($"kết quả ----------------------------------------------- trading {symbol}");
+                $"Số lần mua bán thắng/thua {tradingCase.WinNumber}/{tradingCase.LoseNumber}".WriteConsole(tradingCase.FixedCapital <= tradingCase.Profit(lastChartPrice.ClosePrice) ? ConsoleColor.Green : ConsoleColor.Red);
                 $"Lợi nhuận {tradingCase.Profit(lastChartPrice.ClosePrice):0,0} ({tradingCase.ProfitPercent(lastChartPrice.ClosePrice):0,0.00}%), thuế {tradingCase.TotalTax:0,0}".WriteConsole(tradingCase.FixedCapital <= tradingCase.Profit(lastChartPrice.ClosePrice) ? ConsoleColor.Green : ConsoleColor.Red);
                 Console.WriteLine();
-                Console.WriteLine($"Với chỉ mua và nắm giữ --------------------------------");
-                $"Thực hiện đầu tư {tradingHistories.Count} phiên: Giá đóng cửa đầu kỳ {tradingHistories[0].TradingDate:dd-MM-yyyy}: {startPrice * 1000:0,0.00} giá đóng cửa cuối kỳ {tradingHistories[^1].TradingDate:dd-MM-yyyy}: {endPrice * 1000:0,0.00} lợi nhuận {endPrice.GetPercent(startPrice):0.00}%.".WriteConsole(endPrice > startPrice ? ConsoleColor.White : ConsoleColor.Red);
+                Console.WriteLine($"Với chỉ mua và nắm giữ -------------------------------- {symbol}");
+                $"Thực hiện đầu tư {tradingHistories.Count} phiên: Giá đóng cửa đầu kỳ {tradingHistories[0].TradingDate:dd-MM-yyyy}: {startPrice * 1000:0,0.00} giá đóng cửa cuối kỳ {tradingHistories[^1].TradingDate:dd-MM-yyyy}: {endPrice * 1000:0,0.00} lợi nhuận {endPrice.GetPercent(startPrice):0.00}%.".WriteConsole(endPrice > startPrice ? ConsoleColor.Green : ConsoleColor.Red);
                 Console.WriteLine();
                 //foreach (var indicator in indicatorSet)
                 //{
