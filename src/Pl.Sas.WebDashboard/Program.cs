@@ -19,6 +19,7 @@ using Pl.Sas.Infrastructure.Market;
 using Pl.Sas.Infrastructure.RabbitmqMessageQueue;
 using Pl.Sas.Infrastructure.System;
 using Pl.Sas.WebDashboard;
+using Pl.Sas.WebDashboard.RealtimeHub;
 using StackExchange.Redis;
 using System.Net;
 using System.Text.Encodings.Web;
@@ -115,6 +116,8 @@ builder.Services.AddSingleton<IWebDashboardQueueService, WebDashboardQueueServic
 builder.Services.AddScoped<StockViewService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddHostedService<Worker>();
+
+builder.Services.AddSignalR();
 builder.Services.AddControllersWithViews();
 
 
@@ -174,6 +177,7 @@ app.MapHealthChecks("/liveness", new HealthCheckOptions
     Predicate = r => r.Name.Contains("self")
 });
 app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapHub<StockRealtimeHub>("/stockrealtime");
 
 app.Logger.LogDebug("Sas dashboard {AppVersion} started at {Now}", app.Configuration["AppSettings:AppVersion"], DateTime.Now);
 app.Run();

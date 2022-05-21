@@ -145,7 +145,7 @@ namespace Pl.Sas.Core.Services
         {
             var dictStockView = new Dictionary<string, StockView>();
             var companies = await _marketData.CacheGetCompaniesAsync();
-            var stocks = await _marketData.GetStockByType("i");
+            var stocks = await _marketData.GetStockByType("s");
             foreach (var stock in stocks)
             {
                 if (!dictStockView.ContainsKey(stock.Symbol))
