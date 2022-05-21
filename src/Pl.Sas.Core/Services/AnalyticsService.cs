@@ -78,7 +78,7 @@ namespace Pl.Sas.Core.Services
 
                     case 207:
                         _logger.LogInformation("Run market sentiment analytics => {DataKey}.", schedule.DataKey);
-                        await MarketSentimentAnalyticsAsync();
+                        await MarketSentimentAnalyticsAsync(schedule);
                         break;
 
                     case 208:
@@ -537,25 +537,26 @@ namespace Pl.Sas.Core.Services
         /// <param name="workerMessageQueueService">message queue service</param>
         /// <param name="schedule">Thông tin lịch làm việc</param>
         /// <returns></returns>
-        public virtual async Task MarketSentimentAnalyticsAsync()
+        public virtual async Task MarketSentimentAnalyticsAsync(Schedule schedule)
         {
-            var indexs = await _marketData.GetStockByType("i");
-            foreach (var index in indexs)
+            if (string.IsNullOrEmpty(schedule.DataKey))
             {
-                var indexPrices = await _marketData.GetAnalyticsTopIndexPriceAsync(index.Symbol, 512);
-                if (indexPrices.Count < 5)
-                {
-                    _logger.LogWarning("Chỉ số {index} không được phân tích tâm lý do không đủ dữ liệu để phân tích.", index);
-                    continue;
-                }
-                var indicatorSet = BaseTrading.BuildIndicatorSet(indexPrices);
-
-                var score = 0;
-                var marketSentimentNotes = new List<AnalyticsNote>();
-                score += MarketAnalyticsService.IndexValueTrend(marketSentimentNotes, indexPrices, indicatorSet);
-                var key = $"{index.Symbol}-Analytics-MarketSentiment";
-                await _systemData.SetKeyValueAsync(key, score);
+                _logger.LogWarning("MarketSentimentAnalyticsAsync null data key");
+                return;
             }
+            var indexPrices = await _marketData.GetChartPricesAsync(schedule.DataKey, "D", DateTime.Now.Date.AddDays(512));
+            if (indexPrices.Count < 5)
+            {
+                _logger.LogWarning("Chỉ số {DataKey} không được phân tích tâm lý do không đủ dữ liệu để phân tích.", schedule.DataKey);
+                return;
+            }
+            var indicatorSet = BaseTrading.BuildIndicatorSet(indexPrices);
+
+            var score = 0;
+            var marketSentimentNotes = new List<AnalyticsNote>();
+            score += MarketAnalyticsService.IndexValueTrend(marketSentimentNotes, indexPrices, indicatorSet);
+            var key = $"{schedule.DataKey}-Analytics-MarketSentiment";
+            await _systemData.SetKeyValueAsync(key, score);
         }
 
         /// <summary>
