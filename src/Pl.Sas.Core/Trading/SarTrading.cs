@@ -4,12 +4,12 @@ using Skender.Stock.Indicators;
 
 namespace Pl.Sas.Core.Trading
 {
-    public class MacdTrading
+    public class SarTrading
     {
         private const float _buyTax = 0.15f / 100;
         private const float SellTax = 0.25f / 100;
         private const float AdvanceTax = 0.15f / 100;
-        private static List<MacdResult> _macd_12_26_9 = new();
+        private static List<ParabolicSarResult> _parabolicSar = new();
         private static readonly TradingCase tradingCase = new();
 
         public static TradingCase Trading(List<ChartPrice> chartPrices, bool isNoteTrading = true)
@@ -33,8 +33,11 @@ namespace Pl.Sas.Core.Trading
 
                 tradingCase.IsBuy = false;
                 tradingCase.IsSell = false;
-                tradingCase.BuyPrice = CalculateOptimalBuyPrice(tradingHistory, previousChart.ClosePrice);
-                tradingCase.SellPrice = CalculateOptimalSellPrice(tradingHistory, previousChart.ClosePrice);
+
+                var buyPercent = tradingHistory.OrderByDescending(q => q.TradingDate).Take(10).Select(q => Math.Abs(q.OpenPrice.GetPercent(q.HighestPrice))).Average() / 100;
+                tradingCase.BuyPrice = day.OpenPrice - (float)(day.OpenPrice * buyPercent);
+                var sellPercent = chartPrices.OrderByDescending(q => q.TradingDate).Take(3).Select(q => Math.Abs(q.OpenPrice.GetPercent(q.LowestPrice))).Average() / 100;
+                tradingCase.SellPrice = day.OpenPrice + (float)(day.OpenPrice * sellPercent);
 
                 if (lastBuyPrice is null)
                 {
@@ -98,13 +101,14 @@ namespace Pl.Sas.Core.Trading
 
         public static int BuyCondition(DateTime tradingDate)
         {
-            var macd = _macd_12_26_9.Find(tradingDate);
-            if (macd is null || macd.Macd is null)
+            var sar = _parabolicSar.Find(tradingDate);
+            tradingCase.AddNote(0, System.Text.Json.JsonSerializer.Serialize(sar));
+            if (sar is null || sar.Sar is null)
             {
                 return 0;
             }
 
-            if (macd.Macd > macd.Signal)
+            if (sar.IsReversal == true)
             {
                 return 100;
             }
@@ -114,32 +118,19 @@ namespace Pl.Sas.Core.Trading
 
         public static int SellCondition(DateTime tradingDate)
         {
-            var macd = _macd_12_26_9.Find(tradingDate);
-            if (macd is null || macd.Macd is null)
+            var sar = _parabolicSar.Find(tradingDate);
+            tradingCase.AddNote(0, System.Text.Json.JsonSerializer.Serialize(sar));
+            if (sar is null || sar.Sar is null)
             {
                 return 0;
             }
 
-            if (macd.Macd < macd.Signal)
+            if (sar.IsReversal == true)
             {
                 return 100;
             }
 
             return 0;
-        }
-
-        public static float CalculateOptimalBuyPrice(List<ChartPrice> chartPrices, float openPriceToday)
-        {
-            var percent = chartPrices.OrderByDescending(q => q.TradingDate).Take(3).Select(q => Math.Abs(q.OpenPrice.GetPercent(q.HighestPrice))).Average() / 100;
-            var buyPrice = openPriceToday - (openPriceToday * percent);
-            return (float)Math.Round((decimal)buyPrice, 2);
-        }
-
-        public static float CalculateOptimalSellPrice(List<ChartPrice> chartPrices, float openPriceToday)
-        {
-            var percent = chartPrices.OrderByDescending(q => q.TradingDate).Take(3).Select(q => Math.Abs(q.OpenPrice.GetPercent(q.LowestPrice))).Average() / 100;
-            var buyPrice = openPriceToday + (openPriceToday * percent);
-            return (float)Math.Round((decimal)buyPrice, 2);
         }
 
         public static (float TotalProfit, float TotalTax) Sell(long stockCount, float stockPrice)
@@ -186,7 +177,7 @@ namespace Pl.Sas.Core.Trading
                 Volume = (decimal)q.TotalMatchVol,
                 Date = q.TradingDate
             }).OrderBy(q => q.Date).ToList();
-            _macd_12_26_9 = quotes.GetMacd(12, 26, 9, CandlePart.Close).ToList();
+            _parabolicSar = quotes.GetParabolicSar(0.02M).ToList();
         }
     }
 }

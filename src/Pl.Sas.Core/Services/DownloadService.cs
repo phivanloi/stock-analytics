@@ -91,6 +91,9 @@ namespace Pl.Sas.Core.Services
                         case 12:
                             await UpdateVndStockScoreAsync(schedule);
                             break;
+                        case 14:
+                            await UpdateChartPricesRealtimeAsync(schedule);
+                            break;
                         default:
                             _logger.LogWarning("Worker process schedule id {Id}, type {Type} don't match any function", schedule.Id, schedule.Type);
                             break;

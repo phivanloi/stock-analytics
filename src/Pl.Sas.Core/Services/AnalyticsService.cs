@@ -457,31 +457,30 @@ namespace Pl.Sas.Core.Services
             var stockNotes = new List<AnalyticsNote>();
             var checkingKey = $"{symbol}-Analytics-TestTrading";
             var stock = await _marketData.GetStockByCode(symbol);
-            var stockPrices = (await _marketData.GetAnalyticsTopStockPriceAsync(symbol, 90000)).OrderBy(q => q.TradingDate).ToList();
-            if (stock is null || stockPrices.Count <= 2)
+            var chartPrices = (await _marketData.GetChartPricesAsync(symbol)).OrderBy(q => q.TradingDate).ToList();
+            var tradingHistories = chartPrices.Where(q => q.TradingDate >= Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
+            if (stock is null || chartPrices.Count <= 2 || tradingHistories.Count <= 0)
             {
-                _logger.LogWarning("TestTradingAnalyticsAsync => stockPrices is null or stock is null for {symbol}", symbol);
+                _logger.LogWarning("TestTradingAnalyticsAsync => stock is null or chartPrices is null for {symbol}", symbol);
                 return await _systemData.SetKeyValueAsync(checkingKey, false);
             }
-            var exchangeFluctuationsRate = BaseTrading.GetExchangeFluctuationsRate(stock.Exchange);
-            var indicatorSet = BaseTrading.BuildIndicatorSet(stockPrices.OrderByDescending(q => q.TradingDate).ToList());
             var isBuy = false;
             var isSell = false;
 
             #region Buy and wait
-
-            var startPrice = stockPrices[0].ClosePrice;
-            var endPrice = stockPrices[^1].ClosePrice;
-            var noteInvestment = $"Mua và nắm giữ {stockPrices.Count} phiên từ ngày {stockPrices[0].TradingDate:dd/MM/yyyy}: Giá đóng cửa đầu kỳ {startPrice:0,0} giá đóng cửa cuối kỳ {endPrice:0,0} lợi nhuận {endPrice.GetPercent(startPrice):0.00}%.";
+            var startPrice = tradingHistories[0].ClosePrice;
+            var endPrice = tradingHistories[^1].ClosePrice;
+            var countInStock = chartPrices.Count(q => q.TradingDate >= Constants.StartTime);
+            var noteInvestment = $"Mua và nắm giữ {tradingHistories.Count} phiên từ ngày {tradingHistories[0].TradingDate:dd/MM/yyyy}: Giá đóng cửa đầu kỳ {startPrice:0,0} giá đóng cửa cuối kỳ {endPrice:0,0} lợi nhuận {endPrice.GetPercent(startPrice):0.00}%.";
             stockNotes.Add(noteInvestment, 0, startPrice > endPrice ? -1 : startPrice < endPrice ? 1 : 0, null);
             await _analyticsData.SaveTestTradingResultAsync(new()
             {
                 Symbol = symbol,
-                Principle = 0,
+                Principle = 1,
                 IsBuy = false,
-                BuyPrice = stockPrices[^1].ClosePrice,
+                BuyPrice = chartPrices[^1].ClosePrice,
                 IsSell = false,
-                SellPrice = stockPrices[^1].ClosePrice,
+                SellPrice = chartPrices[^1].ClosePrice,
                 Capital = 10000000,
                 Profit = (10000000 / startPrice) * endPrice,
                 TotalTax = 0,
@@ -489,29 +488,46 @@ namespace Pl.Sas.Core.Services
             });
 
             #endregion
-            var tradingCases = AnalyticsBuildTradingCases();
-            foreach (var tradingCase in tradingCases)
+
+            #region Macd Trading
+            TradingCase macdCase = MacdTrading.Trading(tradingHistories);
+            var macdNote = $"Trading {Utilities.GetPrincipleName(3).ToLower()} {tradingHistories.Count} phiên từ ngày {tradingHistories[0].TradingDate:dd/MM/yyyy}, Lợi nhuận {macdCase.Profit(tradingHistories[^1].ClosePrice):0,0} ({macdCase.ProfitPercent(tradingHistories[^1].ClosePrice):0,0.00}%), thuế {macdCase.TotalTax:0,0}, xem chi tiết tại tab \"Lợi nhuận và đầu tư TN\".";
+            var macdType = macdCase.FixedCapital < macdCase.Profit(tradingHistories[^1].ClosePrice) ? 1 : macdCase.FixedCapital == macdCase.Profit(tradingHistories[^1].ClosePrice) ? 0 : -1;
+            stockNotes.Add(macdNote, 0, macdType, null);
+            await _analyticsData.SaveTestTradingResultAsync(new()
             {
-                (isBuy, isSell) = EmaStochTrading.Trading(tradingCase.Value, stockPrices, indicatorSet, true);
-                var note = $"Đầu tư {Utilities.GetPrincipleName(tradingCase.Key).ToLower()} {stockPrices.Count} phiên từ ngày {stockPrices[0].TradingDate:dd/MM/yyyy}, {tradingCase.Value.ToString} xem chi tiết tại tab \"Lợi nhuận và đầu tư TN\".";
-                var optimalBuyPrice = EmaStochTrading.CalculateOptimalBuyPrice(stockPrices[^1]);
-                var optimalSellPrice = EmaStochTrading.CalculateOptimalSellPriceOnLoss(stockPrices[^1]);
-                var type = tradingCase.Value.FixedCapital < tradingCase.Value.TradingTestResult ? 1 : tradingCase.Value.FixedCapital == tradingCase.Value.TradingTestResult ? 0 : -1;
-                stockNotes.Add(note, 0, type, null);
-                await _analyticsData.SaveTestTradingResultAsync(new()
-                {
-                    Symbol = symbol,
-                    Principle = tradingCase.Key,
-                    IsBuy = isBuy,
-                    BuyPrice = optimalBuyPrice,
-                    IsSell = isSell,
-                    SellPrice = optimalSellPrice,
-                    Capital = tradingCase.Value.FixedCapital,
-                    Profit = tradingCase.Value.TradingTestResult,
-                    TotalTax = tradingCase.Value.TotalTax,
-                    TradingNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(tradingCase.Value.ExplainNotes)),
-                });
-            }
+                Symbol = symbol,
+                Principle = 3,
+                IsBuy = isBuy,
+                BuyPrice = macdCase.BuyPrice,
+                IsSell = isSell,
+                SellPrice = macdCase.SellPrice,
+                Capital = macdCase.FixedCapital,
+                Profit = macdCase.Profit(tradingHistories[^1].ClosePrice),
+                TotalTax = macdCase.TotalTax,
+                TradingNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(macdCase.ExplainNotes)),
+            });
+            #endregion
+
+            #region Macd Trading
+            TradingCase sarCase = SarTrading.Trading(tradingHistories);
+            var sarNote = $"Trading {Utilities.GetPrincipleName(3).ToLower()} {tradingHistories.Count} phiên từ ngày {tradingHistories[0].TradingDate:dd/MM/yyyy}, Lợi nhuận {sarCase.Profit(tradingHistories[^1].ClosePrice):0,0} ({sarCase.ProfitPercent(tradingHistories[^1].ClosePrice):0,0.00}%), thuế {sarCase.TotalTax:0,0}, xem chi tiết tại tab \"Lợi nhuận và đầu tư TN\".";
+            var sarType = sarCase.FixedCapital < sarCase.Profit(tradingHistories[^1].ClosePrice) ? 1 : sarCase.FixedCapital == sarCase.Profit(tradingHistories[^1].ClosePrice) ? 0 : -1;
+            stockNotes.Add(sarNote, 0, sarType, null);
+            await _analyticsData.SaveTestTradingResultAsync(new()
+            {
+                Symbol = symbol,
+                Principle = 1,
+                IsBuy = isBuy,
+                BuyPrice = sarCase.BuyPrice,
+                IsSell = isSell,
+                SellPrice = sarCase.SellPrice,
+                Capital = sarCase.FixedCapital,
+                Profit = sarCase.Profit(tradingHistories[^1].ClosePrice),
+                TotalTax = sarCase.TotalTax,
+                TradingNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(sarCase.ExplainNotes)),
+            });
+            #endregion
             return await _systemData.SetKeyValueAsync(checkingKey, true);
         }
 
@@ -695,67 +711,6 @@ namespace Pl.Sas.Core.Services
             var saveZipData = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(analyticsNotes));
             var check = await _analyticsData.SaveMacroeconomicsScoreAsync(symbol, score, saveZipData);
             return await _systemData.SetKeyValueAsync(checkingKey, check);
-        }
-
-        /// <summary>
-        /// Xây dựng các trường hợp trading cho phân tích
-        /// </summary>
-        /// <param name="fixedCapital">Số tiền vốn ban đầu</param>
-        /// <returns></returns>
-        public static Dictionary<int, TradingCaseV3> AnalyticsBuildTradingCases(float fixedCapital = 10000000)
-        {
-            var testCases = new Dictionary<int, TradingCaseV3>()
-            {
-                {1, new()
-                    {
-                        TotalTax = 0,
-                        ExplainNotes = new(),
-                        TradingTestResult = 0,
-                        FixedCapital = fixedCapital,
-                        FirstEmaSell = 2,
-                        SecondEmaSell = 60,
-                        FirstEmaBuy = 2,
-                        SecondEmaBuy = 60
-                    }
-                },
-                {2, new()
-                    {
-                        TotalTax = 0,
-                        ExplainNotes = new(),
-                        TradingTestResult = 0,
-                        FixedCapital = fixedCapital,
-                        FirstEmaSell = 2,
-                        SecondEmaSell = 36,
-                        FirstEmaBuy = 2,
-                        SecondEmaBuy = 36
-                    }
-                },
-                {3, new()
-                    {
-                        TotalTax = 0,
-                        ExplainNotes = new(),
-                        TradingTestResult = 0,
-                        FixedCapital = fixedCapital,
-                        FirstEmaSell = 2,
-                        SecondEmaSell = 5,
-                        FirstEmaBuy = 2,
-                        SecondEmaBuy = 5
-                    }
-                },
-                {4, new()
-                    {
-                        TotalTax = 0,
-                        ExplainNotes = new(),
-                        TradingTestResult = 0,
-                        FixedCapital = fixedCapital,
-                        FirstEmaSell = 1,
-                        SecondEmaSell = 3,
-                        FirstEmaBuy = 1,
-                        SecondEmaBuy = 3
-                    }
-                }
-            };
-            return testCases;
         }
     }
 }

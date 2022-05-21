@@ -51,6 +51,43 @@
         public float ProfitPercent(float closePrice) => (Profit(closePrice) - FixedCapital) * 100 / FixedCapital;
         #endregion
 
+        #region Current stage
+        /// <summary>
+        /// Trạng thái mua hôm nay
+        /// </summary>
+        public bool IsBuy { get; set; }
+
+        /// <summary>
+        /// Giá mua nếu là trạng thái mua
+        /// </summary>
+        public float BuyPrice { get; set; }
+
+        /// <summary>
+        /// Trạng thái bán hôm nay
+        /// </summary>
+        public bool IsSell { get; set; }
+
+        /// <summary>
+        /// Giá bán nếu là trạng thái bán
+        /// </summary>
+        public float SellPrice { get; set; }
+
+        /// <summary>
+        /// Trạng thái tài sản
+        /// </summary>
+        public string AssetStats
+        {
+            get
+            {
+                if (NumberStock <= 0)
+                {
+                    return "Tiền mặt";
+                }
+                return "Chứng khoán";
+            }
+        }
+        #endregion
+
         #region Note
         /// <summary>
         /// Ghi chú diễn giải đầu tư với key -1, thua, 0 hòa hoặc không giao dịch, 1 là thắng. Value là nội dung ghi chú
@@ -60,7 +97,7 @@
         /// <summary>
         /// Trạng thái có cho phép note ghi chú hay không
         /// </summary>
-        public bool IsNote { get; private set; }
+        public bool IsNote { get; set; }
 
         /// <summary>
         /// Thêm ghi chú

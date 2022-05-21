@@ -12,10 +12,11 @@
 
         /// <summary>
         /// Phương pháp
-        /// <para>1 => Dài hạn</para>
-        /// <para>2 => Trung hạn</para>
-        /// <para>3 => Ngắn hạn</para>
-        /// <para>4 => Thử nghiệm</para>
+        /// <para>0 => Thử nghiệm</para>
+        /// <para>1 => Mua và nắm giữ</para>
+        /// <para>2 => Dài hạn</para>
+        /// <para>3 => Phương pháp macd</para>
+        /// <para>4 => Phương pháp sar</para>
         /// </summary>
         public int Principle { get; set; } = 1;
 

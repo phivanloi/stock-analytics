@@ -449,30 +449,5 @@
         /// $ Lợi nhuận cao nhất khi kiểm tra giao dịch thử
         /// </summary>
         public float ProfitPercent { get; set; }
-
-        /// <summary>
-        /// Chỉ báo sotchastic theo phương pháp
-        /// </summary>
-        public float Stochastic { get; set; } = 0;
-
-        /// <summary>
-        /// Hiệu ema cho đánh giá mua
-        /// </summary>
-        public float BuySubtractionEma { get; set; } = 0;
-
-        /// <summary>
-        /// Hiệu ema cho đánh giá bán
-        /// </summary>
-        public float SellSubtractionEma { get; set; } = 0;
-
-        /// <summary>
-        /// Số phiên mà ema mua đảo chiều
-        /// </summary>
-        public int BuyEmaReverseCount { get; set; } = 0;
-
-        /// <summary>
-        /// Số phiên mà ema bán đảo chiều
-        /// </summary>
-        public int SellEmaReverseCount { get; set; } = 0;
     }
 }
