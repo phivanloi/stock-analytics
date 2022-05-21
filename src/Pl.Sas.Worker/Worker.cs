@@ -48,22 +48,22 @@ namespace Pl.Sas.Worker
                 scope.Dispose();
             });
 
-            //_workerQueueService.SubscribeAnalyticsTask(async (message) =>
-            //{
-            //    using var scope = _serviceProvider.CreateScope();
-            //    var analyticsService = scope.ServiceProvider.GetRequiredService<AnalyticsService>();
-            //    await analyticsService.HandleEventAsync(message);
-            //    scope.Dispose();
-            //});
+            _workerQueueService.SubscribeAnalyticsTask(async (message) =>
+            {
+                using var scope = _serviceProvider.CreateScope();
+                var analyticsService = scope.ServiceProvider.GetRequiredService<AnalyticsService>();
+                await analyticsService.HandleEventAsync(message);
+                scope.Dispose();
+            });
 
-            //_workerQueueService.SubscribeBuildViewTask(async (message) =>
-            //{
-            //    using var scope = _serviceProvider.CreateScope();
-            //    var stockViewService = scope.ServiceProvider.GetRequiredService<StockViewService>();
-            //    var queueMessage = await stockViewService.BindingStocksViewAndSetCacheAsync();
-            //    _workerQueueService.BroadcastViewUpdatedTask(queueMessage);
-            //    scope.Dispose();
-            //});
+            _workerQueueService.SubscribeBuildViewTask(async (message) =>
+            {
+                using var scope = _serviceProvider.CreateScope();
+                var stockViewService = scope.ServiceProvider.GetRequiredService<StockViewService>();
+                var queueMessage = await stockViewService.BindingStocksViewAndSetCacheAsync();
+                _workerQueueService.BroadcastViewUpdatedTask(queueMessage);
+                scope.Dispose();
+            });
 
             return base.StartAsync(cancellationToken);
         }

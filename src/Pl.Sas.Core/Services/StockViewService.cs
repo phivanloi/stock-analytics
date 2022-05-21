@@ -261,6 +261,7 @@ namespace Pl.Sas.Core.Services
                     }
 
                     #endregion
+
                     #region Convulsion
                     if (stockPrices.Count >= 1)
                     {
@@ -374,6 +375,7 @@ namespace Pl.Sas.Core.Services
                     }
 
                     #endregion
+
                     #region Trading info
 
                     var tradingResults = await _analyticsData.CacheGetTradingResultAsync(stock.Symbol);
