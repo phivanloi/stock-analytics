@@ -118,6 +118,8 @@ namespace Pl.Sas.UnitTests
             services.AddScoped<ISystemData, SystemData>();
             services.AddScoped<IIdentityData, IdentityData>();
             services.AddScoped<DownloadService>();
+            services.AddScoped<AnalyticsService>();
+            services.AddScoped<StockViewService>();
             return services;
         }
     }

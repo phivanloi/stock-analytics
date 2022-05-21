@@ -60,8 +60,11 @@ namespace Pl.Sas.Worker
             {
                 using var scope = _serviceProvider.CreateScope();
                 var stockViewService = scope.ServiceProvider.GetRequiredService<StockViewService>();
-                var queueMessage = await stockViewService.BindingStocksViewAndSetCacheAsync();
-                _workerQueueService.BroadcastViewUpdatedTask(queueMessage);
+                var queueMessage = await stockViewService.HandleStockViewEventAsync(message);
+                if (queueMessage is not null)
+                {
+                    _workerQueueService.BroadcastViewUpdatedTask(queueMessage);
+                }
                 scope.Dispose();
             });
 
