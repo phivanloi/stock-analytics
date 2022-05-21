@@ -269,11 +269,11 @@ namespace Pl.Sas.Core
         {
             return principle switch
             {
-                0 => "Mua và nắm giữ",
-                1 => "Dài hạn",
-                2 => "Trung hạn",
-                3 => "Ngắn hạn",
-                4 => "Thử nghiệm",
+                0 => "Thử nghiệm",
+                1 => "Mua và nắm giữ",
+                2 => "Dài hạn",
+                3 => "Phương pháp macd",
+                4 => "Phương pháp sar",
                 _ => "Dài hạn",
             };
         }

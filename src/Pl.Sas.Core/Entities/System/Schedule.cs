@@ -77,7 +77,6 @@ namespace Pl.Sas.Core.Entities
         /// <para>10 Bổ sung lãi xuất ngân hàng cao nhất</para>
         /// <para>11 Thu thập khuyến nghị của các công ty chứng khoán.</para>
         /// <para>12 Thu thập đánh giá cổ phiếu của vndirect.</para>
-        /// <para>13 Thu thập dữ liêu chart của chỉ số và mã chứng khoán.</para>
         /// <para>14 Cập nhập dữ liệu chart realtime.</para>
         ///
         /// <para>200 Đánh giá giá trị của doanh nghiệp</para>

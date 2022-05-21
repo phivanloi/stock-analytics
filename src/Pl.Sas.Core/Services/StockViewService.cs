@@ -378,7 +378,6 @@ namespace Pl.Sas.Core.Services
 
                     var tradingResults = await _analyticsData.CacheGetTradingResultAsync(stock.Symbol);
                     var indicatorSet = BaseTrading.BuildIndicatorSet(stockPrices);
-                    var tradingCases = AnalyticsService.AnalyticsBuildTradingCases();
                     var principles = new int[] { 0, 1, 2, 3, 4 };
 
                     foreach (var principle in principles)
@@ -394,39 +393,9 @@ namespace Pl.Sas.Core.Services
                                 TodayIsBuy = tadingResult.IsBuy,
                                 TodayIsSell = tadingResult.IsSell
                             };
-                            if (indicatorSet.ContainsKey(stockPrices[0].DatePath) && tradingCases.ContainsKey(principle))
+                            if (indicatorSet.ContainsKey(stockPrices[0].DatePath))
                             {
                                 var todaySet = indicatorSet[stockPrices[0].DatePath];
-                                var tradingCase = tradingCases[principle];
-                                judgeResult.Stochastic = todaySet.Values[$"stochastic-{tradingCase.Stochastic}"];
-                                judgeResult.BuySubtractionEma = todaySet.Values[$"ema-{tradingCase.FirstEmaBuy}"] - todaySet.Values[$"ema-{tradingCase.SecondEmaBuy}"];
-                                judgeResult.SellSubtractionEma = todaySet.Values[$"ema-{tradingCase.FirstEmaSell}"] - todaySet.Values[$"ema-{tradingCase.SecondEmaSell}"];
-                                var currentBuyEmaType = (todaySet.Values[$"ema-{tradingCase.FirstEmaBuy}"] - todaySet.Values[$"ema-{tradingCase.SecondEmaBuy}"]) > 0;
-                                var currentSellEmaType = (todaySet.Values[$"ema-{tradingCase.FirstEmaSell}"] - todaySet.Values[$"ema-{tradingCase.SecondEmaSell}"]) > 0;
-                                for (int i = indicatorSet.Count - 1; i >= 0; i--)
-                                {
-                                    var checkItem = indicatorSet.ElementAt(i).Value;
-                                    if (currentBuyEmaType == ((checkItem.Values[$"ema-{tradingCase.FirstEmaBuy}"] - checkItem.Values[$"ema-{tradingCase.SecondEmaBuy}"]) > 0))
-                                    {
-                                        judgeResult.BuyEmaReverseCount++;
-                                    }
-                                    else
-                                    {
-                                        break;
-                                    }
-                                }
-                                for (int i = indicatorSet.Count - 1; i >= 0; i--)
-                                {
-                                    var checkItem = indicatorSet.ElementAt(i).Value;
-                                    if (currentSellEmaType == ((checkItem.Values[$"ema-{tradingCase.FirstEmaSell}"] - checkItem.Values[$"ema-{tradingCase.SecondEmaSell}"]) > 0))
-                                    {
-                                        judgeResult.SellEmaReverseCount++;
-                                    }
-                                    else
-                                    {
-                                        break;
-                                    }
-                                }
                             }
                             stockView.TradingViews.Add(principle, judgeResult);
                         }

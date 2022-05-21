@@ -29,20 +29,15 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 Console.OutputEncoding = Encoding.UTF8;
                 using var scope = _serviceProvider.CreateScope();
                 _marketData = scope.ServiceProvider.GetRequiredService<IMarketData>();
-                DateTime fromDate = new(2018, 6, 1);
+                DateTime fromDate = new(2018, 1, 1);
                 DateTime toDate = new(2019, 10, 1);
-                var symbol = "HPG";
+                var symbol = "LTG";
                 var chartPrices = (await _marketData.GetChartPricesAsync(symbol)).OrderBy(q => q.TradingDate).ToList();
-                MacdTrading.BuildIndicatorSet(chartPrices);
-                //BTrading.ShowIndicator();
-                var tradingCase = MacdTrading.BuildCase(true);
                 var tradingHistories = chartPrices.Where(q => q.TradingDate >= fromDate).OrderBy(q => q.TradingDate).ToList();
                 var startPrice = tradingHistories[0].ClosePrice;
                 var endPrice = tradingHistories[^1].ClosePrice;
-                var (isBuy, isSell) = MacdTrading.Trading(tradingCase, tradingHistories);
+                var tradingCase = SarTrading.Trading(tradingHistories);
                 var lastChartPrice = tradingHistories[^1];
-                var optimalBuyPrice = MacdTrading.CalculateOptimalBuyPrice(lastChartPrice.OpenPrice, lastChartPrice.LowestPrice, lastChartPrice.ClosePrice);
-                var optimalSellPrice = MacdTrading.CalculateOptimalSellPrice(lastChartPrice.OpenPrice, lastChartPrice.HighestPrice, lastChartPrice.ClosePrice);
                 Console.WriteLine($"Quá trình đầu tư ngắn hạn:");
                 Console.WriteLine($"Bắt đầu--------------------------------");
                 foreach (var note in tradingCase.ExplainNotes)
@@ -51,14 +46,6 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 }
                 Console.WriteLine($"Kết thúc--------------------------------");
                 Console.WriteLine();
-                Console.WriteLine($"Hôm nay đánh giá mua: {(isBuy ? "mua" : "theo dõi")}");
-                Console.WriteLine($"Hôm nay đánh giá bán: {(isSell ? "bán" : "theo dõi")}");
-                Console.WriteLine($"Hôm nay mua với giá: {optimalBuyPrice:0.00}");
-                Console.WriteLine($"Hôm nay bán với giá: {optimalSellPrice:0.00}");
-                Console.WriteLine();
-                tradingCase.ExplainNotes = new();
-                JsonSerializer.Serialize(tradingCase, new JsonSerializerOptions() { WriteIndented = true }).WriteConsole(ConsoleColor.Yellow);
-                Console.WriteLine();
                 Console.WriteLine($"kết quả ----------------------------------------------- trading {symbol}");
                 $"Số lần mua bán thắng/thua {tradingCase.WinNumber}/{tradingCase.LoseNumber}".WriteConsole(tradingCase.FixedCapital <= tradingCase.Profit(lastChartPrice.ClosePrice) ? ConsoleColor.Green : ConsoleColor.Red);
                 $"Lợi nhuận {tradingCase.Profit(lastChartPrice.ClosePrice):0,0} ({tradingCase.ProfitPercent(lastChartPrice.ClosePrice):0,0.00}%), thuế {tradingCase.TotalTax:0,0}".WriteConsole(tradingCase.FixedCapital <= tradingCase.Profit(lastChartPrice.ClosePrice) ? ConsoleColor.Green : ConsoleColor.Red);
@@ -66,21 +53,6 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 Console.WriteLine($"Với chỉ mua và nắm giữ -------------------------------- {symbol}");
                 $"Thực hiện đầu tư {tradingHistories.Count} phiên: Giá đóng cửa đầu kỳ {tradingHistories[0].TradingDate:dd-MM-yyyy}: {startPrice * 1000:0,0.00} giá đóng cửa cuối kỳ {tradingHistories[^1].TradingDate:dd-MM-yyyy}: {endPrice * 1000:0,0.00} lợi nhuận {endPrice.GetPercent(startPrice):0.00}%.".WriteConsole(endPrice > startPrice ? ConsoleColor.Green : ConsoleColor.Red);
                 Console.WriteLine();
-                //foreach (var indicator in indicatorSet)
-                //{
-                //    if (indicator.Value.Values.ContainsKey("ema-12"))
-                //    {
-                //        $"Ngay: {indicator.Key}\t C: {indicator.Value.ClosePrice:00.00}\t Ema-9: {indicator.Value.Values["ema-9"]:00.0000}\t Ema-12: {indicator.Value.Values["ema-12"]:00.0000}".WriteConsole(ConsoleColor.White);
-                //    }
-                //    else
-                //    {
-                //        $"Ngay: {indicator.Key}\t C: {indicator.Value.ClosePrice:00.00}\t Ema-9: \t Ema-12: ".WriteConsole(ConsoleColor.White);
-                //    }
-                //}
-
-                //await EmaStochTradingV2Async("HPG", new(2017, 1, 1), null);
-                //await EmaStochTradingAsync("VND", new(2021, 1, 1), null);
-                //await FindIndicatorsTradingAsync("VND", new(2020, 1, 1), null);
             }
             catch (Exception ex)
             {
