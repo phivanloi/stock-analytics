@@ -1,5 +1,4 @@
 ﻿using Pl.Sas.Core.Entities;
-using Pl.Sas.Core.Indicators;
 using Skender.Stock.Indicators;
 
 namespace Pl.Sas.Core.Trading
@@ -10,7 +9,7 @@ namespace Pl.Sas.Core.Trading
         private const float SellTax = 0.25f / 100;
         private const float AdvanceTax = 0.15f / 100;
         private static List<MacdResult> _macd_12_26_9 = new();
-        private static readonly TradingCase tradingCase = new();
+        private static TradingCase tradingCase = new();
 
         public static TradingCase Trading(List<ChartPrice> chartPrices, bool isNoteTrading = true)
         {
@@ -93,6 +92,8 @@ namespace Pl.Sas.Core.Trading
                 numberChangeDay++;
                 tradingHistory.Add(day);
             }
+
+            _macd_12_26_9 = new List<MacdResult>();
             return tradingCase;
         }
 
@@ -173,6 +174,12 @@ namespace Pl.Sas.Core.Trading
             var totalTax = totalValueStock * buyTax;
             var excessCash = totalMoney - (totalValueStock + totalTax);
             return (buyStockCount, excessCash, totalTax);
+        }
+
+        public static void Dispose()
+        {
+            _macd_12_26_9 = new();
+            tradingCase = new();
         }
 
         private static void BuildIndicatorSet(List<ChartPrice> chartPrices)

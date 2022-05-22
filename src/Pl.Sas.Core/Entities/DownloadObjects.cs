@@ -210,7 +210,7 @@ namespace Pl.Sas.Core.Entities.DownloadObjects
         public string? ListingDate { get; set; }
 
         [JsonPropertyName("exchange")]
-        public string? Exchange { get; set; }
+        public string Exchange { get; set; } = null!;
 
         [JsonPropertyName("firstprice")]
         public string FirstPrice { get; set; } = null!;

@@ -1,7 +1,7 @@
 ﻿@using Pl.Sas.Core
 @using Pl.Sas.Infrastructure.Identity
 @inject Microsoft.Extensions.Options.IOptions<AppSettings> appSettingsOptions
-@inject Pl.Sas.Infrastructure.Identity.UserService userService
+@inject Pl.Sas.Infrastructure.Identity.UserData userService
 @{
     var appSettings = appSettingsOptions.Value;
     var userInfo = await userService.CacheGetUserInfoAsync(Context.User);

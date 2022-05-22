@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.WebEncoders;
 using Pl.Sas.Core;
@@ -114,7 +113,7 @@ builder.Services.AddScoped<IAnalyticsData, AnalyticsData>();
 builder.Services.AddSingleton<IMemoryUpdateService, MemoryUpdateService>();
 builder.Services.AddSingleton<IWebDashboardQueueService, WebDashboardQueueService>();
 builder.Services.AddScoped<StockViewService>();
-builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<UserData>();
 builder.Services.AddHostedService<Worker>();
 
 builder.Services.AddSignalR();

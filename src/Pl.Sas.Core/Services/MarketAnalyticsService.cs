@@ -152,9 +152,9 @@ namespace Pl.Sas.Core.Services
         /// <param name="notes">Ghi chú</param>
         /// <param name="industryAnalytics">Thông tin ngành của cố phiếu đang lắm giữ</param>
         /// <returns></returns>
-        public static int IndustryTrend(List<AnalyticsNote> notes, IndustryAnalytics? industryAnalytics)
+        public static int IndustryTrend(List<AnalyticsNote> notes, Industry? industry)
         {
-            if (industryAnalytics is null)
+            if (industry is null)
             {
                 notes.Add($"Không có thông tin ngành để phân tích.", -2, -2, null);
                 return -2;
@@ -162,18 +162,18 @@ namespace Pl.Sas.Core.Services
 
             var type = 0;
             var score = 0;
-            var note = $"Cổ phiếu thuộc ngành \"{industryAnalytics.Code}\" có đánh giá cố định {industryAnalytics.ManualScore}, đánh giá tự động {industryAnalytics.Score}.";
-            if (industryAnalytics.Score > 100)
+            var note = $"Cổ phiếu thuộc ngành \"{industry.Code}\" có đánh giá cố định {industry.Rank}, đánh giá tự động {industry.AutoRank}.";
+            if (industry.AutoRank > 100)
             {
                 type++;
                 score++;
             }
-            else if (industryAnalytics.Score < 0)
+            else if (industry.AutoRank < 0)
             {
                 type--;
                 score--;
             }
-            if (industryAnalytics.ManualScore > 0)
+            if (industry.Rank > 0)
             {
                 type++;
                 score++;

@@ -14,24 +14,36 @@ namespace Pl.Sas.Core.Services
         private readonly IAsyncCacheService _asyncCacheService;
         private readonly ILogger<StockViewService> _logger;
         private readonly IMemoryCacheService _memoryCacheService;
-        private readonly IMarketData _marketData;
-        private readonly IAnalyticsData _analyticsData;
-        private readonly ISystemData _systemData;
+        private readonly IIndustryData _industryData;
+        private readonly IScheduleData _scheduleData;
+        private readonly IChartPriceData _chartPriceData;
+        private readonly ICompanyData _companyData;
+        private readonly IAnalyticsResultData _analyticsResultData;
+        private readonly IStockPriceData _stockPriceData;
+        private readonly IFinancialIndicatorData _financialIndicatorData;
 
         public StockViewService(
-            ISystemData systemData,
-            IAnalyticsData analyticsData,
-            IMarketData marketData,
+            IFinancialIndicatorData financialIndicatorData,
+            IStockPriceData stockPriceData,
+            IAnalyticsResultData analyticsResultData,
+            ICompanyData companyData,
+            IChartPriceData chartPriceData,
+            IScheduleData scheduleData,
+            IIndustryData industryData,
             ILogger<StockViewService> logger,
             IAsyncCacheService asyncCacheService,
             IMemoryCacheService memoryCacheService)
         {
+            _financialIndicatorData = financialIndicatorData;
+            _stockPriceData = stockPriceData;
+            _analyticsResultData = analyticsResultData;
+            _companyData = companyData;
+            _chartPriceData = chartPriceData;
+            _scheduleData = scheduleData;
+            _industryData = industryData;
             _asyncCacheService = asyncCacheService;
             _logger = logger;
             _memoryCacheService = memoryCacheService;
-            _marketData = marketData;
-            _analyticsData = analyticsData;
-            _systemData = systemData;
         }
 
         public virtual async Task<Dictionary<string, string>> CacheGetIndustriesAsync()
@@ -39,12 +51,8 @@ namespace Pl.Sas.Core.Services
             var cacheKey = $"{Constants.IndustryCachePrefix}-CGIDS";
             return await _memoryCacheService.GetOrCreateAsync(cacheKey, async () =>
             {
-                var industries = await _marketData.GetIndustriesAsync();
-                var analyticsIndustries = await _analyticsData.GetIndustryAnalyticsAsync();
-                var stats = from industry in industries
-                            join analyticsIndustry in analyticsIndustries on industry.Code equals analyticsIndustry.Code
-                            select new { industry.Code, industry.Name, analyticsIndustry.ManualScore, analyticsIndustry.Score };
-                return stats.OrderByDescending(q => q.ManualScore).ThenByDescending(q => q.Score).ToDictionary(q => q.Code, q => $"{q.Name} ({q.ManualScore} - {q.Score})");
+                var industries = await _industryData.FindAllAsync();
+                return industries.OrderByDescending(q => q.AutoRank).ThenByDescending(q => q.Rank).ToDictionary(q => q.Code, q => $"{q.Name} ({q.AutoRank} - {q.Rank})");
             }, Constants.DefaultCacheTime * 60 * 24);
         }
 
@@ -120,7 +128,7 @@ namespace Pl.Sas.Core.Services
 
         public virtual async Task<QueueMessage?> HandleStockViewEventAsync(QueueMessage queueMessage)
         {
-            var schedule = await _systemData.GetScheduleByIdAsync(queueMessage.Id);
+            var schedule = await _scheduleData.GetByIdAsync(queueMessage.Id);
             if (schedule != null)
             {
                 Stopwatch stopWatch = new();
@@ -149,27 +157,27 @@ namespace Pl.Sas.Core.Services
                 return null;
             }
 
-            var chartPrices = await _marketData.GetChartPricesAsync(symbol);
+            var chartPrices = await _chartPriceData.FindAllAsync(symbol, "D");
             if (chartPrices.Count < 5)
             {
                 _logger.LogWarning("Can't build view data for stock code {symbol} by stock price is lower five item.", symbol);
                 return null;
             }
-            var company = await _marketData.GetCompanyAsync(symbol);
+            var company = await _companyData.GetByCodeAsync(symbol);
             if (company is null)
             {
                 _logger.LogWarning("Can't build view data for stock code {symbol} by company info is null.", symbol);
                 return null;
             }
-            var analyticsResults = await _analyticsData.GetAnalyticsResultAsync(symbol);
+            var analyticsResults = await _analyticsResultData.FindAsync(symbol);
             if (analyticsResults is null)
             {
                 _logger.LogWarning("Can't build view data for stock code {symbol} by analytics result lower one item.", symbol);
                 return null;
             }
-            var stockPrices = await _marketData.GetTopStockPricesAsync(symbol, 10);
+            var stockPrices = await _stockPriceData.GetForStockViewAsync(symbol, 10);
 
-            var financialIndicators = await _marketData.GetFinancialIndicatorsAsync(symbol);
+            var financialIndicators = await _financialIndicatorData.GetFinancialIndicatorsAsync(symbol);
             var lastFinancialIndicator = financialIndicators.OrderByDescending(q => q.YearReport).ThenByDescending(q => q.LengthReport).FirstOrDefault(q => q.LengthReport == 5);
             var topThreeFinancialIndicator = financialIndicators.OrderByDescending(q => q.YearReport).ThenByDescending(q => q.LengthReport).Where(q => q.LengthReport == 5).Take(4).ToList();
             var industry = await _analyticsData.GetIndustryAnalyticsAsync(company.SubsectorCode);

@@ -1,5 +1,4 @@
 ﻿using Ardalis.GuardClauses;
-using Microsoft.EntityFrameworkCore;
 using Pl.Sas.Core;
 using Pl.Sas.Core.Entities;
 using Pl.Sas.Core.Interfaces;

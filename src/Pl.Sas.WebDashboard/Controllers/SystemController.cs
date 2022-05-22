@@ -11,7 +11,7 @@ namespace Pl.Sas.WebDashboard.Controllers
     public class SystemController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly UserService _userService;
+        private readonly UserData _userService;
         private readonly IMemoryCacheService _memoryCacheService;
         private readonly IAsyncCacheService _asyncCacheService;
         private readonly ISystemData _systemData;
@@ -20,7 +20,7 @@ namespace Pl.Sas.WebDashboard.Controllers
             ISystemData systemData,
             IAsyncCacheService asyncCacheService,
             IMemoryCacheService memoryCacheService,
-            UserService userService,
+            UserData userService,
             ILogger<HomeController> logger)
         {
             _logger = logger;

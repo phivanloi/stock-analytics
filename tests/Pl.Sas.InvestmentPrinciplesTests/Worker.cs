@@ -1,10 +1,6 @@
 ﻿using Pl.Sas.Core;
-using Pl.Sas.Core.Entities;
-using Pl.Sas.Core.Interfaces;
 using Pl.Sas.Core.Trading;
-using System.Diagnostics;
 using System.Text;
-using System.Text.Json;
 
 namespace Pl.Sas.InvestmentPrinciplesTests
 {
@@ -31,7 +27,7 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 _marketData = scope.ServiceProvider.GetRequiredService<IMarketData>();
                 DateTime fromDate = new(2020, 1, 1);
                 DateTime toDate = new(2019, 10, 1);
-                var symbol = "SMB";
+                var symbol = "VND";
                 var chartPrices = (await _marketData.GetChartPricesAsync(symbol)).OrderBy(q => q.TradingDate).ToList();
                 var tradingHistories = chartPrices.Where(q => q.TradingDate >= fromDate).OrderBy(q => q.TradingDate).ToList();
                 var startPrice = tradingHistories[0].ClosePrice;
@@ -53,6 +49,7 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 Console.WriteLine($"Với chỉ mua và nắm giữ -------------------------------- {symbol}");
                 $"Thực hiện đầu tư {tradingHistories.Count} phiên: Giá đóng cửa đầu kỳ {tradingHistories[0].TradingDate:dd-MM-yyyy}: {startPrice * 1000:0,0.00} giá đóng cửa cuối kỳ {tradingHistories[^1].TradingDate:dd-MM-yyyy}: {endPrice * 1000:0,0.00} lợi nhuận {endPrice.GetPercent(startPrice):0.00}%.".WriteConsole(endPrice > startPrice ? ConsoleColor.Green : ConsoleColor.Red);
                 Console.WriteLine();
+                MacdTrading.Dispose();
             }
             catch (Exception ex)
             {
