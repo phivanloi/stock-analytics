@@ -30,7 +30,7 @@ namespace Pl.Sas.Scheduler
                     {
                         Type = 204,
                         Name = "Đánh giá mã ngành tự động.",
-                        ActiveTime = DateTime.Now.AddHours(1)
+                        ActiveTime = DateTime.Now.AddMinutes(15)
                     },
                     new Schedule()
                     {
@@ -38,13 +38,6 @@ namespace Pl.Sas.Scheduler
                         Name = "Xử lý ngày giao dịch không hưởng quyền chi trả cổ tức thì xóa và import lại lịch sử giá.",
                         ActiveTime = DateTime.Now.Date.AddDays(1).AddHours(2).AddMinutes(50)
                     },
-
-                    new Schedule()
-                    {
-                        Type = 300,
-                        Name = "Xử lý hiển thị dữ liệu chứng khoán cho hiển thị.",
-                        ActiveTime = DateTime.Now.AddMinutes(60)
-                    }
                 };
                 systemDbContext.Schedules.AddRange(schedules);
                 systemDbContext.SaveChanges();

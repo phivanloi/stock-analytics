@@ -11,6 +11,12 @@ namespace Pl.Sas.Core.Interfaces
         void SubscribeUpdateMemoryTask(Action<QueueMessage> func);
 
         /// <summary>
+        /// Thực hiện lắng nghe sự kiện view update
+        /// </summary>
+        /// <param name="func"></param>
+        void SubscribeViewUpdatedTask(Action<QueueMessage> func);
+
+        /// <summary>
         /// Thu hồi tài nguyên
         /// </summary>
         void Dispose();

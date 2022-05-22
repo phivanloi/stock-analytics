@@ -44,7 +44,7 @@ builder.Services.AddDbContext<SystemDbContext>(options =>
     sqlServerOptionsAction: sqlOptions =>
     {
         sqlOptions.MigrationsAssembly(typeof(Program).GetTypeInfo().Assembly.GetName().Name);
-        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);        
     }));
 builder.Services.AddDbContext<MarketDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("MarketConnection"),

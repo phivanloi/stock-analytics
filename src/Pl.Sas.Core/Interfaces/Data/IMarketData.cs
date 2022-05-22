@@ -67,20 +67,6 @@ namespace Pl.Sas.Core.Interfaces
         Task<List<StockPrice>> CacheGetAllStockPricesAsync(string symbol);
 
         /// <summary>
-        /// Lấy thông tin chứng khoán theo mã
-        /// </summary>
-        /// <param name="symbol">Mã chứng khoán</param>
-        /// <returns></returns>
-        Task<Stock?> CacheGetStockByCodeAsync(string symbol);
-
-        /// <summary>
-        /// Lấy thông tin công ty theo mã chứng khoán
-        /// </summary>
-        /// <param name="symbol">Mã chứng khoán</param>
-        /// <returns>Company</returns>
-        Task<Company?> CacheGetCompanyByCodeAsync(string symbol);
-
-        /// <summary>
         /// Lấy danh sách sàn chứng khoán
         /// </summary>
         /// <returns>List string</returns>
@@ -149,7 +135,7 @@ namespace Pl.Sas.Core.Interfaces
         /// <param name="symbol">Mã chứng khoán</param>
         /// <param name="top">Số bản ghi cần lấy</param>
         /// <returns></returns>
-        Task<List<StockPrice>> GetTopStockPriceAsync(string symbol, int top);
+        Task<List<StockPrice>> GetTopStockPricesAsync(string symbol, int top);
 
         /// <summary>
         /// Lấy thông tin tải sản và tỉ lệ cổ tức mới nhất theo mã cổ phiếu
@@ -193,7 +179,7 @@ namespace Pl.Sas.Core.Interfaces
         /// </summary>
         /// <param name="industryCode">mã ngành</param>
         /// <returns>List Company</returns>
-        Task<List<Company>> CacheGetCompaniesAsync(string? industryCode = null);
+        Task<List<Company>> GetCompaniesAsync(string? industryCode = null);
 
         /// <summary>
         /// Lấy thông tin công ty theo mã chứng khoán

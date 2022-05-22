@@ -4,6 +4,7 @@ using Pl.Sas.Core.Interfaces;
 using Pl.Sas.Core.Trading;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Text.Json;
 
 namespace Pl.Sas.Core.Services
 {
@@ -103,18 +104,18 @@ namespace Pl.Sas.Core.Services
             return query.OrderByDescending(q => q.LastTotalMatchVol).ToList();
         }
 
-        public virtual async Task UpdateChangeStockView()
+        public virtual void UpdateChangeStockView(QueueMessage queueMessage)
         {
-            var cacheKey = $"{Constants.StockViewCachePrefix}-ALL";
-            var dictData = await _asyncCacheService.GetByKeyAsync<Dictionary<string, StockView>>(cacheKey);
-            if (dictData is not null)
+            var symbol = queueMessage.KeyValues["Symbol"];
+            var stockView = JsonSerializer.Deserialize<StockView>(queueMessage.KeyValues["Data"]);
+            if (string.IsNullOrEmpty(symbol) || stockView is null)
             {
-                _stockViews.Clear();
-                foreach (var dic in dictData)
-                {
-                    _stockViews.TryAdd(dic.Key, dic.Value);
-                }
+                return;
             }
+            _stockViews.AddOrUpdate(symbol, stockView, (key, oldValue) =>
+            {
+                return stockView;
+            });
         }
 
         public virtual async Task<QueueMessage?> HandleStockViewEventAsync(QueueMessage queueMessage)
@@ -128,7 +129,7 @@ namespace Pl.Sas.Core.Services
                 switch (schedule.Type)
                 {
                     case 300:
-                        return await BindingStocksViewAndSetCacheAsync();
+                        return await BindingStocksViewAndSetCacheAsync(schedule.DataKey);
 
                     default:
                         _logger.LogWarning("Process scheduler id {Id}, type: {Type} don't match any function", queueMessage.Id, schedule.Type);
@@ -141,275 +142,274 @@ namespace Pl.Sas.Core.Services
             return null;
         }
 
-        public virtual async Task<QueueMessage> BindingStocksViewAndSetCacheAsync()
+        public virtual async Task<QueueMessage?> BindingStocksViewAndSetCacheAsync(string? symbol)
         {
-            var dictStockView = new Dictionary<string, StockView>();
-            var companies = await _marketData.CacheGetCompaniesAsync();
-            var stocks = await _marketData.GetStockByType("s");
-            foreach (var stock in stocks)
+            if (string.IsNullOrEmpty(symbol))
             {
-                if (!dictStockView.ContainsKey(stock.Symbol))
+                return null;
+            }
+
+            var chartPrices = await _marketData.GetChartPricesAsync(symbol);
+            if (chartPrices.Count < 5)
+            {
+                _logger.LogWarning("Can't build view data for stock code {symbol} by stock price is lower five item.", symbol);
+                return null;
+            }
+            var company = await _marketData.GetCompanyAsync(symbol);
+            if (company is null)
+            {
+                _logger.LogWarning("Can't build view data for stock code {symbol} by company info is null.", symbol);
+                return null;
+            }
+            var analyticsResults = await _analyticsData.GetAnalyticsResultAsync(symbol);
+            if (analyticsResults is null)
+            {
+                _logger.LogWarning("Can't build view data for stock code {symbol} by analytics result lower one item.", symbol);
+                return null;
+            }
+            var stockPrices = await _marketData.GetTopStockPricesAsync(symbol, 10);
+
+            var financialIndicators = await _marketData.GetFinancialIndicatorsAsync(symbol);
+            var lastFinancialIndicator = financialIndicators.OrderByDescending(q => q.YearReport).ThenByDescending(q => q.LengthReport).FirstOrDefault(q => q.LengthReport == 5);
+            var topThreeFinancialIndicator = financialIndicators.OrderByDescending(q => q.YearReport).ThenByDescending(q => q.LengthReport).Where(q => q.LengthReport == 5).Take(4).ToList();
+            var industry = await _analyticsData.GetIndustryAnalyticsAsync(company.SubsectorCode);
+            var topThreeHistories = stockPrices.Take(3).ToList();
+            var topFiveHistories = stockPrices.Take(5).ToList();
+            var stockView = new StockView()
+            {
+                Symbol = symbol,
+                IndustryCode = company.SubsectorCode,
+                Description = $"{company.Exchange} - {company.CompanyName} - {company.Supersector} - {company.Sector}",
+                Exchange = company.Exchange ?? "",
+
+                MacroeconomicsScore = analyticsResults.MarketScore,
+                IndustryRank = MarketAnalyticsService.IndustryTrend(new(), industry),
+
+                CompanyValueScore = analyticsResults.CompanyValueScore,
+                Eps = lastFinancialIndicator?.Eps ?? company.Eps,
+                Pe = lastFinancialIndicator?.Pe ?? company.Pe,
+                Pb = lastFinancialIndicator?.Pb ?? company.Pb,
+                Roe = (lastFinancialIndicator?.Roe ?? company.Roe) * 100,
+                Roa = (lastFinancialIndicator?.Roa ?? company.Roa) * 100,
+                MarketCap = company.MarketCap,
+
+                CompanyGrowthScore = analyticsResults.CompanyGrowthScore,
+
+                StockScore = analyticsResults.StockScore,
+                Beta = company.Beta,
+                LastClosePrice = topThreeHistories[0].ClosePrice,
+                LastOneClosePrice = topThreeHistories[1].ClosePrice,
+                LastTotalMatchVol = topThreeHistories[0].TotalMatchVol,
+                LastOneTotalMatchVol = topThreeHistories[1].TotalMatchVol,
+                LastForeignBuyVolTotal = stockPrices[0].ForeignBuyVolTotal,
+                LastForeignSellVolTotal = stockPrices[0].ForeignSellVolTotal,
+                LastOpenPrice = topThreeHistories[0].OpenPrice,
+                LastHighestPrice = topThreeHistories[0].HighestPrice,
+                LastLowestPrice = topThreeHistories[0].LowestPrice,
+                LastHistoryMinLowestPrice = topFiveHistories.Min(q => q.LowestPrice),
+                LastHistoryMinHighestPrice = topFiveHistories.Max(q => q.HighestPrice),
+
+                FiinScore = analyticsResults.FiinScore,
+                VndScore = analyticsResults.VndScore,
+                TargetPrice = analyticsResults.TargetPrice
+            };
+
+            if (topThreeFinancialIndicator.Count > 3)
+            {
+                var (_, _, _, _, _, _, percents) = topThreeFinancialIndicator.GetFluctuationsTopDown(q => q.Revenue);
+                stockView.YearlyRevenueGrowthPercent = percents?.Average() ?? 0;
+            }
+            if (topThreeFinancialIndicator.Count > 3)
+            {
+                var (_, _, _, _, _, _, percents) = topThreeFinancialIndicator.GetFluctuationsTopDown(q => q.Profit);
+                stockView.YearlyProfitGrowthPercent = percents?.Average() ?? 0;
+            }
+
+            stockView.LastAvgThreeTotalMatchVol = topThreeHistories?.Average(q => q.TotalMatchVol) ?? stockView.LastOneTotalMatchVol;
+            stockView.LastAvgFiveTotalMatchVol = topFiveHistories?.Average(q => q.TotalMatchVol) ?? stockView.LastAvgThreeTotalMatchVol;
+            stockView.LastAvgTenTotalMatchVol = stockPrices?.Average(q => q.TotalMatchVol) ?? stockView.LastAvgFiveTotalMatchVol;
+            stockView.LastAvgThreeForeignBuyVolTotal = topThreeHistories?.Average(q => q.ForeignBuyVolTotal) ?? stockView.LastForeignBuyVolTotal;
+            stockView.LastAvgFiveForeignBuyVolTotal = topFiveHistories?.Average(q => q.ForeignBuyVolTotal) ?? stockView.LastAvgThreeForeignBuyVolTotal;
+            stockView.LastAvgTenForeignBuyVolTotal = stockPrices?.Average(q => q.ForeignBuyVolTotal) ?? stockView.LastAvgFiveForeignBuyVolTotal;
+            stockView.LastAvgThreeForeignSellVolTotal = topThreeHistories?.Average(q => q.ForeignSellVolTotal) ?? stockView.LastForeignSellVolTotal;
+            stockView.LastAvgFiveForeignSellVolTotal = topFiveHistories?.Average(q => q.ForeignSellVolTotal) ?? stockView.LastAvgThreeForeignSellVolTotal;
+            stockView.LastAvgTenForeignSellVolTotal = stockPrices?.Average(q => q.ForeignSellVolTotal) ?? stockView.LastAvgFiveForeignSellVolTotal;
+
+            #region Count change
+            for (int i = 0; i < chartPrices.Count - 1; i++)
+            {
+                if (chartPrices[i].ClosePrice > chartPrices[i + 1].ClosePrice)
                 {
-                    var stockPrices = await _marketData.GetForStockViewAsync(stock.Symbol, 3840);
-                    if (stockPrices.Count < 2)
-                    {
-                        _logger.LogWarning("Can't build view data for stock code {Key} by stock price is lower five item.", stock.Symbol);
-                        continue;
-                    }
-                    var company = companies.FirstOrDefault(q => q.Symbol == stock.Symbol);
-                    if (company is null)
-                    {
-                        _logger.LogWarning("Can't build view data for stock code {Key} by company info is null.", stock.Symbol);
-                        continue;
-                    }
-                    var analyticsResults = await _analyticsData.CacheGetAnalyticsResultAsync(stock.Symbol);
-                    if (analyticsResults is null)
-                    {
-                        _logger.LogWarning("Can't build view data for stock code {Code} by analytics result lower one item.", stock.Symbol);
-                        continue;
-                    }
-
-                    var financialIndicators = await _marketData.GetFinancialIndicatorsAsync(stock.Symbol);
-                    var lastFinancialIndicator = financialIndicators.OrderByDescending(q => q.YearReport).ThenByDescending(q => q.LengthReport).FirstOrDefault(q => q.LengthReport == 5);
-                    var topThreeFinancialIndicator = financialIndicators.OrderByDescending(q => q.YearReport).ThenByDescending(q => q.LengthReport).Where(q => q.LengthReport == 5).Take(4).ToList();
-                    var industry = await _analyticsData.GetIndustryAnalyticsAsync(company.SubsectorCode);
-                    var topThreeHistories = stockPrices.Take(3).ToList();
-                    var topFiveHistories = stockPrices.Take(5).ToList();
-                    var topTenHistories = stockPrices.Take(10).ToList();
-                    var stockView = new StockView()
-                    {
-                        Symbol = stock.Symbol,
-                        IndustryCode = company.SubsectorCode,
-                        Description = $"{stock.Exchange} - {company.CompanyName} - {company.Supersector} - {company.Sector}",
-                        Exchange = stock.Exchange,
-
-                        MacroeconomicsScore = analyticsResults.MarketScore,
-                        IndustryRank = MarketAnalyticsService.IndustryTrend(new(), industry),
-
-                        CompanyValueScore = analyticsResults.CompanyValueScore,
-                        Eps = lastFinancialIndicator?.Eps ?? company.Eps,
-                        Pe = lastFinancialIndicator?.Pe ?? company.Pe,
-                        Pb = lastFinancialIndicator?.Pb ?? company.Pb,
-                        Roe = (lastFinancialIndicator?.Roe ?? company.Roe) * 100,
-                        Roa = (lastFinancialIndicator?.Roa ?? company.Roa) * 100,
-                        MarketCap = company.MarketCap,
-
-                        CompanyGrowthScore = analyticsResults.CompanyGrowthScore,
-
-                        StockScore = analyticsResults.StockScore,
-                        Beta = company.Beta,
-                        LastClosePrice = topThreeHistories[0].ClosePrice,
-                        LastOneClosePrice = topThreeHistories[1].ClosePrice,
-                        LastTotalMatchVol = topThreeHistories[0].TotalMatchVol,
-                        LastOneTotalMatchVol = topThreeHistories[1].TotalMatchVol,
-                        LastForeignBuyVolTotal = topThreeHistories[0].ForeignBuyVolTotal,
-                        LastForeignSellVolTotal = topThreeHistories[0].ForeignSellVolTotal,
-                        LastOpenPrice = topThreeHistories[0].OpenPrice,
-                        LastHighestPrice = topThreeHistories[0].HighestPrice,
-                        LastLowestPrice = topThreeHistories[0].LowestPrice,
-                        LastHistoryMinLowestPrice = topFiveHistories.Min(q => q.LowestPrice),
-                        LastHistoryMinHighestPrice = topFiveHistories.Max(q => q.HighestPrice),
-
-                        FiinScore = analyticsResults.FiinScore,
-                        VndScore = analyticsResults.VndScore,
-                        TargetPrice = analyticsResults.TargetPrice
-                    };
-
-                    if (topThreeFinancialIndicator.Count > 3)
-                    {
-                        var (_, _, _, _, _, _, percents) = topThreeFinancialIndicator.GetFluctuationsTopDown(q => q.Revenue);
-                        stockView.YearlyRevenueGrowthPercent = percents?.Average() ?? 0;
-                    }
-                    if (topThreeFinancialIndicator.Count > 3)
-                    {
-                        var (_, _, _, _, _, _, percents) = topThreeFinancialIndicator.GetFluctuationsTopDown(q => q.Profit);
-                        stockView.YearlyProfitGrowthPercent = percents?.Average() ?? 0;
-                    }
-
-                    stockView.LastAvgThreeTotalMatchVol = topThreeHistories?.Average(q => q.TotalMatchVol) ?? stockView.LastOneTotalMatchVol;
-                    stockView.LastAvgFiveTotalMatchVol = topFiveHistories?.Average(q => q.TotalMatchVol) ?? stockView.LastAvgThreeTotalMatchVol;
-                    stockView.LastAvgTenTotalMatchVol = topTenHistories?.Average(q => q.TotalMatchVol) ?? stockView.LastAvgFiveTotalMatchVol;
-                    stockView.LastAvgThreeForeignBuyVolTotal = topThreeHistories?.Average(q => q.ForeignBuyVolTotal) ?? stockView.LastForeignBuyVolTotal;
-                    stockView.LastAvgFiveForeignBuyVolTotal = topFiveHistories?.Average(q => q.ForeignBuyVolTotal) ?? stockView.LastAvgThreeForeignBuyVolTotal;
-                    stockView.LastAvgTenForeignBuyVolTotal = topTenHistories?.Average(q => q.ForeignBuyVolTotal) ?? stockView.LastAvgFiveForeignBuyVolTotal;
-                    stockView.LastAvgThreeForeignSellVolTotal = topThreeHistories?.Average(q => q.ForeignSellVolTotal) ?? stockView.LastForeignSellVolTotal;
-                    stockView.LastAvgFiveForeignSellVolTotal = topFiveHistories?.Average(q => q.ForeignSellVolTotal) ?? stockView.LastAvgThreeForeignSellVolTotal;
-                    stockView.LastAvgTenForeignSellVolTotal = topTenHistories?.Average(q => q.ForeignSellVolTotal) ?? stockView.LastAvgFiveForeignSellVolTotal;
-
-                    #region Count change
-                    for (int i = 0; i < stockPrices.Count - 1; i++)
-                    {
-                        if (stockPrices[i].ClosePrice > stockPrices[i + 1].ClosePrice)
-                        {
-                            stockView.NumberOfClosePriceIncreases++;
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-                    for (int i = 0; i < stockPrices.Count - 1; i++)
-                    {
-                        if (stockPrices[i].ClosePrice <= stockPrices[i + 1].ClosePrice)
-                        {
-                            stockView.NumberOfClosePriceDecrease++;
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-
-                    #endregion
-
-                    #region Convulsion
-                    if (stockPrices.Count >= 1)
-                    {
-                        stockView.PricePercentConvulsion1 = stockPrices[0].ClosePriceAdjusted.GetPercent(stockPrices[1].ClosePriceAdjusted);
-                    }
-                    if (stockPrices.Count >= 5)
-                    {
-                        stockView.PricePercentConvulsion5 = stockPrices[0].ClosePriceAdjusted.GetPercent(stockPrices[4].ClosePriceAdjusted);
-                    }
-                    else
-                    {
-                        stockView.PricePercentConvulsion5 = stockPrices[0].ClosePriceAdjusted.GetPercent(stockPrices.Last().ClosePriceAdjusted);
-                    }
-                    if (stockPrices.Count >= 10)
-                    {
-                        stockView.PricePercentConvulsion10 = stockPrices[0].ClosePriceAdjusted.GetPercent(stockPrices[9].ClosePriceAdjusted);
-                    }
-                    else
-                    {
-                        stockView.PricePercentConvulsion10 = stockPrices[0].ClosePriceAdjusted.GetPercent(stockPrices.Last().ClosePriceAdjusted);
-                    }
-                    if (stockPrices.Count >= 30)
-                    {
-                        stockView.PricePercentConvulsion30 = stockPrices[0].ClosePriceAdjusted.GetPercent(stockPrices[29].ClosePriceAdjusted);
-                    }
-                    else
-                    {
-                        stockView.PricePercentConvulsion30 = stockPrices[0].ClosePriceAdjusted.GetPercent(stockPrices.Last().ClosePriceAdjusted);
-                    }
-                    if (stockPrices.Count >= 50)
-                    {
-                        stockView.PricePercentConvulsion50 = stockPrices[0].ClosePriceAdjusted.GetPercent(stockPrices[49].ClosePriceAdjusted);
-                    }
-                    else
-                    {
-                        stockView.PricePercentConvulsion50 = stockPrices[0].ClosePriceAdjusted.GetPercent(stockPrices.Last().ClosePriceAdjusted);
-                    }
-                    if (stockPrices.Count >= 60)
-                    {
-                        stockView.PricePercentConvulsion60 = stockPrices[0].ClosePriceAdjusted.GetPercent(stockPrices[59].ClosePriceAdjusted);
-                    }
-                    else
-                    {
-                        stockView.PricePercentConvulsion60 = stockPrices[0].ClosePriceAdjusted.GetPercent(stockPrices.Last().ClosePriceAdjusted);
-                    }
-                    if (stockPrices.Count >= 90)
-                    {
-                        stockView.PricePercentConvulsion90 = stockPrices[0].ClosePriceAdjusted.GetPercent(stockPrices[89].ClosePriceAdjusted);
-                    }
-                    else
-                    {
-                        stockView.PricePercentConvulsion90 = stockPrices[0].ClosePriceAdjusted.GetPercent(stockPrices.Last().ClosePriceAdjusted);
-                    }
-                    if (stockPrices.Count >= 120)
-                    {
-                        stockView.PricePercentConvulsion120 = stockPrices[0].ClosePriceAdjusted.GetPercent(stockPrices[119].ClosePriceAdjusted);
-                    }
-                    else
-                    {
-                        stockView.PricePercentConvulsion120 = stockPrices[0].ClosePriceAdjusted.GetPercent(stockPrices.Last().ClosePriceAdjusted);
-                    }
-                    if (stockPrices.Count >= 240)
-                    {
-                        stockView.PricePercentConvulsion240 = stockPrices[0].ClosePriceAdjusted.GetPercent(stockPrices[239].ClosePriceAdjusted);
-                    }
-                    else
-                    {
-                        stockView.PricePercentConvulsion240 = stockPrices[0].ClosePriceAdjusted.GetPercent(stockPrices.Last().ClosePriceAdjusted);
-                    }
-                    if (stockPrices.Count >= 480)
-                    {
-                        stockView.PricePercentConvulsion480 = stockPrices[0].ClosePriceAdjusted.GetPercent(stockPrices[479].ClosePriceAdjusted);
-                    }
-                    else
-                    {
-                        stockView.PricePercentConvulsion480 = stockPrices[0].ClosePriceAdjusted.GetPercent(stockPrices.Last().ClosePriceAdjusted);
-                    }
-                    if (stockPrices.Count >= 960)
-                    {
-                        stockView.PricePercentConvulsion960 = stockPrices[0].ClosePriceAdjusted.GetPercent(stockPrices[959].ClosePriceAdjusted);
-                    }
-                    else
-                    {
-                        stockView.PricePercentConvulsion960 = stockPrices[0].ClosePriceAdjusted.GetPercent(stockPrices.Last().ClosePriceAdjusted);
-                    }
-                    if (stockPrices.Count >= 1920)
-                    {
-                        stockView.PricePercentConvulsion1920 = stockPrices[0].ClosePriceAdjusted.GetPercent(stockPrices[1919].ClosePriceAdjusted);
-                    }
-                    else
-                    {
-                        stockView.PricePercentConvulsion1920 = stockPrices[0].ClosePriceAdjusted.GetPercent(stockPrices.Last().ClosePriceAdjusted);
-                    }
-                    if (stockPrices.Count >= 3840)
-                    {
-                        stockView.PricePercentConvulsion3840 = stockPrices[0].ClosePriceAdjusted.GetPercent(stockPrices[3839].ClosePriceAdjusted);
-                    }
-                    else
-                    {
-                        stockView.PricePercentConvulsion3840 = stockPrices[0].ClosePriceAdjusted.GetPercent(stockPrices.Last().ClosePriceAdjusted);
-                    }
-
-                    var startTradingItem = stockPrices.LastOrDefault(q => q.TradingDate >= Constants.StartTime);
-                    if (startTradingItem is not null)
-                    {
-                        stockView.PricePercentConvulsionStartTrading = stockPrices[0].ClosePriceAdjusted.GetPercent(startTradingItem.ClosePriceAdjusted);
-                    }
-                    else
-                    {
-                        stockView.PricePercentConvulsionStartTrading = stockView.PricePercentConvulsion960;
-                    }
-
-                    #endregion
-
-                    #region Trading info
-
-                    var tradingResults = await _analyticsData.CacheGetTradingResultAsync(stock.Symbol);
-                    var indicatorSet = BaseTrading.BuildIndicatorSet(stockPrices);
-                    var principles = new int[] { 0, 1, 2, 3, 4 };
-
-                    foreach (var principle in principles)
-                    {
-                        var tadingResult = tradingResults.FirstOrDefault(q => q.Principle == principle);
-                        if (tadingResult is not null)
-                        {
-                            var judgeResult = new JudgeResult()
-                            {
-                                OptimalBuyPrice = tadingResult.BuyPrice,
-                                OptimalSellPrice = tadingResult.SellPrice,
-                                ProfitPercent = tadingResult.ProfitPercent,
-                                TodayIsBuy = tadingResult.IsBuy,
-                                TodayIsSell = tadingResult.IsSell
-                            };
-                            if (indicatorSet.ContainsKey(stockPrices[0].DatePath))
-                            {
-                                var todaySet = indicatorSet[stockPrices[0].DatePath];
-                            }
-                            stockView.TradingViews.Add(principle, judgeResult);
-                        }
-                    }
-
-                    #endregion
-                    dictStockView.TryAdd(stock.Symbol, stockView);
+                    stockView.NumberOfClosePriceIncreases++;
+                }
+                else
+                {
+                    break;
                 }
             }
-            var cacheKey = $"{Constants.StockViewCachePrefix}-ALL";
-            await _asyncCacheService.SetValueAsync(cacheKey, dictStockView, Constants.DefaultCacheTime * 60 * 24);
-            return new("UpdateStockView");
+            for (int i = 0; i < chartPrices.Count - 1; i++)
+            {
+                if (chartPrices[i].ClosePrice <= chartPrices[i + 1].ClosePrice)
+                {
+                    stockView.NumberOfClosePriceDecrease++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            #endregion
+
+            #region Convulsion
+            if (chartPrices.Count >= 1)
+            {
+                stockView.PricePercentConvulsion1 = chartPrices[0].ClosePrice.GetPercent(chartPrices[1].ClosePrice);
+            }
+            if (chartPrices.Count >= 5)
+            {
+                stockView.PricePercentConvulsion5 = chartPrices[0].ClosePrice.GetPercent(chartPrices[4].ClosePrice);
+            }
+            else
+            {
+                stockView.PricePercentConvulsion5 = chartPrices[0].ClosePrice.GetPercent(chartPrices.Last().ClosePrice);
+            }
+            if (chartPrices.Count >= 10)
+            {
+                stockView.PricePercentConvulsion10 = chartPrices[0].ClosePrice.GetPercent(chartPrices[9].ClosePrice);
+            }
+            else
+            {
+                stockView.PricePercentConvulsion10 = chartPrices[0].ClosePrice.GetPercent(chartPrices.Last().ClosePrice);
+            }
+            if (chartPrices.Count >= 30)
+            {
+                stockView.PricePercentConvulsion30 = chartPrices[0].ClosePrice.GetPercent(chartPrices[29].ClosePrice);
+            }
+            else
+            {
+                stockView.PricePercentConvulsion30 = chartPrices[0].ClosePrice.GetPercent(chartPrices.Last().ClosePrice);
+            }
+            if (chartPrices.Count >= 50)
+            {
+                stockView.PricePercentConvulsion50 = chartPrices[0].ClosePrice.GetPercent(chartPrices[49].ClosePrice);
+            }
+            else
+            {
+                stockView.PricePercentConvulsion50 = chartPrices[0].ClosePrice.GetPercent(chartPrices.Last().ClosePrice);
+            }
+            if (chartPrices.Count >= 60)
+            {
+                stockView.PricePercentConvulsion60 = chartPrices[0].ClosePrice.GetPercent(chartPrices[59].ClosePrice);
+            }
+            else
+            {
+                stockView.PricePercentConvulsion60 = chartPrices[0].ClosePrice.GetPercent(chartPrices.Last().ClosePrice);
+            }
+            if (chartPrices.Count >= 90)
+            {
+                stockView.PricePercentConvulsion90 = chartPrices[0].ClosePrice.GetPercent(chartPrices[89].ClosePrice);
+            }
+            else
+            {
+                stockView.PricePercentConvulsion90 = chartPrices[0].ClosePrice.GetPercent(chartPrices.Last().ClosePrice);
+            }
+            if (chartPrices.Count >= 120)
+            {
+                stockView.PricePercentConvulsion120 = chartPrices[0].ClosePrice.GetPercent(chartPrices[119].ClosePrice);
+            }
+            else
+            {
+                stockView.PricePercentConvulsion120 = chartPrices[0].ClosePrice.GetPercent(chartPrices.Last().ClosePrice);
+            }
+            if (chartPrices.Count >= 240)
+            {
+                stockView.PricePercentConvulsion240 = chartPrices[0].ClosePrice.GetPercent(chartPrices[239].ClosePrice);
+            }
+            else
+            {
+                stockView.PricePercentConvulsion240 = chartPrices[0].ClosePrice.GetPercent(chartPrices.Last().ClosePrice);
+            }
+            if (chartPrices.Count >= 480)
+            {
+                stockView.PricePercentConvulsion480 = chartPrices[0].ClosePrice.GetPercent(chartPrices[479].ClosePrice);
+            }
+            else
+            {
+                stockView.PricePercentConvulsion480 = chartPrices[0].ClosePrice.GetPercent(chartPrices.Last().ClosePrice);
+            }
+            if (chartPrices.Count >= 960)
+            {
+                stockView.PricePercentConvulsion960 = chartPrices[0].ClosePrice.GetPercent(chartPrices[959].ClosePrice);
+            }
+            else
+            {
+                stockView.PricePercentConvulsion960 = chartPrices[0].ClosePrice.GetPercent(chartPrices.Last().ClosePrice);
+            }
+            if (chartPrices.Count >= 1920)
+            {
+                stockView.PricePercentConvulsion1920 = chartPrices[0].ClosePrice.GetPercent(chartPrices[1919].ClosePrice);
+            }
+            else
+            {
+                stockView.PricePercentConvulsion1920 = chartPrices[0].ClosePrice.GetPercent(chartPrices.Last().ClosePrice);
+            }
+            if (chartPrices.Count >= 3840)
+            {
+                stockView.PricePercentConvulsion3840 = chartPrices[0].ClosePrice.GetPercent(chartPrices[3839].ClosePrice);
+            }
+            else
+            {
+                stockView.PricePercentConvulsion3840 = chartPrices[0].ClosePrice.GetPercent(chartPrices.Last().ClosePrice);
+            }
+
+            var startTradingItem = chartPrices.LastOrDefault(q => q.TradingDate >= Constants.StartTime);
+            if (startTradingItem is not null)
+            {
+                stockView.PricePercentConvulsionStartTrading = chartPrices[0].ClosePrice.GetPercent(startTradingItem.ClosePrice);
+            }
+            else
+            {
+                stockView.PricePercentConvulsionStartTrading = stockView.PricePercentConvulsion960;
+            }
+
+            #endregion
+
+            #region Trading info
+
+            var tradingResults = await _analyticsData.GetTradingResultAsync(symbol);
+            var indicatorSet = BaseTrading.BuildIndicatorSet(chartPrices);
+            var principles = new int[] { 0, 1, 2, 3, 4 };
+
+            foreach (var principle in principles)
+            {
+                var tadingResult = tradingResults.FirstOrDefault(q => q.Principle == principle);
+                if (tadingResult is not null)
+                {
+                    var judgeResult = new JudgeResult()
+                    {
+                        OptimalBuyPrice = tadingResult.BuyPrice,
+                        OptimalSellPrice = tadingResult.SellPrice,
+                        ProfitPercent = tadingResult.ProfitPercent,
+                        TodayIsBuy = tadingResult.IsBuy,
+                        TodayIsSell = tadingResult.IsSell
+                    };
+                    if (indicatorSet.ContainsKey(chartPrices[0].DatePath))
+                    {
+                        var todaySet = indicatorSet[chartPrices[0].DatePath];
+                    }
+                    stockView.TradingViews.Add(principle, judgeResult);
+                }
+            }
+
+            #endregion
+
+            var cacheKey = $"{Constants.StockViewCachePrefix}-SM-{symbol}";
+            await _asyncCacheService.SetValueAsync(cacheKey, stockView, Constants.DefaultCacheTime * 60 * 24);
+            var sendMessage = new QueueMessage("UpdateStockView");
+            sendMessage.KeyValues.Add("Data", JsonSerializer.Serialize(stockView));
+            sendMessage.KeyValues.Add("Symbol", symbol);
+            return sendMessage;
         }
     }
 }

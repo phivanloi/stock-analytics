@@ -76,27 +76,14 @@ namespace Pl.Sas.Infrastructure.Market
             return await _marketDbContext.SaveChangesAsync() > 0;
         }
 
-        public virtual async Task<List<Company>> CacheGetCompaniesAsync(string? industryCode = null)
+        public virtual async Task<List<Company>> GetCompaniesAsync(string? industryCode = null)
         {
-            var cacheKey = $"{Constants.CompanyCachePrefix}-CGC{industryCode}";
-            return await _memoryCacheService.GetOrCreateAsync(cacheKey, async () =>
+            var query = _marketDbContext.Companies.AsNoTracking();
+            if (!string.IsNullOrEmpty(industryCode))
             {
-                var query = _marketDbContext.Companies.AsNoTracking();
-                if (!string.IsNullOrEmpty(industryCode))
-                {
-                    query = query.Where(q => q.SubsectorCode == industryCode);
-                }
-                return await query.ToListAsync();
-            }, Constants.DefaultCacheTime * 60 * 24);
-        }
-
-        public virtual async Task<Company?> CacheGetCompanyByCodeAsync(string symbol)
-        {
-            var cacheKey = $"{Constants.CompanyCachePrefix}-SY{symbol}";
-            return await _memoryCacheService.GetOrCreateAsync(cacheKey, async () =>
-            {
-                return await _marketDbContext.Companies.AsNoTracking().FirstOrDefaultAsync(q => q.Symbol == symbol);
-            }, Constants.DefaultCacheTime * 60 * 24);
+                query = query.Where(q => q.SubsectorCode == industryCode);
+            }
+            return await query.ToListAsync();
         }
         #endregion
 
@@ -279,7 +266,7 @@ namespace Pl.Sas.Infrastructure.Market
             return await _marketDbContext.StockPrices.FirstOrDefaultAsync(s => s.Symbol == symbol && s.TradingDate == tradingDate);
         }
 
-        public virtual async Task<List<StockPrice>> GetTopStockPriceAsync(string symbol, int top)
+        public virtual async Task<List<StockPrice>> GetTopStockPricesAsync(string symbol, int top)
         {
             return await _marketDbContext.StockPrices.OrderByDescending(q => q.TradingDate).Where(s => s.Symbol == symbol).Take(top).ToListAsync();
         }
@@ -440,15 +427,6 @@ namespace Pl.Sas.Infrastructure.Market
         public virtual async Task<List<Stock>> GetStockByType(string type)
         {
             return await _marketDbContext.Stocks.Where(q => q.Type == type).ToListAsync();
-        }
-
-        public virtual async Task<Stock?> CacheGetStockByCodeAsync(string symbol)
-        {
-            var cacheKey = $"{Constants.StockCachePrefix}-SM{symbol}";
-            return await _memoryCacheService.GetOrCreateAsync(cacheKey, async () =>
-            {
-                return await _marketDbContext.Stocks.AsNoTracking().FirstOrDefaultAsync(q => q.Symbol == symbol);
-            }, Constants.DefaultCacheTime * 60 * 24);
         }
 
         public virtual async Task<List<string>> CacheGetExchangesAsync()
