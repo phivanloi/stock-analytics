@@ -152,7 +152,7 @@ namespace Pl.Sas.Core.Entities
             {
                 return baseTime.AddSeconds(random.Next(100, 150));
             }
-            return baseTime.Date.AddHours(8).AddMinutes(random.Next(50, 60));
+            return baseTime.Date.AddDays(1).AddHours(8).AddMinutes(random.Next(50, 60));
         }
     }
 }

@@ -1,4 +1,5 @@
 using Pl.Sas.Core;
+using System;
 using Xunit;
 
 namespace Pl.Sas.UnitTests
@@ -27,6 +28,18 @@ namespace Pl.Sas.UnitTests
             var lastString = Utilities.RandomString(15);
             Assert.True(lastString.Length == 15);
             Assert.NotEqual(fistString, lastString);
+        }
+
+        [Fact]
+        public void RealtimeScheduleTest()
+        {
+            var random = new Random();
+            if (DateTime.Now.Hour > 9 && DateTime.Now.Hour < 15 && DateTime.Now.DayOfWeek != DayOfWeek.Sunday && DateTime.Now.DayOfWeek != DayOfWeek.Saturday)
+            {
+                DateTime.Now.AddSeconds(random.Next(100, 150));
+            }
+            DateTime.Now.Date.AddHours(8).AddMinutes(random.Next(50, 60));
+            Assert.True(true);
         }
     }
 }
