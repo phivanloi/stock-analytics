@@ -102,7 +102,6 @@ namespace Pl.Sas.Core.Trading
         public static int BuyCondition(DateTime tradingDate)
         {
             var sar = _parabolicSar.Find(tradingDate);
-            tradingCase.AddNote(0, System.Text.Json.JsonSerializer.Serialize(sar));
             if (sar is null || sar.Sar is null)
             {
                 return 0;
@@ -119,7 +118,6 @@ namespace Pl.Sas.Core.Trading
         public static int SellCondition(DateTime tradingDate)
         {
             var sar = _parabolicSar.Find(tradingDate);
-            tradingCase.AddNote(0, System.Text.Json.JsonSerializer.Serialize(sar));
             if (sar is null || sar.Sar is null)
             {
                 return 0;

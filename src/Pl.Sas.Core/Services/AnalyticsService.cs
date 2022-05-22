@@ -544,7 +544,7 @@ namespace Pl.Sas.Core.Services
                 _logger.LogWarning("MarketSentimentAnalyticsAsync null data key");
                 return;
             }
-            var indexPrices = await _marketData.GetChartPricesAsync(schedule.DataKey, "D", DateTime.Now.Date.AddDays(512));
+            var indexPrices = await _marketData.GetChartPricesAsync(schedule.DataKey, "D", DateTime.Now.Date.AddDays(-512));
             if (indexPrices.Count < 5)
             {
                 _logger.LogWarning("Chỉ số {DataKey} không được phân tích tâm lý do không đủ dữ liệu để phân tích.", schedule.DataKey);

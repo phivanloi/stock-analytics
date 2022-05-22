@@ -66,7 +66,7 @@ namespace Pl.Sas.Core.Services
 
             if (indicatorSets.Count > 1)
             {
-                if (chartPrices[0].ClosePrice > indicatorSets[chartPrices[0].DatePath].Values[$"ema-5"])
+                if (chartPrices[^1].ClosePrice > indicatorSets[chartPrices[^1].DatePath].Values[$"ema-5"])
                 {
                     note += "Chỉ số trên đường ema 5. ";
                     subScore++;
@@ -76,7 +76,7 @@ namespace Pl.Sas.Core.Services
                     note += "Chỉ số dưới đường ema 5. ";
                     subScore--;
                 }
-                if (chartPrices[0].ClosePrice > indicatorSets[chartPrices[0].DatePath].Values[$"ema-10"])
+                if (chartPrices[^1].ClosePrice > indicatorSets[chartPrices[^1].DatePath].Values[$"ema-10"])
                 {
                     note += "Chỉ số trên đường ema 10. ";
                     subScore++;
@@ -86,7 +86,7 @@ namespace Pl.Sas.Core.Services
                     note += "Chỉ số dưới đường ema 10. ";
                     subScore--;
                 }
-                if (chartPrices[0].ClosePrice > indicatorSets[chartPrices[0].DatePath].Values[$"ema-20"])
+                if (chartPrices[^1].ClosePrice > indicatorSets[chartPrices[^1].DatePath].Values[$"ema-20"])
                 {
                     note += "Chỉ số trên đường ema 20. ";
                     subScore++;
@@ -96,7 +96,7 @@ namespace Pl.Sas.Core.Services
                     note += "Chỉ số dưới đường ema 20. ";
                     subScore--;
                 }
-                if (chartPrices[0].ClosePrice > indicatorSets[chartPrices[0].DatePath].Values[$"ema-50"])
+                if (chartPrices[^1].ClosePrice > indicatorSets[chartPrices[^1].DatePath].Values[$"ema-50"])
                 {
                     note += "Chỉ số trên đường ema 50. ";
                     subScore++;
@@ -106,7 +106,7 @@ namespace Pl.Sas.Core.Services
                     note += "Chỉ số dưới đường ema 50. ";
                     subScore--;
                 }
-                if (chartPrices[0].ClosePrice > indicatorSets[chartPrices[0].DatePath].Values[$"ema-100"])
+                if (chartPrices[^1].ClosePrice > indicatorSets[chartPrices[^1].DatePath].Values[$"ema-100"])
                 {
                     note += "Chỉ số trên đường ema 100. ";
                     subScore++;
