@@ -148,13 +148,11 @@ namespace Pl.Sas.Core.Entities
         private static DateTime RealtimeSchedule(DateTime baseTime)
         {
             var random = new Random();
-            return baseTime.AddSeconds(random.Next(100, 150));
-
-            //if (DateTime.Now.Hour > 9 && DateTime.Now.Hour < 15)
-            //{
-            //    return baseTime.AddSeconds(random.Next(100, 150));
-            //}
-            //return baseTime.Date.AddHours(8).AddMinutes(random.Next(50, 60));
+            if (DateTime.Now.Hour > 9 && DateTime.Now.Hour < 15 && DateTime.Now.DayOfWeek != DayOfWeek.Sunday && DateTime.Now.DayOfWeek != DayOfWeek.Saturday)
+            {
+                return baseTime.AddSeconds(random.Next(100, 150));
+            }
+            return baseTime.Date.AddHours(8).AddMinutes(random.Next(50, 60));
         }
     }
 }

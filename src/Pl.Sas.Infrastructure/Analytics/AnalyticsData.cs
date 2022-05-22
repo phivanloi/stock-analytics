@@ -12,14 +12,10 @@ namespace Pl.Sas.Infrastructure.Analytics
     public class AnalyticsData : IAnalyticsData
     {
         private readonly AnalyticsDbContext _analyticsDbContext;
-        private readonly IMemoryCacheService _memoryCacheService;
 
-        public AnalyticsData(
-            IMemoryCacheService memoryCacheService,
-            AnalyticsDbContext analyticsDbContext)
+        public AnalyticsData(AnalyticsDbContext analyticsDbContext)
         {
             _analyticsDbContext = analyticsDbContext;
-            _memoryCacheService = memoryCacheService;
         }
 
         public virtual async Task<bool> SaveTestTradingResultAsync(TradingResult tradingResult)
@@ -65,22 +61,14 @@ namespace Pl.Sas.Infrastructure.Analytics
             return await _analyticsDbContext.SaveChangesAsync() > 0;
         }
 
-        public virtual async Task<AnalyticsResult?> CacheGetAnalyticsResultAsync(string symbol)
+        public virtual async Task<AnalyticsResult?> GetAnalyticsResultAsync(string symbol)
         {
-            var cacheKey = $"{Constants.AnalyticsResultCachePrefix}-SM{symbol}";
-            return await _memoryCacheService.GetOrCreateAsync(cacheKey, async () =>
-            {
-                return await _analyticsDbContext.AnalyticsResults.FirstOrDefaultAsync(q => q.Symbol == symbol);
-            }, Constants.DefaultCacheTime * 60 * 24);
+            return await _analyticsDbContext.AnalyticsResults.FirstOrDefaultAsync(q => q.Symbol == symbol);
         }
 
-        public virtual async Task<List<TradingResult>> CacheGetTradingResultAsync(string symbol)
+        public virtual async Task<List<TradingResult>> GetTradingResultAsync(string symbol)
         {
-            var cacheKey = $"{Constants.TradingResultCachePrefix}-SM{symbol}";
-            return await _memoryCacheService.GetOrCreateAsync(cacheKey, async () =>
-            {
-                return await _analyticsDbContext.TradingResults.Where(q => q.Symbol == symbol).ToListAsync();
-            }, Constants.DefaultCacheTime * 60 * 24);
+            return await _analyticsDbContext.TradingResults.Where(q => q.Symbol == symbol).ToListAsync();
         }
 
         public virtual async Task<bool> SaveMacroeconomicsScoreAsync(string symbol, int marketScore, byte[] marketNote)

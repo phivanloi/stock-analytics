@@ -79,11 +79,11 @@ namespace Pl.Sas.WebDashboard.Controllers
 
         public async Task<IActionResult> StockDetailsAsync(string symbol)
         {
-            var stockTask = _marketData.CacheGetStockByCodeAsync(symbol);
-            var analyticsResultTask = _analyticsData.CacheGetAnalyticsResultAsync(symbol);
+            var stockTask = _marketData.GetStockByCode(symbol);
+            var analyticsResultTask = _analyticsData.GetAnalyticsResultAsync(symbol);
             var allStockPricesTask = _marketData.CacheGetAllStockPricesAsync(symbol);
-            var companyTask = _marketData.CacheGetCompanyByCodeAsync(symbol);
-            var tradingResultsTask = _analyticsData.CacheGetTradingResultAsync(symbol);
+            var companyTask = _marketData.GetCompanyAsync(symbol);
+            var tradingResultsTask = _analyticsData.GetTradingResultAsync(symbol);
             var stock = await stockTask;
             if (stock is null)
             {

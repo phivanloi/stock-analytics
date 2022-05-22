@@ -137,7 +137,7 @@ namespace Pl.Sas.Core.Services
             var score = 0;
             var companyValueNotes = new List<AnalyticsNote>();
 
-            var companies = await _marketData.CacheGetCompaniesAsync();
+            var companies = await _marketData.GetCompaniesAsync();
             var companiesSameIndustries = companies.Where(q => q.SubsectorCode == company.SubsectorCode).ToList();
             var financialIndicators = await _marketData.CacheGetFinancialIndicatorByIndustriesAsync(company.SubsectorCode, companiesSameIndustries, 5);
             var fiinEvaluates = await _marketData.GetFiinEvaluatedAsync(symbol);
@@ -224,7 +224,7 @@ namespace Pl.Sas.Core.Services
             var score = 0;
             var companyGrowthNotes = new List<AnalyticsNote>();
 
-            var companies = await _marketData.CacheGetCompaniesAsync();
+            var companies = await _marketData.GetCompaniesAsync();
             var companiesSameIndustries = companies.Where(q => q.SubsectorCode == company.SubsectorCode).ToList();
             var financialIndicators = await _marketData.CacheGetFinancialIndicatorByIndustriesAsync(company.SubsectorCode, companiesSameIndustries, 5);
             var financialGrowths = await _marketData.GetFinancialGrowthsAsync(company.Symbol);
@@ -576,7 +576,7 @@ namespace Pl.Sas.Core.Services
             foreach (var industry in industries)
             {
                 var notes = new List<AnalyticsNote>();
-                var companies = await _marketData.CacheGetCompaniesAsync(industry.Code);
+                var companies = await _marketData.GetCompaniesAsync(industry.Code);
                 foreach (var company in companies)
                 {
                     var stockPrices = await _marketData.GetAnalyticsTopStockPriceAsync(company.Symbol, 35);

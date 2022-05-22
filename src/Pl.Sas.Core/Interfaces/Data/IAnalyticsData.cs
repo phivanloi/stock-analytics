@@ -20,7 +20,7 @@ namespace Pl.Sas.Core.Interfaces
         /// </summary>
         /// <param name="symbol">Mã chứng khoán</param>
         /// <returns>TradingResult</returns>
-        Task<List<TradingResult>> CacheGetTradingResultAsync(string symbol);
+        Task<List<TradingResult>> GetTradingResultAsync(string symbol);
 
         /// <summary>
         /// Lấy toàn bộ phân tích ngành
@@ -119,6 +119,6 @@ namespace Pl.Sas.Core.Interfaces
         /// </summary>
         /// <param name="symbol">Mã chứng khoán</param>
         /// <returns>AnalyticsResult</returns>
-        Task<AnalyticsResult?> CacheGetAnalyticsResultAsync(string symbol);
+        Task<AnalyticsResult?> GetAnalyticsResultAsync(string symbol);
     }
 }

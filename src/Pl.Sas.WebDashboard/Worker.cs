@@ -1,6 +1,9 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Options;
 using Pl.Sas.Core;
 using Pl.Sas.Core.Interfaces;
+using Pl.Sas.Core.Services;
+using Pl.Sas.WebDashboard.RealtimeHub;
 
 namespace Pl.Sas.WebDashboard
 {
@@ -13,8 +16,10 @@ namespace Pl.Sas.WebDashboard
         private readonly AppSettings _appSettings;
         private readonly IWebDashboardQueueService _webDashboardQueueService;
         private readonly IMemoryUpdateService _memoryUpdateService;
+        private readonly IServiceProvider _serviceProvider;
 
         public Worker(
+            IServiceProvider serviceProvider,
             IMemoryUpdateService memoryUpdateService,
             IWebDashboardQueueService webDashboardQueueService,
             IOptions<AppSettings> optionsAppSettings,
@@ -24,6 +29,7 @@ namespace Pl.Sas.WebDashboard
             _logger = logger;
             _appSettings = optionsAppSettings.Value;
             _memoryUpdateService = memoryUpdateService;
+            _serviceProvider = serviceProvider;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -42,6 +48,26 @@ namespace Pl.Sas.WebDashboard
             _webDashboardQueueService.SubscribeUpdateMemoryTask((message) =>
             {
                 _memoryUpdateService.HandleUpdate(message);
+            });
+
+            _webDashboardQueueService.SubscribeViewUpdatedTask(async (message) =>
+            {
+                switch (message.Id)
+                {
+                    case "UpdateStockView":
+                        using (var scope = _serviceProvider.CreateScope())
+                        {
+                            var stockViewService = scope.ServiceProvider.GetRequiredService<StockViewService>();
+                            var stockRealtimeHub = scope.ServiceProvider.GetRequiredService<IHubContext<StockRealtimeHub>>();
+                            stockViewService.UpdateChangeStockView(message);
+                            await stockRealtimeHub.Clients.All.SendAsync("UpdateStockView");
+                        }
+                        break;
+
+                    default:
+                        _logger.LogWarning("ViewMessage id {Id}, don't match any function", message.Id);
+                        break;
+                }
             });
 
             return base.StartAsync(cancellationToken);
