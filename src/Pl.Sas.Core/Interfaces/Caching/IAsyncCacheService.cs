@@ -38,7 +38,7 @@
         /// <returns></returns>
         Task<DateTime> GetTime();
 
-        #endregion Get Method
+        #endregion
 
         #region Set Method
 
@@ -61,7 +61,7 @@
         /// <returns>Trả lại đối tượng TItem</returns>
         Task<TItem> SetValueAsync<TItem>(string key, TItem value, int time);
 
-        #endregion Set Method
+        #endregion
 
         #region Refresh Method
         /// <summary>
@@ -91,6 +91,6 @@
         /// </summary>
         Task ClearAsync();
 
-        #endregion Remove Method
+        #endregion
     }
 }

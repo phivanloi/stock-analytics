@@ -14,8 +14,14 @@ namespace Pl.Sas.Infrastructure.RabbitmqMessageQueue
         private readonly IConnectionFactory _connectionFactory;
         private readonly IConnection _connection;
 
-        private readonly IModel _workerChannel;
-        private readonly IBasicProperties _publishWorkerProperties;
+        private readonly IModel _downloadChannel;
+        private readonly IBasicProperties _publishDownloadProperties;
+
+        private readonly IModel _analyticsWorkerChannel;
+        private readonly IBasicProperties _publishAnalyticsWorkerProperties;
+
+        private readonly IModel _viewWorkerChannel;
+        private readonly IBasicProperties _publishViewWorkerProperties;
 
         public SchedulerQueueService(
             IZipHelper zipHelper,
@@ -29,22 +35,48 @@ namespace Pl.Sas.Infrastructure.RabbitmqMessageQueue
             };
             _connection = _connectionFactory.CreateConnection();
 
-            _workerChannel = _connection.CreateModel();
-            _workerChannel.QueueDeclare(queue: MessageQueueConstants.WorkerQueueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
-            _publishWorkerProperties = _workerChannel.CreateBasicProperties();
-            _publishWorkerProperties.Persistent = true;
+            _downloadChannel = _connection.CreateModel();
+            _downloadChannel.QueueDeclare(queue: MessageQueueConstants.DownloadQueueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
+            _publishDownloadProperties = _downloadChannel.CreateBasicProperties();
+            _publishDownloadProperties.Persistent = true;
+
+            _analyticsWorkerChannel = _connection.CreateModel();
+            _analyticsWorkerChannel.QueueDeclare(queue: MessageQueueConstants.AnalyticsQueueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
+            _publishAnalyticsWorkerProperties = _analyticsWorkerChannel.CreateBasicProperties();
+            _publishAnalyticsWorkerProperties.Persistent = true;
+
+            _viewWorkerChannel = _connection.CreateModel();
+            _viewWorkerChannel.QueueDeclare(queue: MessageQueueConstants.ViewWorkerQueueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
+            _publishViewWorkerProperties = _viewWorkerChannel.CreateBasicProperties();
+            _publishViewWorkerProperties.Persistent = true;
         }
 
-        public void PublishWorkerTask(QueueMessage queueMessage)
+        public virtual void PublishDownloadTask(QueueMessage queueMessage)
         {
             Guard.Against.Null(queueMessage, nameof(queueMessage));
             var body = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(queueMessage));
-            _workerChannel.BasicPublish(exchange: "", routingKey: MessageQueueConstants.WorkerQueueName, basicProperties: _publishWorkerProperties, body: body);
+            _downloadChannel.BasicPublish(exchange: "", routingKey: MessageQueueConstants.DownloadQueueName, basicProperties: _publishDownloadProperties, body: body);
+        }
+
+        public virtual void PublishViewWorkerTask(QueueMessage queueMessage)
+        {
+            Guard.Against.Null(queueMessage, nameof(queueMessage));
+            var body = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(queueMessage));
+            _viewWorkerChannel.BasicPublish(exchange: "", routingKey: MessageQueueConstants.ViewWorkerQueueName, basicProperties: _publishViewWorkerProperties, body: body);
+        }
+
+        public virtual void PublishAnalyticsWorkerTask(QueueMessage queueMessage)
+        {
+            Guard.Against.Null(queueMessage, nameof(queueMessage));
+            var body = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(queueMessage));
+            _analyticsWorkerChannel.BasicPublish(exchange: "", routingKey: MessageQueueConstants.AnalyticsQueueName, basicProperties: _publishAnalyticsWorkerProperties, body: body);
         }
 
         public virtual void Dispose()
         {
-            _workerChannel.Dispose();
+            _analyticsWorkerChannel.Dispose();
+            _viewWorkerChannel.Dispose();
+            _downloadChannel.Dispose();
             _connection.Dispose();
         }
     }

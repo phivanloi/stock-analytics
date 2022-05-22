@@ -1,0 +1,56 @@
+﻿@{
+    ViewData["Title"] = "Biểu đồ chỉ số";
+    ViewData["ActiveMenu"] = "bieudochiso";
+    var indexs = new Dictionary<string, string>() {
+        { "VNINDEX", "Thị trường sàn Hose" },
+        { "VN30", "Top 30 công ty hàng đầu sàn Hose" },
+        { "HNXINDEX", "Chỉ số sàn HNX" },
+        { "HNX30", "Top 30 công ty hàng đầu sàn Hnx" },
+        { "HNXUPCOMINDEX", "Chỉ số sàn Upcomindex" },
+        { "VNCOND", "Hàng tiêu dùng" },
+        { "VNCONS", "Hàng tiêu dùng thiết yếu" },
+        { "VNENE", "Năng lượng" },
+        { "VNFIN", "Tài chính" },
+        { "VNHEAL", "Chăm sóc sức khỏe" },
+        { "VNIND", "Công Nghiệp" },
+        { "VNIT", "Công nghệ thông tin" },
+        { "VNMAT", "Nguyên vật liệu" },
+        { "VNREAL", "Bất động sản" },
+        { "VNUTI", "Dịch vụ tiện tích" }
+    };
+}
+<section class="content" style="padding:10px; color:#e2e2e2">
+    <ul class="nav nav-tabs" role="tablist">
+        @foreach (var item in indexs)
+        {
+            <li class="nav-item @(item.Key == "VNINDEX" ? "active" : "")" title="@item.Value" role="presentation">
+                <a class="nav-link @(item.Key == "VNINDEX" ? "active" : "")" id="@item.Key.ToLower()-tab" data-toggle="tab" href="#@item.Key.ToLower()" role="tab" aria-controls="@item.Key.ToLower()" aria-selected="@(item.Key == "VNINDEX" ? "true" : "false")">@item.Key</a>
+            </li>
+        }
+    </ul>
+    <div class="tab-content">
+        @foreach (var item in indexs)
+        {
+            <div class="tab-pane fade @(item.Key == "VNINDEX" ? "show active" : "") " id="@item.Key.ToLower()" role="tabpanel" aria-labelledby="@item.Key.ToLower()-tab">
+                @if (item.Key == "VNINDEX")
+                {
+                    <iframe id="chart-@item.Key" src="https://iboard.ssi.com.vn/chart/?symbol=VNINDEX&language=vi&theme=dark" style="border:0; width:100%; min-height:550px" frameborder="0" allowfullscreen=""></iframe>
+                }
+                else
+                {
+                    <iframe id="chart-@item.Key" src="" style="border:0; width:100%; min-height:550px" frameborder="0" allowfullscreen=""></iframe>
+                }
+                <h4 class="mt-2">@item.Value</h4>
+            </div>
+        }
+    </div>
+</section>
+@section Scripts{
+    <script>
+        $('a[data-toggle="tab"]').on('shown.bs.tab', function (event) {
+            $('#chart-' + event.relatedTarget.innerText).prop('src', '');
+            var insertUrl = 'https://iboard.ssi.com.vn/chart/?symbol=' + event.target.innerText + '&language=vi&theme=dark';
+            $('#chart-' + event.target.innerText).prop('src', insertUrl);
+        })
+    </script>
+}

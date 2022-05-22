@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Pl.Sas.Infrastructure.Data;
+using Pl.Sas.Infrastructure.Market;
 
 #nullable disable
 
@@ -21,6 +21,57 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
+
+            modelBuilder.Entity("Pl.Sas.Core.Entities.ChartPrice", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(22)
+                        .HasColumnType("nvarchar(22)");
+
+                    b.Property<float>("ClosePrice")
+                        .HasColumnType("real");
+
+                    b.Property<DateTime>("CreatedTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<float>("HighestPrice")
+                        .HasColumnType("real");
+
+                    b.Property<float>("LowestPrice")
+                        .HasColumnType("real");
+
+                    b.Property<float>("OpenPrice")
+                        .HasColumnType("real");
+
+                    b.Property<string>("Symbol")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<float>("TotalMatchVol")
+                        .HasColumnType("real");
+
+                    b.Property<DateTime>("TradingDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("nvarchar(8)");
+
+                    b.Property<DateTime>("UpdatedTime")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Symbol");
+
+                    b.HasIndex("TradingDate");
+
+                    b.HasIndex("Symbol", "Type", "TradingDate");
+
+                    b.ToTable("ChartPrices");
+                });
 
             modelBuilder.Entity("Pl.Sas.Core.Entities.Company", b =>
                 {
@@ -47,7 +98,7 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
-                    b.Property<byte[]>("CompanyProfileZip")
+                    b.Property<byte[]>("CompanyProfile")
                         .HasColumnType("varbinary(max)");
 
                     b.Property<DateTime>("CreatedTime")
@@ -119,10 +170,12 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
                         .HasColumnType("real");
 
                     b.Property<string>("Subsector")
+                        .IsRequired()
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("SubsectorCode")
+                        .IsRequired()
                         .HasMaxLength(22)
                         .HasColumnType("nvarchar(22)");
 
@@ -137,9 +190,6 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
 
                     b.Property<float>("TotalRevenue")
                         .HasColumnType("real");
-
-                    b.Property<int>("TtmType")
-                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedTime")
                         .HasColumnType("datetime2");
@@ -159,6 +209,9 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
 
                     b.Property<DateTime>("CreatedTime")
                         .HasColumnType("datetime2");
+
+                    b.Property<byte[]>("Description")
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<string>("EventCode")
                         .IsRequired()
@@ -209,9 +262,6 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
                     b.Property<float>("Value")
                         .HasColumnType("real");
 
-                    b.Property<byte[]>("ZipDescription")
-                        .HasColumnType("varbinary(max)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("EventCode");
@@ -221,7 +271,7 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
                     b.ToTable("CorporateActions");
                 });
 
-            modelBuilder.Entity("Pl.Sas.Core.Entities.FiinEvaluate", b =>
+            modelBuilder.Entity("Pl.Sas.Core.Entities.FiinEvaluated", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(22)
@@ -430,9 +480,6 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
                         .HasMaxLength(22)
                         .HasColumnType("nvarchar(22)");
 
-                    b.Property<bool>("Activated")
-                        .HasColumnType("bit");
-
                     b.Property<DateTime>("CreatedTime")
                         .HasColumnType("datetime2");
 
@@ -440,9 +487,6 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
                         .IsRequired()
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
-
-                    b.Property<int>("ManagementRank")
-                        .HasColumnType("int");
 
                     b.Property<string>("PositionLevel")
                         .HasMaxLength(128)
@@ -466,50 +510,6 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
                     b.HasIndex("Symbol");
 
                     b.ToTable("Leaderships");
-                });
-
-            modelBuilder.Entity("Pl.Sas.Core.Entities.Schedule", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasMaxLength(22)
-                        .HasColumnType("nvarchar(22)");
-
-                    b.Property<bool>("Activated")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("ActiveTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("CreatedTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("DataKey")
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
-                    b.Property<bool>("IsError")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
-
-                    b.Property<string>("OptionsJson")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedTime")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ActiveTime");
-
-                    b.ToTable("Schedules");
                 });
 
             modelBuilder.Entity("Pl.Sas.Core.Entities.Stock", b =>
@@ -575,11 +575,6 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
 
                     b.Property<DateTime>("CreatedTime")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("DatePath")
-                        .IsRequired()
-                        .HasMaxLength(8)
-                        .HasColumnType("nvarchar(8)");
 
                     b.Property<float>("FloorPrice")
                         .HasColumnType("real");
@@ -660,15 +655,11 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DatePath");
-
                     b.HasIndex("Symbol");
 
                     b.HasIndex("TradingDate");
 
                     b.HasIndex("Symbol", "TradingDate");
-
-                    b.HasIndex("Symbol", "TradingDate", "DatePath");
 
                     b.ToTable("StockPrices");
                 });
@@ -725,6 +716,36 @@ namespace Pl.Sas.Scheduler.Migrations.MarketDb
                     b.HasIndex("Symbol", "Analyst", "ReportDate");
 
                     b.ToTable("StockRecommendations");
+                });
+
+            modelBuilder.Entity("Pl.Sas.Core.Entities.StockTransaction", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(22)
+                        .HasColumnType("nvarchar(22)");
+
+                    b.Property<DateTime>("CreatedTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Symbol")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<DateTime>("TradingDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("UpdatedTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<byte[]>("ZipDetails")
+                        .HasColumnType("varbinary(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Symbol", "TradingDate");
+
+                    b.ToTable("StockTransactions");
                 });
 
             modelBuilder.Entity("Pl.Sas.Core.Entities.VndStockScore", b =>

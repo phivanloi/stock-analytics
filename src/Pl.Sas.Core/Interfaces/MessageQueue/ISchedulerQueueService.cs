@@ -8,7 +8,19 @@ namespace Pl.Sas.Core.Interfaces
         /// Gửi một nhiệm vụ cho worker task
         /// </summary>
         /// <param name="queueMessage">Thông tin nhiệm vụ</param>
-        void PublishWorkerTask(QueueMessage queueMessage);
+        void PublishDownloadTask(QueueMessage queueMessage);
+
+        /// <summary>
+        /// Gửi một nhiệm vụ phân tích chứng khoán vào message queue
+        /// </summary>
+        /// <param name="queueMessage">Nội dung message</param>
+        void PublishAnalyticsWorkerTask(QueueMessage queueMessage);
+
+        /// <summary>
+        /// Xứ lý phần phân tích hiển thị và phần thông báo
+        /// </summary>
+        /// <param name="queueMessage">Nội dung message</param>
+        void PublishViewWorkerTask(QueueMessage queueMessage);
 
         /// <summary>
         /// Thu hồi tài nguyên

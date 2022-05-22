@@ -17,8 +17,11 @@ namespace Pl.Sas.Infrastructure.RabbitmqMessageQueue
         private readonly IConnection _connection;
         private readonly ILogger<WorkerQueueService> _logger;
 
-        private readonly IModel _workerChannel;
+        private readonly IModel _subscribeDownloadChannel;
+        private readonly IModel _subscribeAnalyticsChannel;
+        private readonly IModel _subscribeBuildViewChannel;
         private readonly IModel _broadcastUpdateMemoryChannel;
+        private readonly IModel _broadcastViewUpdatedChannel;
 
         public WorkerQueueService(
             ILogger<WorkerQueueService> logger,
@@ -34,16 +37,25 @@ namespace Pl.Sas.Infrastructure.RabbitmqMessageQueue
             };
             _connection = _connectionFactory.CreateConnection();
 
-            _workerChannel = _connection.CreateModel();
-            _workerChannel.QueueDeclare(queue: MessageQueueConstants.WorkerQueueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
+            _subscribeDownloadChannel = _connection.CreateModel();
+            _subscribeDownloadChannel.QueueDeclare(queue: MessageQueueConstants.DownloadQueueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
+
+            _subscribeAnalyticsChannel = _connection.CreateModel();
+            _subscribeAnalyticsChannel.QueueDeclare(queue: MessageQueueConstants.AnalyticsQueueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
+
+            _subscribeBuildViewChannel = _connection.CreateModel();
+            _subscribeBuildViewChannel.QueueDeclare(queue: MessageQueueConstants.ViewWorkerQueueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
 
             _broadcastUpdateMemoryChannel = _connection.CreateModel();
             _broadcastUpdateMemoryChannel.ExchangeDeclare(exchange: MessageQueueConstants.UpdateMemoryExchangeName, type: ExchangeType.Fanout);
+
+            _broadcastViewUpdatedChannel = _connection.CreateModel();
+            _broadcastViewUpdatedChannel.ExchangeDeclare(exchange: MessageQueueConstants.ViewUpdatedExchangeName, type: ExchangeType.Fanout);
         }
 
-        public virtual void SubscribeWorkerTask(Func<QueueMessage, Task> func)
+        public virtual void SubscribeDownloadTask(Func<QueueMessage, Task> func)
         {
-            var consumer = new EventingBasicConsumer(_workerChannel);
+            var consumer = new EventingBasicConsumer(_subscribeDownloadChannel);
             consumer.Received += async (model, ea) =>
             {
                 try
@@ -54,15 +66,63 @@ namespace Pl.Sas.Infrastructure.RabbitmqMessageQueue
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Run SubscribeWorkerTask error");
+                    _logger.LogError(ex, "Run SubscribeDownloadTask error");
                 }
                 finally
                 {
-                    _workerChannel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
+                    _subscribeDownloadChannel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
                 }
             };
-            _workerChannel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
-            _workerChannel.BasicConsume(queue: MessageQueueConstants.WorkerQueueName, autoAck: false, consumer: consumer);
+            _subscribeDownloadChannel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
+            _subscribeDownloadChannel.BasicConsume(queue: MessageQueueConstants.DownloadQueueName, autoAck: false, consumer: consumer);
+        }
+
+        public virtual void SubscribeAnalyticsTask(Func<QueueMessage, Task> func)
+        {
+            var consumer = new EventingBasicConsumer(_subscribeDownloadChannel);
+            consumer.Received += async (model, ea) =>
+            {
+                try
+                {
+                    var message = JsonSerializer.Deserialize<QueueMessage>(_zipHelper.UnZipByte(ea.Body.ToArray()));
+                    Guard.Against.Null(message, nameof(message));
+                    await func(message);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Run SubscribeAnalyticsTask error");
+                }
+                finally
+                {
+                    _subscribeDownloadChannel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
+                }
+            };
+            _subscribeDownloadChannel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
+            _subscribeDownloadChannel.BasicConsume(queue: MessageQueueConstants.AnalyticsQueueName, autoAck: false, consumer: consumer);
+        }
+
+        public virtual void SubscribeBuildViewTask(Func<QueueMessage, Task> func)
+        {
+            var consumer = new EventingBasicConsumer(_subscribeBuildViewChannel);
+            consumer.Received += async (model, ea) =>
+            {
+                try
+                {
+                    var message = JsonSerializer.Deserialize<QueueMessage>(_zipHelper.UnZipByte(ea.Body.ToArray()));
+                    Guard.Against.Null(message, nameof(message));
+                    await func(message);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Run SubscribeBuildViewTask error");
+                }
+                finally
+                {
+                    _subscribeBuildViewChannel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
+                }
+            };
+            _subscribeBuildViewChannel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
+            _subscribeBuildViewChannel.BasicConsume(queue: MessageQueueConstants.ViewWorkerQueueName, autoAck: false, consumer: consumer);
         }
 
         public virtual void BroadcastUpdateMemoryTask(QueueMessage queueMessage)
@@ -72,10 +132,20 @@ namespace Pl.Sas.Infrastructure.RabbitmqMessageQueue
             _broadcastUpdateMemoryChannel.BasicPublish(exchange: MessageQueueConstants.UpdateMemoryExchangeName, routingKey: "", basicProperties: null, body: body);
         }
 
+        public virtual void BroadcastViewUpdatedTask(QueueMessage queueMessage)
+        {
+            Guard.Against.Null(queueMessage, nameof(queueMessage));
+            var body = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(queueMessage));
+            _broadcastViewUpdatedChannel.BasicPublish(exchange: MessageQueueConstants.ViewUpdatedExchangeName, routingKey: "", basicProperties: null, body: body);
+        }
+
         public virtual void Dispose()
         {
-            _workerChannel.Dispose();
+            _subscribeDownloadChannel.Dispose();
+            _subscribeAnalyticsChannel.Dispose();
+            _subscribeBuildViewChannel.Dispose();
             _broadcastUpdateMemoryChannel.Dispose();
+            _broadcastViewUpdatedChannel.Dispose();
             _connection.Dispose();
         }
     }

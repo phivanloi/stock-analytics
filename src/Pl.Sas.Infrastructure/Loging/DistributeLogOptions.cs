@@ -12,7 +12,7 @@ namespace Pl.Sas.Infrastructure.Loging
         /// <summary>
         /// finlter log by specify logleves
         /// </summary>
-        public HashSet<LogLevel> FilterLogLevels { get; } = new HashSet<LogLevel>() { LogLevel.Information, LogLevel.Trace, LogLevel.Debug };
+        public HashSet<LogLevel> FilterLogLevels { get; set; } = new HashSet<LogLevel>() { LogLevel.Information, LogLevel.Trace, LogLevel.Debug };
 
         /// <summary>
         /// finlter log by message contains

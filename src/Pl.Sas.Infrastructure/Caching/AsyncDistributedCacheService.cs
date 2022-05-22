@@ -31,8 +31,7 @@ namespace Pl.Sas.Infrastructure.Caching
             _zipHelper = zipHelper;
         }
 
-        #endregion Properties And Constructor
-
+        #endregion
         #region Get Method
 
         public virtual async Task<TItem?> GetByKeyAsync<TItem>(string key)
@@ -82,8 +81,7 @@ namespace Pl.Sas.Infrastructure.Caching
             throw new Exception("Can't get redis endPoint to get server time.");
         }
 
-        #endregion Get Method
-
+        #endregion
         #region Set Method
 
         public virtual async Task<TItem> SetValueAsync<TItem>(string key, TItem value)
@@ -99,15 +97,13 @@ namespace Pl.Sas.Infrastructure.Caching
             return value;
         }
 
-        #endregion Set Method
-
+        #endregion
         #region Refresh Method
         public virtual async Task RefreshAsync(string key)
         {
             await _distributedCache.RefreshAsync(key);
         }
         #endregion
-
         #region Remove Method
 
         public virtual async Task RemoveAsync(string key)
@@ -138,6 +134,6 @@ namespace Pl.Sas.Infrastructure.Caching
             }
         }
 
-        #endregion Remove Method
+        #endregion
     }
 }

@@ -4,13 +4,21 @@
 	dotnet tool update --global dotnet-ef
 	dotnet add package Microsoft.EntityFrameworkCore.Design
 
-- Tạo db migrations cho db stock
+- Tạo db migrations cho system db
+	dotnet ef migrations add InitialCreate --context SystemDbContext --output-dir "Migrations\SystemDb"
+	dotnet ef migrations remove --context SystemDbContext
+
+- Tạo db migrations cho db narket
 	dotnet ef migrations add InitialCreate --context MarketDbContext --output-dir "Migrations\MarketDb"
 	dotnet ef migrations remove --context MarketDbContext
 
 - Tạo db migrations cho db analytics
 	dotnet ef migrations add InitialCreate --context AnalyticsDbContext --output-dir "Migrations\AnalyticsDb"
 	dotnet ef migrations remove --context AnalyticsDbContext
+
+- Tạo db migrations cho db identity
+	dotnet ef migrations add InitialCreate --context IdentityDbContext --output-dir "Migrations\IdentityDb"
+	dotnet ef migrations remove --context IdentityDbContext
 
 - Tạo db migrations cho db logger
 	dotnet ef migrations add InitialCreate --context LogDbContext --output-dir "Data\Migrations"
@@ -118,6 +126,3 @@
 		database_id = DB_ID()
 	GROUP BY 
 		database_id
-
-
-https://iboard.ssi.com.vn/dchart/api/history?resolution=D&symbol=VN30&from=1506773203&to=1650901263

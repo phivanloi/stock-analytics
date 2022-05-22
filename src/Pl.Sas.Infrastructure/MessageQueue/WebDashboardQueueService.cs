@@ -18,6 +18,7 @@ namespace Pl.Sas.Infrastructure.RabbitmqMessageQueue
         private readonly ILogger<WebDashboardQueueService> _logger;
 
         private readonly IModel _subscribeUpdateMemoryChannel;
+        private readonly IModel _subscribeViewChannel;
 
         public WebDashboardQueueService(
             ILogger<WebDashboardQueueService> logger,
@@ -35,6 +36,9 @@ namespace Pl.Sas.Infrastructure.RabbitmqMessageQueue
 
             _subscribeUpdateMemoryChannel = _connection.CreateModel();
             _subscribeUpdateMemoryChannel.ExchangeDeclare(exchange: MessageQueueConstants.UpdateMemoryExchangeName, type: ExchangeType.Fanout);
+
+            _subscribeViewChannel = _connection.CreateModel();
+            _subscribeViewChannel.ExchangeDeclare(exchange: MessageQueueConstants.ViewUpdatedExchangeName, type: ExchangeType.Fanout);
         }
 
         public virtual void SubscribeUpdateMemoryTask(Action<QueueMessage> func)
@@ -60,6 +64,31 @@ namespace Pl.Sas.Infrastructure.RabbitmqMessageQueue
                 }
             };
             _subscribeUpdateMemoryChannel.BasicConsume(queue: queueName, autoAck: false, consumer: consumer);
+        }
+
+        public virtual void SubscribeViewUpdatedTask(Action<QueueMessage> func)
+        {
+            var queueName = _subscribeViewChannel.QueueDeclare().QueueName;
+            _subscribeViewChannel.QueueBind(queue: queueName, exchange: MessageQueueConstants.ViewUpdatedExchangeName, routingKey: "");
+            var consumer = new EventingBasicConsumer(_subscribeViewChannel);
+            consumer.Received += (model, ea) =>
+            {
+                try
+                {
+                    var message = JsonSerializer.Deserialize<QueueMessage>(_zipHelper.UnZipByte(ea.Body.ToArray()));
+                    Guard.Against.Null(message, nameof(message));
+                    func(message);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Run SubscribeStockViewTask error");
+                }
+                finally
+                {
+                    _subscribeViewChannel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
+                }
+            };
+            _subscribeViewChannel.BasicConsume(queue: queueName, autoAck: false, consumer: consumer);
         }
 
         public virtual void Dispose()

@@ -12,19 +12,15 @@
 		<Company>NganChiCorp</Company>
 		<Description>Web dashboard</Description>
 		<UserSecretsId>5704e2b4-9ef3-4b17-b540-ec7d4b952547</UserSecretsId>
-		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-		<DockerfileContext>..\..</DockerfileContext>
-		<DockerComposeProjectPath>..\..\docker-compose.dcproj</DockerComposeProjectPath>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="6.0.2" />
 		<PackageReference Include="AspNetCore.HealthChecks.Rabbitmq" Version="6.0.2" />
-		<PackageReference Include="AspNetCore.HealthChecks.Redis" Version="6.0.3" />
+		<PackageReference Include="AspNetCore.HealthChecks.Redis" Version="6.0.4" />
 		<PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="6.0.4" />
-		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.15.1" />
 		<PackageReference Include="Microsoft.AspNetCore.HealthChecks" Version="1.0.0" />
-		<PackageReference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="6.0.4" />
+		<PackageReference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="6.0.5" />
 	</ItemGroup>
 
 	<ItemGroup>

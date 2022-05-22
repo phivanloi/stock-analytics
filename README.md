@@ -55,4 +55,3 @@ Pl stock prediction system is a  simple crawler stock data and simple stock, com
 - Log => <http://42.112.27.31:3404> Hoặc <http://log.vuigreens.com>
 - Web status => <http://42.112.27.31:3409> Hoặc <http://status.vuigreens.com>
 - Web dashboard => <http://103.121.89.235:3406> Hoặc <http://sas.vuigreens.com>
-

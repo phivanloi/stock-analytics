@@ -203,7 +203,7 @@ namespace Pl.Sas.Core
         /// <param name="collection">Tập hợp các item</param>
         /// <param name="valueCheck">Cách check</param>
         /// <returns></returns>
-        public static (int EqualCount, int GrowCount, int DropCount) GetTrendCountTopDown<T>(this List<T> collection, Func<T, decimal> valueCheck)
+        public static (int EqualCount, int GrowCount, int DropCount) GetTrendCountTopDown<T>(this List<T> collection, Func<T, float> valueCheck)
         {
             var equalCount = 0;
             var growCount = 0;
@@ -261,37 +261,6 @@ namespace Pl.Sas.Core
         }
 
         /// <summary>
-        /// Lấy ngày giao dịch cuói cùng không phải ngày giao dịch hiện tại
-        /// </summary>
-        /// <returns>DateTime</returns>
-        public static DateTime GetLastTradingDate()
-        {
-            if (DayOfWeek.Sunday == DateTime.Now.DayOfWeek)
-            {
-                return DateTime.Now.Date.AddDays(-3);
-            }
-            if (DayOfWeek.Monday == DateTime.Now.DayOfWeek)
-            {
-                return DateTime.Now.Date.AddDays(-4);
-            }
-            return DateTime.Now.Date.AddDays(-2);
-        }
-
-        /// <summary>
-        /// Lấy chuỗi đường dẫn cho ngày giao dịch hiện tại
-        /// </summary>
-        /// <param name="value">Giá trị cần lấy nếu null thì lấy của hàm GetTradingDate</param>
-        /// <returns></returns>
-        public static string GetTradingDatePath(DateTime? value = null) => (value ?? GetTradingDate()).ToString("ddMMyyyy");
-
-        /// <summary>
-        /// Lấy chuỗi đường dẫn cho ngày giao dịch cuối cùng không phải ngày hiện tại
-        /// </summary>
-        /// <param name="value">Giá trị cần lấy nếu null thì lấy của hàm GetLastTradingDate</param>
-        /// <returns>string</returns>
-        public static string GetLastTradingDatePath(DateTime? value = null) => (value ?? GetLastTradingDate()).ToString("ddMMyyyy");
-
-        /// <summary>
         /// Lấy tên phương pháp đầu tư
         /// </summary>
         /// <param name="principle">Id phương pháp</param>
@@ -300,11 +269,11 @@ namespace Pl.Sas.Core
         {
             return principle switch
             {
-                0 => "Mua và nắm giữ",
-                1 => "Dài hạn",
-                2 => "Trung hạn",
-                3 => "Ngắn hạn",
-                4 => "Thử nghiệm",
+                0 => "Thử nghiệm",
+                1 => "Mua và nắm giữ",
+                2 => "Dài hạn",
+                3 => "Phương pháp macd",
+                4 => "Phương pháp sar",
                 _ => "Dài hạn",
             };
         }
@@ -315,10 +284,10 @@ namespace Pl.Sas.Core
         /// <param name="pointLadder">Danh sách tham điểm cần check đi kèm điểm cộng</param>
         /// <param name="checker">Phương pháp kiểm tra</param>
         /// <returns>Score, MaxValue</returns>
-        public static (int Score, decimal MaxValue) GetPointLadder(Dictionary<decimal, int> pointLadder, Func<decimal, bool> checker)
+        public static (int Score, float MaxValue) GetPointLadder(Dictionary<float, int> pointLadder, Func<float, bool> checker)
         {
             var score = 0;
-            var maxValue = 0M;
+            var maxValue = 0F;
             foreach (var item in pointLadder)
             {
                 if (checker(item.Key))
@@ -383,7 +352,7 @@ namespace Pl.Sas.Core
         {
             if (exchange.Equals("HOSE", StringComparison.InvariantCultureIgnoreCase))
             {
-                return "Vnindex";
+                return "VNINDEX";
             }
             if (exchange.Equals("HNX", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -391,9 +360,90 @@ namespace Pl.Sas.Core
             }
             if (exchange.Equals("Upcom", StringComparison.InvariantCultureIgnoreCase))
             {
-                return "Upcom";
+                return "UPCOM";
             }
-            return "Vnindex";
+            return "VNINDEX";
+        }
+
+        /// <summary>
+        /// hàm kiểm tra sự tăng giảm và tính % tăng trưởng một tập hợp phần tử, hàm chạy từ phần tử đẩu đến phần tử cuối cùng
+        /// </summary>
+        /// <typeparam name="T">Loại phần tử</typeparam>
+        /// <param name="collection">Tập hợp phần tử</param>
+        /// <param name="valueCheck">trường dữ liệu cần check</param>
+        /// <returns>
+        /// <para>EqualCount số điểm bằng nhau từ phần tử trước so với phần từ sau</para>
+        /// <para>IncreaseCount số điểm tăng thêm từ phần tử trước so với phần từ sau</para>
+        /// <para>ReductionCount sổ điểm giảm đitừ phần tử trước so với phần từ sau</para>
+        /// <para>ConsecutiveEqualCount số điểm bằng nhau liên tục từ lần so đầu tiên</para>
+        /// <para>ConsecutiveGrowCount số điểm tăng liên tục từ lần so đầu tiên</para>
+        /// <para>ConsecutiveDropCount số điểm giảm liên tục từ lần so đầu tiên</para>
+        /// <para>Percents Phàn trăm tăng giảm</para>
+        /// </returns>
+        public static (int EqualCount, int IncreaseCount, int ReductionCount, int ConsecutiveEqualCount, int ConsecutiveGrowCount, int ConsecutiveDropCount, List<float> Percents) GetFluctuationsTopDown<T>
+            (this List<T> collection, Func<T, float> valueCheck)
+        {
+            var equalCount = 0;
+            var increaseCount = 0;
+            var reductionCount = 0;
+            var fistEqualCount = 0;
+            var fistGrowCount = 0;
+            var fistDropCount = 0;
+            var percents = new List<float>();
+            var checkCount = collection.Count;
+            for (int i = 0; i < checkCount; i++)
+            {
+                if ((i + 1) >= checkCount)
+                {
+                    break;
+                }
+
+                if (valueCheck(collection[i + 1]) != 0)
+                {
+                    percents.Add(valueCheck(collection[i]).GetPercent(valueCheck(collection[i + 1])));
+                }
+                else
+                {
+                    if (valueCheck(collection[i]) > 0)
+                    {
+                        percents.Add(100);
+                    }
+                    else if (valueCheck(collection[i]) == 0)
+                    {
+                        percents.Add(0);
+                    }
+                    else
+                    {
+                        percents.Add(-100);
+                    }
+                }
+
+                if (valueCheck(collection[i]) > valueCheck(collection[i + 1]))
+                {
+                    increaseCount++;
+                    if (reductionCount == 0 && equalCount == 0)
+                    {
+                        fistGrowCount++;
+                    }
+                }
+                else if (valueCheck(collection[i]) < valueCheck(collection[i + 1]))
+                {
+                    reductionCount++;
+                    if (increaseCount == 0 && equalCount == 0)
+                    {
+                        fistDropCount++;
+                    }
+                }
+                else
+                {
+                    equalCount++;
+                    if (fistDropCount == 0 && increaseCount == 0)
+                    {
+                        fistEqualCount++;
+                    }
+                }
+            }
+            return (equalCount, increaseCount, reductionCount, fistEqualCount, fistGrowCount, fistDropCount, percents);
         }
     }
 }
