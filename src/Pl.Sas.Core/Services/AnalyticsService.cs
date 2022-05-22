@@ -490,7 +490,7 @@ namespace Pl.Sas.Core.Services
             #endregion
 
             #region Macd Trading
-            TradingCase macdCase = MacdTrading.Trading(tradingHistories);
+            var macdCase = MacdTrading.Trading(tradingHistories);
             var macdNote = $"Trading {Utilities.GetPrincipleName(3).ToLower()} {tradingHistories.Count} phiên từ ngày {tradingHistories[0].TradingDate:dd/MM/yyyy}, Lợi nhuận {macdCase.Profit(tradingHistories[^1].ClosePrice):0,0} ({macdCase.ProfitPercent(tradingHistories[^1].ClosePrice):0,0.00}%), thuế {macdCase.TotalTax:0,0}, xem chi tiết tại tab \"Lợi nhuận và đầu tư TN\".";
             var macdType = macdCase.FixedCapital < macdCase.Profit(tradingHistories[^1].ClosePrice) ? 1 : macdCase.FixedCapital == macdCase.Profit(tradingHistories[^1].ClosePrice) ? 0 : -1;
             stockNotes.Add(macdNote, 0, macdType, null);
@@ -510,14 +510,14 @@ namespace Pl.Sas.Core.Services
             #endregion
 
             #region Macd Trading
-            TradingCase sarCase = SarTrading.Trading(tradingHistories);
+            var sarCase = SarTrading.Trading(tradingHistories);
             var sarNote = $"Trading {Utilities.GetPrincipleName(3).ToLower()} {tradingHistories.Count} phiên từ ngày {tradingHistories[0].TradingDate:dd/MM/yyyy}, Lợi nhuận {sarCase.Profit(tradingHistories[^1].ClosePrice):0,0} ({sarCase.ProfitPercent(tradingHistories[^1].ClosePrice):0,0.00}%), thuế {sarCase.TotalTax:0,0}, xem chi tiết tại tab \"Lợi nhuận và đầu tư TN\".";
             var sarType = sarCase.FixedCapital < sarCase.Profit(tradingHistories[^1].ClosePrice) ? 1 : sarCase.FixedCapital == sarCase.Profit(tradingHistories[^1].ClosePrice) ? 0 : -1;
             stockNotes.Add(sarNote, 0, sarType, null);
             await _analyticsData.SaveTestTradingResultAsync(new()
             {
                 Symbol = symbol,
-                Principle = 1,
+                Principle = 4,
                 IsBuy = isBuy,
                 BuyPrice = sarCase.BuyPrice,
                 IsSell = isSell,

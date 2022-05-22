@@ -76,7 +76,7 @@ services:
       - ApplicationId=pl-worker
       - SERVICE_PORTS=80
     deploy:
-      replicas: 10
+      replicas: 5
     ports:
       - "80"
     restart: always

@@ -29,14 +29,14 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 Console.OutputEncoding = Encoding.UTF8;
                 using var scope = _serviceProvider.CreateScope();
                 _marketData = scope.ServiceProvider.GetRequiredService<IMarketData>();
-                DateTime fromDate = new(2018, 1, 1);
+                DateTime fromDate = new(2020, 1, 1);
                 DateTime toDate = new(2019, 10, 1);
-                var symbol = "LTG";
+                var symbol = "SMB";
                 var chartPrices = (await _marketData.GetChartPricesAsync(symbol)).OrderBy(q => q.TradingDate).ToList();
                 var tradingHistories = chartPrices.Where(q => q.TradingDate >= fromDate).OrderBy(q => q.TradingDate).ToList();
                 var startPrice = tradingHistories[0].ClosePrice;
                 var endPrice = tradingHistories[^1].ClosePrice;
-                var tradingCase = SarTrading.Trading(tradingHistories);
+                var tradingCase = MacdTrading.Trading(tradingHistories);
                 var lastChartPrice = tradingHistories[^1];
                 Console.WriteLine($"Quá trình đầu tư ngắn hạn:");
                 Console.WriteLine($"Bắt đầu--------------------------------");
