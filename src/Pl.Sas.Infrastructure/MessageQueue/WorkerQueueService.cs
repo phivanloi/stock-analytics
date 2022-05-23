@@ -158,7 +158,7 @@ namespace Pl.Sas.Infrastructure.RabbitmqMessageQueue
                 }
             };
             _subscribeRealtimeChannel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
-            _subscribeRealtimeChannel.BasicConsume(queue: MessageQueueConstants.ViewWorkerQueueName, autoAck: false, consumer: consumer);
+            _subscribeRealtimeChannel.BasicConsume(queue: MessageQueueConstants.RealtimeQueueName, autoAck: false, consumer: consumer);
         }
 
         public virtual void BroadcastUpdateMemoryTask(QueueMessage queueMessage)
