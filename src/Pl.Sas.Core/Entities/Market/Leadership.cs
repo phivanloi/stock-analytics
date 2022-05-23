@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Pl.Sas.Core.Entities
+﻿namespace Pl.Sas.Core.Entities
 {
     public class Leadership : BaseEntity
     {
@@ -23,25 +21,5 @@ namespace Pl.Sas.Core.Entities
         /// cấp vị trí
         /// </summary>
         public string? PositionLevel { get; set; }
-    }
-
-    public class LeadershipComparer : IEqualityComparer<Leadership>
-    {
-        public bool Equals([AllowNull] Leadership l1, [AllowNull] Leadership l2)
-        {
-            if (l1 is null && l2 is null)
-                return true;
-            else if (l1 is null || l2 is null)
-                return false;
-            else if (l1.FullName == l2.FullName && l1.PositionName == l2.PositionName)
-                return true;
-            else
-                return false;
-        }
-
-        public int GetHashCode([DisallowNull] Leadership obj)
-        {
-            return obj.GetHashCode();
-        }
     }
 }

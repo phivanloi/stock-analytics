@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Pl.Sas.Infrastructure.Analytics;
+using Pl.Sas.Scheduler.DataContexts;
 
 #nullable disable
 
@@ -17,7 +17,7 @@ namespace Pl.Sas.Scheduler.Migrations.AnalyticsDb
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.4")
+                .HasAnnotation("ProductVersion", "6.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
@@ -88,35 +88,32 @@ namespace Pl.Sas.Scheduler.Migrations.AnalyticsDb
                     b.ToTable("AnalyticsResults");
                 });
 
-            modelBuilder.Entity("Pl.Sas.Core.Entities.IndustryAnalytics", b =>
+            modelBuilder.Entity("Pl.Sas.Core.Entities.KeyValue", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(22)
                         .HasColumnType("nvarchar(22)");
 
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(16)
-                        .HasColumnType("nvarchar(16)");
-
                     b.Property<DateTime>("CreatedTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<float>("ManualScore")
-                        .HasColumnType("real");
-
-                    b.Property<byte[]>("Notes")
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<float>("Score")
-                        .HasColumnType("real");
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<DateTime>("UpdatedTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
-                    b.ToTable("IndustryAnalytics");
+                    b.HasIndex("Key");
+
+                    b.ToTable("KeyValues");
                 });
 
             modelBuilder.Entity("Pl.Sas.Core.Entities.TradingResult", b =>

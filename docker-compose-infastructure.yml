@@ -41,6 +41,10 @@ services:
     ports:
       - 3401:15672
       - 3402:5672
+    deploy:
+      resources:
+        limits:
+          memory: 2G
     restart: always
     networks:
       - pl-network
@@ -61,6 +65,10 @@ services:
       - redis_config:/usr/local/etc/redis
     ports:
       - 3403:6379
+    deploy:
+      resources:
+        limits:
+          memory: 2G
     restart: always
     networks:
       - pl-network
@@ -82,6 +90,10 @@ services:
     restart: always
     ports:
       - "3404:80"
+    deploy:
+      resources:
+        limits:
+          memory: 2G
     networks:
       - pl-network
     logging:

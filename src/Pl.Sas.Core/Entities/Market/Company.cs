@@ -68,7 +68,7 @@
         /// <summary>
         /// Sàn niêm yết
         /// </summary>
-        public string? Exchange { get; set; }
+        public string Exchange { get; set; } = null!;
 
         /// <summary>
         /// Giá chào sàn

@@ -1,16 +1,15 @@
 ﻿using Pl.Sas.Core.Entities;
 using Pl.Sas.Core.Entities.Security;
-using Pl.Sas.Infrastructure.Identity;
-using Pl.Sas.Infrastructure.System;
+using Pl.Sas.Scheduler.DataContexts;
 using System.Text.Json;
 
 namespace Pl.Sas.Scheduler
 {
     public static class Seeding
     {
-        public static IServiceProvider SystemDbSeed(this IServiceProvider serviceProvider, SystemDbContext systemDbContext)
+        public static IServiceProvider SchedulerSeed(this IServiceProvider serviceProvider, MarketDbContext marketDbContext)
         {
-            if (!systemDbContext.Schedules.Any())
+            if (!marketDbContext.Schedules.Any())
             {
                 var schedules = new List<Schedule>
                 {
@@ -39,8 +38,8 @@ namespace Pl.Sas.Scheduler
                         ActiveTime = DateTime.Now.Date.AddDays(1).AddHours(2).AddMinutes(50)
                     },
                 };
-                systemDbContext.Schedules.AddRange(schedules);
-                systemDbContext.SaveChanges();
+                marketDbContext.Schedules.AddRange(schedules);
+                marketDbContext.SaveChanges();
             }
             return serviceProvider;
         }
