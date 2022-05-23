@@ -1,4 +1,5 @@
-﻿using Dapper;
+﻿using Ardalis.GuardClauses;
+using Dapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -111,11 +112,12 @@ namespace Pl.Sas.Infrastructure.Data
             });
         }
 
-        public virtual async Task<IReadOnlyList<Schedule>> FindAllAsync(int type, string dataKey)
+        public virtual async Task<Schedule?> FindAsync(int type, string dataKey)
         {
+            Guard.Against.NullOrEmpty(dataKey, nameof(dataKey));
             var query = "SELECT * FROM Schedules WHERE DataKey = @dataKey AND Type = @type";
             using SqlConnection connection = new(_connectionStrings.MarketConnection);
-            return (await connection.QueryAsync<Schedule>(query, new { type, dataKey })).ToList();
+            return await connection.QueryFirstOrDefaultAsync<Schedule>(query, new { type, dataKey });
         }
 
         public virtual async Task<bool> UpdateAsync(Schedule schedule)

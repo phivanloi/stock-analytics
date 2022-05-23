@@ -75,7 +75,7 @@ namespace Pl.Sas.Core.Interfaces
         /// </summary>
         /// <param name="type">Loại lịch</param>
         /// <param name="dataKey">data key</param>
-        /// <returns>IReadOnlyList Schedule</returns>
-        Task<IReadOnlyList<Schedule>> FindAllAsync(int type, string dataKey);
+        /// <returns>Schedule Schedule</returns>
+        Task<Schedule?> FindAsync(int type, string dataKey);
     }
 }

@@ -99,7 +99,7 @@ builder.Services.AddSingleton<IChartPriceData, ChartPriceData>();
 
 builder.Services.AddSingleton<IMemoryUpdateService, MemoryUpdateService>();
 builder.Services.AddSingleton<IWebDashboardQueueService, WebDashboardQueueService>();
-builder.Services.AddScoped<StockViewService>();
+builder.Services.AddSingleton<StockViewService>();
 builder.Services.AddHostedService<Worker>();
 
 builder.Services.AddSignalR();

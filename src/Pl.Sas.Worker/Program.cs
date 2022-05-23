@@ -84,9 +84,10 @@ builder.Services.AddSingleton<IAnalyticsResultData, AnalyticsResultData>();
 builder.Services.AddSingleton<IChartPriceData, ChartPriceData>();
 
 builder.Services.AddSingleton<IWorkerQueueService, WorkerQueueService>();
-builder.Services.AddScoped<DownloadService>();
-builder.Services.AddScoped<AnalyticsService>();
-builder.Services.AddScoped<StockViewService>();
+builder.Services.AddSingleton<DownloadService>();
+builder.Services.AddSingleton<AnalyticsService>();
+builder.Services.AddSingleton<StockViewService>();
+builder.Services.AddSingleton<RealtimeService>();
 builder.Services.AddHostedService<Worker>();
 
 var app = builder.Build();

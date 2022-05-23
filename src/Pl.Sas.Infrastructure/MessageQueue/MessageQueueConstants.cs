@@ -8,23 +8,28 @@
         public const string DownloadQueueName = "DownloadQueueName";
 
         /// <summary>
+        /// Queue name cho phần xử lý realtime
+        /// </summary>
+        public const string RealtimeQueueName = "RealtimeQueueName";
+
+        /// <summary>
         /// Queue name cho phần phân tích dữ liệu
         /// </summary>
         public const string AnalyticsQueueName = "AnalyticsQueueName";
 
         /// <summary>
-        /// Exchange cho phần update memory
-        /// </summary>
-        public const string UpdateMemoryExchangeName = "UpdateMemoryExchangeName";
-
-        /// <summary>
-        /// Thực hiện tạo dữ liệu view
+        /// Thực hiện tạo, xử lý dữ liệu cho phần hiển thị view
         /// </summary>
         public static readonly string ViewWorkerQueueName = "ViewWorkerQueueName";
 
         /// <summary>
-        /// Kênh nhận dự kiện update view
+        /// Kênh nhận sự kiên update view
         /// </summary>
         public static readonly string ViewUpdatedExchangeName = "ViewUpdatedExchange";
+
+        /// <summary>
+        /// Exchange cho phần update memory
+        /// </summary>
+        public const string UpdateMemoryExchangeName = "UpdateMemoryExchangeName";
     }
 }

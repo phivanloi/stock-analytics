@@ -222,7 +222,7 @@ namespace Pl.Sas.Core.Services
                 }
             }
 
-            _workerQueueService.BroadcastViewUpdatedTask(new("ChartPricesRealtime")
+            _workerQueueService.PublishRealtimeTask(new("TestTradingOnPriceChange")
             {
                 KeyValues = new Dictionary<string, string>()
                 {
@@ -462,6 +462,15 @@ namespace Pl.Sas.Core.Services
                 TradingDate = Utilities.GetTradingDate(),
                 ZipDetails = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(listTransactionDetails))
             };
+
+            _workerQueueService.PublishRealtimeTask(new("SetupRealtimeSleepTimeByTransactionCount")
+            {
+                KeyValues = new Dictionary<string, string>()
+                {
+                    { "Symbol", symbol },
+                    { "TransactionCount", listTransactionDetails.Count.ToString() }
+                }
+            });
             var check = await _stockTransactionData.SaveStockTransactionAsync(stockTransaction);
             return await _keyValueData.SetAsync(checkingKey, check);
         }
@@ -1041,7 +1050,11 @@ namespace Pl.Sas.Core.Services
                             Type = 14,
                             Name = $"Thu thập giá realtime: {stockCode}",
                             DataKey = stockCode,
-                            ActiveTime = currentTime.AddMinutes(random.Next(0, 10))
+                            ActiveTime = currentTime.AddMinutes(random.Next(30, 40)),
+                            OptionsJson = JsonSerializer.Serialize(new Dictionary<string, string>()
+                            {
+                                {"SleepTime", "300" }
+                            })
                         });
 
 
