@@ -40,11 +40,8 @@ namespace Pl.Sas.Infrastructure.Data
             if (chartPrices.Count > 0)
             {
                 var checkDelete = await DeleteAsync(symbol, type);
-                if (checkDelete)
-                {
-                    await BulkInserAsync(chartPrices);
-                    return true;
-                }
+                await BulkInserAsync(chartPrices);
+                return checkDelete;
             }
             return false;
         }
