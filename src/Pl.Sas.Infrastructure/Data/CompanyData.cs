@@ -86,7 +86,6 @@ namespace Pl.Sas.Infrastructure.Data
             dataTableUpdate.Columns.Add("IssueShare", typeof(float));
             dataTableUpdate.Columns.Add("ListedValue", typeof(float));
             dataTableUpdate.Columns.Add("CompanyName");
-            dataTableUpdate.Columns.Add("TtmType", typeof(int));
             dataTableUpdate.Columns.Add("MarketCap", typeof(float));
             dataTableUpdate.Columns.Add("SharesOutStanding", typeof(float));
             dataTableUpdate.Columns.Add("Bv", typeof(float));
@@ -134,7 +133,6 @@ namespace Pl.Sas.Infrastructure.Data
                                                 IssueShare bigint NOT NULL,
                                                 ListedValue decimal(35, 10) NOT NULL,
                                                 CompanyName nvarchar(256) NULL,
-                                                TtmType int NOT NULL,
                                                 MarketCap decimal(35, 10) NOT NULL,
                                                 SharesOutStanding decimal(35, 10) NOT NULL,
                                                 Bv decimal(35, 10) NOT NULL,
@@ -172,7 +170,6 @@ namespace Pl.Sas.Infrastructure.Data
                                                     Companies.IssueShare = Tcu.IssueShare,
                                                     Companies.ListedValue = Tcu.ListedValue,
                                                     Companies.CompanyName = Tcu.CompanyName,
-                                                    Companies.TtmType = Tcu.TtmType,
                                                     Companies.MarketCap = Tcu.MarketCap,
                                                     Companies.SharesOutStanding = Tcu.SharesOutStanding,
                                                     Companies.Bv = Tcu.Bv,
@@ -247,7 +244,6 @@ namespace Pl.Sas.Infrastructure.Data
                                         IssueShare,
                                         ListedValue,
                                         CompanyName,
-                                        TtmType,
                                         MarketCap,
                                         SharesOutStanding,
                                         Bv,
@@ -285,7 +281,6 @@ namespace Pl.Sas.Infrastructure.Data
                                         @IssueShare,
                                         @ListedValue,
                                         @CompanyName,
-                                        @TtmType,
                                         @MarketCap,
                                         @SharesOutStanding,
                                         @Bv,
@@ -328,7 +323,6 @@ namespace Pl.Sas.Infrastructure.Data
                                 IssueShare = @IssueShare,
                                 ListedValue = @ListedValue,
                                 CompanyName = @CompanyName,
-                                TtmType = @TtmType,
                                 MarketCap = @MarketCap,
                                 SharesOutStanding = @SharesOutStanding,
                                 Bv = @bv,
