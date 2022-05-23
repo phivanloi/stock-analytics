@@ -39,12 +39,6 @@ namespace Pl.Sas.Core.Interfaces
         Task<bool> DeleteAsync(string id);
 
         /// <summary>
-        /// Hàm lấy toàn bộ mã cổ phiếu của loại stock
-        /// </summary>
-        /// <returns>IEnumerable string</returns>
-        Task<IEnumerable<string>> GetCodeForBuildTrainingDataAsync();
-
-        /// <summary>
         /// Lấy danh sách sàn
         /// </summary>
         /// <returns>string</returns>

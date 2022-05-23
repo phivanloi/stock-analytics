@@ -30,8 +30,7 @@ namespace Pl.Sas.Core.Services
                 //Kiểm tra năm gần đây nhất có thông tin không
                 if (checkItems[0].YearReport < (DateTime.Now.Year - 1))
                 {
-                    notes.Add("Năm gần đây không có thông tin doanh thu năm.", -3, -1, guideLink);
-                    return -3;
+                    return notes.Add("Năm gần đây không có thông tin doanh thu năm.", -3, -1, guideLink);
                 }
 
                 //Doanh thu năm gần đây nhất có tốt không
@@ -251,8 +250,7 @@ namespace Pl.Sas.Core.Services
                 //Kiểm tra năm gần đây nhất có thông tin không
                 if (checkItems[0].YearReport < (DateTime.Now.Year - 1))
                 {
-                    notes.Add("Năm gần đây không có thông tin lợi nhuận năm.", -3, -1, guideLink);
-                    return -3;
+                    return notes.Add("Năm gần đây không có thông tin lợi nhuận năm.", -3, -1, guideLink);
                 }
 
                 //Lợi nhuận năm gần đây nhất có tốt không
@@ -837,8 +835,7 @@ namespace Pl.Sas.Core.Services
             var topFourItem = financialIndicators.Where(q => q.LengthReport != 5).OrderByDescending(q => q.YearReport).ThenByDescending(q => q.LengthReport).Take(4).ToList();
             if (topFourItem.Count <= 0)
             {
-                notes.Add("Không có thông tin eps quý để đánh giá tăng trưởng quý.", -5, -2, guideLink);
-                return -5;
+                return notes.Add("Không có thông tin eps quý để đánh giá tăng trưởng quý.", -5, -2, guideLink);
             }
 
             foreach (var item in topFourItem)
@@ -907,8 +904,7 @@ namespace Pl.Sas.Core.Services
                 score -= 1;
                 type--;
 
-                notes.Add(note, score, type, null);
-                return score;
+                return notes.Add(note, score, type, null);
             }
 
             if (fiinEvaluate.ControlStatusCode >= 0)
@@ -945,8 +941,7 @@ namespace Pl.Sas.Core.Services
                     break;
             }
 
-            notes.Add(note, score, type, null);
-            return score;
+            return notes.Add(note, score, type, null);
         }
 
         /// <summary>
@@ -967,8 +962,7 @@ namespace Pl.Sas.Core.Services
                 score -= 1;
                 type--;
 
-                notes.Add(note, score, type, null);
-                return score;
+                return notes.Add(note, score, type, null);
             }
 
             var avgScore = vndStockScores.Where(q => "102000,103000".Contains(q.CriteriaCode)).Average(q => q.Point);
@@ -995,8 +989,7 @@ namespace Pl.Sas.Core.Services
                 type = -2;
             }
 
-            notes.Add(note, score, type, "https://dstock.vndirect.com.vn/tong-quan/FPT");
-            return score;
+            return notes.Add(note, score, type, "https://dstock.vndirect.com.vn/tong-quan/FPT");
         }
     }
 }

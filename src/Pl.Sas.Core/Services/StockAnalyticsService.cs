@@ -15,8 +15,7 @@ namespace Pl.Sas.Core.Services
         {
             if (stockPrices.Count < 2)
             {
-                notes.Add($"Chưa có đủ lịch sử giá để phân tích.", -5, -1, null);
-                return -5;
+                return notes.Add($"Chưa có đủ lịch sử giá để phân tích.", -5, -1, null);
             }
 
             var type = 0;
@@ -75,8 +74,7 @@ namespace Pl.Sas.Core.Services
             }
 
 
-            notes.Add(note, score, type, null);
-            return score;
+            return notes.Add(note, score, type, null);
         }
 
         /// <summary>
@@ -89,8 +87,7 @@ namespace Pl.Sas.Core.Services
         {
             if (indicators.Count < 2)
             {
-                notes.Add($"Chưa có đủ danh sách chỉ báo để phân tích phân tích Stochastic.", -1, -1, null);
-                return -1;
+                return notes.Add($"Chưa có đủ danh sách chỉ báo để phân tích phân tích Stochastic.", -1, -1, null);
             }
 
             var type = 0;
@@ -125,8 +122,7 @@ namespace Pl.Sas.Core.Services
                 score--;
             }
 
-            notes.Add(note, score, type, null);
-            return score;
+            return notes.Add(note, score, type, null);
         }
 
         /// <summary>
@@ -140,8 +136,7 @@ namespace Pl.Sas.Core.Services
         {
             if (indicators.Count < 1)
             {
-                notes.Add($"Chưa có đủ danh sách chỉ báo để phân tích phân tích.", -1, -1, null);
-                return -1;
+                return notes.Add($"Chưa có đủ danh sách chỉ báo để phân tích phân tích.", -1, -1, null);
             }
 
             var type = 0;
@@ -209,8 +204,7 @@ namespace Pl.Sas.Core.Services
                 }
             }
 
-            notes.Add(note, score, type, null);
-            return score;
+            return notes.Add(note, score, type, null);
         }
 
         /// <summary>
@@ -223,8 +217,7 @@ namespace Pl.Sas.Core.Services
         {
             if (stockPrices.Count < 1)
             {
-                notes.Add($"Chưa có đủ lịch sử giá để phân tích.", -1, -1, null);
-                return -1;
+                return notes.Add($"Chưa có đủ lịch sử giá để phân tích.", -1, -1, null);
             }
 
             var type = 0;
@@ -312,8 +305,7 @@ namespace Pl.Sas.Core.Services
                 }
             }
 
-            notes.Add(note, score, type, null);
-            return score;
+            return notes.Add(note, score, type, null);
         }
 
         /// <summary>
@@ -328,23 +320,19 @@ namespace Pl.Sas.Core.Services
             var count = stockPrices.Count;
             if (avgMatchVol < 100000)
             {
-                notes.Add($"Khối lượng giao dịch trung bình {count} phiên là {avgMatchVol:0,0} nhỏ hơn 100.000", -2, -2, null);
-                return -2;
+                return notes.Add($"Khối lượng giao dịch trung bình {count} phiên là {avgMatchVol:0,0} nhỏ hơn 100.000", -2, -2, null);
             }
             else if (avgMatchVol <= 500000)
             {
-                notes.Add($"Khối lượng giao dịch trung bình {count} phiên là {avgMatchVol:0,0} nhỏ hơn hoặc bằng 500.000", 0, 0, null);
-                return 0;
+                return notes.Add($"Khối lượng giao dịch trung bình {count} phiên là {avgMatchVol:0,0} nhỏ hơn hoặc bằng 500.000", 0, 0, null);
             }
             else if (avgMatchVol <= 1500000)
             {
-                notes.Add($"Khối lượng giao dịch trung bình {count} phiên là {avgMatchVol:0,0} nhỏ hơn hoặc bằng 1.500.000", 0, 0, null);
-                return 1;
+                return notes.Add($"Khối lượng giao dịch trung bình {count} phiên là {avgMatchVol:0,0} nhỏ hơn hoặc bằng 1.500.000", 0, 0, null);
             }
             else
             {
-                notes.Add($"Khối lượng giao dịch trung bình {count} phiên là {avgMatchVol:0,0} lớn hơn 1.500.000", 2, 2, null);
-                return 2;
+                return notes.Add($"Khối lượng giao dịch trung bình {count} phiên là {avgMatchVol:0,0} lớn hơn 1.500.000", 2, 2, null);
             }
         }
 
@@ -358,8 +346,7 @@ namespace Pl.Sas.Core.Services
         {
             if (stockPrices.Count < 1)
             {
-                notes.Add($"Chưa có đủ lịch sử giá để phân tích.", -1, -1, null);
-                return -1;
+                return notes.Add($"Chưa có đủ lịch sử giá để phân tích.", -1, -1, null);
             }
 
             var type = 0;
@@ -398,8 +385,7 @@ namespace Pl.Sas.Core.Services
                 note += $" giảm {reductionCount} phiên. ";
             }
 
-            notes.Add(note, score, type, null);
-            return score;
+            return notes.Add(note, score, type, null);
         }
 
         /// <summary>
@@ -412,8 +398,7 @@ namespace Pl.Sas.Core.Services
         {
             if (stockPrices.Count < 1)
             {
-                notes.Add($"Chưa có đủ lịch sử giá để phân tích.", -1, -1, null);
-                return -1;
+                return notes.Add($"Chưa có đủ lịch sử giá để phân tích.", -1, -1, null);
             }
 
             var type = 0;
@@ -452,8 +437,7 @@ namespace Pl.Sas.Core.Services
             {
                 note += $" giảm {reductionCount} phiên, ";
             }
-            notes.Add(note, score, type, null);
-            return score;
+            return notes.Add(note, score, type, null);
         }
 
         /// <summary>
@@ -466,8 +450,7 @@ namespace Pl.Sas.Core.Services
         {
             if (stockPrices.Count < 1)
             {
-                notes.Add($"Chưa có đủ lịch sử giá để phân tích.", -1, -1, null);
-                return -1;
+                return notes.Add($"Chưa có đủ lịch sử giá để phân tích.", -1, -1, null);
             }
 
             var type = 0;
@@ -522,8 +505,7 @@ namespace Pl.Sas.Core.Services
                 score--;
             }
 
-            notes.Add(note, score, type, null);
-            return score;
+            return notes.Add(note, score, type, null);
         }
 
         /// <summary>
@@ -544,8 +526,7 @@ namespace Pl.Sas.Core.Services
                 score -= 2;
                 type--;
 
-                notes.Add(note, score, type, null);
-                return score;
+                return notes.Add(note, score, type, null);
             }
 
             if (fiinEvaluate.ControlStatusCode >= 0)
@@ -582,8 +563,7 @@ namespace Pl.Sas.Core.Services
                     break;
             }
 
-            notes.Add(note, score, type, null);
-            return score;
+            return notes.Add(note, score, type, null);
         }
     }
 }
