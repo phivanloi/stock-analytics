@@ -23,7 +23,10 @@ namespace Pl.Sas.Infrastructure.Data
         {
             var query = "SELECT TOP(@top) Id, Type, OptionsJson FROM Schedules WHERE ActiveTime <= @selectTime";
             using SqlConnection connection = new(_connectionStrings.MarketConnection);
-            return (await connection.QueryAsync<Schedule>(query, new { top, selectTime })).AsList();
+            return await _dbAsyncRetry.ExecuteAsync(async () =>
+            {
+                return (await connection.QueryAsync<Schedule>(query, new { top, selectTime })).AsList();
+            });
         }
 
         public virtual async Task<bool> SetActiveTimeAsync(string id, DateTime setTime)
