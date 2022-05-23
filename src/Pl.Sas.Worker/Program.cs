@@ -6,14 +6,10 @@ using Pl.Sas.Core;
 using Pl.Sas.Core.Interfaces;
 using Pl.Sas.Core.Services;
 using Pl.Sas.Infrastructure;
-using Pl.Sas.Infrastructure.Analytics;
 using Pl.Sas.Infrastructure.Caching;
-using Pl.Sas.Infrastructure.Crawl;
 using Pl.Sas.Infrastructure.Helper;
 using Pl.Sas.Infrastructure.Loging;
-using Pl.Sas.Infrastructure.Market;
 using Pl.Sas.Infrastructure.RabbitmqMessageQueue;
-using Pl.Sas.Infrastructure.System;
 using Pl.Sas.Worker;
 using System.Net;
 using System.Text.Json;
@@ -49,31 +45,6 @@ builder.Services.AddHttpClient("downloader", c =>
         UseCookies = false
     };
 });
-
-builder.Services.AddDbContext<SystemDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("SystemConnection"),
-    sqlServerOptionsAction: sqlOptions =>
-    {
-        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
-    }));
-builder.Services.AddDbContext<MarketDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("MarketConnection"),
-    sqlServerOptionsAction: sqlOptions =>
-    {
-        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
-    }));
-builder.Services.AddDbContext<AnalyticsDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("AnalyticsConnection"),
-    sqlServerOptionsAction: sqlOptions =>
-    {
-        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
-    }));
-builder.Services.AddDbContext<IdentityDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConnection"),
-    sqlServerOptionsAction: sqlOptions =>
-    {
-        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
-    }));
 
 builder.Services.AddHealthChecks()
     .AddCheck("self", () => HealthCheckResult.Healthy())

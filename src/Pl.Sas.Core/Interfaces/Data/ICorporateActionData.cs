@@ -43,7 +43,7 @@ namespace Pl.Sas.Core.Interfaces
         /// ex 'DIV','ISS'
         /// </param>
         /// <param name="exchange">Sàn chứng khoán</param>
-        Task<List<CorporateAction>> FindAllForViewPageAsync(string symbol, string[] eventCodes, string exchange);
+        Task<List<CorporateAction>> FindAllForViewPageAsync(string? symbol = null, string[]? eventCodes = null, string? exchange = null);
 
         /// <summary>
         /// Lấy tất cả ngày giao dịch không hưởng quyền trả cổ tức để thực hiện tải lại lịch sử giá cổ phiếu

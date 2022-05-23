@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Pl.Sas.WebDashboard.Models;
 using Pl.Sas.Core.Interfaces;
-using Pl.Sas.Infrastructure.Identity;
 using System.Text.Json;
 
 namespace Pl.Sas.WebDashboard.Controllers

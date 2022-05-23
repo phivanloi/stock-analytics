@@ -21,8 +21,10 @@ namespace Pl.Sas.Core.Services
         private readonly IAnalyticsResultData _analyticsResultData;
         private readonly IStockPriceData _stockPriceData;
         private readonly IFinancialIndicatorData _financialIndicatorData;
+        private readonly ITradingResultData _tradingResultData;
 
         public StockViewService(
+            ITradingResultData tradingResultData,
             IFinancialIndicatorData financialIndicatorData,
             IStockPriceData stockPriceData,
             IAnalyticsResultData analyticsResultData,
@@ -34,6 +36,7 @@ namespace Pl.Sas.Core.Services
             IAsyncCacheService asyncCacheService,
             IMemoryCacheService memoryCacheService)
         {
+            _tradingResultData = tradingResultData;
             _financialIndicatorData = financialIndicatorData;
             _stockPriceData = stockPriceData;
             _analyticsResultData = analyticsResultData;
@@ -177,10 +180,10 @@ namespace Pl.Sas.Core.Services
             }
             var stockPrices = await _stockPriceData.GetForStockViewAsync(symbol, 10);
 
-            var financialIndicators = await _financialIndicatorData.GetFinancialIndicatorsAsync(symbol);
+            var financialIndicators = await _financialIndicatorData.FindAllAsync(symbol);
             var lastFinancialIndicator = financialIndicators.OrderByDescending(q => q.YearReport).ThenByDescending(q => q.LengthReport).FirstOrDefault(q => q.LengthReport == 5);
             var topThreeFinancialIndicator = financialIndicators.OrderByDescending(q => q.YearReport).ThenByDescending(q => q.LengthReport).Where(q => q.LengthReport == 5).Take(4).ToList();
-            var industry = await _analyticsData.GetIndustryAnalyticsAsync(company.SubsectorCode);
+            var industry = await _industryData.GetByCodeAsync(company.SubsectorCode);
             var topThreeHistories = stockPrices.Take(3).ToList();
             var topFiveHistories = stockPrices.Take(5).ToList();
             var stockView = new StockView()
@@ -385,7 +388,7 @@ namespace Pl.Sas.Core.Services
 
             #region Trading info
 
-            var tradingResults = await _analyticsData.GetTradingResultAsync(symbol);
+            var tradingResults = await _tradingResultData.FindAllAsync(symbol);
             var indicatorSet = BaseTrading.BuildIndicatorSet(chartPrices);
             var principles = new int[] { 0, 1, 2, 3, 4 };
 

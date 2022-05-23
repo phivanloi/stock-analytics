@@ -1,16 +1,13 @@
 ﻿using Dapper;
 using Microsoft.Extensions.Options;
 using Microsoft.Data.SqlClient;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Threading.Tasks;
 using Pl.Sas.Core.Interfaces;
 using Pl.Sas.Core.Entities;
 using Pl.Sas.Core;
 using System.Data;
 using Microsoft.Extensions.Logging;
 
-namespace Pl.Sas.Infrastructure.Analytics
+namespace Pl.Sas.Infrastructure.Data
 {
     public class AnalyticsResultData : BaseData, IAnalyticsResultData
     {

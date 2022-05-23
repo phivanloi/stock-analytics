@@ -42,7 +42,7 @@ namespace Pl.Sas.Infrastructure.Data
             return (await connection.QueryAsync<CorporateAction>(query, new { symbol, eventCodes, toDate, fromDate })).AsList();
         }
 
-        public virtual async Task<List<CorporateAction>> FindAllForViewPageAsync(string symbol, string[] eventCodes, string exchange)
+        public virtual async Task<List<CorporateAction>> FindAllForViewPageAsync(string? symbol = null, string[]? eventCodes = null, string? exchange = null)
         {
             var query = "SELECT * FROM CorporateActions WHERE ExrightDate >= @date ";
             if (!string.IsNullOrEmpty(symbol))

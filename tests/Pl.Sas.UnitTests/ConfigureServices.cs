@@ -5,19 +5,13 @@ using Pl.Sas.Core;
 using Pl.Sas.Core.Interfaces;
 using Pl.Sas.Core.Services;
 using Pl.Sas.Infrastructure;
-using Pl.Sas.Infrastructure.Analytics;
 using Pl.Sas.Infrastructure.Caching;
-using Pl.Sas.Infrastructure.Crawl;
+using Pl.Sas.Infrastructure.Data;
 using Pl.Sas.Infrastructure.Helper;
-using Pl.Sas.Infrastructure.Identity;
 using Pl.Sas.Infrastructure.Loging;
-using Pl.Sas.Infrastructure.Market;
 using Pl.Sas.Infrastructure.RabbitmqMessageQueue;
-using Pl.Sas.Infrastructure.System;
-using System;
 using System.IO;
 using System.Net.Http;
-using System.Reflection;
 
 namespace Pl.Sas.UnitTests
 {
@@ -42,8 +36,8 @@ namespace Pl.Sas.UnitTests
 
             services.AddLogging(builder => builder.AddDebug().AddConsole());
             services.AddOptions();
-            services.Configure<ConnectionStrings>(configuration.GetSection("ConnectionStrings"));
             services.Configure<AppSettings>(configuration.GetSection("AppSettings"));
+            services.Configure<ConnectionStrings>(configuration.GetSection("ConnectionStrings"));
 
             services.AddHttpClient("downloader", c =>
             {
@@ -57,35 +51,6 @@ namespace Pl.Sas.UnitTests
                 };
             });
 
-            services.AddDbContext<SystemDbContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("SystemConnection"),
-                sqlServerOptionsAction: sqlOptions =>
-                {
-                    sqlOptions.MigrationsAssembly(typeof(ConfigureServices).GetTypeInfo().Assembly.GetName().Name);
-                    sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
-                }));
-            services.AddDbContext<MarketDbContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("MarketConnection"),
-                sqlServerOptionsAction: sqlOptions =>
-                {
-                    sqlOptions.MigrationsAssembly(typeof(ConfigureServices).GetTypeInfo().Assembly.GetName().Name);
-                    sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
-                }));
-            services.AddDbContext<AnalyticsDbContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("AnalyticsConnection"),
-                sqlServerOptionsAction: sqlOptions =>
-                {
-                    sqlOptions.MigrationsAssembly(typeof(ConfigureServices).GetTypeInfo().Assembly.GetName().Name);
-                    sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
-                }));
-            services.AddDbContext<IdentityDbContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("IdentityConnection"),
-                sqlServerOptionsAction: sqlOptions =>
-                {
-                    sqlOptions.MigrationsAssembly(typeof(ConfigureServices).GetTypeInfo().Assembly.GetName().Name);
-                    sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
-                }));
-
             services.AddSingleton<IZipHelper, GZipHelper>();
             services.AddMemoryCacheService();
             services.AddRedisCacheService(option =>
@@ -94,28 +59,26 @@ namespace Pl.Sas.UnitTests
                 option.Configuration = configuration.GetConnectionString("CacheConnection");
             });
 
-            services.AddDbContext<MarketDbContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("MarketConnection"),
-                sqlServerOptionsAction: sqlOptions =>
-                {
-                    sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
-                })
-            );
 
-            services.AddDbContext<AnalyticsDbContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("AnalyticsConnection"),
-                sqlServerOptionsAction: sqlOptions =>
-                {
-                    sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
-                })
-            );
+            services.AddSingleton<IDownloadData, DownloadData>();
+            services.AddSingleton<IStockData, StockData>();
+            services.AddSingleton<IStockPriceData, StockPriceData>();
+            services.AddSingleton<ICompanyData, CompanyData>();
+            services.AddSingleton<IIndustryData, IndustryData>();
+            services.AddSingleton<ICorporateActionData, CorporateActionData>();
+            services.AddSingleton<IFinancialIndicatorData, FinancialIndicatorData>();
+            services.AddSingleton<IFinancialGrowthData, FinancialGrowthData>();
+            services.AddSingleton<ILeadershipData, LeadershipData>();
+            services.AddSingleton<IStockTransactionData, StockTransactionData>();
+            services.AddSingleton<IStockRecommendationData, StockRecommendationData>();
+            services.AddSingleton<IVndStockScoreData, VndStockScoreData>();
+            services.AddSingleton<IFiinEvaluatedData, FiinEvaluatedData>();
+            services.AddSingleton<IScheduleData, ScheduleData>();
+            services.AddSingleton<ITradingResultData, TradingResultData>();
+            services.AddSingleton<IAnalyticsResultData, AnalyticsResultData>();
+            services.AddSingleton<IChartPriceData, ChartPriceData>();
 
             services.AddSingleton<IWorkerQueueService, WorkerQueueService>();
-            services.AddSingleton<IDownloadData, DownloadData>();
-            services.AddScoped<IMarketData, MarketData>();
-            services.AddScoped<IAnalyticsData, AnalyticsData>();
-            services.AddScoped<ISystemData, SystemData>();
-            services.AddScoped<IIdentityData, IdentityData>();
             services.AddScoped<DownloadService>();
             services.AddScoped<AnalyticsService>();
             services.AddScoped<StockViewService>();

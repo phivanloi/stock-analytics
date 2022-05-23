@@ -126,7 +126,7 @@ namespace Pl.Sas.Infrastructure.Data
                 query += " AND Activated = @activated ";
             }
             using SqlConnection connection = new(_connectionStrings.MarketConnection);
-            return await connection.QueryAsync<Leadership>(query, new { symbol, activated });
+            return (await connection.QueryAsync<Leadership>(query, new { symbol, activated })).ToList();
         }
 
         public virtual async Task<bool> DeleteAsync(string id)

@@ -1,5 +1,4 @@
 ﻿using Ardalis.GuardClauses;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Pl.Sas.Core;
 using Pl.Sas.Core.Entities;
@@ -9,7 +8,7 @@ using System.Security.Claims;
 using Microsoft.Data.SqlClient;
 using Dapper;
 
-namespace Pl.Sas.Infrastructure
+namespace Pl.Sas.Infrastructure.Data
 {
     public class UserData : BaseData, IUserData
     {

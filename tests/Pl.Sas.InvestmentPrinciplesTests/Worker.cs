@@ -1,4 +1,5 @@
 ﻿using Pl.Sas.Core;
+using Pl.Sas.Core.Interfaces;
 using Pl.Sas.Core.Trading;
 using System.Text;
 
@@ -7,14 +8,13 @@ namespace Pl.Sas.InvestmentPrinciplesTests
     public class Worker : BackgroundService
     {
         private readonly ILogger<Worker> _logger;
-        private IMarketData _marketData = null!;
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IChartPriceData _chartPriceData;
         public Worker(
-            ILogger<Worker> logger,
-            IServiceProvider serviceProvider)
+            IChartPriceData chartPriceData,
+            ILogger<Worker> logger)
         {
             _logger = logger;
-            _serviceProvider = serviceProvider;
+            _chartPriceData = chartPriceData;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -23,12 +23,10 @@ namespace Pl.Sas.InvestmentPrinciplesTests
             {
                 Console.Clear();
                 Console.OutputEncoding = Encoding.UTF8;
-                using var scope = _serviceProvider.CreateScope();
-                _marketData = scope.ServiceProvider.GetRequiredService<IMarketData>();
                 DateTime fromDate = new(2020, 1, 1);
                 DateTime toDate = new(2019, 10, 1);
                 var symbol = "VND";
-                var chartPrices = (await _marketData.GetChartPricesAsync(symbol)).OrderBy(q => q.TradingDate).ToList();
+                var chartPrices = (await _chartPriceData.FindAllAsync(symbol)).OrderBy(q => q.TradingDate).ToList();
                 var tradingHistories = chartPrices.Where(q => q.TradingDate >= fromDate).OrderBy(q => q.TradingDate).ToList();
                 var startPrice = tradingHistories[0].ClosePrice;
                 var endPrice = tradingHistories[^1].ClosePrice;

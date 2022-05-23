@@ -4,7 +4,7 @@ using Pl.Sas.Infrastructure.Helper;
 using System.Text;
 using System.Text.Json;
 
-namespace Pl.Sas.Infrastructure.Crawl
+namespace Pl.Sas.Infrastructure
 {
     public class DownloadData : IDownloadData
     {

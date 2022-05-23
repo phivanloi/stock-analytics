@@ -4,7 +4,7 @@ using Pl.Sas.Core.Interfaces;
 using Microsoft.Data.SqlClient;
 using Pl.Sas.Core.Entities;
 
-namespace Pl.Sas.Infrastructure.Analytics
+namespace Pl.Sas.Infrastructure.Data
 {
     public class TradingResultData : BaseData, ITradingResultData
     {
