@@ -19,7 +19,7 @@ namespace Pl.Sas.Infrastructure.Data
             _logger = logger;
         }
 
-        public virtual async Task<IReadOnlyList<Schedule>> GetIdsForActiveEventAsync(DateTime selectTime, int top)
+        public virtual async Task<IReadOnlyList<Schedule>> GetForActiveEventAsync(DateTime selectTime, int top)
         {
             var query = "SELECT TOP(@top) Id, Type FROM Schedules WHERE ActiveTime <= @selectTime";
             using SqlConnection connection = new(_connectionStrings.MarketConnection);

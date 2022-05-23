@@ -32,26 +32,33 @@ namespace Pl.Sas.Scheduler
             await Task.Delay(1000 * 5, stoppingToken);//Delay for migration db 
             while (!stoppingToken.IsCancellationRequested)
             {
-                var schedules = await _scheduleData.GetIdsForActiveEventAsync(DateTime.Now, 10);
+
+                var schedules = await _scheduleData.GetForActiveEventAsync(DateTime.Now, 10);
                 if (schedules.Count > 0)
                 {
                     foreach (var schedule in schedules)
                     {
-                        if (schedule.Type >= 300)
+                        try
                         {
-                            _schedulerQueueService.PublishViewWorkerTask(new(schedule.Id));
+                            if (schedule.Type >= 300)
+                            {
+                                _schedulerQueueService.PublishViewWorkerTask(new(schedule.Id));
+                            }
+                            else if (schedule.Type >= 200)
+                            {
+                                _schedulerQueueService.PublishAnalyticsWorkerTask(new(schedule.Id));
+                            }
+                            else
+                            {
+                                _schedulerQueueService.PublishDownloadTask(new(schedule.Id));
+                            }
+                            schedule.ApplyActiveTime(DateTime.Now);
                         }
-                        else if (schedule.Type >= 200)
+                        catch (Exception ex)
                         {
-                            _schedulerQueueService.PublishAnalyticsWorkerTask(new(schedule.Id));
+                            _logger.LogError(ex, "Scheduler ExecuteAsync error in scheduler Id: {Id}", schedule.Id);
                         }
-                        else
-                        {
-                            _schedulerQueueService.PublishDownloadTask(new(schedule.Id));
-                        }
-                        schedule.ApplyActiveTime(DateTime.Now);
                     }
-
                     if (schedules.Count == 1)
                     {
                         await _scheduleData.SetActiveTimeAsync(schedules[0].Id, schedules[0].ActiveTime);
