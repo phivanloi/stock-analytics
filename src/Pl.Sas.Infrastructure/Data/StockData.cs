@@ -133,16 +133,9 @@ namespace Pl.Sas.Infrastructure.Data
 
         public virtual async Task<IEnumerable<Stock>> FindAllAsync()
         {
-            var query = "SELECT * FROM Stocks WHERE [Type] = 'stock'";
+            var query = "SELECT * FROM Stocks WHERE [Type] = 's'";
             using SqlConnection connection = new(_connectionStrings.MarketConnection);
             return await connection.QueryAsync<Stock>(query);
-        }
-
-        public virtual async Task<IEnumerable<string>> GetCodeForBuildTrainingDataAsync()
-        {
-            var query = "SELECT Symbol FROM Stocks WHERE Type = 'stock'";
-            using SqlConnection connection = new(_connectionStrings.MarketConnection);
-            return await connection.QueryAsync<string>(query);
         }
 
         public virtual async Task<Stock> GetByCodeAsync(string symbol)
@@ -161,7 +154,7 @@ namespace Pl.Sas.Infrastructure.Data
 
         public virtual async Task<List<string>> GetExchanges()
         {
-            var query = "SELECT Exchange FROM Stocks WHERE [Type] = 'stock' GROUP BY Exchange";
+            var query = "SELECT Exchange FROM Stocks WHERE [Type] = 's' GROUP BY Exchange";
             using SqlConnection connection = new(_connectionStrings.MarketConnection);
             return (await connection.QueryAsync<string>(query)).AsList();
         }

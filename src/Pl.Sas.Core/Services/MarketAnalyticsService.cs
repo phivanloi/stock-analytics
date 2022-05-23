@@ -15,8 +15,7 @@ namespace Pl.Sas.Core.Services
         {
             if (chartPrices.Count < 2)
             {
-                notes.Add($"Chưa có đủ lịch sử chỉ số để phân tích su thế thị trường.", -1, -1, null);
-                return -1;
+                return notes.Add($"Chưa có đủ lịch sử chỉ số để phân tích su thế thị trường.", -1, -1, null);
             }
 
             var type = 0;
@@ -127,8 +126,7 @@ namespace Pl.Sas.Core.Services
             {
                 type--;
             }
-            notes.Add(note, score, type, "https://vcbs.com.vn/vn/Utilities/Index/52");
-            return score;
+            return notes.Add(note, score, type, "https://vcbs.com.vn/vn/Utilities/Index/52");
         }
 
         /// <summary>
@@ -142,8 +140,7 @@ namespace Pl.Sas.Core.Services
             var type = 0;
             var score = 0;
             var note = $"Chỉ số tâm lý thị trường hiện tại {marketSentimentScore}";
-            notes.Add(note, score, type, null);
-            return score;
+            return notes.Add(note, score, type, null);
         }
 
         /// <summary>
@@ -156,8 +153,7 @@ namespace Pl.Sas.Core.Services
         {
             if (industry is null)
             {
-                notes.Add($"Không có thông tin ngành để phân tích.", -2, -2, null);
-                return -2;
+                return notes.Add($"Không có thông tin ngành để phân tích.", -2, -2, null);
             }
 
             var type = 0;
@@ -183,8 +179,7 @@ namespace Pl.Sas.Core.Services
                 type--;
                 score--;
             }
-            notes.Add(note, score, type, null);
-            return score;
+            return notes.Add(note, score, type, null);
         }
     }
 }

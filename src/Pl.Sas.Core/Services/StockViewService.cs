@@ -140,7 +140,7 @@ namespace Pl.Sas.Core.Services
                 switch (schedule.Type)
                 {
                     case 300:
-                        return await BindingStocksViewAndSetCacheAsync(schedule.DataKey);
+                        return await BindingStocksViewAndSetCacheAsync(schedule.DataKey ?? throw new Exception("Can't build view for null data key."));
 
                     default:
                         _logger.LogWarning("Process scheduler id {Id}, type: {Type} don't match any function", queueMessage.Id, schedule.Type);
@@ -153,13 +153,8 @@ namespace Pl.Sas.Core.Services
             return null;
         }
 
-        public virtual async Task<QueueMessage?> BindingStocksViewAndSetCacheAsync(string? symbol)
+        public virtual async Task<QueueMessage?> BindingStocksViewAndSetCacheAsync(string symbol)
         {
-            if (string.IsNullOrEmpty(symbol))
-            {
-                return null;
-            }
-
             var chartPrices = await _chartPriceData.FindAllAsync(symbol, "D");
             if (chartPrices.Count < 5)
             {
