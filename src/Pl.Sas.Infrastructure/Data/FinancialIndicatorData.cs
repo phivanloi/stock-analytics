@@ -230,8 +230,7 @@ namespace Pl.Sas.Infrastructure.Data
                                 FROM 
                                     FinancialIndicators 
                                 WHERE 
-                                    Symbol = @symbol 
-                                    AND YearReport >= @year
+                                    YearReport >= @year
                                     AND Symbol IN @symbols
                                 ORDER BY YearReport, LengthReport";
                 using SqlConnection connection = new(_connectionStrings.MarketConnection);
