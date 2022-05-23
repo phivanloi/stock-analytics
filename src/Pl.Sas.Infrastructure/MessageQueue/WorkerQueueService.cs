@@ -150,7 +150,7 @@ namespace Pl.Sas.Infrastructure.RabbitmqMessageQueue
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, $"Run SubscribeBuildViewTask error");
+                    _logger.LogError(ex, $"Run SubscribeRealtimeTask error");
                 }
                 finally
                 {

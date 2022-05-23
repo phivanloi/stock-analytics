@@ -88,7 +88,7 @@ namespace Pl.Sas.Core.Services
                     break;
 
                 default:
-                    _logger.LogWarning("Realtime task id {Id}, type: {Type} don't match any function", queueMessage.Id);
+                    _logger.LogWarning("Realtime task id {Id} don't match any function", queueMessage.Id);
                     stopWatch.Stop();
                     return;
             }
