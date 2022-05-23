@@ -140,29 +140,42 @@ namespace Pl.Sas.Core.Services
         public virtual async Task<bool> UpdateSleepTimeForRealtimeTaskAsync(string symbol, long transactionCont)
         {
             Guard.Against.NullOrEmpty(symbol, nameof(symbol));
-            if (transactionCont < 1000)
+            var type14 = await _scheduleData.FindAsync(14, symbol);
+            if (type14 != null)
             {
-                var type14 = await _scheduleData.FindAsync(14, symbol);
-                if (type14 != null)
+                if (transactionCont > 100000)
                 {
-                    if (transactionCont < 0)
-                    {
-                        type14.AddOrUpdateOptions("SleepTime", "3600");
-                    }
-                    else if (transactionCont < 100)
-                    {
-                        type14.AddOrUpdateOptions("SleepTime", "1800");
-                    }
-                    else if (transactionCont < 500)
-                    {
-                        type14.AddOrUpdateOptions("SleepTime", "900");
-                    }
-                    else
-                    {
-                        type14.AddOrUpdateOptions("SleepTime", "450");
-                    }
-                    await _scheduleData.UpdateAsync(type14);
+                    type14.AddOrUpdateOptions("SleepTime", "15");
                 }
+                else if (transactionCont > 50000)
+                {
+                    type14.AddOrUpdateOptions("SleepTime", "30");
+                }
+                else if (transactionCont > 10000)
+                {
+                    type14.AddOrUpdateOptions("SleepTime", "60");
+                }
+                else if (transactionCont > 5000)
+                {
+                    type14.AddOrUpdateOptions("SleepTime", "120");
+                }
+                else if (transactionCont > 1000)
+                {
+                    type14.AddOrUpdateOptions("SleepTime", "300");
+                }
+                else if (transactionCont > 500)
+                {
+                    type14.AddOrUpdateOptions("SleepTime", "600");
+                }
+                else if (transactionCont > 100)
+                {
+                    type14.AddOrUpdateOptions("SleepTime", "1200");
+                }
+                else
+                {
+                    type14.AddOrUpdateOptions("SleepTime", "2400");
+                }
+                await _scheduleData.UpdateAsync(type14);
             }
             return false;
         }
