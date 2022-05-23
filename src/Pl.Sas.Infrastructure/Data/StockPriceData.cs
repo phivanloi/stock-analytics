@@ -77,13 +77,6 @@ namespace Pl.Sas.Infrastructure.Data
             return await connection.QueryFirstOrDefaultAsync<StockPrice>(query, new { symbol });
         }
 
-        public virtual async Task<HashSet<DateTime>> GetAllDatePathBySymbol(string symbol)
-        {
-            var query = "SELECT TradingDate FROM StockPrices WHERE Symbol = @symbol";
-            using SqlConnection connection = new(_connectionStrings.MarketConnection);
-            return new HashSet<DateTime>(await connection.QueryAsync<DateTime>(query, new { symbol }));
-        }
-
         public virtual async Task<List<StockPrice>> FindAllAsync(string symbol, int numberItem = 10000, DateTime? fromTradingTime = null, DateTime? toTradingTime = null)
         {
             var whereQuery = " WHERE Symbol = @symbol ";
@@ -120,7 +113,6 @@ namespace Pl.Sas.Infrastructure.Data
             var query = @$" SELECT TOP(@numberItem)
                                 Symbol,
                                 TradingDate,
-                                DatePath,
                                 OpenPrice,
                                 HighestPrice,
                                 LowestPrice,
@@ -193,70 +185,6 @@ namespace Pl.Sas.Infrastructure.Data
             var query = $"SELECT TOP(@top) TradingDate, ClosePrice, ClosePriceAdjusted, TotalMatchVal FROM StockPrices WHERE Symbol = @symbol ORDER BY TradingDate DESC";
             using SqlConnection connection = new(_connectionStrings.MarketConnection);
             return (await connection.QueryAsync<StockPrice>(query, new { symbol, top })).AsList();
-        }
-
-        public virtual async Task<List<StockPrice>> GetForIMarketSentimentAnalyticsAsync(string symbol, int top)
-        {
-            var query = @$" SELECT TOP(@top) 
-                                Symbol, 
-                                OpenPrice, 
-                                TradingDate, 
-                                HighestPrice, 
-                                LowestPrice, 
-                                ClosePrice, 
-                                ClosePriceAdjusted, 
-                                TotalMatchVol 
-                            FROM 
-                                StockPrices 
-                            WHERE 
-                                Symbol = @symbol 
-                            ORDER BY 
-                                TradingDate DESC";
-            using SqlConnection connection = new(_connectionStrings.MarketConnection);
-            return (await connection.QueryAsync<StockPrice>(query, new { symbol, top })).AsList();
-        }
-
-        public virtual async Task<List<StockPrice>> GetTopForBuildMlTrainingDataAsync(int top, string symbol)
-        {
-            var query = @"  SELECT TOP(@top)
-                                ClosePrice,
-								Symbol,
-	                            TradingDate,
-	                            ClosePrice,
-	                            AveragePrice,
-	                            TotalMatchVol,
-	                            HighestPrice,
-                                LowestPrice
-                            FROM
-                                StockPrices
-                            WHERE
-	                            Symbol = @symbol
-                            ORDER BY
-	                            TradingDate DESC";
-            using SqlConnection connection = new(_connectionStrings.MarketConnection);
-            return (await connection.QueryAsync<StockPrice>(query, new { top, symbol })).AsList();
-        }
-
-        public virtual async Task<List<StockPrice>> GetTopForBuildMlClassificationTrainingDataAsync(int top, string symbol)
-        {
-            var query = @"  SELECT TOP(@top)
-                                OpenPrice,
-								HighestPrice,
-	                            LowestPrice,
-	                            ClosePrice,
-	                            TotalMatchVol,
-	                            ForeignBuyVolTotal,
-                                ForeignSellVolTotal,
-	                            TotalBuyTrade,
-                                TotalSellTrade
-                            FROM
-                                StockPrices
-                            WHERE
-	                            Symbol = @symbol
-                            ORDER BY
-	                            TradingDate ASC";
-            using SqlConnection connection = new(_connectionStrings.MarketConnection);
-            return (await connection.QueryAsync<StockPrice>(query, new { top, symbol })).AsList();
         }
 
         public virtual async Task<bool> UpdateAsync(StockPrice stockPrice)
