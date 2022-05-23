@@ -29,7 +29,7 @@ namespace Pl.Sas.Scheduler
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("Scheduler running at: {time}", DateTimeOffset.Now);
-            await Task.Delay(1000 * 5, stoppingToken);//Delay for migration db
+            await Task.Delay(1000 * 5, stoppingToken);//Delay for migration db 
             while (!stoppingToken.IsCancellationRequested)
             {
                 var schedules = await _scheduleData.GetIdsForActiveEventAsync(DateTime.Now, 10);
