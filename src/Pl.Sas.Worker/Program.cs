@@ -7,6 +7,7 @@ using Pl.Sas.Core.Interfaces;
 using Pl.Sas.Core.Services;
 using Pl.Sas.Infrastructure;
 using Pl.Sas.Infrastructure.Caching;
+using Pl.Sas.Infrastructure.Data;
 using Pl.Sas.Infrastructure.Helper;
 using Pl.Sas.Infrastructure.Loging;
 using Pl.Sas.Infrastructure.RabbitmqMessageQueue;
@@ -63,11 +64,26 @@ builder.Services.AddRedisCacheService(option =>
     option.Configuration = builder.Configuration.GetConnectionString("CacheConnection");
 });
 
-builder.Services.AddSingleton<IWorkerQueueService, WorkerQueueService>();
+builder.Services.AddSingleton<IKeyValueData, KeyValueData>();
 builder.Services.AddSingleton<IDownloadData, DownloadData>();
-builder.Services.AddScoped<IMarketData, MarketData>();
-builder.Services.AddScoped<IAnalyticsData, AnalyticsData>();
-builder.Services.AddScoped<ISystemData, SystemData>();
+builder.Services.AddSingleton<IStockData, StockData>();
+builder.Services.AddSingleton<IStockPriceData, StockPriceData>();
+builder.Services.AddSingleton<ICompanyData, CompanyData>();
+builder.Services.AddSingleton<IIndustryData, IndustryData>();
+builder.Services.AddSingleton<ICorporateActionData, CorporateActionData>();
+builder.Services.AddSingleton<IFinancialIndicatorData, FinancialIndicatorData>();
+builder.Services.AddSingleton<IFinancialGrowthData, FinancialGrowthData>();
+builder.Services.AddSingleton<ILeadershipData, LeadershipData>();
+builder.Services.AddSingleton<IStockTransactionData, StockTransactionData>();
+builder.Services.AddSingleton<IStockRecommendationData, StockRecommendationData>();
+builder.Services.AddSingleton<IVndStockScoreData, VndStockScoreData>();
+builder.Services.AddSingleton<IFiinEvaluatedData, FiinEvaluatedData>();
+builder.Services.AddSingleton<IScheduleData, ScheduleData>();
+builder.Services.AddSingleton<ITradingResultData, TradingResultData>();
+builder.Services.AddSingleton<IAnalyticsResultData, AnalyticsResultData>();
+builder.Services.AddSingleton<IChartPriceData, ChartPriceData>();
+
+builder.Services.AddSingleton<IWorkerQueueService, WorkerQueueService>();
 builder.Services.AddScoped<DownloadService>();
 builder.Services.AddScoped<AnalyticsService>();
 builder.Services.AddScoped<StockViewService>();

@@ -106,6 +106,7 @@ else
 }
 app.MigrateDbContext<MarketDbContext>((context, services) =>
 {
+    services.SchedulerSeed(context);
     app.Logger.LogInformation("MarketDbContext migrations at {Now}", DateTime.Now);
 });
 app.MigrateDbContext<AnalyticsDbContext>((context, services) =>

@@ -10,6 +10,7 @@ using Pl.Sas.Core.Interfaces;
 using Pl.Sas.Core.Services;
 using Pl.Sas.Infrastructure;
 using Pl.Sas.Infrastructure.Caching;
+using Pl.Sas.Infrastructure.Data;
 using Pl.Sas.Infrastructure.Helper;
 using Pl.Sas.Infrastructure.Loging;
 using Pl.Sas.Infrastructure.RabbitmqMessageQueue;
@@ -40,31 +41,6 @@ builder.Services.AddDistributeLogService(option =>
 builder.Services.AddOptions();
 builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
 builder.Services.Configure<ConnectionStrings>(builder.Configuration.GetSection("ConnectionStrings"));
-
-builder.Services.AddDbContext<SystemDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("SystemConnection"),
-    sqlServerOptionsAction: sqlOptions =>
-    {
-        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
-    }));
-builder.Services.AddDbContext<MarketDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("MarketConnection"),
-    sqlServerOptionsAction: sqlOptions =>
-    {
-        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
-    }));
-builder.Services.AddDbContext<AnalyticsDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("AnalyticsConnection"),
-    sqlServerOptionsAction: sqlOptions =>
-    {
-        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
-    }));
-builder.Services.AddDbContext<Pl.Sas.Infrastructure.Identity.IdentityDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConnection"),
-    sqlServerOptionsAction: sqlOptions =>
-    {
-        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
-    }));
 
 builder.Services.AddDataProtection(opts =>
 {
@@ -102,14 +78,27 @@ builder.Services.AddRedisCacheService(option =>
 builder.Services.AddResponseCompression();
 builder.Services.Configure<WebEncoderOptions>(webEncoderOptions => webEncoderOptions.TextEncoderSettings = new TextEncoderSettings(UnicodeRanges.All));
 
-builder.Services.AddScoped<IMarketData, MarketData>();
-builder.Services.AddScoped<ISystemData, SystemData>();
-builder.Services.AddScoped<IIdentityData, IdentityData>();
-builder.Services.AddScoped<IAnalyticsData, AnalyticsData>();
+builder.Services.AddSingleton<IKeyValueData, KeyValueData>();
+builder.Services.AddSingleton<IStockData, StockData>();
+builder.Services.AddSingleton<IStockPriceData, StockPriceData>();
+builder.Services.AddSingleton<ICompanyData, CompanyData>();
+builder.Services.AddSingleton<IIndustryData, IndustryData>();
+builder.Services.AddSingleton<ICorporateActionData, CorporateActionData>();
+builder.Services.AddSingleton<IFinancialIndicatorData, FinancialIndicatorData>();
+builder.Services.AddSingleton<IFinancialGrowthData, FinancialGrowthData>();
+builder.Services.AddSingleton<ILeadershipData, LeadershipData>();
+builder.Services.AddSingleton<IStockTransactionData, StockTransactionData>();
+builder.Services.AddSingleton<IStockRecommendationData, StockRecommendationData>();
+builder.Services.AddSingleton<IVndStockScoreData, VndStockScoreData>();
+builder.Services.AddSingleton<IFiinEvaluatedData, FiinEvaluatedData>();
+builder.Services.AddSingleton<IScheduleData, ScheduleData>();
+builder.Services.AddSingleton<ITradingResultData, TradingResultData>();
+builder.Services.AddSingleton<IAnalyticsResultData, AnalyticsResultData>();
+builder.Services.AddSingleton<IChartPriceData, ChartPriceData>();
+
 builder.Services.AddSingleton<IMemoryUpdateService, MemoryUpdateService>();
 builder.Services.AddSingleton<IWebDashboardQueueService, WebDashboardQueueService>();
 builder.Services.AddScoped<StockViewService>();
-builder.Services.AddScoped<UserData>();
 builder.Services.AddHostedService<Worker>();
 
 builder.Services.AddSignalR();

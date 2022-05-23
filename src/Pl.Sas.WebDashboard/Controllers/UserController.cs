@@ -1,21 +1,20 @@
 ﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Mvc;
-using Pl.Sas.WebDashboard.Models;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Mvc;
 using Pl.Sas.Core.Entities.Security;
+using Pl.Sas.Core.Interfaces;
+using Pl.Sas.WebDashboard.Models;
+using System.Security.Claims;
 
 namespace Pl.Sas.WebDashboard.Controllers
 {
     public class UserController : Controller
     {
-        private readonly IdentityDbContext _identityDbContext;
+        private readonly IUserData _userData;
 
-        public UserController(
-            IdentityDbContext identityDbContext)
+        public UserController(IUserData userData)
         {
-            _identityDbContext = identityDbContext;
+            _userData = userData;
         }
 
         [HttpGet("/dang-nhap")]
@@ -30,7 +29,7 @@ namespace Pl.Sas.WebDashboard.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = await _identityDbContext.Users.FirstOrDefaultAsync(q => q.UserName == loginViewModel.Email);
+                var user = await _userData.FindAsync(loginViewModel.Email);
                 if (user is not null && user.Active && !user.Deleted && user.Password == Cryptography.CreateMd5Password(loginViewModel.Password))
                 {
                     var identitys = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);

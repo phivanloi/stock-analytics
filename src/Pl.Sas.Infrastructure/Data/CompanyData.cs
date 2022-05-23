@@ -1,13 +1,13 @@
-﻿using Dapper;
+﻿using Ardalis.GuardClauses;
+using Dapper;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Data.SqlClient;
+using Pl.Sas.Core;
+using Pl.Sas.Core.Entities;
+using Pl.Sas.Core.Interfaces;
 using System.ComponentModel;
 using System.Data;
-using Pl.Sas.Core.Interfaces;
-using Pl.Sas.Core.Entities;
-using Pl.Sas.Core;
-using Ardalis.GuardClauses;
 
 namespace Pl.Sas.Infrastructure.Data
 {
@@ -18,7 +18,7 @@ namespace Pl.Sas.Infrastructure.Data
 
         public CompanyData(
             IAsyncCacheService asyncCacheService,
-            ILogger<CompanyData> logger, 
+            ILogger<CompanyData> logger,
             IOptionsMonitor<ConnectionStrings> options) : base(options)
         {
             _asyncCacheService = asyncCacheService;

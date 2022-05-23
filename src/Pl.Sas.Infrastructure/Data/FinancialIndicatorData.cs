@@ -1,12 +1,12 @@
-﻿using Dapper;
+﻿using Ardalis.GuardClauses;
+using Dapper;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Pl.Sas.Core.Interfaces;
-using Microsoft.Data.SqlClient;
-using System.Data;
-using Pl.Sas.Core.Entities;
 using Pl.Sas.Core;
-using Ardalis.GuardClauses;
+using Pl.Sas.Core.Entities;
+using Pl.Sas.Core.Interfaces;
+using System.Data;
 
 namespace Pl.Sas.Infrastructure.Data
 {

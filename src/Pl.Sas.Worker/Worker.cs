@@ -5,9 +5,6 @@ using Pl.Sas.Core.Services;
 
 namespace Pl.Sas.Worker
 {
-    /// <summary>
-    /// Thực hiện tạo task từ bảng
-    /// </summary>
     public class Worker : BackgroundService
     {
         private readonly ILogger<Worker> _logger;
@@ -38,7 +35,7 @@ namespace Pl.Sas.Worker
 
         public override Task StartAsync(CancellationToken cancellationToken)
         {
-            _logger.LogDebug("Worker {version} starting at: {time}", _appSettings.AppVersion, DateTimeOffset.Now);
+            _logger.LogInformation("Worker {version} starting at: {time}", _appSettings.AppVersion, DateTimeOffset.Now);
 
             _workerQueueService.SubscribeDownloadTask(async (message) =>
             {
@@ -73,7 +70,7 @@ namespace Pl.Sas.Worker
 
         public override Task StopAsync(CancellationToken cancellationToken)
         {
-            _logger.LogDebug("Worker {version} stopping at: {time}", _appSettings.AppVersion, DateTimeOffset.Now);
+            _logger.LogInformation("Worker {version} stopping at: {time}", _appSettings.AppVersion, DateTimeOffset.Now);
             _workerQueueService.Dispose();
             return base.StopAsync(cancellationToken);
         }

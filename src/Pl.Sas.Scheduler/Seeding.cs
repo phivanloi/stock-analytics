@@ -7,7 +7,7 @@ namespace Pl.Sas.Scheduler
 {
     public static class Seeding
     {
-        public static IServiceProvider SystemDbSeed(this IServiceProvider serviceProvider, MarketDbContext marketDbContext)
+        public static IServiceProvider SchedulerSeed(this IServiceProvider serviceProvider, MarketDbContext marketDbContext)
         {
             if (!marketDbContext.Schedules.Any())
             {

@@ -1,11 +1,11 @@
 ﻿using Dapper;
-using Microsoft.Extensions.Options;
 using Microsoft.Data.SqlClient;
-using Pl.Sas.Core.Interfaces;
-using Pl.Sas.Core.Entities;
-using Pl.Sas.Core;
-using System.Data;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Pl.Sas.Core;
+using Pl.Sas.Core.Entities;
+using Pl.Sas.Core.Interfaces;
+using System.Data;
 
 namespace Pl.Sas.Infrastructure.Data
 {

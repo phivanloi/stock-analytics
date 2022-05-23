@@ -1,4 +1,4 @@
-﻿@model List<IndustryViewModel>
+﻿@model IndustryViewModel
 @{
     ViewData["Title"] = "Lĩnh vực";
     ViewData["ActiveMenu"] = "industry";
@@ -16,15 +16,15 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var industry in Model)
+                    @foreach (var industry in Model.Industries)
                     {
                         <tr>
                             <td>@industry.Code</td>
                             <td>@industry.Name</td>
                             <td>
-                                <input id="@industry.Code" type="number" value="@industry.ManualScore" onchange="RankChange(this)" class="form-control invest-control" />
+                                <input id="@industry.Code" type="number" value="@industry.AutoRank" onchange="RankChange(this)" class="form-control invest-control" />
                             </td>
-                            <td style="text-align:right">@industry.Score</td>
+                            <td style="text-align:right">@industry.Rank</td>
                         </tr>
                     }
                 </tbody>
@@ -33,25 +33,25 @@
     </div>
 </section>
 @section Scripts{
-    <script>
-        function RankChange(textbox) {
-            $.ajax({
-                cache: false,
-                type: "POST",
-                dataType: 'json',
-                url: "/home/industrysave?code=" + $(textbox).attr('id') + '&rank=' + $(textbox).val(),
-                success: function (data) {
-                    if (data.status == 1) {
-                        OpenToast('<span class="text-success">' + data.message + '</span>');
-                    }
-                    else {
-                        OpenToast('<span class="text-danger">' + data.message + '</span>');
-                    }
-                },
-                error: function () {
-                    OpenToast('<span class="text-danger">Thay đổi không thành công.</span>');
+<script>
+    function RankChange(textbox) {
+        $.ajax({
+            cache: false,
+            type: "POST",
+            dataType: 'json',
+            url: "/home/industrysave?code=" + $(textbox).attr('id') + '&rank=' + $(textbox).val(),
+            success: function (data) {
+                if (data.status == 1) {
+                    OpenToast('<span class="text-success">' + data.message + '</span>');
                 }
-            });
-        }
-    </script>
+                else {
+                    OpenToast('<span class="text-danger">' + data.message + '</span>');
+                }
+            },
+            error: function () {
+                OpenToast('<span class="text-danger">Thay đổi không thành công.</span>');
+            }
+        });
+    }
+</script>
 }
