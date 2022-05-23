@@ -58,6 +58,10 @@ namespace Pl.Sas.Scheduler
                         {
                             _logger.LogError(ex, "Scheduler ExecuteAsync error in scheduler Id: {Id}", schedule.Id);
                         }
+                        finally
+                        {
+                            schedule.ActiveTime = DateTime.Now.AddHours(1);
+                        }
                     }
                     if (schedules.Count == 1)
                     {
