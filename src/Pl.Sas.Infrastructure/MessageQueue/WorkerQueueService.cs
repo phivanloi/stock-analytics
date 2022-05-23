@@ -60,7 +60,7 @@ namespace Pl.Sas.Infrastructure.RabbitmqMessageQueue
             _broadcastViewUpdatedChannel.ExchangeDeclare(exchange: MessageQueueConstants.ViewUpdatedExchangeName, type: ExchangeType.Fanout);
 
             _realtimeWorkerChannel = _connection.CreateModel();
-            _realtimeWorkerChannel.QueueDeclare(queue: MessageQueueConstants.AnalyticsQueueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
+            _realtimeWorkerChannel.QueueDeclare(queue: MessageQueueConstants.RealtimeQueueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
             _publishRealtimeProperties = _realtimeWorkerChannel.CreateBasicProperties();
             _publishRealtimeProperties.Persistent = true;
         }
@@ -179,7 +179,7 @@ namespace Pl.Sas.Infrastructure.RabbitmqMessageQueue
         {
             Guard.Against.Null(queueMessage, nameof(queueMessage));
             var body = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(queueMessage));
-            _realtimeWorkerChannel.BasicPublish(exchange: "", routingKey: MessageQueueConstants.AnalyticsQueueName, basicProperties: _publishRealtimeProperties, body: body);
+            _realtimeWorkerChannel.BasicPublish(exchange: "", routingKey: MessageQueueConstants.RealtimeQueueName, basicProperties: _publishRealtimeProperties, body: body);
         }
 
         public virtual void Dispose()
