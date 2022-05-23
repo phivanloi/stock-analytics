@@ -2,9 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Pl.Sas.Core.Entities;
 using Pl.Sas.Core.Interfaces;
-using Pl.Sas.Core.Trading;
 using System.Diagnostics;
-using System.Text.Json;
 
 namespace Pl.Sas.Core.Services
 {

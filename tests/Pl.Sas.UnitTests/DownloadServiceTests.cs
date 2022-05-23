@@ -14,7 +14,6 @@ namespace Pl.Sas.UnitTests
 {
     public class DownloadServiceTests
     {
-
         [Fact]
         public async Task UpdateCapitalAndDividendTestAsync()
         {
@@ -111,6 +110,5 @@ namespace Pl.Sas.UnitTests
 
             await hostedService.StopAsync(CancellationToken.None);
         }
-
     }
 }

@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Pl.Sas.UnitTests
 {
-    public class CrawlTests
+    public class DownloadDataTests
     {
         [Fact]
         public async Task DownloadInitialMarketStockTestAsync()
