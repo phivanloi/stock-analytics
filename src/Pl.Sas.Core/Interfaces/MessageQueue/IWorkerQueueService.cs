@@ -35,6 +35,18 @@ namespace Pl.Sas.Core.Interfaces
         void BroadcastViewUpdatedTask(QueueMessage queueMessage);
 
         /// <summary>
+        /// Gửi một yêu cầu phân tích dữ liệu
+        /// </summary>
+        /// <param name="queueMessage">Thông tin cần phân tích</param>
+        void PublishRealtimeTask(QueueMessage queueMessage);
+
+        /// <summary>
+        /// Xử lý yêu cầu reatime
+        /// </summary>
+        /// <param name="func">Hàm xử lý</param>
+        void SubscribeRealtimeTask(Func<QueueMessage, Task> func);
+
+        /// <summary>
         /// Thu hồi tài nguyên
         /// </summary>
         void Dispose();

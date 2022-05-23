@@ -145,13 +145,14 @@ namespace Pl.Sas.Core.Entities
             };
         }
 
-        private static DateTime RealtimeSchedule(DateTime baseTime)
+        private DateTime RealtimeSchedule(DateTime baseTime)
         {
             var random = new Random();
-            return baseTime.AddSeconds(random.Next(300, 350));
+            return baseTime.AddSeconds(int.Parse(Options["SleepTime"]) - random.Next(-10, 10));
+
             //if (DateTime.Now.Hour > 9 && DateTime.Now.Hour < 15 && DateTime.Now.DayOfWeek != DayOfWeek.Sunday && DateTime.Now.DayOfWeek != DayOfWeek.Saturday)
             //{
-            //    return baseTime.AddSeconds(random.Next(300, 350));
+            //    return baseTime.AddSeconds(int.Parse(Options["SleepTime"]) - random.Next(-10, 10));
             //}
             //return baseTime.Date.AddDays(1).AddHours(8).AddMinutes(random.Next(50, 60));
         }

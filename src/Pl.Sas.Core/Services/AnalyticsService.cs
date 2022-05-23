@@ -735,7 +735,7 @@ namespace Pl.Sas.Core.Services
             var exrightCorporateActions = await _corporateActionData.GetTradingByExrightDateAsync();
             foreach (var corporateActions in exrightCorporateActions)
             {
-                var schedule = (await _scheduleData.FindAllAsync(5, corporateActions.Symbol)).FirstOrDefault();
+                var schedule = await _scheduleData.FindAsync(5, corporateActions.Symbol);
                 if (schedule is not null)
                 {
                     await _stockPriceData.DeleteBySymbolAsync(corporateActions.Symbol);
