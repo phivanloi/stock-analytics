@@ -65,7 +65,7 @@
         /// <summary>
         /// Nội dung đánh giá của vnd <see cref="AnalyticsNote"/>
         /// </summary>
-        public byte[]? VndNote { get; set; } = null;
+        public byte[]? VndNotes { get; set; } = null;
 
         /// <summary>
         /// Giá dự phóng trung bình của các công ty chứng khoán

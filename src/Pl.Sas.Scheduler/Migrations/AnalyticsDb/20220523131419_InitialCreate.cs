@@ -25,7 +25,7 @@ namespace Pl.Sas.Scheduler.Migrations.AnalyticsDb
                     FiinScore = table.Column<int>(type: "int", nullable: false),
                     FiinNotes = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
                     VndScore = table.Column<int>(type: "int", nullable: false),
-                    VndNote = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
+                    VndNotes = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
                     TargetPrice = table.Column<float>(type: "real", nullable: false),
                     TargetPriceNotes = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
                     CreatedTime = table.Column<DateTime>(type: "datetime2", nullable: false),
