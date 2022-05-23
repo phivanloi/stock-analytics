@@ -137,6 +137,11 @@ namespace Pl.Sas.Core.Services
                         await VndScoreAnalyticsAsync(schedule.DataKey ?? "");
                         break;
 
+                    case 212:
+                        _logger.LogWarning("Chưa viết hàm xử lý type 212 => {DataKey}.", schedule.DataKey);
+                        //await VndScoreAnalyticsAsync(schedule.DataKey ?? "");
+                        break;
+
                     default:
                         _logger.LogWarning("Scheduler id {Id}, type: {Type} don't match any function", queueMessage.Id, schedule.Type);
                         stopWatch.Stop();

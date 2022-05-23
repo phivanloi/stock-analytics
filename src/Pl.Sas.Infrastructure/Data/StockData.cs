@@ -140,14 +140,14 @@ namespace Pl.Sas.Infrastructure.Data
 
         public virtual async Task<IEnumerable<string>> GetCodeForBuildTrainingDataAsync()
         {
-            var query = "SELECT Code FROM Stocks WHERE Type = 'stock'";
+            var query = "SELECT Symbol FROM Stocks WHERE Type = 'stock'";
             using SqlConnection connection = new(_connectionStrings.MarketConnection);
             return await connection.QueryAsync<string>(query);
         }
 
         public virtual async Task<Stock> GetByCodeAsync(string symbol)
         {
-            var query = "SELECT * FROM Stocks WHERE Code = @symbol";
+            var query = "SELECT * FROM Stocks WHERE Symbol = @symbol";
             using SqlConnection connection = new(_connectionStrings.MarketConnection);
             return await connection.QueryFirstOrDefaultAsync<Stock>(query, new { symbol });
         }
