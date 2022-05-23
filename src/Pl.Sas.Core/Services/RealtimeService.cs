@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Pl.Sas.Core.Entities;
 using Pl.Sas.Core.Interfaces;
 using System.Diagnostics;
+using System.Text.Json;
 
 namespace Pl.Sas.Core.Services
 {
@@ -82,13 +83,12 @@ namespace Pl.Sas.Core.Services
                     break;
 
                 case "TestTradingOnPriceChange":
-                    //await UpdateSleepTimeForRealtimeTaskAsync(queueMessage.KeyValues["Symbol"], long.Parse(queueMessage.KeyValues["TransactionCount"]));
+                    await TestTradingOnPriceChange(queueMessage.KeyValues["Symbol"], queueMessage.KeyValues["ChartPrices"]);
                     break;
 
                 default:
                     _logger.LogWarning("Realtime task id {Id} don't match any function", queueMessage.Id);
-                    stopWatch.Stop();
-                    return;
+                    break;
             }
 
             stopWatch.Stop();
@@ -99,36 +99,25 @@ namespace Pl.Sas.Core.Services
         /// Hàm xử lý cập nhập thời gian xử lý realtime cho các mã chứng khoán có ít giao dịch
         /// </summary>
         /// <param name="symbol">Mã chứng khoán</param>
-        /// <param name="transactionCont">Số giao dịch trong ngày</param>
+        /// <param name="chartPricesJsonString">Danh sách lịch sử giá cập nhập tự động</param>
         /// <returns></returns>
-        public virtual async Task<bool> TestTradingOnPriceChange(string symbol, long transactionCont)
+        public virtual async Task TestTradingOnPriceChange(string symbol, string chartPricesJsonString)
         {
             Guard.Against.NullOrEmpty(symbol, nameof(symbol));
-            if (transactionCont < 1000)
+            Guard.Against.NullOrEmpty(chartPricesJsonString, nameof(chartPricesJsonString));
+            var chartPricesRealtime = JsonSerializer.Deserialize<List<ChartPrice>>(chartPricesJsonString);
+            if (chartPricesRealtime is null || chartPricesRealtime.Count <= 0)
             {
-                var type14 = await _scheduleData.FindAsync(14, symbol);
-                if (type14 != null)
-                {
-                    if (transactionCont < 0)
-                    {
-                        type14.AddOrUpdateOptions("SleepTime", "3600");
-                    }
-                    else if (transactionCont < 100)
-                    {
-                        type14.AddOrUpdateOptions("SleepTime", "1800");
-                    }
-                    else if (transactionCont < 500)
-                    {
-                        type14.AddOrUpdateOptions("SleepTime", "900");
-                    }
-                    else
-                    {
-                        type14.AddOrUpdateOptions("SleepTime", "450");
-                    }
-                    await _scheduleData.UpdateAsync(type14);
-                }
+                return;
             }
-            return false;
+
+            var chartPrices = await _chartPriceData.CacheFindAllAsync(symbol, "D");
+            if (chartPrices is null || chartPrices.Count <= 0)
+            {
+                return;
+            }
+
+
         }
 
         /// <summary>

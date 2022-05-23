@@ -197,7 +197,7 @@ namespace Pl.Sas.Core.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "DownloadVndChartPricesRealTimeAsync is error.");
+                _logger.LogError(ex, "UpdateChartPricesRealtimeAsync is error.");
                 var ssiChartPrices = await _downloadData.DownloadSsiChartPricesRealTimeAsync(symbol, "D");
                 if (ssiChartPrices is not null && ssiChartPrices.Time?.Length > 0)
                 {
@@ -222,13 +222,17 @@ namespace Pl.Sas.Core.Services
                 }
             }
 
-            _workerQueueService.PublishRealtimeTask(new("TestTradingOnPriceChange")
+            if (chartPrices.Count > 0)
             {
-                KeyValues = new Dictionary<string, string>()
+                _workerQueueService.PublishRealtimeTask(new("TestTradingOnPriceChange")
                 {
-                    {"ChartPrices", JsonSerializer.Serialize(chartPrices) }
-                }
-            });
+                    KeyValues = new Dictionary<string, string>()
+                    {
+                        {"Symbol", symbol },
+                        {"ChartPrices", JsonSerializer.Serialize(chartPrices) }
+                    }
+                });
+            }
         }
 
         /// <summary>

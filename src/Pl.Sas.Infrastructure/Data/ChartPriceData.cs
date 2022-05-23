@@ -1,4 +1,5 @@
-﻿using Dapper;
+﻿using Ardalis.GuardClauses;
+using Dapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -12,10 +13,25 @@ namespace Pl.Sas.Infrastructure.Data
     public class ChartPriceData : BaseData, IChartPriceData
     {
         private readonly ILogger<ChartPriceData> _logger;
+        private readonly IAsyncCacheService _asyncCacheService;
 
-        public ChartPriceData(ILogger<ChartPriceData> logger, IOptionsMonitor<ConnectionStrings> options) : base(options)
+        public ChartPriceData(
+            IAsyncCacheService asyncCacheService,
+            ILogger<ChartPriceData> logger,
+            IOptionsMonitor<ConnectionStrings> options) : base(options)
         {
+            _asyncCacheService = asyncCacheService;
             _logger = logger;
+        }
+
+        public virtual async Task<List<ChartPrice>?> CacheFindAllAsync(string symbol, string type = "D")
+        {
+            Guard.Against.NullOrEmpty(symbol, nameof(symbol));
+            var cacheKey = $"{Constants.ChartPriceCachePrefix}-SM{symbol}-TP{type}";
+            return await _asyncCacheService.GetOrCreateAsync(cacheKey, async () =>
+            {
+                return await FindAllAsync(symbol, type);
+            }, Constants.DefaultCacheTime * 60 * 24);
         }
 
         public virtual async Task<List<ChartPrice>> FindAllAsync(string symbol, string type = "D", DateTime? fromDate = null, DateTime? toDate = null)
