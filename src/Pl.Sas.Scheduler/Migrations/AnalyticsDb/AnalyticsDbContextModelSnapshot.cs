@@ -75,7 +75,7 @@ namespace Pl.Sas.Scheduler.Migrations.AnalyticsDb
                     b.Property<DateTime>("UpdatedTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<byte[]>("VndNote")
+                    b.Property<byte[]>("VndNotes")
                         .HasColumnType("varbinary(max)");
 
                     b.Property<int>("VndScore")

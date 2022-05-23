@@ -737,6 +737,11 @@ namespace Pl.Sas.Core.Services
         /// </returns>
         public static int CharterCapitalCheck(List<AnalyticsNote> notes, Company company, List<Company> companiesSameSubsectorCode)
         {
+            if (companiesSameSubsectorCode is null || !companiesSameSubsectorCode.Any())
+            {
+                return notes.Add("Không có thông tin công ty cùng ngành để check.", 0, 0, null);
+            }
+
             var score = 1;
             var type = 0;
             var note = $"Vốn điều lệ {company.CharterCapital:0,0} VNĐ, ";
@@ -744,7 +749,7 @@ namespace Pl.Sas.Core.Services
             var sumCharterCapital = companiesSameSubsectorCode.Sum(q => q.CharterCapital);
             if (avgCharterCapital <= 0 || sumCharterCapital <= 0)
             {
-                return notes.Add("Không có thông tin vốn điều lệ.", -1, -1, null);
+                return notes.Add("Không có thông tin vốn điều lệ.", 0, 0, null);
             }
             var avgPercent = (company.CharterCapital - avgCharterCapital) / Math.Abs(avgCharterCapital) * 100;
             var sumPercent = Math.Abs(company.CharterCapital * 100) / Math.Abs(sumCharterCapital);
