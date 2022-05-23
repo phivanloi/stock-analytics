@@ -21,9 +21,12 @@ namespace Pl.Sas.Infrastructure.Data
 
         public virtual async Task<IReadOnlyList<Schedule>> GetForActiveEventAsync(DateTime selectTime, int top)
         {
-            var query = "SELECT TOP(@top) Id, Type FROM Schedules WHERE ActiveTime <= @selectTime";
+            var query = "SELECT TOP(@top) Id, Type, OptionsJson FROM Schedules WHERE ActiveTime <= @selectTime";
             using SqlConnection connection = new(_connectionStrings.MarketConnection);
-            return (await connection.QueryAsync<Schedule>(query, new { top, selectTime })).AsList();
+            return await _dbAsyncRetry.ExecuteAsync(async () =>
+            {
+                return (await connection.QueryAsync<Schedule>(query, new { top, selectTime })).AsList();
+            });
         }
 
         public virtual async Task<bool> SetActiveTimeAsync(string id, DateTime setTime)
