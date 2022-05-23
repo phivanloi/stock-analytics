@@ -78,6 +78,7 @@ builder.Services.AddRedisCacheService(option =>
 builder.Services.AddResponseCompression();
 builder.Services.Configure<WebEncoderOptions>(webEncoderOptions => webEncoderOptions.TextEncoderSettings = new TextEncoderSettings(UnicodeRanges.All));
 
+builder.Services.AddSingleton<IFollowStockData, FollowStockData>();
 builder.Services.AddSingleton<IUserData, UserData>();
 builder.Services.AddSingleton<IKeyValueData, KeyValueData>();
 builder.Services.AddSingleton<IStockData, StockData>();
