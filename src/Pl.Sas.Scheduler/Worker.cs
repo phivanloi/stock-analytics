@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using Pl.Sas.Core;
 using Pl.Sas.Core.Interfaces;
-using Pl.Sas.Infrastructure.System;
 
 namespace Pl.Sas.Scheduler
 {
@@ -13,10 +12,10 @@ namespace Pl.Sas.Scheduler
         private readonly ILogger<Worker> _logger;
         private readonly ISchedulerQueueService _schedulerQueueService;
         private readonly AppSettings _appSettings;
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IScheduleData _scheduleData;
 
         public Worker(
-            IServiceProvider serviceProvider,
+            IScheduleData scheduleData,
             ISchedulerQueueService schedulerQueueService,
             IOptions<AppSettings> optionsAppSettings,
             ILogger<Worker> logger)
@@ -24,17 +23,16 @@ namespace Pl.Sas.Scheduler
             _schedulerQueueService = schedulerQueueService;
             _logger = logger;
             _appSettings = optionsAppSettings.Value;
-            _serviceProvider = serviceProvider;
+            _scheduleData = scheduleData;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("Scheduler running at: {time}", DateTimeOffset.Now);
-            var scope = _serviceProvider.CreateScope();
+            await Task.Delay(1000 * 5, stoppingToken);//Delay for migration db
             while (!stoppingToken.IsCancellationRequested)
             {
-                var systemDbContext = scope.ServiceProvider.GetRequiredService<SystemDbContext>();
-                var schedules = systemDbContext.Schedules.Where(q => q.ActiveTime <= DateTime.Now).OrderBy(q => q.ActiveTime).Take(10).ToList();
+                var schedules = await _scheduleData.GetIdsForActiveEventAsync(DateTime.Now, 10);
                 if (schedules.Count > 0)
                 {
                     foreach (var schedule in schedules)
@@ -53,13 +51,20 @@ namespace Pl.Sas.Scheduler
                         }
                         schedule.ApplyActiveTime(DateTime.Now);
                     }
-                    systemDbContext.SaveChanges();
+
+                    if (schedules.Count == 1)
+                    {
+                        await _scheduleData.SetActiveTimeAsync(schedules[0].Id, schedules[0].ActiveTime);
+                    }
+                    else
+                    {
+                        await _scheduleData.BulkSetActiveTimeAsync(schedules);
+                    }
                 }
                 else
                 {
-                    scope.Dispose();
+                    _logger.LogInformation("Scheduler active running at: {time}", DateTimeOffset.Now);
                     await Task.Delay(1000 * 3, stoppingToken);
-                    scope = _serviceProvider.CreateScope();
                 }
             }
         }

@@ -4,7 +4,7 @@ using Pl.Sas.Infrastructure.Helper;
 using System.Text;
 using System.Text.Json;
 
-namespace Pl.Sas.Infrastructure.Crawl
+namespace Pl.Sas.Infrastructure
 {
     public class DownloadData : IDownloadData
     {
@@ -168,10 +168,10 @@ namespace Pl.Sas.Infrastructure.Crawl
 
         public virtual async Task<VndChartPrice?> DownloadVndChartPricesRealTimeAsync(string symbol, string type = "D")
         {
-            var toTime = DateTimeOffset.Now;
-            var fromTime = toTime.AddDays(-1);
+            var toTime = DateTimeOffset.Now.ToUnixTimeSeconds();
+            var fromTime = DateTimeOffset.Now.AddDays(-5).ToUnixTimeSeconds();
             _httpClient.DefaultRequestHeaders.Add("Origin", $"https://dchart.vndirect.com.vn/?symbol={symbol}");
-            var requestUrl = $"https://iboard.ssi.com.vn/dchart/api/history?resolution={type}&symbol={symbol}&from={fromTime}&to={toTime}";
+            var requestUrl = $"https://dchart-api.vndirect.com.vn/dchart/history?resolution={type}&symbol={symbol}&from={fromTime}&to={toTime}";
             var vndChartPrice = await _httpClient.GetJsonAsync<VndChartPrice>(requestUrl);
             _httpClient.DefaultRequestHeaders.Remove("Origin");
             return vndChartPrice;
@@ -180,7 +180,7 @@ namespace Pl.Sas.Infrastructure.Crawl
         public virtual async Task<SsiChartPrice?> DownloadSsiChartPricesRealTimeAsync(string symbol, string type = "D")
         {
             var toTime = DateTimeOffset.Now.ToUnixTimeSeconds();
-            var fromTime = DateTimeOffset.Now.AddDays(-2).ToUnixTimeSeconds();
+            var fromTime = DateTimeOffset.Now.AddDays(-5).ToUnixTimeSeconds();
             var requestUrl = $"https://iboard.ssi.com.vn/dchart/api/history?resolution={type}&symbol={symbol}&from={fromTime}&to={toTime}";
             return await _httpClient.GetJsonAsync<SsiChartPrice>(requestUrl);
         }

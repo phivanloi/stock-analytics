@@ -13,32 +13,68 @@ namespace Pl.Sas.Core.Services
     /// </summary>
     public class AnalyticsService
     {
-        private readonly IMarketData _marketData;
-        private readonly IAnalyticsData _analyticsData;
         private readonly ILogger<AnalyticsService> _logger;
         private readonly IZipHelper _zipHelper;
-        private readonly ISystemData _systemData;
         private readonly IWorkerQueueService _workerQueueService;
+        private readonly IScheduleData _scheduleData;
+        private readonly ICompanyData _companyData;
+        private readonly IStockPriceData _stockPriceData;
+        private readonly IKeyValueData _keyValueData;
+        private readonly IFinancialIndicatorData _financialIndicatorData;
+        private readonly IFiinEvaluatedData _fiinEvaluatedData;
+        private readonly IVndStockScoreData _vndStockScoreData;
+        private readonly IFinancialGrowthData _financialGrowthData;
+        private readonly IAnalyticsResultData _analyticsResultData;
+        private readonly IStockData _stockData;
+        private readonly IStockRecommendationData _stockRecommendationData;
+        private readonly IChartPriceData _chartPriceData;
+        private readonly ITradingResultData _tradingResultData;
+        private readonly IIndustryData _industryData;
+        private readonly ICorporateActionData _corporateActionData;
 
         public AnalyticsService(
+            ICorporateActionData corporateActionData,
+            IIndustryData industryData,
+            ITradingResultData tradingResultData,
+            IChartPriceData chartPriceData,
+            IStockRecommendationData stockRecommendationData,
+            IStockData stockData,
+            IAnalyticsResultData analyticsResultData,
+            IFinancialGrowthData financialGrowthData,
+            IVndStockScoreData vndStockScoreData,
+            IFiinEvaluatedData fiinEvaluatedData,
+            IFinancialIndicatorData financialIndicatorData,
+            IKeyValueData keyValueData,
+            IStockPriceData stockPriceData,
+            ICompanyData companyData,
+            IScheduleData scheduleData,
             IWorkerQueueService workerQueueService,
-            ISystemData systemData,
             IZipHelper zipHelper,
-            IAnalyticsData analyticsData,
-            ILogger<AnalyticsService> logger,
-            IMarketData marketData)
+            ILogger<AnalyticsService> logger)
         {
-            _marketData = marketData;
+            _corporateActionData = corporateActionData;
+            _industryData = industryData;
+            _tradingResultData = tradingResultData;
+            _chartPriceData = chartPriceData;
+            _stockRecommendationData = stockRecommendationData;
+            _stockData = stockData;
+            _analyticsResultData = analyticsResultData;
+            _financialGrowthData = financialGrowthData;
+            _vndStockScoreData = vndStockScoreData;
+            _fiinEvaluatedData = fiinEvaluatedData;
+            _financialIndicatorData = financialIndicatorData;
+            _keyValueData = keyValueData;
+            _stockPriceData = stockPriceData;
+            _companyData = companyData;
+            _scheduleData = scheduleData;
             _logger = logger;
-            _analyticsData = analyticsData;
             _zipHelper = zipHelper;
-            _systemData = systemData;
             _workerQueueService = workerQueueService;
         }
 
         public async Task HandleEventAsync(QueueMessage queueMessage)
         {
-            var schedule = await _systemData.GetScheduleByIdAsync(queueMessage.Id);
+            var schedule = await _scheduleData.GetByIdAsync(queueMessage.Id);
             if (schedule != null)
             {
                 Stopwatch stopWatch = new();
@@ -126,22 +162,33 @@ namespace Pl.Sas.Core.Services
             Guard.Against.NullOrEmpty(symbol, nameof(symbol));
 
             var checkingKey = $"{symbol}-Analytics-CompanyValue";
-            var company = await _marketData.GetCompanyAsync(symbol);
-            var stockPrice = await _marketData.GetLastStockPriceAsync(symbol);
+            var company = await _companyData.GetByCodeAsync(symbol);
+            var stockPrice = await _stockPriceData.GetLastAsync(symbol);
             if (company is null || stockPrice is null)
             {
                 _logger.LogWarning("CompanyValueAnalyticsAsync can't find company and last stock price with symbol: {symbol}", symbol);
-                return await _systemData.SetKeyValueAsync(checkingKey, false);
+                return await _keyValueData.SetAsync(checkingKey, false);
             }
 
             var score = 0;
             var companyValueNotes = new List<AnalyticsNote>();
-
-            var companies = await _marketData.GetCompaniesAsync();
+            var companies = await _companyData.CacheFindAllForAnalyticsAsync();
+            if (companies is null)
+            {
+                _logger.LogWarning("CompanyValueAnalyticsAsync can't find any company same industries with symbol: {symbol}", symbol);
+                return await _keyValueData.SetAsync(checkingKey, false);
+            }
             var companiesSameIndustries = companies.Where(q => q.SubsectorCode == company.SubsectorCode).ToList();
-            var financialIndicators = await _marketData.CacheGetFinancialIndicatorByIndustriesAsync(company.SubsectorCode, companiesSameIndustries, 5);
-            var fiinEvaluates = await _marketData.GetFiinEvaluatedAsync(symbol);
-            var vndScores = await _marketData.GetVndStockScoreAsync(symbol);
+            var financialIndicators = await _financialIndicatorData.CacheGetBySymbolsAsync(
+                company.SubsectorCode,
+                companiesSameIndustries.Select(q => q.Symbol).ToArray(), 5);
+            if (financialIndicators is null)
+            {
+                _logger.LogWarning("CompanyValueAnalyticsAsync can't find financial indicatiors same industries with symbol: {symbol}", symbol);
+                return await _keyValueData.SetAsync(checkingKey, false);
+            }
+            var fiinEvaluates = await _fiinEvaluatedData.FindAsync(symbol);
+            var vndScores = await _vndStockScoreData.FindAllAsync(symbol);
             var lastQuarterlyFinancialIndicator = financialIndicators
                 .Where(q => q.Symbol == symbol)
                 .OrderByDescending(q => q.YearReport)
@@ -163,12 +210,12 @@ namespace Pl.Sas.Core.Services
                 .Select(q => q.OrderByDescending(c => c.YearReport).ThenByDescending(q => q.LengthReport).First())
                 .ToList();
 
-            var bankInterestRate6 = await _systemData.GetKeyValueAsync(Constants.BankInterestRate6Key);
-            var bankInterestRate12 = await _systemData.GetKeyValueAsync(Constants.BankInterestRate12Key);
+            var bankInterestRate6 = await _keyValueData.GetAsync(Constants.BankInterestRate6Key);
+            var bankInterestRate12 = await _keyValueData.GetAsync(Constants.BankInterestRate12Key);
             var dividendYield = company.DividendYield;
             if (dividendYield <= 0)
             {
-                var financialGrowth = await _marketData.GetLastFinancialGrowthAsync(symbol);
+                var financialGrowth = await _financialGrowthData.GetLastAsync(symbol);
                 if (financialGrowth is not null && financialGrowth.ValuePershare > 0 && stockPrice.ClosePriceAdjusted > 0)
                 {
                     dividendYield = financialGrowth.ValuePershare / stockPrice.ClosePriceAdjusted;
@@ -199,8 +246,8 @@ namespace Pl.Sas.Core.Services
             }
 
             var saveZipData = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(companyValueNotes));
-            var check = await _analyticsData.SaveCompanyValueScoreAsync(symbol, score, saveZipData);
-            return await _systemData.SetKeyValueAsync(checkingKey, check);
+            var check = await _analyticsResultData.SaveCompanyValueScoreAsync(symbol, score, saveZipData);
+            return await _keyValueData.SetAsync(checkingKey, check);
         }
 
         /// <summary>
@@ -213,23 +260,34 @@ namespace Pl.Sas.Core.Services
             Guard.Against.NullOrEmpty(symbol, nameof(symbol));
 
             var checkingKey = $"{symbol}-Analytics-CompanyGrowth";
-            var company = await _marketData.GetCompanyAsync(symbol);
-            var stockPrice = await _marketData.GetLastStockPriceAsync(symbol);
+            var company = await _companyData.GetByCodeAsync(symbol);
+            var stockPrice = await _stockPriceData.GetLastAsync(symbol);
             if (company is null || stockPrice is null)
             {
                 _logger.LogWarning("CompanyGrowthAnalyticsAsync can't find company and last stock price with symbol: {symbol}", symbol);
-                return await _systemData.SetKeyValueAsync(checkingKey, false);
+                return await _keyValueData.SetAsync(checkingKey, false);
             }
 
             var score = 0;
             var companyGrowthNotes = new List<AnalyticsNote>();
-
-            var companies = await _marketData.GetCompaniesAsync();
+            var companies = await _companyData.CacheFindAllForAnalyticsAsync();
+            if (companies is null)
+            {
+                _logger.LogWarning("CompanyValueAnalyticsAsync can't find any company same industries with symbol: {symbol}", symbol);
+                return await _keyValueData.SetAsync(checkingKey, false);
+            }
             var companiesSameIndustries = companies.Where(q => q.SubsectorCode == company.SubsectorCode).ToList();
-            var financialIndicators = await _marketData.CacheGetFinancialIndicatorByIndustriesAsync(company.SubsectorCode, companiesSameIndustries, 5);
-            var financialGrowths = await _marketData.GetFinancialGrowthsAsync(company.Symbol);
-            var fiinEvaluates = await _marketData.GetFiinEvaluatedAsync(symbol);
-            var vndScores = await _marketData.GetVndStockScoreAsync(symbol);
+            var financialIndicators = await _financialIndicatorData.CacheGetBySymbolsAsync(
+                company.SubsectorCode,
+                companiesSameIndustries.Select(q => q.Symbol).ToArray(), 5);
+            if (financialIndicators is null)
+            {
+                _logger.LogWarning("CompanyValueAnalyticsAsync can't find financial indicatiors same industries with symbol: {symbol}", symbol);
+                return await _keyValueData.SetAsync(checkingKey, false);
+            }
+            var financialGrowths = await _financialGrowthData.FindAllAsync(company.Symbol);
+            var fiinEvaluates = await _fiinEvaluatedData.FindAsync(symbol);
+            var vndScores = await _vndStockScoreData.FindAllAsync(symbol);
 
             score += CompanyGrowthAnalyticsService.YearlyRevenueGrowthCheck(companyGrowthNotes, financialIndicators);
             score += CompanyGrowthAnalyticsService.QuarterlyRevenueGrowthCheck(companyGrowthNotes, financialIndicators);
@@ -247,8 +305,8 @@ namespace Pl.Sas.Core.Services
             }
 
             var saveZipData = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(companyGrowthNotes));
-            var check = await _analyticsData.SaveCompanyGrowthScoreAsync(symbol, score, saveZipData);
-            return await _systemData.SetKeyValueAsync(checkingKey, check);
+            var check = await _analyticsResultData.SaveCompanyGrowthScoreAsync(symbol, score, saveZipData);
+            return await _keyValueData.SetAsync(checkingKey, check);
         }
 
         /// <summary>
@@ -260,18 +318,18 @@ namespace Pl.Sas.Core.Services
         {
             Guard.Against.NullOrEmpty(symbol, nameof(symbol));
             var checkingKey = $"{symbol}-Analytics-StockPrice";
-            var stockPrices = await _marketData.GetAnalyticsTopStockPriceAsync(symbol, 10000);
-            var stock = await _marketData.GetStockByCode(symbol);
+            var stockPrices = await _stockPriceData.FindAllForTradingAsync(symbol, 50);
+            var stock = await _stockData.GetByCodeAsync(symbol);
             if (stock is null || stockPrices.Count <= 0)
             {
                 _logger.LogWarning("StockPriceAnalyticsAsync can't find last stock price with symbol: {symbol}", symbol);
-                return await _systemData.SetKeyValueAsync(checkingKey, false);
+                return await _keyValueData.SetAsync(checkingKey, false);
             }
 
             var score = 0;
             var stockNotes = new List<AnalyticsNote>();
             var exchangeFluctuationsRate = BaseTrading.GetExchangeFluctuationsRate(stock.Exchange);
-            var fiinEvaluate = await _marketData.GetFiinEvaluatedAsync(symbol);
+            var fiinEvaluate = await _fiinEvaluatedData.FindAsync(symbol);
 
             score += StockAnalyticsService.LastTradingAnalytics(stockNotes, stockPrices, exchangeFluctuationsRate);
             //score += StockAnalyticsService.StochasticTrend(stockNotes, indicatorSet);
@@ -285,8 +343,8 @@ namespace Pl.Sas.Core.Services
             score += StockAnalyticsService.FiinCheck(stockNotes, fiinEvaluate);
 
             var saveZipData = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(stockNotes));
-            var check = await _analyticsData.SaveStockScoreAsync(symbol, score, saveZipData);
-            return await _systemData.SetKeyValueAsync(checkingKey, check);
+            var check = await _analyticsResultData.SaveStockScoreAsync(symbol, score, saveZipData);
+            return await _keyValueData.SetAsync(checkingKey, check);
         }
 
         /// <summary>
@@ -300,12 +358,12 @@ namespace Pl.Sas.Core.Services
             var type = 0;
             var notes = new List<AnalyticsNote>();
             var checkingKey = $"{symbol}-Analytics-FiinAnalytics";
-            var fiinEvaluate = await _marketData.GetFiinEvaluatedAsync(symbol);
-            var stockPrice = await _marketData.GetLastStockPriceAsync(symbol);
+            var fiinEvaluate = await _fiinEvaluatedData.FindAsync(symbol);
+            var stockPrice = await _stockPriceData.GetLastAsync(symbol);
             if (fiinEvaluate is null || stockPrice is null)
             {
                 _logger.LogWarning("FiinAnalyticsAsync can't find fiin evaluate with symbol: {symbol}", symbol);
-                return await _systemData.SetKeyValueAsync(checkingKey, false);
+                return await _keyValueData.SetAsync(checkingKey, false);
             }
 
             if (fiinEvaluate.ControlStatusCode >= 0)
@@ -343,8 +401,8 @@ namespace Pl.Sas.Core.Services
                 notes.Add($"Fiin đánh giá giá trị của cổ phiếu điểm {fiinEvaluate.Vgm}, ", -2, type);
             }
             var saveZipData = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(notes));
-            var check = await _analyticsData.SaveFiinScoreAsync(symbol, score, saveZipData);
-            return await _systemData.SetKeyValueAsync(checkingKey, check);
+            var check = await _analyticsResultData.SaveFiinScoreAsync(symbol, score, saveZipData);
+            return await _keyValueData.SetAsync(checkingKey, check);
         }
 
         /// <summary>
@@ -358,13 +416,13 @@ namespace Pl.Sas.Core.Services
             var type = 0;
             var notes = new List<AnalyticsNote>();
             var checkingKey = $"{symbol}-Analytics-VndScore";
-            var vndScores = await _marketData.GetVndStockScoreAsync(symbol);
-            var company = await _marketData.GetCompanyAsync(symbol);
-            var stockPrice = await _marketData.GetLastStockPriceAsync(symbol);
+            var vndScores = await _vndStockScoreData.FindAllAsync(symbol);
+            var company = await _companyData.GetByCodeAsync(symbol);
+            var stockPrice = await _stockPriceData.GetLastAsync(symbol);
             if (vndScores is null || stockPrice is null)
             {
                 _logger.LogWarning("VndScoreAnalyticsAsync can't find vnd score with symbol: {symbol}", symbol);
-                return await _systemData.SetKeyValueAsync(checkingKey, false);
+                return await _keyValueData.SetAsync(checkingKey, false);
             }
 
             if (company is null || company.SubsectorCode == "8355")
@@ -407,8 +465,8 @@ namespace Pl.Sas.Core.Services
             }
 
             var saveZipData = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(notes));
-            var check = await _analyticsData.SaveVndScoreAsync(symbol, score, saveZipData);
-            return await _systemData.SetKeyValueAsync(checkingKey, check);
+            var check = await _analyticsResultData.SaveVndScoreAsync(symbol, score, saveZipData);
+            return await _keyValueData.SetAsync(checkingKey, check);
         }
 
         /// <summary>
@@ -421,14 +479,13 @@ namespace Pl.Sas.Core.Services
             var targetPrice = 0f;
             var notes = new List<AnalyticsNote>();
             var checkingKey = $"{symbol}-Analytics-TargetPrice";
-            var lastStockPrice = await _marketData.GetLastStockPriceAsync(symbol);
-            var stockPrice = await _marketData.GetLastStockPriceAsync(symbol);
-            if (stockPrice is null || lastStockPrice is null)
+            var lastStockPrice = await _stockPriceData.GetLastAsync(symbol);
+            if (lastStockPrice is null)
             {
                 _logger.LogWarning("TargetPriceAnalyticsAsync can't get last stock price to check: {symbol}", symbol);
-                return await _systemData.SetKeyValueAsync(checkingKey, false);
+                return await _keyValueData.SetAsync(checkingKey, false);
             }
-            var stockRecommendations = await _marketData.GetTopStockRecommendationInSixMonthAsync(symbol, 5);
+            var stockRecommendations = await _stockRecommendationData.GetTopReportInSixMonthAsync(symbol, 5);
             if (stockRecommendations.Count <= 0)
             {
                 notes.Add($"Cổ phiếu {symbol} không có dự phóng giá của công ty chứng khoán nào trong vòng 6 tháng lại đây.", 0, -1);
@@ -443,8 +500,8 @@ namespace Pl.Sas.Core.Services
             }
 
             var saveZipData = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(notes));
-            var check = await _analyticsData.SaveTargetPriceAsync(symbol, targetPrice, saveZipData);
-            return await _systemData.SetKeyValueAsync(checkingKey, check);
+            var check = await _analyticsResultData.SaveTargetPriceAsync(symbol, targetPrice, saveZipData);
+            return await _keyValueData.SetAsync(checkingKey, check);
         }
 
         /// <summary>
@@ -456,13 +513,13 @@ namespace Pl.Sas.Core.Services
         {
             var stockNotes = new List<AnalyticsNote>();
             var checkingKey = $"{symbol}-Analytics-TestTrading";
-            var stock = await _marketData.GetStockByCode(symbol);
-            var chartPrices = (await _marketData.GetChartPricesAsync(symbol)).OrderBy(q => q.TradingDate).ToList();
+            var stock = await _stockData.GetByCodeAsync(symbol);
+            var chartPrices = (await _chartPriceData.FindAllAsync(symbol, "D")).OrderBy(q => q.TradingDate).ToList();
             var tradingHistories = chartPrices.Where(q => q.TradingDate >= Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
             if (stock is null || chartPrices.Count <= 2 || tradingHistories.Count <= 0)
             {
                 _logger.LogWarning("TestTradingAnalyticsAsync => stock is null or chartPrices is null for {symbol}", symbol);
-                return await _systemData.SetKeyValueAsync(checkingKey, false);
+                return await _keyValueData.SetAsync(checkingKey, false);
             }
             var isBuy = false;
             var isSell = false;
@@ -473,7 +530,7 @@ namespace Pl.Sas.Core.Services
             var countInStock = chartPrices.Count(q => q.TradingDate >= Constants.StartTime);
             var noteInvestment = $"Mua và nắm giữ {tradingHistories.Count} phiên từ ngày {tradingHistories[0].TradingDate:dd/MM/yyyy}: Giá đóng cửa đầu kỳ {startPrice:0,0} giá đóng cửa cuối kỳ {endPrice:0,0} lợi nhuận {endPrice.GetPercent(startPrice):0.00}%.";
             stockNotes.Add(noteInvestment, 0, startPrice > endPrice ? -1 : startPrice < endPrice ? 1 : 0, null);
-            await _analyticsData.SaveTestTradingResultAsync(new()
+            await _tradingResultData.SaveTestTradingResultAsync(new()
             {
                 Symbol = symbol,
                 Principle = 1,
@@ -490,11 +547,11 @@ namespace Pl.Sas.Core.Services
             #endregion
 
             #region Macd Trading
-            TradingCase macdCase = MacdTrading.Trading(tradingHistories);
+            var macdCase = MacdTrading.Trading(tradingHistories);
             var macdNote = $"Trading {Utilities.GetPrincipleName(3).ToLower()} {tradingHistories.Count} phiên từ ngày {tradingHistories[0].TradingDate:dd/MM/yyyy}, Lợi nhuận {macdCase.Profit(tradingHistories[^1].ClosePrice):0,0} ({macdCase.ProfitPercent(tradingHistories[^1].ClosePrice):0,0.00}%), thuế {macdCase.TotalTax:0,0}, xem chi tiết tại tab \"Lợi nhuận và đầu tư TN\".";
             var macdType = macdCase.FixedCapital < macdCase.Profit(tradingHistories[^1].ClosePrice) ? 1 : macdCase.FixedCapital == macdCase.Profit(tradingHistories[^1].ClosePrice) ? 0 : -1;
             stockNotes.Add(macdNote, 0, macdType, null);
-            await _analyticsData.SaveTestTradingResultAsync(new()
+            await _tradingResultData.SaveTestTradingResultAsync(new()
             {
                 Symbol = symbol,
                 Principle = 3,
@@ -507,17 +564,18 @@ namespace Pl.Sas.Core.Services
                 TotalTax = macdCase.TotalTax,
                 TradingNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(macdCase.ExplainNotes)),
             });
+            MacdTrading.Dispose();
             #endregion
 
             #region Macd Trading
-            TradingCase sarCase = SarTrading.Trading(tradingHistories);
+            var sarCase = SarTrading.Trading(tradingHistories);
             var sarNote = $"Trading {Utilities.GetPrincipleName(3).ToLower()} {tradingHistories.Count} phiên từ ngày {tradingHistories[0].TradingDate:dd/MM/yyyy}, Lợi nhuận {sarCase.Profit(tradingHistories[^1].ClosePrice):0,0} ({sarCase.ProfitPercent(tradingHistories[^1].ClosePrice):0,0.00}%), thuế {sarCase.TotalTax:0,0}, xem chi tiết tại tab \"Lợi nhuận và đầu tư TN\".";
             var sarType = sarCase.FixedCapital < sarCase.Profit(tradingHistories[^1].ClosePrice) ? 1 : sarCase.FixedCapital == sarCase.Profit(tradingHistories[^1].ClosePrice) ? 0 : -1;
             stockNotes.Add(sarNote, 0, sarType, null);
-            await _analyticsData.SaveTestTradingResultAsync(new()
+            await _tradingResultData.SaveTestTradingResultAsync(new()
             {
                 Symbol = symbol,
-                Principle = 1,
+                Principle = 4,
                 IsBuy = isBuy,
                 BuyPrice = sarCase.BuyPrice,
                 IsSell = isSell,
@@ -527,8 +585,12 @@ namespace Pl.Sas.Core.Services
                 TotalTax = sarCase.TotalTax,
                 TradingNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(sarCase.ExplainNotes)),
             });
+            SarTrading.Dispose();
+            chartPrices = null;
+            tradingHistories = null;
             #endregion
-            return await _systemData.SetKeyValueAsync(checkingKey, true);
+
+            return await _keyValueData.SetAsync(checkingKey, true);
         }
 
         /// <summary>
@@ -544,7 +606,7 @@ namespace Pl.Sas.Core.Services
                 _logger.LogWarning("MarketSentimentAnalyticsAsync null data key");
                 return;
             }
-            var indexPrices = await _marketData.GetChartPricesAsync(schedule.DataKey, "D", DateTime.Now.Date.AddDays(512));
+            var indexPrices = await _chartPriceData.FindAllAsync(schedule.DataKey, "D", DateTime.Now.Date.AddDays(-512));
             if (indexPrices.Count < 5)
             {
                 _logger.LogWarning("Chỉ số {DataKey} không được phân tích tâm lý do không đủ dữ liệu để phân tích.", schedule.DataKey);
@@ -556,7 +618,7 @@ namespace Pl.Sas.Core.Services
             var marketSentimentNotes = new List<AnalyticsNote>();
             score += MarketAnalyticsService.IndexValueTrend(marketSentimentNotes, indexPrices, indicatorSet);
             var key = $"{schedule.DataKey}-Analytics-MarketSentiment";
-            await _systemData.SetKeyValueAsync(key, score);
+            await _keyValueData.SetAsync(key, score);
         }
 
         /// <summary>
@@ -566,7 +628,7 @@ namespace Pl.Sas.Core.Services
         /// <returns></returns>
         public virtual async Task IndustryTrendAnalyticsAsync()
         {
-            var industries = await _marketData.GetIndustriesAsync();
+            var industries = await _industryData.FindAllAsync();
             var oneChange = new List<float>();
             var threeChange = new List<float>();
             var fiveChange = new List<float>();
@@ -575,12 +637,11 @@ namespace Pl.Sas.Core.Services
             var thirtyChange = new List<float>();
             foreach (var industry in industries)
             {
-                var notes = new List<AnalyticsNote>();
-                var companies = await _marketData.GetCompaniesAsync(industry.Code);
-                foreach (var company in companies)
+                var stocks = await _companyData.FindAllAsync(industry.Code);
+                foreach (var stock in stocks)
                 {
-                    var stockPrices = await _marketData.GetAnalyticsTopStockPriceAsync(company.Symbol, 35);
-                    if (stockPrices.Count <= 0)
+                    var stockPrices = await _stockPriceData.GetForIndustryTrendAnalyticsAsync(stock.Symbol, 35);
+                    if (stockPrices is null || stockPrices.Count <= 0)
                     {
                         continue;
                     }
@@ -636,19 +697,19 @@ namespace Pl.Sas.Core.Services
                         }
                     }
                 }
-                var score = 0f;
+                var score = 0;
                 if (oneChange.Count > 1)
                 {
-                    score += oneChange.Count > 0 ? oneChange.Average() * 10 : 0;
-                    score += threeChange.Count > 0 ? threeChange.Average() * 6 : 0;
-                    score += fiveChange.Count > 0 ? fiveChange.Average() * 5 : 0;
-                    score += tenChange.Count > 0 ? tenChange.Average() : 3;
-                    score += twentyChange.Count > 0 ? twentyChange.Average() * 2 : 0;
-                    score += thirtyChange.Count > 0 ? thirtyChange.Average() * 1 : 0;
+                    score += oneChange.Count > 0 ? (int)oneChange.Average() * 10 : 0;
+                    score += threeChange.Count > 0 ? (int)threeChange.Average() * 6 : 0;
+                    score += fiveChange.Count > 0 ? (int)fiveChange.Average() * 5 : 0;
+                    score += tenChange.Count > 0 ? (int)tenChange.Average() : 3;
+                    score += twentyChange.Count > 0 ? (int)(twentyChange.Average() * 2) : 0;
+                    score += thirtyChange.Count > 0 ? (int)(thirtyChange.Average() * 1) : 0;
                 }
 
-                var saveZipData = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(notes));
-                await _analyticsData.SaveIndustryScoreAsync(industry.Code, score, saveZipData);
+                industry.AutoRank = score;
+                await _industryData.UpdateAsync(industry);
                 oneChange.Clear();
                 threeChange.Clear();
                 fiveChange.Clear();
@@ -666,16 +727,16 @@ namespace Pl.Sas.Core.Services
         /// <returns></returns>
         public virtual async Task CorporateActionToPriceAsync()
         {
-            var exrightCorporateActions = await _marketData.GetCorporateActionTradingByExrightDateAsync();
+            var exrightCorporateActions = await _corporateActionData.GetTradingByExrightDateAsync();
             foreach (var corporateActions in exrightCorporateActions)
             {
-                var schedule = await _systemData.GetScheduleAsync(5, corporateActions.Symbol);
+                var schedule = (await _scheduleData.FindAllAsync(5, corporateActions.Symbol)).FirstOrDefault();
                 if (schedule is not null)
                 {
-                    await _marketData.DeleteStockPrices(corporateActions.Symbol);
+                    await _stockPriceData.DeleteBySymbolAsync(corporateActions.Symbol);
                     schedule.OptionsJson = JsonSerializer.Serialize(new Dictionary<string, string>() { { "StockPricesCrawlSize", "90000" } });
                     schedule.ActiveTime = DateTime.Now;
-                    var updateResult = await _systemData.UpdateScheduleAsync(schedule);
+                    var updateResult = await _scheduleData.UpdateAsync(schedule);
                     if (updateResult)
                     {
                         _workerQueueService.BroadcastUpdateMemoryTask(new QueueMessage("Schedule"));
@@ -692,26 +753,26 @@ namespace Pl.Sas.Core.Services
         /// <returns></returns>
         public virtual async Task<bool> MacroeconomicsAnalyticsAsync(string symbol)
         {
-            var stockPrice = await _marketData.GetLastStockPriceAsync(symbol);
-            var company = await _marketData.GetCompanyAsync(symbol);
+            var stockPrice = await _stockPriceData.GetLastAsync(symbol);
+            var company = await _companyData.GetByCodeAsync(symbol);
             var checkingKey = $"{symbol}-Analytics-Macroeconomics";
             if (stockPrice is null || company is null)
             {
                 _logger.LogWarning("MacroeconomicsAnalyticsAsync can't find last stock price and company with symbol: {symbol}", symbol);
-                return await _systemData.SetKeyValueAsync(checkingKey, false);
+                return await _keyValueData.SetAsync(checkingKey, false);
             }
 
             var indexCode = Utilities.GetLeadIndexByExchange(company.Exchange ?? "VNINDEX");
-            var marketSentimentIndices = await _systemData.GetKeyValueAsync($"{indexCode}-Analytics-MarketSentiment");
-            var industry = await _analyticsData.GetIndustryAnalyticsAsync(company.SubsectorCode);
+            var marketSentimentIndices = await _keyValueData.GetAsync($"{indexCode}-Analytics-MarketSentiment");
+            var industry = await _industryData.GetByCodeAsync(company.SubsectorCode);
             var score = 0;
             var analyticsNotes = new List<AnalyticsNote>();
             score += MarketAnalyticsService.MarketSentimentTrend(analyticsNotes, marketSentimentIndices?.GetValue<float>() ?? 0);
             score += MarketAnalyticsService.IndustryTrend(analyticsNotes, industry);
 
             var saveZipData = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(analyticsNotes));
-            var check = await _analyticsData.SaveMacroeconomicsScoreAsync(symbol, score, saveZipData);
-            return await _systemData.SetKeyValueAsync(checkingKey, check);
+            var check = await _analyticsResultData.SaveMacroeconomicsScoreAsync(symbol, score, saveZipData);
+            return await _keyValueData.SetAsync(checkingKey, check);
         }
     }
 }

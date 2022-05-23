@@ -3,9 +3,9 @@
     public class ConnectionStrings
     {
         /// <summary>
-        /// Chuỗi kết nối đến db hệ thống
+        /// Chuỗi kết nối đến identity connection
         /// </summary>
-        public string SystemConnection { get; set; } = null!;
+        public string IdentityConnection { get; set; } = null!;
 
         /// <summary>
         /// Chuỗi kết nối đến db market lưu dữ liệu gốc crawler về

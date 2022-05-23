@@ -91,5 +91,26 @@ namespace Pl.Sas.UnitTests
             await hostedService.StopAsync(CancellationToken.None);
         }
 
+        [Fact]
+        public async Task UpdateChartPricesRealtimeTestAsync()
+        {
+            var services = ConfigureServices.GetConfigureServices();
+            var serviceProvider = services.BuildServiceProvider();
+            var downloadService = serviceProvider.GetService<DownloadService>() ?? throw new Exception("Can't get WorkerService");
+            var hostedService = serviceProvider.GetService<IHostedService>() as LoggingQueuedHostedService ?? throw new Exception("Can't get LoggingQueuedHostedService");
+            await hostedService.StartAsync(CancellationToken.None);
+
+            await downloadService.UpdateChartPricesRealtimeAsync(new()
+            {
+                Name = $"Tải dữ liệu chỉ số: VNINDEX",
+                Type = 14,
+                DataKey = "FPT",
+                ActiveTime = DateTime.Now
+            });
+            Assert.True(1 == 1);
+
+            await hostedService.StopAsync(CancellationToken.None);
+        }
+
     }
 }

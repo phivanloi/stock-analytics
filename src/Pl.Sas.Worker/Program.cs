@@ -1,21 +1,16 @@
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Pl.Sas.Core;
 using Pl.Sas.Core.Interfaces;
 using Pl.Sas.Core.Services;
 using Pl.Sas.Infrastructure;
-using Pl.Sas.Infrastructure.Analytics;
 using Pl.Sas.Infrastructure.Caching;
-using Pl.Sas.Infrastructure.Crawl;
+using Pl.Sas.Infrastructure.Data;
 using Pl.Sas.Infrastructure.Helper;
 using Pl.Sas.Infrastructure.Loging;
-using Pl.Sas.Infrastructure.Market;
 using Pl.Sas.Infrastructure.RabbitmqMessageQueue;
-using Pl.Sas.Infrastructure.System;
 using Pl.Sas.Worker;
 using System.Net;
 using System.Text.Json;
@@ -52,31 +47,6 @@ builder.Services.AddHttpClient("downloader", c =>
     };
 });
 
-builder.Services.AddDbContext<SystemDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("SystemConnection"),
-    sqlServerOptionsAction: sqlOptions =>
-    {
-        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
-    }));
-builder.Services.AddDbContext<MarketDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("MarketConnection"),
-    sqlServerOptionsAction: sqlOptions =>
-    {
-        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
-    }));
-builder.Services.AddDbContext<AnalyticsDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("AnalyticsConnection"),
-    sqlServerOptionsAction: sqlOptions =>
-    {
-        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
-    }));
-builder.Services.AddDbContext<IdentityDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConnection"),
-    sqlServerOptionsAction: sqlOptions =>
-    {
-        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
-    }));
-
 builder.Services.AddHealthChecks()
     .AddCheck("self", () => HealthCheckResult.Healthy())
     .AddSqlServer(builder.Configuration.GetConnectionString("SystemConnection"), name: "system-database", tags: new string[] { "system_database", "31_db" })
@@ -94,11 +64,26 @@ builder.Services.AddRedisCacheService(option =>
     option.Configuration = builder.Configuration.GetConnectionString("CacheConnection");
 });
 
-builder.Services.AddSingleton<IWorkerQueueService, WorkerQueueService>();
+builder.Services.AddSingleton<IKeyValueData, KeyValueData>();
 builder.Services.AddSingleton<IDownloadData, DownloadData>();
-builder.Services.AddScoped<IMarketData, MarketData>();
-builder.Services.AddScoped<IAnalyticsData, AnalyticsData>();
-builder.Services.AddScoped<ISystemData, SystemData>();
+builder.Services.AddSingleton<IStockData, StockData>();
+builder.Services.AddSingleton<IStockPriceData, StockPriceData>();
+builder.Services.AddSingleton<ICompanyData, CompanyData>();
+builder.Services.AddSingleton<IIndustryData, IndustryData>();
+builder.Services.AddSingleton<ICorporateActionData, CorporateActionData>();
+builder.Services.AddSingleton<IFinancialIndicatorData, FinancialIndicatorData>();
+builder.Services.AddSingleton<IFinancialGrowthData, FinancialGrowthData>();
+builder.Services.AddSingleton<ILeadershipData, LeadershipData>();
+builder.Services.AddSingleton<IStockTransactionData, StockTransactionData>();
+builder.Services.AddSingleton<IStockRecommendationData, StockRecommendationData>();
+builder.Services.AddSingleton<IVndStockScoreData, VndStockScoreData>();
+builder.Services.AddSingleton<IFiinEvaluatedData, FiinEvaluatedData>();
+builder.Services.AddSingleton<IScheduleData, ScheduleData>();
+builder.Services.AddSingleton<ITradingResultData, TradingResultData>();
+builder.Services.AddSingleton<IAnalyticsResultData, AnalyticsResultData>();
+builder.Services.AddSingleton<IChartPriceData, ChartPriceData>();
+
+builder.Services.AddSingleton<IWorkerQueueService, WorkerQueueService>();
 builder.Services.AddScoped<DownloadService>();
 builder.Services.AddScoped<AnalyticsService>();
 builder.Services.AddScoped<StockViewService>();

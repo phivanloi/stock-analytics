@@ -4,10 +4,6 @@
 	dotnet tool update --global dotnet-ef
 	dotnet add package Microsoft.EntityFrameworkCore.Design
 
-- Tạo db migrations cho system db
-	dotnet ef migrations add InitialCreate --context SystemDbContext --output-dir "Migrations\SystemDb"
-	dotnet ef migrations remove --context SystemDbContext
-
 - Tạo db migrations cho db narket
 	dotnet ef migrations add InitialCreate --context MarketDbContext --output-dir "Migrations\MarketDb"
 	dotnet ef migrations remove --context MarketDbContext

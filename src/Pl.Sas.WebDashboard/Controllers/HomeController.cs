@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Pl.Sas.WebDashboard.Models;
 using Pl.Sas.Core;
 using Pl.Sas.Core.Entities;
 using Pl.Sas.Core.Interfaces;
+using Pl.Sas.Core.Services;
+using Pl.Sas.WebDashboard.Models;
 using System.Text;
 using System.Text.Json;
-using Pl.Sas.Core.Services;
 
 namespace Pl.Sas.WebDashboard.Controllers
 {
@@ -14,26 +14,41 @@ namespace Pl.Sas.WebDashboard.Controllers
     public class HomeController : Controller
     {
         private readonly StockViewService _stockViewService;
-        private readonly IIdentityData _identityData;
         private readonly IZipHelper _zipHelper;
-        private readonly IMarketData _marketData;
-        private readonly IAnalyticsData _analyticsData;
-        private readonly ISystemData _systemData;
+        private readonly IStockData _stockData;
+        private readonly IFollowStockData _followStockData;
+        private readonly IKeyValueData _keyValueData;
+        private readonly IAnalyticsResultData _analyticsResultData;
+        private readonly IStockPriceData _stockPriceData;
+        private readonly ICompanyData _companyData;
+        private readonly ITradingResultData _tradingResultData;
+        private readonly IIndustryData _industryData;
+        private readonly ICorporateActionData _corporateActionData;
 
         public HomeController(
+            ICorporateActionData corporateActionData,
+            IIndustryData industryData,
+            ITradingResultData tradingResultData,
+            ICompanyData companyData,
+            IStockPriceData stockPriceData,
+            IAnalyticsResultData analyticsResultData,
+            IKeyValueData keyValueData,
+            IFollowStockData followStockData,
+            IStockData stockData,
             StockViewService stockViewService,
-            IIdentityData identityData,
-            IMarketData marketData,
-            IAnalyticsData analyticsData,
-            ISystemData systemData,
             IZipHelper zipHelper)
         {
-            _systemData = systemData;
-            _analyticsData = analyticsData;
-            _marketData = marketData;
-            _identityData = identityData;
+            _corporateActionData = corporateActionData;
+            _analyticsResultData = analyticsResultData;
+            _keyValueData = keyValueData;
+            _stockData = stockData;
             _stockViewService = stockViewService;
             _zipHelper = zipHelper;
+            _followStockData = followStockData;
+            _stockPriceData = stockPriceData;
+            _companyData = companyData;
+            _tradingResultData = tradingResultData;
+            _industryData = industryData;
         }
 
         public async Task<IActionResult> IndexAsync()
@@ -41,9 +56,9 @@ namespace Pl.Sas.WebDashboard.Controllers
             var userId = HttpContext.GetUserId();
             var model = new MarketViewModel()
             {
-                Exchanges = await _marketData.CacheGetExchangesAsync(),
+                Exchanges = await _stockData.GetExchanges(),
                 IndustryCodes = await _stockViewService.CacheGetIndustriesAsync(),
-                UserHasFollowStock = await _identityData.IsUserHasFollowAsync(userId)
+                UserHasFollowStock = await _followStockData.IsUserHasFollowAsync(userId)
             };
             return View(model);
         }
@@ -52,9 +67,9 @@ namespace Pl.Sas.WebDashboard.Controllers
         public async Task<IActionResult> MarketListAsync([FromBody] MarketSearchModel? marketSearchModel = null)
         {
             var userId = HttpContext.GetUserId();
-            var userFollowStocksTask = _identityData.GetFollowSymbols(userId);
-            var bankInterestRate12Task = _systemData.GetKeyValueAsync(Constants.BankInterestRate12Key);
-            var followSymbols = await userFollowStocksTask;
+            var userFollowStocksTask = _followStockData.FindAllAsync(userId);
+            var bankInterestRate12Task = _keyValueData.GetAsync(Constants.BankInterestRate12Key);
+            var followSymbols = (await userFollowStocksTask).Select(q => q.Symbol).ToList();
             var model = new MarketListViewModel()
             {
                 StockViews = _stockViewService.GetMarketStocksView(marketSearchModel?.Principle ?? 1, marketSearchModel?.Exchange, marketSearchModel?.IndustryCode, marketSearchModel?.Symbol, marketSearchModel?.Ordinal, marketSearchModel?.Zone, followSymbols),
@@ -73,17 +88,30 @@ namespace Pl.Sas.WebDashboard.Controllers
             }
 
             var userId = HttpContext.GetUserId();
-            var check = await _identityData.ToggleFollow(userId, symbol);
-            return Json(new { status = check ? 1 : 0, message = check ? $"Thay đổi {symbol} thành công." : $"Thay đổi {symbol} không thành công." });
+            var followStock = await _followStockData.FindAsync(userId, symbol);
+            if (followStock != null)
+            {
+                var deleteResult = await _followStockData.DeleteAsync(followStock.Id);
+                return Json(new { status = deleteResult ? 1 : 0, message = deleteResult ? $"Bỏ theo dõi mã {symbol} thành công." : $"Bỏ theo dõi mã {symbol} không thành công." });
+            }
+            else
+            {
+                var insertResult = await _followStockData.InsertAsync(new FollowStock
+                {
+                    UserId = userId,
+                    Symbol = symbol
+                });
+                return Json(new { status = insertResult ? 1 : 0, message = insertResult ? $"Theo dõi mã {symbol} thành công." : $"Theo dõi mã {symbol} không thành công." });
+            }
         }
 
         public async Task<IActionResult> StockDetailsAsync(string symbol)
         {
-            var stockTask = _marketData.GetStockByCode(symbol);
-            var analyticsResultTask = _analyticsData.GetAnalyticsResultAsync(symbol);
-            var allStockPricesTask = _marketData.CacheGetAllStockPricesAsync(symbol);
-            var companyTask = _marketData.GetCompanyAsync(symbol);
-            var tradingResultsTask = _analyticsData.GetTradingResultAsync(symbol);
+            var stockTask = _stockData.GetByCodeAsync(symbol);
+            var analyticsResultTask = _analyticsResultData.FindAsync(symbol);
+            var allStockPricesTask = _stockPriceData.FindAllAsync(symbol);
+            var companyTask = _companyData.GetByCodeAsync(symbol);
+            var tradingResultsTask = _tradingResultData.FindAllAsync(symbol);
             var stock = await stockTask;
             if (stock is null)
             {
@@ -161,45 +189,40 @@ namespace Pl.Sas.WebDashboard.Controllers
 
         public async Task<IActionResult> IndustryAsync()
         {
-            var industries = await _marketData.GetIndustriesAsync();
-            var industryAnalytics = await _analyticsData.GetIndustryAnalyticsAsync();
-            var model = new List<IndustryViewModel>();
-            foreach (var item in industries)
+            var model = new IndustryViewModel()
             {
-                var analiticsItem = industryAnalytics.FirstOrDefault(q => q.Code == item.Code);
-                model.Add(new IndustryViewModel()
-                {
-                    Code = item.Code,
-                    Name = item.Name,
-                    ManualScore = analiticsItem?.ManualScore ?? 0,
-                    Score = analiticsItem?.Score ?? 0,
-                });
-            }
+                Industries = (await _industryData.FindAllAsync()).OrderByDescending(q => q.Rank).ThenByDescending(q => q.AutoRank).ToList()
+            };
             return View(model);
         }
 
         [HttpPost]
-        public async Task<IActionResult> IndustrySaveAsync(string code, float rank)
+        public async Task<IActionResult> IndustrySaveAsync(string id, int rank)
         {
             var message = "Thay đổi không thành công.";
             var updateResult = false;
-            var check = await _analyticsData.SaveManualScoreAsync(code, rank);
-            if (check)
+            var industry = await _industryData.GetByIdAsync(id);
+            if (industry is not null)
             {
-                message = $"Thay đổi điểm đánh giá thành công.";
+                industry.Rank = rank;
+                updateResult = await _industryData.UpdateAsync(industry);
+                if (updateResult)
+                {
+                    message = $"Thay đổi lĩnh vực '{industry.Name}' thành công.";
+                }
             }
             return Json(new { status = updateResult ? 1 : 0, message });
         }
 
         public async Task<IActionResult> CorporateActionAsync()
         {
-            return View(await _marketData.CacheGetExchangesAsync());
+            return View(await _stockData.GetExchanges());
         }
 
         [HttpPost]
-        public async Task<IActionResult> CorporateActionAsync(string symbol, string evenCode, string exchange)
+        public async Task<IActionResult> CorporateActionAsync(string? symbol = null, string? evenCode = null, string? exchange = null)
         {
-            var corporateActions = await _marketData.GetCorporateActionsAsync(symbol, exchange, evenCode?.Split(','));
+            var corporateActions = await _corporateActionData.FindAllForViewPageAsync(symbol, evenCode?.Split(','), exchange);
             corporateActions = corporateActions.OrderBy(q => q.ExrightDate).ThenByDescending(q => q.PublicDate).ToList();
             var responseList = new List<CorporateActionViewModel>();
             foreach (var item in corporateActions)

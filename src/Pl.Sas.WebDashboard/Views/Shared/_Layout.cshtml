@@ -1,10 +1,10 @@
 ﻿@using Pl.Sas.Core
-@using Pl.Sas.Infrastructure.Identity
 @inject Microsoft.Extensions.Options.IOptions<AppSettings> appSettingsOptions
-@inject Pl.Sas.Infrastructure.Identity.UserService userService
+@inject Pl.Sas.Core.Interfaces.IUserData userData
 @{
+    var userId = Context.GetUserId();
     var appSettings = appSettingsOptions.Value;
-    var userInfo = await userService.CacheGetUserInfoAsync(Context.User);
+    var userInfo = await userData.CacheGetUserInfoAsync(userId);
     var activeMenuId = ViewData["ActiveMenu"] ?? "";
 }
 <!DOCTYPE html>

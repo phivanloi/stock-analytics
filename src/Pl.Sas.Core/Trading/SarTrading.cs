@@ -1,5 +1,4 @@
 ﻿using Pl.Sas.Core.Entities;
-using Pl.Sas.Core.Indicators;
 using Skender.Stock.Indicators;
 
 namespace Pl.Sas.Core.Trading
@@ -10,7 +9,7 @@ namespace Pl.Sas.Core.Trading
         private const float SellTax = 0.25f / 100;
         private const float AdvanceTax = 0.15f / 100;
         private static List<ParabolicSarResult> _parabolicSar = new();
-        private static readonly TradingCase tradingCase = new();
+        private static TradingCase tradingCase = new();
 
         public static TradingCase Trading(List<ChartPrice> chartPrices, bool isNoteTrading = true)
         {
@@ -102,7 +101,6 @@ namespace Pl.Sas.Core.Trading
         public static int BuyCondition(DateTime tradingDate)
         {
             var sar = _parabolicSar.Find(tradingDate);
-            tradingCase.AddNote(0, System.Text.Json.JsonSerializer.Serialize(sar));
             if (sar is null || sar.Sar is null)
             {
                 return 0;
@@ -119,7 +117,6 @@ namespace Pl.Sas.Core.Trading
         public static int SellCondition(DateTime tradingDate)
         {
             var sar = _parabolicSar.Find(tradingDate);
-            tradingCase.AddNote(0, System.Text.Json.JsonSerializer.Serialize(sar));
             if (sar is null || sar.Sar is null)
             {
                 return 0;
@@ -178,6 +175,12 @@ namespace Pl.Sas.Core.Trading
                 Date = q.TradingDate
             }).OrderBy(q => q.Date).ToList();
             _parabolicSar = quotes.GetParabolicSar(0.02M).ToList();
+        }
+
+        public static void Dispose()
+        {
+            _parabolicSar = new();
+            tradingCase = new();
         }
     }
 }
