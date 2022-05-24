@@ -3,18 +3,15 @@ using Skender.Stock.Indicators;
 
 namespace Pl.Sas.Core.Trading
 {
-    public class MacdTrading
+    public class MacdTrading : BaseTrading
     {
-        private const float _buyTax = 0.15f / 100;
-        private const float SellTax = 0.25f / 100;
-        private const float AdvanceTax = 0.15f / 100;
         private static List<MacdResult> _macd_12_26_9 = new();
         private static TradingCase tradingCase = new();
 
         public static TradingCase Trading(List<ChartPrice> chartPrices, bool isNoteTrading = true)
         {
             tradingCase.IsNote = isNoteTrading;
-            BuildIndicatorSet(chartPrices);
+            LoadIndicatorSet(chartPrices);
             var numberChangeDay = 10;
             var tradingHistory = new List<ChartPrice>();
             float? lastBuyPrice = null;
@@ -146,7 +143,7 @@ namespace Pl.Sas.Core.Trading
         public static (float TotalProfit, float TotalTax) Sell(long stockCount, float stockPrice)
         {
             var totalMoney = stockCount * stockPrice;
-            var totalTax = totalMoney * SellTax;
+            var totalTax = totalMoney * _sellTax;
             return (totalMoney - totalTax, totalTax);
         }
 
@@ -160,7 +157,7 @@ namespace Pl.Sas.Core.Trading
             var buyTax = _buyTax;
             if (numberChangeDay < 3)
             {
-                buyTax += AdvanceTax;
+                buyTax += _advanceTax;
             }
 
             var totalBuyMoney = totalMoney - (totalMoney * buyTax);
@@ -176,13 +173,7 @@ namespace Pl.Sas.Core.Trading
             return (buyStockCount, excessCash, totalTax);
         }
 
-        public static void Dispose()
-        {
-            _macd_12_26_9 = new();
-            tradingCase = new();
-        }
-
-        private static void BuildIndicatorSet(List<ChartPrice> chartPrices)
+        private static void LoadIndicatorSet(List<ChartPrice> chartPrices)
         {
             var quotes = chartPrices.Select(q => new Quote()
             {
@@ -194,6 +185,12 @@ namespace Pl.Sas.Core.Trading
                 Date = q.TradingDate
             }).OrderBy(q => q.Date).ToList();
             _macd_12_26_9 = quotes.GetMacd(12, 26, 9, CandlePart.Close).ToList();
+        }
+
+        public static void Dispose()
+        {
+            _macd_12_26_9 = new();
+            tradingCase = new();
         }
     }
 }
