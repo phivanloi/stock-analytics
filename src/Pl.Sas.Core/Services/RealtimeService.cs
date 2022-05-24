@@ -111,28 +111,28 @@ namespace Pl.Sas.Core.Services
                 return;
             }
 
-            var chartPrices = await _chartPriceData.CacheFindAllAsync(symbol, "D");
-            if (chartPrices is null || chartPrices.Count <= 0)
-            {
-                return;
-            }
+            //var chartPrices = await _chartPriceData.CacheFindAllAsync(symbol, "D");
+            //if (chartPrices is null || chartPrices.Count <= 0)
+            //{
+            //    return;
+            //}
 
-            foreach (var realtimeItem in chartPricesRealtime)
-            {
-                var chartPrice = chartPrices.FirstOrDefault(q => q.TradingDate == realtimeItem.TradingDate);
-                if (chartPrice is null)
-                {
-                    chartPrices.Add(realtimeItem);
-                }
-                else
-                {
-                    chartPrice.TotalMatchVol = realtimeItem.TotalMatchVol;
-                    chartPrice.ClosePrice = realtimeItem.ClosePrice;
-                    chartPrice.LowestPrice = realtimeItem.LowestPrice;
-                    chartPrice.HighestPrice = realtimeItem.HighestPrice;
-                    chartPrice.OpenPrice = realtimeItem.OpenPrice;
-                }
-            }
+            //foreach (var realtimeItem in chartPricesRealtime)
+            //{
+            //    var chartPrice = chartPrices.FirstOrDefault(q => q.TradingDate == realtimeItem.TradingDate);
+            //    if (chartPrice is null)
+            //    {
+            //        chartPrices.Add(realtimeItem);
+            //    }
+            //    else
+            //    {
+            //        chartPrice.TotalMatchVol = realtimeItem.TotalMatchVol;
+            //        chartPrice.ClosePrice = realtimeItem.ClosePrice;
+            //        chartPrice.LowestPrice = realtimeItem.LowestPrice;
+            //        chartPrice.HighestPrice = realtimeItem.HighestPrice;
+            //        chartPrice.OpenPrice = realtimeItem.OpenPrice;
+            //    }
+            //}
 
 
         }
