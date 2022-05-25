@@ -18,7 +18,7 @@ namespace Pl.Sas.Core.Services
         {
             if (company.FoundingDate is null)
             {
-                return 0;
+                return notes.Add($"Công ty không có thông tin ngày thành lập.", -1, -1);
             }
 
             var score = 0;
@@ -35,8 +35,7 @@ namespace Pl.Sas.Core.Services
                 type++;
                 score++;
             }
-            notes.Add($"Ngày thành lập công ty {company.FoundingDate.Value:dd/MM/yyyy}", score, type);
-            return score;
+            return notes.Add($"Ngày thành lập công ty {company.FoundingDate.Value:dd/MM/yyyy}", score, type);
         }
 
         /// <summary>
@@ -51,15 +50,13 @@ namespace Pl.Sas.Core.Services
             var companyFinancialIndicators = financialIndicatorsSameIndustries.Where(q => q.Symbol == company.Symbol).ToList();
             if (companyFinancialIndicators.Count <= 0)
             {
-                notes.Add("Không có thông tin doanh thu để đánh giá.", -2, -2, guideLink);
-                return -1;
+                return notes.Add("Không có thông tin doanh thu để đánh giá.", -1, -2, guideLink);
             }
 
             var lastCompanyReport = companyFinancialIndicators.OrderByDescending(q => q.YearReport).FirstOrDefault(q => q.LengthReport == 5);
             if (lastCompanyReport is null || lastCompanyReport.YearReport < (DateTime.Now.Year - 1))
             {
-                notes.Add("Năm gần đây không có thông tin doanh thu.", -1, -1, guideLink);
-                return -1;
+                return notes.Add("Năm gần đây không có thông tin doanh thu.", -1, -1, guideLink);
             }
 
             var score = 0;
@@ -91,8 +88,7 @@ namespace Pl.Sas.Core.Services
                 type--;
             }
 
-            notes.Add(note, score, type, guideLink);
-            return score;
+            return notes.Add(note, score, type, guideLink);
         }
 
         /// <summary>
@@ -107,15 +103,13 @@ namespace Pl.Sas.Core.Services
             var guideLink = "https://vcbs.com.vn/vn/Utilities/Index/5";
             if (companyFinancialIndicators.Count <= 0)
             {
-                notes.Add("Không có thông tin lợi nhuận để đánh giá.", -1, -2, guideLink);
-                return -1;
+                return notes.Add("Không có thông tin lợi nhuận để đánh giá.", -1, -2, guideLink);
             }
 
             var lastCompanyReport = companyFinancialIndicators.OrderByDescending(q => q.YearReport).FirstOrDefault(q => q.LengthReport == 5);
             if (lastCompanyReport is null || lastCompanyReport.YearReport < (DateTime.Now.Year - 1))
             {
-                notes.Add("Năm gần đây không có thông tin doanh thu.", -1, -1, guideLink);
-                return -1;
+                return notes.Add("Năm gần đây không có thông tin doanh thu.", -1, -1, guideLink);
             }
 
             var score = 0;
@@ -147,8 +141,7 @@ namespace Pl.Sas.Core.Services
                 type--;
             }
 
-            notes.Add(note, score, type, guideLink);
-            return score;
+            return notes.Add(note, score, type, guideLink);
         }
 
         /// <summary>
@@ -163,31 +156,26 @@ namespace Pl.Sas.Core.Services
         {
             if (lastQuarterlyFinancialIndicator is null)
             {
-                notes.Add("Không có thông tin tài chính quý gần nhất để kiểm tra ep.", -5, -2);
-                return -5;
+                return notes.Add("Không có thông tin tài chính quý gần nhất để kiểm tra ep.", -5, -2);
             }
             if (marketPrice <= 0)
             {
-                notes.Add($"Ep gần nhất không kiểm tra được do thị giá không hợp lệ {marketPrice:0.00}VNĐ.", -1, -1, null);
-                return -1;
+                return notes.Add($"Ep gần nhất không kiểm tra được do thị giá không hợp lệ {marketPrice:0.00}VNĐ.", -1, -1, null);
             }
             var ep = lastQuarterlyFinancialIndicator.Eps / marketPrice * 100;
             if ((float)ep > (bankInterestRate6 + 1))//Cộng 1% là tính toán đến các chi phí giao dịch, thuế, thuế cổ tức, phí lưu ký vvv
             {
-                notes.Add($"Ep quý gần nhất {ep:0.00}% lớn hơn lãi suất ngân hàng(cao nhất thời điểm kiểm tra) + 1% chi phí đầu tư {bankInterestRate6 + 1:0.00}%", 1, 1, null);
-                return 1;
+                return notes.Add($"Ep quý gần nhất {ep:0.00}% lớn hơn lãi suất ngân hàng(cao nhất thời điểm kiểm tra) + 1% chi phí đầu tư {bankInterestRate6 + 1:0.00}%", 1, 1, null);
             }
             else
             {
                 if ((float)ep > bankInterestRate6)
                 {
-                    notes.Add($"Ep quý gần nhất {ep:0.00}% lớn hơn lãi suất ngân hàng(cao nhất thời điểm kiểm tra) mà chưa tính chi phí đầu tư {bankInterestRate6:0.00}%", 0, 0, null);
-                    return 0;
+                    return notes.Add($"Ep quý gần nhất {ep:0.00}% lớn hơn lãi suất ngân hàng(cao nhất thời điểm kiểm tra) mà chưa tính chi phí đầu tư {bankInterestRate6:0.00}%", 0, 0, null);
                 }
                 else
                 {
-                    notes.Add($"Ep quý gần nhất {ep:0.00}% nhỏ hơn hoặc bằng lãi suất ngân hàng(cao nhất thời điểm kiểm tra) mà chưa tính chi phí đầu tư {bankInterestRate6:0.00}%", -1, -1, null);
-                    return -1;
+                    return notes.Add($"Ep quý gần nhất {ep:0.00}% nhỏ hơn hoặc bằng lãi suất ngân hàng(cao nhất thời điểm kiểm tra) mà chưa tính chi phí đầu tư {bankInterestRate6:0.00}%", -1, -1, null);
                 }
             }
         }
@@ -206,15 +194,13 @@ namespace Pl.Sas.Core.Services
             var type = 1;
             if (company is null || companiesSameIndustries.Count <= 0)
             {
-                notes.Add("Không có thông tin chỉ số Eps.", -5, -2, guideLink);
-                return -5;
+                return notes.Add("Không có thông tin chỉ số Eps.", -5, -2, guideLink);
             }
 
             var note = $"Chỉ số Eps hiện tại {company.Eps:0,0.00}.";
             if (company.Eps < 2000)
             {
-                notes.Add($"{note}. Nhỏ hơn {2000:0,0}.", -2, -1, guideLink);
-                return -2;
+                return notes.Add($"{note}. Nhỏ hơn {2000:0,0}.", -2, -1, guideLink);
             }
             else
             {
@@ -241,8 +227,7 @@ namespace Pl.Sas.Core.Services
                 type--;
             }
 
-            notes.Add(note, score, type, guideLink);
-            return score;
+            return notes.Add(note, score, type, guideLink);
         }
 
         /// <summary>
@@ -257,8 +242,7 @@ namespace Pl.Sas.Core.Services
             var guideLink = "https://vcbs.com.vn/vn/Utilities/Index/53";
             if (company is null || companiesSameIndustries.Count <= 0)
             {
-                notes.Add("Không có thông tin chỉ số Pe.", -5, -2, guideLink);
-                return -5;
+                return notes.Add("Không có thông tin chỉ số Pe.", -5, -2, guideLink);
             }
 
             var score = 0;
@@ -278,8 +262,7 @@ namespace Pl.Sas.Core.Services
                 type++;
             }
 
-            notes.Add(note, score, type, guideLink);
-            return score;
+            return notes.Add(note, score, type, guideLink);
         }
 
         /// <summary>
@@ -294,8 +277,7 @@ namespace Pl.Sas.Core.Services
             var guideLink = "https://govalue.vn/chi-so-roe/";
             if (company is null || companiesSameIndustries.Count <= 0)
             {
-                notes.Add("Không có thông tin chỉ số Roe.", -10, -2, guideLink);
-                return -10;
+                return notes.Add("Không có thông tin chỉ số Roe.", -10, -2, guideLink);
             }
 
             var score = 0;
@@ -334,8 +316,7 @@ namespace Pl.Sas.Core.Services
                 type--;
             }
 
-            notes.Add(note, score, type, guideLink);
-            return score;
+            return notes.Add(note, score, type, guideLink);
         }
 
         /// <summary>
@@ -350,8 +331,7 @@ namespace Pl.Sas.Core.Services
             var guideLink = "https://govalue.vn/chi-so-roe/";
             if (company is null || companiesSameIndustries.Count <= 0)
             {
-                notes.Add("Không có thông tin chỉ số Roa.", -10, -2, guideLink);
-                return -10;
+                return notes.Add("Không có thông tin chỉ số Roa.", -10, -2, guideLink);
             }
 
             var score = 0;
@@ -390,8 +370,7 @@ namespace Pl.Sas.Core.Services
                 type--;
             }
 
-            notes.Add(note, score, type, guideLink);
-            return score;
+            return notes.Add(note, score, type, guideLink);
         }
 
         /// <summary>
@@ -406,31 +385,26 @@ namespace Pl.Sas.Core.Services
         {
             if (lastQuarterlyFinancialIndicator is null)
             {
-                notes.Add("Không có thông tin tài chính năm gần nhất để kiểm tra ep.", -5, -2);
-                return -5;
+                return notes.Add("Không có thông tin tài chính năm gần nhất để kiểm tra ep.", -5, -2);
             }
             if (marketPrice <= 0)
             {
-                notes.Add($"Ep gần nhất không kiểm tra được do thị giá không hợp lệ {marketPrice:0.00}VNĐ.", -1, -1, null);
-                return -1;
+                return notes.Add($"Ep gần nhất không kiểm tra được do thị giá không hợp lệ {marketPrice:0.00}VNĐ.", -1, -1, null);
             }
             var ep = lastQuarterlyFinancialIndicator.Eps / marketPrice * 100;
             if ((float)ep > (bankInterestRate12 + 1))//Cộng 1% là tính toán đến các chi phí giao dịch, thuế, thuế cổ tức, phí lưu ký vvv
             {
-                notes.Add($"Ep năm gần nhất {ep:0.00}% lớn hơn lãi suất ngân hàng(cao nhất thời điểm kiểm tra) + 1% chi phí đầu tư {bankInterestRate12 + 1:0.00}%", 1, 1, null);
-                return 1;
+                return notes.Add($"Ep năm gần nhất {ep:0.00}% lớn hơn lãi suất ngân hàng(cao nhất thời điểm kiểm tra) + 1% chi phí đầu tư {bankInterestRate12 + 1:0.00}%", 1, 1, null);
             }
             else
             {
                 if ((float)ep > bankInterestRate12)
                 {
-                    notes.Add($"Ep năm gần nhất {ep:0.00}% lớn hơn lãi suất ngân hàng(cao nhất thời điểm kiểm tra) mà chưa tính chi phí đầu tư {bankInterestRate12:0.00}%", 0, 0, null);
-                    return 0;
+                    return notes.Add($"Ep năm gần nhất {ep:0.00}% lớn hơn lãi suất ngân hàng(cao nhất thời điểm kiểm tra) mà chưa tính chi phí đầu tư {bankInterestRate12:0.00}%", 0, 0, null);
                 }
                 else
                 {
-                    notes.Add($"Ep năm gần nhất {ep:0.00}% nhỏ hơn hoặc bằng lãi suất ngân hàng(cao nhất thời điểm kiểm tra) mà chưa tính chi phí đầu tư {bankInterestRate12:0.00}%", -1, -1, null);
-                    return -1;
+                    return notes.Add($"Ep năm gần nhất {ep:0.00}% nhỏ hơn hoặc bằng lãi suất ngân hàng(cao nhất thời điểm kiểm tra) mà chưa tính chi phí đầu tư {bankInterestRate12:0.00}%", -1, -1, null);
                 }
             }
         }
@@ -447,6 +421,11 @@ namespace Pl.Sas.Core.Services
         /// </returns>
         public static int MarketCapCheck(List<AnalyticsNote> notes, Company company, List<Company> companiesSameIndustries, float avgTotalMarketCap)
         {
+            if (companiesSameIndustries is null || !companiesSameIndustries.Any())
+            {
+                return notes.Add("Không có các công ty cùng ngành để phânt tích vốn hóa.", -1, -1);
+            }
+
             var type = 0;
             var score = 0;
             var note = $"Giá trị vốn hóa {company.MarketCap:0,0} VNĐ, ";
@@ -488,8 +467,7 @@ namespace Pl.Sas.Core.Services
                 }
             }
 
-            notes.Add(note, score, type, null);
-            return score;
+            return notes.Add(note, score, type, null);
         }
 
         /// <summary>
@@ -506,8 +484,7 @@ namespace Pl.Sas.Core.Services
             var guideLink = "https://vietnamfinance.vn/ty-le-co-tuc-la-gi-20180504224215063.htm";
             if (dividendMoney <= 0)
             {
-                notes.Add($"Công ty không trả cổ tức bằng tiền năm gần đây", -1, -1, guideLink);
-                return -1;
+                return notes.Add($"Công ty không trả cổ tức bằng tiền năm gần đây", -1, -1, guideLink);
             }
 
             var score = 0;
@@ -519,13 +496,12 @@ namespace Pl.Sas.Core.Services
                     score += 2;
                 }
                 score++;
-                notes.Add($"Tỉ suất cổ tức bằng tiền mặt {dp:0.00}% lớn hơn lãi suất ngân hàng(cao nhất thời điểm kiểm tra) {bankInterestRate12:0.00}%", score, 1, guideLink);
+                return notes.Add($"Tỉ suất cổ tức bằng tiền mặt {dp:0.00}% lớn hơn lãi suất ngân hàng(cao nhất thời điểm kiểm tra) {bankInterestRate12:0.00}%", score, 1, guideLink);
             }
             else
             {
-                notes.Add($"Tỉ suất cổ tức bằng tiền mặt {dp:0.00}% nhỏ hơn hoặc bằng lãi suất ngân hàng(cao nhất thời điểm kiểm tra) {bankInterestRate12:0.00}%", score, 0, guideLink);
+                return notes.Add($"Tỉ suất cổ tức bằng tiền mặt {dp:0.00}% nhỏ hơn hoặc bằng lãi suất ngân hàng(cao nhất thời điểm kiểm tra) {bankInterestRate12:0.00}%", score, 0, guideLink);
             }
-            return score;
         }
 
         /// <summary>
@@ -542,8 +518,7 @@ namespace Pl.Sas.Core.Services
             var guideLink = "https://vnexpress.net/chi-so-p-b-co-y-nghia-nhu-the-nao-2695409.html";
             if (!companiesSameIndustries.Any() || !companies.Any())
             {
-                notes.Add("Chỉ số Giá/Tải sản hữu hình (pb) không có thông tin để đánh giá và so sánh.", -2, -2, guideLink);
-                return -2;
+                return notes.Add("Chỉ số Giá/Tải sản hữu hình (pb) không có thông tin để đánh giá và so sánh.", -2, -2, guideLink);
             }
 
             var note = $"Chỉ số pb {company.Pb:0.00} ";
@@ -577,8 +552,7 @@ namespace Pl.Sas.Core.Services
                 score--;
             }
 
-            notes.Add(note, score, type, guideLink);
-            return score;
+            return notes.Add(note, score, type, guideLink);
         }
 
         /// <summary>
@@ -595,8 +569,7 @@ namespace Pl.Sas.Core.Services
             var guideLink = "https://vcbs.com.vn/vn/Utilities/Index/53";
             if (lastQuarterlyFinancialIndicator is null)
             {
-                notes.Add("Công ty không có thông tin tài chính quý gần nhất.", -5, -2, guideLink);
-                return -5;
+                return notes.Add("Công ty không có thông tin tài chính quý gần nhất.", -5, -2, guideLink);
             }
 
             var score = 0;
@@ -607,8 +580,7 @@ namespace Pl.Sas.Core.Services
                 score--;
                 type--;
                 note += " nhỏ hơn hoặc bằng 1.2.";
-                notes.Add(note, score, type, guideLink);
-                return score;
+                return notes.Add(note, score, type, guideLink);
             }
             else
             {
@@ -632,8 +604,7 @@ namespace Pl.Sas.Core.Services
                     note += $", lớn hơn 1.5 rât tốt";
                 }
             }
-            notes.Add(note, score, type, null);
-            return score;
+            return notes.Add(note, score, type, null);
         }
 
         /// <summary>
@@ -648,8 +619,7 @@ namespace Pl.Sas.Core.Services
             var guideLink = "https://vietnambiz.vn/ti-suat-loi-nhuan-gop-gross-profit-margin-la-gi-cong-thuc-xac-dinh-va-y-nghia-20191008164428741.htm";
             if (lastQuarterlyFinancialIndicator is null)
             {
-                notes.Add("Không có thông tin tỉ trọng lợi nhuận gộp \"GrossProfitMarginCheck\".", -10, -2, guideLink);
-                return -10;
+                return notes.Add("Không có thông tin tỉ trọng lợi nhuận gộp \"GrossProfitMarginCheck\".", -10, -2, guideLink);
             }
 
             var grossProfitMarginPercent = lastQuarterlyFinancialIndicator.GrossProfitMargin * 100;
@@ -657,26 +627,22 @@ namespace Pl.Sas.Core.Services
             {
                 if (grossProfitMarginPercent > 35)
                 {
-                    notes.Add($"Tỉ trọng lợi nhuận gộp {lastQuarterlyFinancialIndicator.GrossProfitMargin:0,0.00}% lớn hơn 35%", 2, 2, guideLink);
-                    return 2;
+                    return notes.Add($"Tỉ trọng lợi nhuận gộp {lastQuarterlyFinancialIndicator.GrossProfitMargin:0,0.00}% lớn hơn 35%", 2, 2, guideLink);
                 }
                 else
                 {
-                    notes.Add($"Tỉ trọng lợi nhuận gộp {lastQuarterlyFinancialIndicator.GrossProfitMargin:0,0.00}% lớn hơn 25%", 1, 1, guideLink);
-                    return 1;
+                    return notes.Add($"Tỉ trọng lợi nhuận gộp {lastQuarterlyFinancialIndicator.GrossProfitMargin:0,0.00}% lớn hơn 25%", 1, 1, guideLink);
                 }
             }
             else
             {
                 if (grossProfitMarginPercent > (float)bankInterestRate12)
                 {
-                    notes.Add($"Tỉ trọng lợi nhuận gộp {lastQuarterlyFinancialIndicator.GrossProfitMargin:0,0.00}% chỉ lớn hơn lái suất ngân hàng kỳ hạn 12 tháng {bankInterestRate12:0,0.00} %", -1, -1, guideLink);
-                    return -1;
+                    return notes.Add($"Tỉ trọng lợi nhuận gộp {lastQuarterlyFinancialIndicator.GrossProfitMargin:0,0.00}% chỉ lớn hơn lái suất ngân hàng kỳ hạn 12 tháng {bankInterestRate12:0,0.00} %", -1, -1, guideLink);
                 }
                 else
                 {
-                    notes.Add($"Tỉ trọng lợi nhuận gộp {lastQuarterlyFinancialIndicator.GrossProfitMargin:0,0.00}% thấp hơn lái suất ngân hàng kỳ hạn 12 tháng {bankInterestRate12:0,0.00} %", -2, -2, guideLink);
-                    return -2;
+                    return notes.Add($"Tỉ trọng lợi nhuận gộp {lastQuarterlyFinancialIndicator.GrossProfitMargin:0,0.00}% thấp hơn lái suất ngân hàng kỳ hạn 12 tháng {bankInterestRate12:0,0.00} %", -2, -2, guideLink);
                 }
             }
         }
@@ -693,8 +659,7 @@ namespace Pl.Sas.Core.Services
             var guideLink = "https://vietnambiz.vn/he-so-no-tren-von-chu-so-huu-dept-to-equity-ratio-he-so-d-e-la-gi-2019081919185477.htm";
             if (lastYearlyFinancialIndicator is null)
             {
-                notes.Add("Không có thông tin tổng nợ/tài sản \"DebtAssetCheck\".", -10, -2, guideLink);
-                return -10;
+                return notes.Add("Không có thông tin tổng nợ/tài sản \"DebtAssetCheck\".", -10, -2, guideLink);
             }
 
             var avgDA = lastYearlyFinancialIndicatorSameIndustries.Average(q => q.DebtAsset);
@@ -702,26 +667,22 @@ namespace Pl.Sas.Core.Services
             {
                 if (lastYearlyFinancialIndicator.DebtAsset < avgDA)
                 {
-                    notes.Add($"Tỉ trọng tổng nợ/tài sản {lastYearlyFinancialIndicator.DebtAsset * 100:0,0.00}% nhỏ hơn 60% và nhỏ hơn trung bình ngành {avgDA * 100:0,0.00}", 2, 2, guideLink);
-                    return 2;
+                    return notes.Add($"Tỉ trọng tổng nợ/tài sản {lastYearlyFinancialIndicator.DebtAsset * 100:0,0.00}% nhỏ hơn 60% và nhỏ hơn trung bình ngành {avgDA * 100:0,0.00}", 2, 2, guideLink);
                 }
                 else
                 {
-                    notes.Add($"Tỉ trọng tổng nợ/tài sản {lastYearlyFinancialIndicator.DebtAsset * 100:0,0.00}% nhỏ hơn 60%.", 1, 1, guideLink);
-                    return 1;
+                    return notes.Add($"Tỉ trọng tổng nợ/tài sản {lastYearlyFinancialIndicator.DebtAsset * 100:0,0.00}% nhỏ hơn 60%.", 1, 1, guideLink);
                 }
             }
             else
             {
                 if (lastYearlyFinancialIndicator.DebtAsset > avgDA)
                 {
-                    notes.Add($"Tỉ trọng tổng nợ/tài sản {lastYearlyFinancialIndicator.DebtAsset * 100:0,0.00}% lớn hơn 60% và lớn hơn trung bình ngành {avgDA * 100:0,0.00}", -2, -2, guideLink);
-                    return -2;
+                    return notes.Add($"Tỉ trọng tổng nợ/tài sản {lastYearlyFinancialIndicator.DebtAsset * 100:0,0.00}% lớn hơn 60% và lớn hơn trung bình ngành {avgDA * 100:0,0.00}", -2, -2, guideLink);
                 }
                 else
                 {
-                    notes.Add($"Tỉ trọng tổng nợ/tài sản {lastYearlyFinancialIndicator.DebtAsset * 100:0,0.00}% lớn hơn 60%", -1, -1, guideLink);
-                    return -1;
+                    return notes.Add($"Tỉ trọng tổng nợ/tài sản {lastYearlyFinancialIndicator.DebtAsset * 100:0,0.00}% lớn hơn 60%", -1, -1, guideLink);
                 }
             }
         }
@@ -738,8 +699,7 @@ namespace Pl.Sas.Core.Services
             var guideLink = "https://vietnambiz.vn/he-so-no-tren-von-chu-so-huu-dept-to-equity-ratio-he-so-d-e-la-gi-2019081919185477.htm";
             if (lastYearlyFinancialIndicator is null)
             {
-                notes.Add("Không có thông tin tổng nợ/vốn chủ sở hữu \"DebtEquityCheck\".", -10, -2, guideLink);
-                return -10;
+                return notes.Add("Không có thông tin tổng nợ/vốn chủ sở hữu \"DebtEquityCheck\".", -10, -2, guideLink);
             }
 
             var avgDA = lastYearlyFinancialIndicatorSameIndustries.Average(q => q.DebtEquity);
@@ -747,26 +707,22 @@ namespace Pl.Sas.Core.Services
             {
                 if (lastYearlyFinancialIndicator.DebtEquity < avgDA)
                 {
-                    notes.Add($"Tỉ trọng tổng nợ/vốn chủ sở hữu {lastYearlyFinancialIndicator.DebtEquity * 100:0,0.00}% nhỏ hơn 60% và nhỏ hơn trung bình ngành {avgDA * 100:0,0.00}", 2, 2, guideLink);
-                    return 2;
+                    return notes.Add($"Tỉ trọng tổng nợ/vốn chủ sở hữu {lastYearlyFinancialIndicator.DebtEquity * 100:0,0.00}% nhỏ hơn 60% và nhỏ hơn trung bình ngành {avgDA * 100:0,0.00}", 2, 2, guideLink);
                 }
                 else
                 {
-                    notes.Add($"Tỉ trọng tổng nợ/vốn chủ sở hữu {lastYearlyFinancialIndicator.DebtEquity * 100:0,0.00}% nhỏ hơn 60%.", 1, 1, guideLink);
-                    return 1;
+                    return notes.Add($"Tỉ trọng tổng nợ/vốn chủ sở hữu {lastYearlyFinancialIndicator.DebtEquity * 100:0,0.00}% nhỏ hơn 60%.", 1, 1, guideLink);
                 }
             }
             else
             {
                 if (lastYearlyFinancialIndicator.DebtAsset > avgDA)
                 {
-                    notes.Add($"Tỉ trọng tổng nợ/vốn chủ sở hữu {lastYearlyFinancialIndicator.DebtEquity * 100:0,0.00}% lớn hơn 60% và lớn hơn trung bình ngành {avgDA * 100:0,0.00}", -2, -2, guideLink);
-                    return -2;
+                    return notes.Add($"Tỉ trọng tổng nợ/vốn chủ sở hữu {lastYearlyFinancialIndicator.DebtEquity * 100:0,0.00}% lớn hơn 60% và lớn hơn trung bình ngành {avgDA * 100:0,0.00}", -2, -2, guideLink);
                 }
                 else
                 {
-                    notes.Add($"Tỉ trọng tổng nợ/vốn chủ sở hữu {lastYearlyFinancialIndicator.DebtEquity * 100:0,0.00}% lớn hơn 60%", -1, -1, guideLink);
-                    return -1;
+                    return notes.Add($"Tỉ trọng tổng nợ/vốn chủ sở hữu {lastYearlyFinancialIndicator.DebtEquity * 100:0,0.00}% lớn hơn 60%", -1, -1, guideLink);
                 }
             }
         }
@@ -781,6 +737,11 @@ namespace Pl.Sas.Core.Services
         /// </returns>
         public static int CharterCapitalCheck(List<AnalyticsNote> notes, Company company, List<Company> companiesSameSubsectorCode)
         {
+            if (companiesSameSubsectorCode is null || !companiesSameSubsectorCode.Any())
+            {
+                return notes.Add("Không có thông tin công ty cùng ngành để check.", 0, 0, null);
+            }
+
             var score = 1;
             var type = 0;
             var note = $"Vốn điều lệ {company.CharterCapital:0,0} VNĐ, ";
@@ -788,8 +749,7 @@ namespace Pl.Sas.Core.Services
             var sumCharterCapital = companiesSameSubsectorCode.Sum(q => q.CharterCapital);
             if (avgCharterCapital <= 0 || sumCharterCapital <= 0)
             {
-                notes.Add("Không có thông tin vốn điều lệ.", -1, -1, null);
-                return -1;
+                return notes.Add("Không có thông tin vốn điều lệ.", 0, 0, null);
             }
             var avgPercent = (company.CharterCapital - avgCharterCapital) / Math.Abs(avgCharterCapital) * 100;
             var sumPercent = Math.Abs(company.CharterCapital * 100) / Math.Abs(sumCharterCapital);
@@ -808,8 +768,7 @@ namespace Pl.Sas.Core.Services
             {
                 type = 2;
             }
-            notes.Add(note, score, type, null);
-            return score;
+            return notes.Add(note, score, type, null);
         }
 
         /// <summary>
@@ -830,8 +789,7 @@ namespace Pl.Sas.Core.Services
                 score -= 1;
                 type--;
 
-                notes.Add(note, score, type, null);
-                return score;
+                return notes.Add(note, score, type, null);
             }
 
             if (fiinEvaluate.ControlStatusCode >= 0)
@@ -840,8 +798,7 @@ namespace Pl.Sas.Core.Services
                 score -= 5;
                 type -= 2;
 
-                notes.Add(note, score, type, null);
-                return score;
+                return notes.Add(note, score, type, null);
             }
 
             note += $"Fiin đánh giá giá trị của cổ phiếu điểm {fiinEvaluate.Value}, ";
@@ -903,8 +860,7 @@ namespace Pl.Sas.Core.Services
                 }
             }
 
-            notes.Add(note, score, type, $"https://fiin-fundamental.ssi.com.vn/Snapshot/GetCompanyScore?language=vi&OrganCode={fiinEvaluate.Symbol}");
-            return score;
+            return notes.Add(note, score, type, $"https://fiin-fundamental.ssi.com.vn/Snapshot/GetCompanyScore?language=vi&OrganCode={fiinEvaluate.Symbol}");
         }
 
         /// <summary>
@@ -926,8 +882,7 @@ namespace Pl.Sas.Core.Services
                 score -= 1;
                 type--;
 
-                notes.Add(note, score, type, null);
-                return score;
+                return notes.Add(note, score, type, null);
             }
             var avgScore = vndStockScores.Where(q => "101000,104000,105000".Contains(q.CriteriaCode)).Average(q => q.Point);
             note += $"Vnd trung bình đánh giá các tiêu chí vị thế, tài chính, cam kết cổ đông là {avgScore:0.0}";
@@ -953,8 +908,7 @@ namespace Pl.Sas.Core.Services
                 type = -2;
             }
 
-            notes.Add(note, score, type, $"https://dstock.vndirect.com.vn/tong-quan/{symbol}");
-            return score;
+            return notes.Add(note, score, type, $"https://dstock.vndirect.com.vn/tong-quan/{symbol}");
         }
     }
 }

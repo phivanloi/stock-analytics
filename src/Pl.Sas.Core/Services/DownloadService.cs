@@ -36,8 +36,10 @@ namespace Pl.Sas.Core.Services
         private readonly IIndustryData _industryData;
         private readonly IStockData _stockData;
         private readonly IAnalyticsResultData _analyticsResultData;
+        private readonly IAsyncCacheService _asyncCacheService;
 
         public DownloadService(
+            IAsyncCacheService asyncCacheService,
             IAnalyticsResultData analyticsResultData,
             IStockData stockData,
             IIndustryData industryData,
@@ -60,6 +62,7 @@ namespace Pl.Sas.Core.Services
             ILogger<DownloadService> logger,
             IDownloadData downloadData)
         {
+            _asyncCacheService = asyncCacheService;
             _analyticsResultData = analyticsResultData;
             _stockData = stockData;
             _industryData = industryData;
@@ -197,7 +200,7 @@ namespace Pl.Sas.Core.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "DownloadVndChartPricesRealTimeAsync is error.");
+                _logger.LogError(ex, "UpdateChartPricesRealtimeAsync is error.");
                 var ssiChartPrices = await _downloadData.DownloadSsiChartPricesRealTimeAsync(symbol, "D");
                 if (ssiChartPrices is not null && ssiChartPrices.Time?.Length > 0)
                 {
@@ -222,13 +225,17 @@ namespace Pl.Sas.Core.Services
                 }
             }
 
-            _workerQueueService.BroadcastViewUpdatedTask(new("ChartPricesRealtime")
+            if (chartPrices.Count > 0)
             {
-                KeyValues = new Dictionary<string, string>()
+                _workerQueueService.PublishRealtimeTask(new("TestTradingOnPriceChange")
                 {
-                    {"ChartPrices", JsonSerializer.Serialize(chartPrices) }
-                }
-            });
+                    KeyValues = new Dictionary<string, string>()
+                    {
+                        {"Symbol", symbol },
+                        {"ChartPrices", JsonSerializer.Serialize(chartPrices) }
+                    }
+                });
+            }
         }
 
         /// <summary>
@@ -258,7 +265,7 @@ namespace Pl.Sas.Core.Services
         }
 
         /// <summary>
-        /// download dữ liệu index
+        /// Cập nhập lại toàn bộ dữ liệu chart prices
         /// </summary>
         /// <param name="schedule">thông tin lịch</param>
         /// <returns>bool</returns>
@@ -308,6 +315,7 @@ namespace Pl.Sas.Core.Services
             }
 
             var check = await _chartPriceData.ResetChartPriceAsync(chartPrices, symbol, schedule.Options["ChartType"]);
+            await _asyncCacheService.RemoveByPrefixAsync(Constants.ChartPriceCachePrefix);
             return await _keyValueData.SetAsync(checkingKey, check);
         }
 
@@ -462,6 +470,15 @@ namespace Pl.Sas.Core.Services
                 TradingDate = Utilities.GetTradingDate(),
                 ZipDetails = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(listTransactionDetails))
             };
+
+            _workerQueueService.PublishRealtimeTask(new("SetupRealtimeSleepTimeByTransactionCount")
+            {
+                KeyValues = new Dictionary<string, string>()
+                {
+                    { "Symbol", symbol },
+                    { "TransactionCount", listTransactionDetails.Count.ToString() }
+                }
+            });
             var check = await _stockTransactionData.SaveStockTransactionAsync(stockTransaction);
             return await _keyValueData.SetAsync(checkingKey, check);
         }
@@ -1041,7 +1058,11 @@ namespace Pl.Sas.Core.Services
                             Type = 14,
                             Name = $"Thu thập giá realtime: {stockCode}",
                             DataKey = stockCode,
-                            ActiveTime = currentTime.AddMinutes(random.Next(0, 10))
+                            ActiveTime = currentTime.AddMinutes(random.Next(30, 40)),
+                            OptionsJson = JsonSerializer.Serialize(new Dictionary<string, string>()
+                            {
+                                {"SleepTime", "300" }
+                            })
                         });
 
 

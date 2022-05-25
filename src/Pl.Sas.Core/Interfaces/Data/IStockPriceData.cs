@@ -76,14 +76,6 @@ namespace Pl.Sas.Core.Interfaces
         Task<bool> InsertAsync(StockPrice stockPrice);
 
         /// <summary>
-        /// Lấy danh sách lịch sử giá cổ phiếu sử dụng cho các hàm tọa dữ liệu cho máy học
-        /// </summary>
-        /// <param name="top">Số bản ghi cần lấy</param>
-        /// <param name="symbol">Mã chứng khoán</param>
-        /// <returns></returns>
-        Task<List<StockPrice>> GetTopForBuildMlTrainingDataAsync(int top, string symbol);
-
-        /// <summary>
         /// Lấy danh sách lịch sử giá cho phần phân tích ngành
         /// </summary>
         /// <param name="symbol">Mã cổ phiếu</param>
@@ -100,27 +92,11 @@ namespace Pl.Sas.Core.Interfaces
         Task<List<StockPrice>> GetForStockViewAsync(string symbol, int numberItem = 10000);
 
         /// <summary>
-        /// Lấy danh sách dữ liệu cho máy học phân loại trạng thái tăng giá
-        /// </summary>
-        /// <param name="top">số lượng bạn ghi cần lấy</param>
-        /// <param name="symbol">Mã chứng khoán càn lấy</param>
-        /// <returns>List StockPrice</returns>
-        Task<List<StockPrice>> GetTopForBuildMlClassificationTrainingDataAsync(int top, string symbol);
-
-        /// <summary>
         /// Xóa toàn bộ lịch sử giá của một mã chứng khoán
         /// </summary>
         /// <param name="symbol">Mã cổ phiếu cần xóa</param>
         /// <returns></returns>
         Task<bool> DeleteBySymbolAsync(string symbol);
-
-        /// <summary>
-        /// Lấy danh sách cho việc phát hiện trend của thị trường
-        /// </summary>
-        /// <param name="symbol">Mã chứng khoán càn lấy</param>
-        /// <param name="top">số lượng bạn ghi cần lấy</param>
-        /// <returns></returns>
-        Task<List<StockPrice>> GetForIMarketSentimentAnalyticsAsync(string symbol, int top);
 
         /// <summary>
         /// Kiểm tra xem lịch sử giá đã có item này hay chưa

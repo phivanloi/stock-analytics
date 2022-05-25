@@ -10,7 +10,7 @@ namespace Pl.Sas.Core.Interfaces
         /// <param name="selectTime">Thời gian muốn lấy</param>
         /// <param name="top">Số bản ghi cần lấy</param>
         /// <returns>IReadOnlyList Schedule</returns>
-        Task<IReadOnlyList<Schedule>> GetIdsForActiveEventAsync(DateTime selectTime, int top = 10);
+        Task<IReadOnlyList<Schedule>> GetForActiveEventAsync(DateTime selectTime, int top = 10);
 
         /// <summary>
         /// Update thời gian kích hoạt sự kiện của một Schedule
@@ -75,7 +75,7 @@ namespace Pl.Sas.Core.Interfaces
         /// </summary>
         /// <param name="type">Loại lịch</param>
         /// <param name="dataKey">data key</param>
-        /// <returns>IReadOnlyList Schedule</returns>
-        Task<IReadOnlyList<Schedule>> FindAllAsync(int type, string dataKey);
+        /// <returns>Schedule Schedule</returns>
+        Task<Schedule?> FindAsync(int type, string dataKey);
     }
 }

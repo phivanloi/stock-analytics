@@ -25,27 +25,6 @@ namespace Pl.Sas.Infrastructure.Data
             return await connection.QueryFirstOrDefaultAsync<AnalyticsResult>(query, new { symbol });
         }
 
-        public virtual async Task<bool> SaveSsaPerdictResultAsync(string symbol, decimal perdictResult)
-        {
-            var query = "UPDATE AnalyticsResults SET SsaPerdictPrice = @perdictResult, UpdatedTime = GETDATE() WHERE Symbol = @symbol ";
-            using SqlConnection connection = new(_connectionStrings.AnalyticsConnection);
-            return await connection.ExecuteAsync(query, new { symbol, perdictResult }) > 0;
-        }
-
-        public virtual async Task<bool> SaveFttPerdictResultAsync(string symbol, decimal perdictResult)
-        {
-            var query = "UPDATE AnalyticsResults SET FttPerdictPrice = @perdictResult, UpdatedTime = GETDATE() WHERE Symbol = @symbol ";
-            using SqlConnection connection = new(_connectionStrings.AnalyticsConnection);
-            return await connection.ExecuteAsync(query, new { symbol, perdictResult }) > 0;
-        }
-
-        public virtual async Task<bool> SaveSdcaTrendPerdictResultAsync(string symbol, int trendResult)
-        {
-            var query = "UPDATE AnalyticsResults SET SdcaPriceTrend = @trendResult, UpdatedTime = GETDATE() WHERE Symbol = @symbol ";
-            using SqlConnection connection = new(_connectionStrings.AnalyticsConnection);
-            return await connection.ExecuteAsync(query, new { symbol, trendResult }) > 0;
-        }
-
         public virtual async Task<bool> SaveMacroeconomicsScoreAsync(string symbol, int marketScore, byte[] marketNotes)
         {
             var query = @"  UPDATE
@@ -61,94 +40,94 @@ namespace Pl.Sas.Infrastructure.Data
             return await connection.ExecuteAsync(query, new { symbol, marketScore, marketNotes }) > 0;
         }
 
-        public virtual async Task<bool> SaveCompanyValueScoreAsync(string symbol, int companyValueScore, byte[] companyValueNote)
+        public virtual async Task<bool> SaveCompanyValueScoreAsync(string symbol, int companyValueScore, byte[] companyValueNotes)
         {
             var query = @"  UPDATE
                                 AnalyticsResults
                             SET
                                 CompanyValueScore = @companyValueScore,
-                                CompanyValueNote = @companyValueNote,
+                                CompanyValueNotes = @companyValueNotes,
                                 UpdatedTime = GETDATE()
                             WHERE
                                 Symbol = @symbol
                                 ";
             using SqlConnection connection = new(_connectionStrings.AnalyticsConnection);
-            return await connection.ExecuteAsync(query, new { symbol, companyValueScore, companyValueNote }) > 0;
+            return await connection.ExecuteAsync(query, new { symbol, companyValueScore, companyValueNotes }) > 0;
         }
 
-        public virtual async Task<bool> SaveCompanyGrowthScoreAsync(string symbol, int companyGrowthScore, byte[] companyGrowthNote)
+        public virtual async Task<bool> SaveCompanyGrowthScoreAsync(string symbol, int companyGrowthScore, byte[] companyGrowthNotes)
         {
             var query = @"  UPDATE
                                 AnalyticsResults
                             SET
                                 CompanyGrowthScore = @companyGrowthScore,
-                                CompanyGrowthNote = @companyGrowthNote,
+                                CompanyGrowthNotes = @companyGrowthNotes,
                                 UpdatedTime = GETDATE()
                             WHERE
                                 Symbol = @symbol
                                 ";
             using SqlConnection connection = new(_connectionStrings.AnalyticsConnection);
-            return await connection.ExecuteAsync(query, new { symbol, companyGrowthScore, companyGrowthNote }) > 0;
+            return await connection.ExecuteAsync(query, new { symbol, companyGrowthScore, companyGrowthNotes }) > 0;
         }
 
-        public virtual async Task<bool> SaveStockScoreAsync(string symbol, int stockScore, byte[] stockNote)
+        public virtual async Task<bool> SaveStockScoreAsync(string symbol, int stockScore, byte[] stockNotes)
         {
             var query = @"  UPDATE
                                 AnalyticsResults
                             SET
                                 StockScore = @stockScore,
-                                StockNote = @stockNote,
+                                StockNotes = @stockNotes,
                                 UpdatedTime = GETDATE()
                             WHERE
                                 Symbol = @symbol
                                 ";
             using SqlConnection connection = new(_connectionStrings.AnalyticsConnection);
-            return await connection.ExecuteAsync(query, new { symbol, stockScore, stockNote }) > 0;
+            return await connection.ExecuteAsync(query, new { symbol, stockScore, stockNotes }) > 0;
         }
 
-        public virtual async Task<bool> SaveFiinScoreAsync(string symbol, int fiinScore, byte[] fiinNote)
+        public virtual async Task<bool> SaveFiinScoreAsync(string symbol, int fiinScore, byte[] fiinNotes)
         {
             var query = @"  UPDATE
                                 AnalyticsResults
                             SET
                                 FiinScore = @fiinScore,
-                                FiinNote = @fiinNote,
+                                FiinNotes = @fiinNotes,
                                 UpdatedTime = GETDATE()
                             WHERE
                                 Symbol = @symbol
                                 ";
             using SqlConnection connection = new(_connectionStrings.AnalyticsConnection);
-            return await connection.ExecuteAsync(query, new { symbol, fiinScore, fiinNote }) > 0;
+            return await connection.ExecuteAsync(query, new { symbol, fiinScore, fiinNotes }) > 0;
         }
 
-        public virtual async Task<bool> SaveVndScoreAsync(string symbol, int vndScore, byte[] vndNote)
+        public virtual async Task<bool> SaveVndScoreAsync(string symbol, int vndScore, byte[] vndNotes)
         {
             var query = @"  UPDATE
                                 AnalyticsResults
                             SET
                                 VndScore = @vndScore,
-                                VndNote = @vndNote,
+                                VndNotes = @vndNotes,
                                 UpdatedTime = GETDATE()
                             WHERE
                                 Symbol = @symbol
                                 ";
             using SqlConnection connection = new(_connectionStrings.AnalyticsConnection);
-            return await connection.ExecuteAsync(query, new { symbol, vndScore, vndNote }) > 0;
+            return await connection.ExecuteAsync(query, new { symbol, vndScore, vndNotes }) > 0;
         }
 
-        public virtual async Task<bool> SaveTargetPriceAsync(string symbol, float targetPrice, byte[] targetPriceNote)
+        public virtual async Task<bool> SaveTargetPriceAsync(string symbol, float targetPrice, byte[] targetPriceNotes)
         {
             var query = @"  UPDATE
                                 AnalyticsResults
                             SET
                                 TargetPrice = @targetPrice,
-                                TargetPriceNotes = @targetPriceNote,
+                                TargetPriceNotes = @targetPriceNotes,
                                 UpdatedTime = GETDATE()
                             WHERE
                                 Symbol = @symbol
                                 ";
             using SqlConnection connection = new(_connectionStrings.AnalyticsConnection);
-            return await connection.ExecuteAsync(query, new { symbol, targetPrice, targetPriceNote }) > 0;
+            return await connection.ExecuteAsync(query, new { symbol, targetPrice, targetPriceNotes }) > 0;
         }
 
         public virtual async Task BulkInserAsync(IEnumerable<AnalyticsResult> analyticsResults)

@@ -31,7 +31,7 @@ namespace Pl.Sas.Infrastructure.Data
 
         public virtual async Task<List<StockTransaction>> GetForTradingAsync(string symbol, DateTime? startDate = null, DateTime? endDate = null)
         {
-            string query = @"SELECT DatePath, ZipDetails FROM StockTransactions WHERE Symbol = @symbol";
+            string query = @"SELECT TradingDate, ZipDetails FROM StockTransactions WHERE Symbol = @symbol";
             if (startDate.HasValue)
             {
                 query += $" AND TradingDate >= @startDate";
@@ -50,14 +50,13 @@ namespace Pl.Sas.Infrastructure.Data
             var query = $@" SET TRANSACTION ISOLATION LEVEL REPEATABLE READ
                             BEGIN TRAN
                             DECLARE @stockTransactionId AS NVARCHAR(22);
-                            SET @stockTransactionId = (SELECT TOP(1) Id FROM StockTransactions WHERE Symbol = @Symbol AND DatePath = @DatePath);
+                            SET @stockTransactionId = (SELECT TOP(1) Id FROM StockTransactions WHERE Symbol = @Symbol AND TradingDate = @TradingDate);
                             IF @stockTransactionId IS NULL
                             BEGIN
                                 INSERT INTO StockTransactions
                                     (Id,
                                     Symbol,
                                     TradingDate,
-                                    DatePath,
                                     ZipDetails,
                                     CreatedTime,
                                     UpdatedTime)
@@ -65,7 +64,6 @@ namespace Pl.Sas.Infrastructure.Data
                                     (@Id,
                                     @Symbol,
                                     @TradingDate,
-                                    @DatePath,
                                     @ZipDetails,
                                     GETDATE(),
                                     GETDATE());

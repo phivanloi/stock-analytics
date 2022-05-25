@@ -5,6 +5,14 @@ namespace Pl.Sas.Core.Interfaces
     public interface IChartPriceData
     {
         /// <summary>
+        /// Lấy toàn bộ lịch sử giá chart theo mã chứng khoán
+        /// </summary>
+        /// <param name="symbol">Mã chứng khoán cần lấy</param>
+        /// <param name="type">Loại</param>
+        /// <returns></returns>
+        Task<List<ChartPrice>?> CacheFindAllAsync(string symbol, string type = "D");
+
+        /// <summary>
         /// Lấy danh sách
         /// </summary>
         /// <param name="symbol">Mã chứng khoán cần lấy</param>

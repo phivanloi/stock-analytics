@@ -16,10 +16,12 @@ namespace Pl.Sas.WebDashboard
         private readonly AppSettings _appSettings;
         private readonly IWebDashboardQueueService _webDashboardQueueService;
         private readonly IMemoryUpdateService _memoryUpdateService;
-        private readonly IServiceProvider _serviceProvider;
+        private readonly StockViewService _stockViewService;
+        private readonly IHubContext<StockRealtimeHub> _stockRealtimeHub;
 
         public Worker(
-            IServiceProvider serviceProvider,
+            IHubContext<StockRealtimeHub> stockRealtimeHub,
+            StockViewService stockViewService,
             IMemoryUpdateService memoryUpdateService,
             IWebDashboardQueueService webDashboardQueueService,
             IOptions<AppSettings> optionsAppSettings,
@@ -29,7 +31,8 @@ namespace Pl.Sas.WebDashboard
             _logger = logger;
             _appSettings = optionsAppSettings.Value;
             _memoryUpdateService = memoryUpdateService;
-            _serviceProvider = serviceProvider;
+            _stockViewService = stockViewService;
+            _stockRealtimeHub = stockRealtimeHub;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -55,13 +58,8 @@ namespace Pl.Sas.WebDashboard
                 switch (message.Id)
                 {
                     case "UpdateStockView":
-                        using (var scope = _serviceProvider.CreateScope())
-                        {
-                            var stockViewService = scope.ServiceProvider.GetRequiredService<StockViewService>();
-                            var stockRealtimeHub = scope.ServiceProvider.GetRequiredService<IHubContext<StockRealtimeHub>>();
-                            stockViewService.UpdateChangeStockView(message);
-                            await stockRealtimeHub.Clients.All.SendAsync("UpdateStockView");
-                        }
+                        _stockViewService.UpdateChangeStockView(message);
+                        await _stockRealtimeHub.Clients.All.SendAsync("UpdateStockView");
                         break;
 
                     default:

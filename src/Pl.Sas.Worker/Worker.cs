@@ -10,10 +10,16 @@ namespace Pl.Sas.Worker
         private readonly ILogger<Worker> _logger;
         private readonly AppSettings _appSettings;
         private readonly IWorkerQueueService _workerQueueService;
-        private readonly IServiceProvider _serviceProvider;
+        private readonly DownloadService _downloadService;
+        private readonly AnalyticsService _analyticsService;
+        private readonly StockViewService _stockViewService;
+        private readonly RealtimeService _realtimeService;
 
         public Worker(
-            IServiceProvider serviceProvider,
+            RealtimeService realtimeService,
+            StockViewService stockViewService,
+            AnalyticsService analyticsService,
+            DownloadService downloadService,
             IWorkerQueueService workerQueueService,
             IOptions<AppSettings> optionsAppSettings,
             ILogger<Worker> logger)
@@ -21,7 +27,10 @@ namespace Pl.Sas.Worker
             _workerQueueService = workerQueueService;
             _logger = logger;
             _appSettings = optionsAppSettings.Value;
-            _serviceProvider = serviceProvider;
+            _downloadService = downloadService;
+            _analyticsService = analyticsService;
+            _stockViewService = stockViewService;
+            _realtimeService = realtimeService;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -39,30 +48,26 @@ namespace Pl.Sas.Worker
 
             _workerQueueService.SubscribeDownloadTask(async (message) =>
             {
-                using var scope = _serviceProvider.CreateScope();
-                var downloadService = scope.ServiceProvider.GetRequiredService<DownloadService>();
-                await downloadService.HandleEventAsync(message);
-                scope.Dispose();
+                await _downloadService.HandleEventAsync(message);
             });
 
             _workerQueueService.SubscribeAnalyticsTask(async (message) =>
             {
-                using var scope = _serviceProvider.CreateScope();
-                var analyticsService = scope.ServiceProvider.GetRequiredService<AnalyticsService>();
-                await analyticsService.HandleEventAsync(message);
-                scope.Dispose();
+                await _analyticsService.HandleEventAsync(message);
             });
 
             _workerQueueService.SubscribeBuildViewTask(async (message) =>
             {
-                using var scope = _serviceProvider.CreateScope();
-                var stockViewService = scope.ServiceProvider.GetRequiredService<StockViewService>();
-                var queueMessage = await stockViewService.HandleStockViewEventAsync(message);
+                var queueMessage = await _stockViewService.HandleStockViewEventAsync(message);
                 if (queueMessage is not null)
                 {
                     _workerQueueService.BroadcastViewUpdatedTask(queueMessage);
                 }
-                scope.Dispose();
+            });
+
+            _workerQueueService.SubscribeRealtimeTask(async (message) =>
+            {
+                await _realtimeService.HandleEventAsync(message);
             });
 
             return base.StartAsync(cancellationToken);

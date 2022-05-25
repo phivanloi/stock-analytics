@@ -20,8 +20,12 @@ namespace Pl.Sas.Infrastructure.RabbitmqMessageQueue
         private readonly IModel _subscribeDownloadChannel;
         private readonly IModel _subscribeAnalyticsChannel;
         private readonly IModel _subscribeBuildViewChannel;
+        private readonly IModel _subscribeRealtimeChannel;
         private readonly IModel _broadcastUpdateMemoryChannel;
         private readonly IModel _broadcastViewUpdatedChannel;
+
+        private readonly IModel _realtimeWorkerChannel;
+        private readonly IBasicProperties _publishRealtimeProperties;
 
         public WorkerQueueService(
             ILogger<WorkerQueueService> logger,
@@ -40,6 +44,9 @@ namespace Pl.Sas.Infrastructure.RabbitmqMessageQueue
             _subscribeDownloadChannel = _connection.CreateModel();
             _subscribeDownloadChannel.QueueDeclare(queue: MessageQueueConstants.DownloadQueueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
 
+            _subscribeRealtimeChannel = _connection.CreateModel();
+            _subscribeRealtimeChannel.QueueDeclare(queue: MessageQueueConstants.RealtimeQueueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
+
             _subscribeAnalyticsChannel = _connection.CreateModel();
             _subscribeAnalyticsChannel.QueueDeclare(queue: MessageQueueConstants.AnalyticsQueueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
 
@@ -51,6 +58,11 @@ namespace Pl.Sas.Infrastructure.RabbitmqMessageQueue
 
             _broadcastViewUpdatedChannel = _connection.CreateModel();
             _broadcastViewUpdatedChannel.ExchangeDeclare(exchange: MessageQueueConstants.ViewUpdatedExchangeName, type: ExchangeType.Fanout);
+
+            _realtimeWorkerChannel = _connection.CreateModel();
+            _realtimeWorkerChannel.QueueDeclare(queue: MessageQueueConstants.RealtimeQueueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
+            _publishRealtimeProperties = _realtimeWorkerChannel.CreateBasicProperties();
+            _publishRealtimeProperties.Persistent = true;
         }
 
         public virtual void SubscribeDownloadTask(Func<QueueMessage, Task> func)
@@ -125,6 +137,30 @@ namespace Pl.Sas.Infrastructure.RabbitmqMessageQueue
             _subscribeBuildViewChannel.BasicConsume(queue: MessageQueueConstants.ViewWorkerQueueName, autoAck: false, consumer: consumer);
         }
 
+        public virtual void SubscribeRealtimeTask(Func<QueueMessage, Task> func)
+        {
+            var consumer = new EventingBasicConsumer(_subscribeRealtimeChannel);
+            consumer.Received += async (model, ea) =>
+            {
+                try
+                {
+                    var message = JsonSerializer.Deserialize<QueueMessage>(_zipHelper.UnZipByte(ea.Body.ToArray()));
+                    Guard.Against.Null(message, nameof(message));
+                    await func(message);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Run SubscribeRealtimeTask error");
+                }
+                finally
+                {
+                    _subscribeRealtimeChannel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
+                }
+            };
+            _subscribeRealtimeChannel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
+            _subscribeRealtimeChannel.BasicConsume(queue: MessageQueueConstants.RealtimeQueueName, autoAck: false, consumer: consumer);
+        }
+
         public virtual void BroadcastUpdateMemoryTask(QueueMessage queueMessage)
         {
             Guard.Against.Null(queueMessage, nameof(queueMessage));
@@ -139,6 +175,13 @@ namespace Pl.Sas.Infrastructure.RabbitmqMessageQueue
             _broadcastViewUpdatedChannel.BasicPublish(exchange: MessageQueueConstants.ViewUpdatedExchangeName, routingKey: "", basicProperties: null, body: body);
         }
 
+        public virtual void PublishRealtimeTask(QueueMessage queueMessage)
+        {
+            Guard.Against.Null(queueMessage, nameof(queueMessage));
+            var body = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(queueMessage));
+            _realtimeWorkerChannel.BasicPublish(exchange: "", routingKey: MessageQueueConstants.RealtimeQueueName, basicProperties: _publishRealtimeProperties, body: body);
+        }
+
         public virtual void Dispose()
         {
             _subscribeDownloadChannel.Dispose();
@@ -146,6 +189,8 @@ namespace Pl.Sas.Infrastructure.RabbitmqMessageQueue
             _subscribeBuildViewChannel.Dispose();
             _broadcastUpdateMemoryChannel.Dispose();
             _broadcastViewUpdatedChannel.Dispose();
+            _subscribeRealtimeChannel.Dispose();
+            _realtimeWorkerChannel.Dispose();
             _connection.Dispose();
         }
     }

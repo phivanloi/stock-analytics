@@ -59,7 +59,9 @@ namespace Pl.Sas.UnitTests
                 option.Configuration = configuration.GetConnectionString("CacheConnection");
             });
 
-
+            services.AddSingleton<IFollowStockData, FollowStockData>();
+            services.AddSingleton<IUserData, UserData>();
+            services.AddSingleton<IKeyValueData, KeyValueData>();
             services.AddSingleton<IDownloadData, DownloadData>();
             services.AddSingleton<IStockData, StockData>();
             services.AddSingleton<IStockPriceData, StockPriceData>();

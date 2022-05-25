@@ -14,7 +14,6 @@ namespace Pl.Sas.UnitTests
 {
     public class DownloadServiceTests
     {
-
         [Fact]
         public async Task UpdateCapitalAndDividendTestAsync()
         {
@@ -78,7 +77,7 @@ namespace Pl.Sas.UnitTests
             {
                 Name = $"Tải dữ liệu chỉ số: VNINDEX",
                 Type = 9,
-                DataKey = "FPT",
+                DataKey = "VNINDEX",
                 ActiveTime = DateTime.Now,
                 OptionsJson = JsonSerializer.Serialize(new Dictionary<string, string>()
                 {
@@ -111,6 +110,5 @@ namespace Pl.Sas.UnitTests
 
             await hostedService.StopAsync(CancellationToken.None);
         }
-
     }
 }

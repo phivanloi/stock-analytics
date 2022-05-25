@@ -23,19 +23,12 @@ namespace Pl.Sas.Core.Interfaces
         Task<IEnumerable<FinancialIndicator>> FindAllAsync(string symbol, int? yearReport = null, int? lengthReport = null);
 
         /// <summary>
-        /// Lấy top danh sách báo cáo tài chính hàng năm mới nhất
+        /// Lấy top dữ liệu báo cáo tài chính mới nhất, năm và quý báo cáo giảm dần
         /// </summary>
         /// <param name="symbol">Mã cổ phiếu</param>
         /// <param name="top">Số báo cáo cần lấy</param>
-        /// <returns></returns>
-        Task<List<FinancialIndicator>> GetTopYearlyAsync(string symbol, int top = 100);
-
-        /// <summary>
-        /// Lấy một thông tin chỉ số theo năm và quý
-        /// </summary>
-        /// <param name="symbol">Mã cổ phiếu</param>
-        /// <returns></returns>
-        Task<FinancialIndicator> GetLastYearAsync(string symbol);
+        /// <returns>List FinancialIndicator</returns>
+        Task<List<FinancialIndicator>> GetTopAsync(string symbol, int top = 10);
 
         /// <summary>
         /// Sửa danh sách mã cổ phiếu

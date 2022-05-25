@@ -62,7 +62,6 @@ namespace Pl.Sas.Infrastructure.Data
 
             var dataTableUpdate = new DataTable();
             dataTableUpdate.Columns.Add("Id");
-            dataTableUpdate.Columns.Add("Activated", typeof(bool));
             dataTableUpdate.Columns.Add("PositionLevel");
             foreach (var leadership in leaderships)
             {

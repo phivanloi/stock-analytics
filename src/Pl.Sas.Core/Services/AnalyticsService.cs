@@ -137,6 +137,11 @@ namespace Pl.Sas.Core.Services
                         await VndScoreAnalyticsAsync(schedule.DataKey ?? "");
                         break;
 
+                    case 212:
+                        _logger.LogWarning("Chưa viết hàm xử lý type 212 => {DataKey}.", schedule.DataKey);
+                        //await VndScoreAnalyticsAsync(schedule.DataKey ?? "");
+                        break;
+
                     default:
                         _logger.LogWarning("Scheduler id {Id}, type: {Type} don't match any function", queueMessage.Id, schedule.Type);
                         stopWatch.Stop();
@@ -730,7 +735,7 @@ namespace Pl.Sas.Core.Services
             var exrightCorporateActions = await _corporateActionData.GetTradingByExrightDateAsync();
             foreach (var corporateActions in exrightCorporateActions)
             {
-                var schedule = (await _scheduleData.FindAllAsync(5, corporateActions.Symbol)).FirstOrDefault();
+                var schedule = await _scheduleData.FindAsync(5, corporateActions.Symbol);
                 if (schedule is not null)
                 {
                     await _stockPriceData.DeleteBySymbolAsync(corporateActions.Symbol);

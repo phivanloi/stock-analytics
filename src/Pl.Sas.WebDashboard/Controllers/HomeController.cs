@@ -167,9 +167,9 @@ namespace Pl.Sas.WebDashboard.Controllers
             {
                 model.FiinNote = JsonSerializer.Deserialize<List<AnalyticsNote>>(_zipHelper.UnZipByte(analyticsResult.FiinNotes));
             }
-            if (analyticsResult.VndNote is not null)
+            if (analyticsResult.VndNotes is not null)
             {
-                model.VndNote = JsonSerializer.Deserialize<List<AnalyticsNote>>(_zipHelper.UnZipByte(analyticsResult.VndNote));
+                model.VndNote = JsonSerializer.Deserialize<List<AnalyticsNote>>(_zipHelper.UnZipByte(analyticsResult.VndNotes));
             }
             if (analyticsResult.TargetPriceNotes is not null)
             {

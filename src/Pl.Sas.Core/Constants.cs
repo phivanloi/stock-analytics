@@ -28,6 +28,11 @@
         public const string CompanyCachePrefix = "COMCPF";
 
         /// <summary>
+        /// Khóa cache cho ChartPrice
+        /// </summary>
+        public const string ChartPriceCachePrefix = "CPCPF";
+
+        /// <summary>
         /// Khóa cache cho Stock
         /// </summary>
         public const string StockCachePrefix = "STOCCPF";
