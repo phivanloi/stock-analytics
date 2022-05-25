@@ -118,15 +118,16 @@ namespace Pl.Sas.Infrastructure.RabbitmqMessageQueue
             var consumer = new EventingBasicConsumer(_subscribeBuildViewChannel);
             consumer.Received += async (model, ea) =>
             {
+                var message = JsonSerializer.Deserialize<QueueMessage>(_zipHelper.UnZipByte(ea.Body.ToArray()));
+                Guard.Against.Null(message, nameof(message));
                 try
                 {
-                    var message = JsonSerializer.Deserialize<QueueMessage>(_zipHelper.UnZipByte(ea.Body.ToArray()));
-                    Guard.Against.Null(message, nameof(message));
                     await func(message);
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, $"Run SubscribeBuildViewTask error");
+                    _logger.LogError(JsonSerializer.Serialize(message));
                 }
                 finally
                 {
