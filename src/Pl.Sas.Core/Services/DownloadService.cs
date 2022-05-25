@@ -893,7 +893,7 @@ namespace Pl.Sas.Core.Services
             company.BankNumberOfBranch = int.Parse(ssiCompanyInfo.Data.CompanyProfile.BankNumberOfBranch ?? "0");
             company.CompanyProfile = _zipHelper.ZipByte(Encoding.UTF8.GetBytes(companyProfile));
             company.ListingDate = ParseDateType(ssiCompanyInfo.Data.CompanyProfile.ListingDate);
-            company.Exchange = ssiCompanyInfo.Data.CompanyProfile.Exchange;
+            company.Exchange = ssiCompanyInfo.Data.CompanyProfile.Exchange.Trim();
             company.FirstPrice = float.Parse(ssiCompanyInfo.Data.CompanyProfile.FirstPrice);
             company.IssueShare = float.Parse(ssiCompanyInfo.Data.CompanyProfile.IssueShare);
             company.ListedValue = float.Parse(ssiCompanyInfo.Data.CompanyProfile.ListedValue);

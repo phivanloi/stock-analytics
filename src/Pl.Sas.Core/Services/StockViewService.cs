@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Logging;
 using Pl.Sas.Core.Entities;
 using Pl.Sas.Core.Interfaces;
-using Pl.Sas.Core.Trading;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Text.Json;
@@ -23,7 +22,10 @@ namespace Pl.Sas.Core.Services
         private readonly IStockPriceData _stockPriceData;
         private readonly IFinancialIndicatorData _financialIndicatorData;
         private readonly ITradingResultData _tradingResultData;
+        private readonly IStockData _stockData;
+
         public StockViewService(
+            IStockData stockData,
             ITradingResultData tradingResultData,
             IFinancialIndicatorData financialIndicatorData,
             IStockPriceData stockPriceData,
@@ -36,6 +38,7 @@ namespace Pl.Sas.Core.Services
             IAsyncCacheService asyncCacheService,
             IMemoryCacheService memoryCacheService)
         {
+            _stockData = stockData;
             _tradingResultData = tradingResultData;
             _financialIndicatorData = financialIndicatorData;
             _stockPriceData = stockPriceData;
@@ -123,10 +126,8 @@ namespace Pl.Sas.Core.Services
             {
                 return;
             }
-            _stockViews.AddOrUpdate(symbol, stockView, (key, oldValue) =>
-            {
-                return stockView;
-            });
+            _stockViews.AddOrUpdate(symbol, stockView, (key, oldValue) => stockView);
+            stockView = null;
         }
 
         public virtual async Task<QueueMessage?> HandleStockViewEventAsync(QueueMessage queueMessage)
@@ -146,7 +147,6 @@ namespace Pl.Sas.Core.Services
                         _logger.LogWarning("Process scheduler id {Id}, type: {Type} don't match any function", queueMessage.Id, schedule.Type);
                         break;
                 }
-
                 stopWatch.Stop();
                 _logger.LogDebug("Process schedule {Id} type {Type} in {ElapsedMilliseconds} miniseconds.", schedule.Id, schedule.Type, stopWatch.ElapsedMilliseconds);
             }
@@ -172,7 +172,7 @@ namespace Pl.Sas.Core.Services
                 Symbol = symbol,
                 IndustryCode = company.SubsectorCode,
                 Description = $"{company.Exchange} - {company.CompanyName} - {company.Supersector} - {company.Sector}",
-                Exchange = company.Exchange.ToUpper(),
+                Exchange = company.Exchange.ToUpper().Trim(),
                 Beta = company.Beta,
                 MarketCap = company.MarketCap,
                 IndustryRank = MarketAnalyticsService.IndustryTrend(new(), industry),
@@ -415,13 +415,30 @@ namespace Pl.Sas.Core.Services
             }
             #endregion
 
+            industry = null;
+            company = null;
+
             var cacheKey = $"{Constants.StockViewCachePrefix}-SM-{symbol}";
-            await _asyncCacheService.SetValueAsync(cacheKey, stockView, Constants.DefaultCacheTime * 60 * 24);
+            await _asyncCacheService.SetValueAsync(cacheKey, stockView);
             var sendMessage = new QueueMessage("UpdateStockView");
             sendMessage.KeyValues.Add("Data", JsonSerializer.Serialize(stockView));
             sendMessage.KeyValues.Add("Symbol", symbol);
-
             return sendMessage;
+        }
+
+        public virtual async Task InitialAsync()
+        {
+            var stocks = await _stockData.FindAllAsync();
+            foreach (var stock in stocks)
+            {
+                var cacheKey = $"{Constants.StockViewCachePrefix}-SM-{stock.Symbol}";
+                var stockView = await _asyncCacheService.GetByKeyAsync<StockView>(cacheKey);
+                if (stockView != null)
+                {
+                    _stockViews.AddOrUpdate(stock.Symbol, stockView, (key, oldValue) => stockView);
+                }
+            }
+            stocks = null;
         }
     }
 }
