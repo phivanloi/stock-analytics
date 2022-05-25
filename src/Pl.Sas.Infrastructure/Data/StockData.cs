@@ -86,7 +86,7 @@ namespace Pl.Sas.Infrastructure.Data
 	                                            Name nvarchar(128) NULL,
 	                                            FullName nvarchar(256) NULL,
                                                 Exchange nvarchar(16) NULL,
-                                                Type nvarchar(16) NULL";
+                                                Type nvarchar(16) NULL)";
             var updateAndDropTableCommand = $@"  UPDATE
                                                     Stocks
                                                 SET
@@ -102,33 +102,42 @@ namespace Pl.Sas.Infrastructure.Data
                                                 ON
                                                     Sto.Id = Ttb.Id;
                                                 DROP TABLE {tableName};";
-
-            using SqlConnection connection = new(_connectionStrings.MarketConnection);
-            connection.Open();
-            using var tran = connection.BeginTransaction();
-            try
+            await _dbAsyncRetry.ExecuteAsync(async () =>
             {
-                using (SqlCommand command = new(createTempTableCommand, connection, tran))
+                using SqlConnection connection = new(_connectionStrings.MarketConnection);
+                connection.Open();
+                using var tran = connection.BeginTransaction();
+                try
                 {
-                    await command.ExecuteNonQueryAsync();
 
-                    using (var bulk = new SqlBulkCopy(connection, SqlBulkCopyOptions.Default, tran))
+                    using (SqlCommand command = new(createTempTableCommand, connection, tran))
                     {
-                        bulk.DestinationTableName = tableName;
-                        await bulk.WriteToServerAsync(dataTableUpdate);
-                    }
+                        await command.ExecuteNonQueryAsync();
 
-                    command.CommandText = updateAndDropTableCommand;
-                    await command.ExecuteNonQueryAsync();
+                        using (var bulk = new SqlBulkCopy(connection, SqlBulkCopyOptions.Default, tran))
+                        {
+                            bulk.DestinationTableName = tableName;
+                            await bulk.WriteToServerAsync(dataTableUpdate);
+                        }
+
+                        command.CommandText = updateAndDropTableCommand;
+                        await command.ExecuteNonQueryAsync();
+                    }
+                    tran.Commit();
+
                 }
-                tran.Commit();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Stock data error => BulkUpdateStockAsync");
-                tran.Rollback();
-                throw;
-            }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Stock data error => BulkUpdateStockAsync");
+                    tran.Rollback();
+                    throw;
+                }
+                finally
+                {
+                    connection.Close();
+                    connection.Dispose();
+                }
+            });
         }
 
         public virtual async Task<IEnumerable<Stock>> FindAllAsync()

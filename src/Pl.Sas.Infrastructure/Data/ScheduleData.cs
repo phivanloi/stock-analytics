@@ -22,9 +22,9 @@ namespace Pl.Sas.Infrastructure.Data
         public virtual async Task<IReadOnlyList<Schedule>> GetForActiveEventAsync(DateTime selectTime, int top)
         {
             var query = "SELECT TOP(@top) Id, Type, OptionsJson FROM Schedules WHERE ActiveTime <= @selectTime";
-            using SqlConnection connection = new(_connectionStrings.MarketConnection);
             return await _dbAsyncRetry.ExecuteAsync(async () =>
             {
+                using SqlConnection connection = new(_connectionStrings.MarketConnection);
                 return (await connection.QueryAsync<Schedule>(query, new { top, selectTime })).AsList();
             });
         }
@@ -32,9 +32,9 @@ namespace Pl.Sas.Infrastructure.Data
         public virtual async Task<bool> SetActiveTimeAsync(string id, DateTime setTime)
         {
             var query = "UPDATE Schedules SET ActiveTime = @setTime, UpdatedTime = GETDATE() WHERE Id = @id";
-            using SqlConnection connection = new(_connectionStrings.MarketConnection);
             return await _dbAsyncRetry.ExecuteAsync(async () =>
             {
+                using SqlConnection connection = new(_connectionStrings.MarketConnection);
                 return await connection.ExecuteAsync(query, new { id, setTime }) > 0;
             });
         }
@@ -73,14 +73,14 @@ namespace Pl.Sas.Infrastructure.Data
                                                 ON
                                                     Sch.Id = Tmt.Id;
                                                 DROP TABLE {tableName};";
-
-            using SqlConnection connection = new(_connectionStrings.MarketConnection);
-            connection.Open();
-            using var tran = connection.BeginTransaction();
-            try
+            await _dbAsyncRetry.ExecuteAsync(async () =>
             {
-                await _dbAsyncRetry.ExecuteAsync(async () =>
+                using SqlConnection connection = new(_connectionStrings.MarketConnection);
+                connection.Open();
+                using var tran = connection.BeginTransaction();
+                try
                 {
+
                     using (SqlCommand command = new(createTempTableCommand, connection, tran))
                     {
                         await command.ExecuteNonQueryAsync();
@@ -95,14 +95,18 @@ namespace Pl.Sas.Infrastructure.Data
                         await command.ExecuteNonQueryAsync();
                     }
                     tran.Commit();
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "BulkSetActiveTimeAsync error");
-                tran.Rollback();
-                throw;
-            }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "BulkSetActiveTimeAsync error");
+                    tran.Rollback();
+                    throw;
+                }
+                finally
+                {
+                    connection.Dispose();
+                }
+            });
         }
 
         public virtual async Task<Schedule> GetByIdAsync(string id)
@@ -136,8 +140,11 @@ namespace Pl.Sas.Infrastructure.Data
                                         UpdatedTime = GETDATE()
 		                            WHERE
 			                            Id = @Id";
-            using SqlConnection connection = new(_connectionStrings.MarketConnection);
-            return await connection.ExecuteAsync(query, schedule) > 0;
+            return await _dbAsyncRetry.ExecuteAsync(async () =>
+            {
+                using SqlConnection connection = new(_connectionStrings.MarketConnection);
+                return await connection.ExecuteAsync(query, schedule) > 0;
+            });
         }
 
         public virtual async Task BulkInserAsync(IEnumerable<Schedule> schedules)

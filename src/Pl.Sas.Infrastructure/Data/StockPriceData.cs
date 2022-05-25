@@ -26,13 +26,12 @@ namespace Pl.Sas.Infrastructure.Data
             }
 
             var dataTableTemp = stockPrices.ToDataTable();
-
-            using SqlConnection connection = new(_connectionStrings.MarketConnection);
-            connection.Open();
-            using var tran = connection.BeginTransaction();
-            try
+            await _dbAsyncRetry.ExecuteAsync(async () =>
             {
-                await _dbAsyncRetry.ExecuteAsync(async () =>
+                using SqlConnection connection = new(_connectionStrings.MarketConnection);
+                connection.Open();
+                using var tran = connection.BeginTransaction();
+                try
                 {
                     using (var sqlBulkCopy = new SqlBulkCopy(connection, SqlBulkCopyOptions.Default, tran))
                     {
@@ -46,14 +45,18 @@ namespace Pl.Sas.Infrastructure.Data
                         await sqlBulkCopy.WriteToServerAsync(dataTableTemp);
                     }
                     tran.Commit();
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Stock data error => BulkInserStockPricesAsync");
-                tran.Rollback();
-                throw;
-            }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Stock data error => BulkInserStockPricesAsync");
+                    tran.Rollback();
+                    throw;
+                }
+                finally
+                {
+                    connection.Close();
+                }
+            });
         }
 
         public virtual async Task<StockPrice> GetByDayAsync(string symbol, DateTime tradingDate)
@@ -220,8 +223,11 @@ namespace Pl.Sas.Infrastructure.Data
                                         UpdatedTime = GETDATE()
 		                            WHERE
 			                            Id = @Id";
-            using SqlConnection connection = new(_connectionStrings.MarketConnection);
-            return await connection.ExecuteAsync(query, stockPrice) > 0;
+            return await _dbAsyncRetry.ExecuteAsync(async () =>
+            {
+                using SqlConnection connection = new(_connectionStrings.MarketConnection);
+                return await connection.ExecuteAsync(query, stockPrice) > 0;
+            });
         }
 
         public virtual async Task<bool> InsertAsync(StockPrice stockPrice)

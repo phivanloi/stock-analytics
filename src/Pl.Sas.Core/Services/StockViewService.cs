@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Ardalis.GuardClauses;
+using Microsoft.Extensions.Logging;
 using Pl.Sas.Core.Entities;
 using Pl.Sas.Core.Interfaces;
 using Pl.Sas.Core.Trading;
@@ -22,8 +23,9 @@ namespace Pl.Sas.Core.Services
         private readonly IStockPriceData _stockPriceData;
         private readonly IFinancialIndicatorData _financialIndicatorData;
         private readonly ITradingResultData _tradingResultData;
-
+        private readonly IStockData _stockData;
         public StockViewService(
+            IStockData stockData,
             ITradingResultData tradingResultData,
             IFinancialIndicatorData financialIndicatorData,
             IStockPriceData stockPriceData,
@@ -36,6 +38,7 @@ namespace Pl.Sas.Core.Services
             IAsyncCacheService asyncCacheService,
             IMemoryCacheService memoryCacheService)
         {
+            _stockData = stockData;
             _tradingResultData = tradingResultData;
             _financialIndicatorData = financialIndicatorData;
             _stockPriceData = stockPriceData;
@@ -155,38 +158,32 @@ namespace Pl.Sas.Core.Services
 
         public virtual async Task<QueueMessage?> BindingStocksViewAndSetCacheAsync(string symbol)
         {
-            var chartPrices = await _chartPriceData.FindAllAsync(symbol, "D");
-            if (chartPrices.Count < 5)
-            {
-                _logger.LogWarning("Can't build view data for stock code {symbol} by stock price is lower five item.", symbol);
-                return null;
-            }
+            Guard.Against.NullOrEmpty(symbol, nameof(symbol));
             var company = await _companyData.GetByCodeAsync(symbol);
             if (company is null)
             {
                 _logger.LogWarning("Can't build view data for stock code {symbol} by company info is null.", symbol);
                 return null;
             }
-            var analyticsResults = await _analyticsResultData.FindAsync(symbol);
-            if (analyticsResults is null)
-            {
-                _logger.LogWarning("Can't build view data for stock code {symbol} by analytics result lower one item.", symbol);
-                return null;
-            }
+            var chartPrices = await _chartPriceData.CacheFindAllAsync(symbol, "D");
             var stockPrices = await _stockPriceData.GetForStockViewAsync(symbol, 10);
-
-            var financialIndicators = await _financialIndicatorData.FindAllAsync(symbol);
-            var lastFinancialIndicator = financialIndicators.OrderByDescending(q => q.YearReport).ThenByDescending(q => q.LengthReport).FirstOrDefault(q => q.LengthReport == 5);
-            var topThreeFinancialIndicator = financialIndicators.OrderByDescending(q => q.YearReport).ThenByDescending(q => q.LengthReport).Where(q => q.LengthReport == 5).Take(4).ToList();
+            var analyticsResults = await _analyticsResultData.FindAsync(symbol);
+            var financialIndicators = await _financialIndicatorData.GetTopAsync(symbol, 10);            
             var industry = await _industryData.GetByCodeAsync(company.SubsectorCode);
-            var topThreeHistories = stockPrices.Take(3).ToList();
-            var topFiveHistories = stockPrices.Take(5).ToList();
             var stockView = new StockView()
             {
                 Symbol = symbol,
                 IndustryCode = company.SubsectorCode,
                 Description = $"{company.Exchange} - {company.CompanyName} - {company.Supersector} - {company.Sector}",
-                Exchange = company.Exchange ?? "",
+                Exchange = company.Exchange.ToUpper(),
+            };
+
+            var stockView = new StockView()
+            {
+                Symbol = symbol,
+                IndustryCode = company.SubsectorCode,
+                Description = $"{company.Exchange} - {company.CompanyName} - {company.Supersector} - {company.Sector}",
+                Exchange = company.Exchange.ToUpper(),
 
                 MacroeconomicsScore = analyticsResults.MarketScore,
                 IndustryRank = MarketAnalyticsService.IndustryTrend(new(), industry),

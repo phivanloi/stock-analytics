@@ -36,8 +36,10 @@ namespace Pl.Sas.Core.Services
         private readonly IIndustryData _industryData;
         private readonly IStockData _stockData;
         private readonly IAnalyticsResultData _analyticsResultData;
+        private readonly IAsyncCacheService _asyncCacheService;
 
         public DownloadService(
+            IAsyncCacheService asyncCacheService,
             IAnalyticsResultData analyticsResultData,
             IStockData stockData,
             IIndustryData industryData,
@@ -60,6 +62,7 @@ namespace Pl.Sas.Core.Services
             ILogger<DownloadService> logger,
             IDownloadData downloadData)
         {
+            _asyncCacheService = asyncCacheService;
             _analyticsResultData = analyticsResultData;
             _stockData = stockData;
             _industryData = industryData;
@@ -262,7 +265,7 @@ namespace Pl.Sas.Core.Services
         }
 
         /// <summary>
-        /// download dữ liệu index
+        /// Cập nhập lại toàn bộ dữ liệu chart prices
         /// </summary>
         /// <param name="schedule">thông tin lịch</param>
         /// <returns>bool</returns>
@@ -312,6 +315,7 @@ namespace Pl.Sas.Core.Services
             }
 
             var check = await _chartPriceData.ResetChartPriceAsync(chartPrices, symbol, schedule.Options["ChartType"]);
+            await _asyncCacheService.RemoveByPrefixAsync(Constants.ChartPriceCachePrefix);
             return await _keyValueData.SetAsync(checkingKey, check);
         }
 

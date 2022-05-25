@@ -70,13 +70,14 @@ namespace Pl.Sas.Infrastructure.Data
             }
 
             var dataTableTemp = chartPrices.ToDataTable();
-            using SqlConnection connection = new(_connectionStrings.MarketConnection);
-            connection.Open();
-            using var tran = connection.BeginTransaction();
-            try
+            await _dbAsyncRetry.ExecuteAsync(async () =>
             {
-                await _dbAsyncRetry.ExecuteAsync(async () =>
+                using SqlConnection connection = new(_connectionStrings.MarketConnection);
+                connection.Open();
+                using var tran = connection.BeginTransaction();
+                try
                 {
+
                     using (var sqlBulkCopy = new SqlBulkCopy(connection, SqlBulkCopyOptions.Default, tran))
                     {
                         foreach (DataColumn column in dataTableTemp.Columns)
@@ -89,14 +90,18 @@ namespace Pl.Sas.Infrastructure.Data
                         await sqlBulkCopy.WriteToServerAsync(dataTableTemp);
                     }
                     tran.Commit();
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "ChartPrice BulkInserAsync error");
-                tran.Rollback();
-                throw;
-            }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "ChartPrice BulkInserAsync error");
+                    tran.Rollback();
+                    throw;
+                }
+                finally
+                {
+                    connection.Dispose();
+                }
+            });
         }
 
         public virtual async Task<bool> UpsertAsync(ChartPrice chartPrice)
@@ -152,8 +157,11 @@ namespace Pl.Sas.Infrastructure.Data
         public virtual async Task<bool> DeleteAsync(string symbol, string type)
         {
             var query = "DELETE ChartPrices WHERE Symbol = @symbol AND [Type] = @type";
-            using SqlConnection connection = new(_connectionStrings.MarketConnection);
-            return await connection.ExecuteAsync(query, new { symbol, type }) > 0;
+            return await _dbAsyncRetry.ExecuteAsync(async () =>
+            {
+                using SqlConnection connection = new(_connectionStrings.MarketConnection);
+                return await connection.ExecuteAsync(query, new { symbol, type }) > 0;
+            });
         }
     }
 }
