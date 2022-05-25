@@ -403,6 +403,7 @@
         public float TenForeignPurchasingPowerPercent => LastForeignPurchasingPower.GetPercent(LastAvgTenForeignPurchasingPower);
 
         #endregion
+
         /// <summary>
         /// Danh sách các kết quả đầu tư thử nghiệm theo phương pháp
         /// 1 => dài hạn

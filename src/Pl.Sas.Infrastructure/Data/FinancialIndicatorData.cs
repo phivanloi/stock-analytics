@@ -40,19 +40,11 @@ namespace Pl.Sas.Infrastructure.Data
             return await connection.QueryAsync<FinancialIndicator>($"{query} ORDER BY YearReport, LengthReport", new { symbol, yearReport, lengthReport });
         }
 
-        public virtual async Task<List<FinancialIndicator>> GetTopYearlyAsync(string symbol, int top = 5)
+        public virtual async Task<List<FinancialIndicator>> GetTopAsync(string symbol, int top = 10)
         {
-            var query = "SELECT TOP(@top) * FROM FinancialIndicators WHERE Symbol = @symbol AND LengthReport = 5 ";
-
+            var query = "SELECT TOP(@top) * FROM FinancialIndicators WHERE Symbol = @symbol ORDER BY YearReport DESC, LengthReport DESC ";
             using SqlConnection connection = new(_connectionStrings.MarketConnection);
-            return (await connection.QueryAsync<FinancialIndicator>($"{query} ORDER BY YearReport DESC", new { symbol, top })).AsList();
-        }
-
-        public virtual async Task<FinancialIndicator> GetLastYearAsync(string symbol)
-        {
-            var query = "SELECT TOP(1) * FROM FinancialIndicators WHERE Symbol = @symbol AND LengthReport != 5 ORDER BY YearReport DESC, LengthReport DESC";
-            using SqlConnection connection = new(_connectionStrings.MarketConnection);
-            return await connection.QueryFirstOrDefaultAsync<FinancialIndicator>(query, new { symbol });
+            return (await connection.QueryAsync<FinancialIndicator>(query, new { symbol, top })).AsList();
         }
 
         public virtual async Task BulkUpdateAsync(IEnumerable<FinancialIndicator> financialIndicators)
