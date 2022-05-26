@@ -268,7 +268,7 @@ namespace Pl.Sas.Core.Services
                     }
                 }
                 #region Convulsion
-                if (chartPrices.Count >= 1)
+                if (chartPrices.Count >= 2)
                 {
                     stockView.PricePercentConvulsion1 = chartPrices[0].ClosePrice.GetPercent(chartPrices[1].ClosePrice);
                 }
