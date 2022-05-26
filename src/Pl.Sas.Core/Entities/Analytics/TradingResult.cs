@@ -13,10 +13,9 @@
         /// <summary>
         /// Phương pháp
         /// <para>0 => Thử nghiệm</para>
-        /// <para>1 => Mua và nắm giữ</para>
-        /// <para>2 => Dài hạn</para>
-        /// <para>3 => Phương pháp macd</para>
-        /// <para>4 => Phương pháp sar</para>
+        /// <para>1 => Phương pháp macd</para>
+        /// <para>2 => Tích sản khi giá rẻ</para>
+        /// <para>3 => Mua và nắm giữ</para>
         /// </summary>
         public int Principle { get; set; } = 1;
 

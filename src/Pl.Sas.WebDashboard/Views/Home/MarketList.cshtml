@@ -55,19 +55,19 @@
 
         @if (judgeResult.TodayIsBuy)
         {
-            <td class="text-danger" title="@judgeResult.OptimalBuyPrice.GetPercent(Model.StockViews[i].LastClosePrice).ShowPercent()%">Mua(@judgeResult.OptimalBuyPrice.ShowPrice())</td>
+            <td class="text-danger" title="@judgeResult.OptimalBuyPrice.GetPercent(Model.StockViews[i].LastClosePrice).ShowPercent()%">Mua(@judgeResult.OptimalBuyPrice.ShowPrice(1))</td>
         }
         else
         {
-            <td title="@judgeResult.OptimalBuyPrice.GetPercent(Model.StockViews[i].LastClosePrice).ShowPercent()%">TD(@judgeResult.OptimalBuyPrice.ShowPrice())</td>
+            <td title="@judgeResult.OptimalBuyPrice.GetPercent(Model.StockViews[i].LastClosePrice).ShowPercent()%">TD(@judgeResult.OptimalBuyPrice.ShowPrice(1))</td>
         }
         @if (judgeResult.TodayIsSell)
         {
-            <td class="text-success" title="@judgeResult.OptimalSellPrice.GetPercent(Model.StockViews[i].LastClosePrice).ShowPercent()%">Bán(@judgeResult.OptimalSellPrice.ShowPrice())</td>
+            <td class="text-success" title="@judgeResult.OptimalSellPrice.GetPercent(Model.StockViews[i].LastClosePrice).ShowPercent()%">Bán(@judgeResult.OptimalSellPrice.ShowPrice(1))</td>
         }
         else
         {
-            <td title="@judgeResult.OptimalSellPrice.GetPercent(Model.StockViews[i].LastClosePrice).ShowPercent()%">TD(@judgeResult.OptimalSellPrice.ShowPrice())</td>
+            <td title="@judgeResult.OptimalSellPrice.GetPercent(Model.StockViews[i].LastClosePrice).ShowPercent()%">TD(@judgeResult.OptimalSellPrice.ShowPrice(1))</td>
         }
     </tr>
 }

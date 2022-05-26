@@ -516,7 +516,6 @@ namespace Pl.Sas.Core.Services
         /// <returns></returns>
         public virtual async Task<bool> TestTradingAnalyticsAsync(string symbol)
         {
-            var stockNotes = new List<AnalyticsNote>();
             var checkingKey = $"{symbol}-Analytics-TestTrading";
             var stock = await _stockData.GetByCodeAsync(symbol);
             var chartPrices = (await _chartPriceData.FindAllAsync(symbol, "D")).OrderBy(q => q.TradingDate).ToList();
@@ -534,11 +533,10 @@ namespace Pl.Sas.Core.Services
             var endPrice = tradingHistories[^1].ClosePrice;
             var countInStock = chartPrices.Count(q => q.TradingDate >= Constants.StartTime);
             var noteInvestment = $"Mua và nắm giữ {tradingHistories.Count} phiên từ ngày {tradingHistories[0].TradingDate:dd/MM/yyyy}: Giá đóng cửa đầu kỳ {startPrice:0,0} giá đóng cửa cuối kỳ {endPrice:0,0} lợi nhuận {endPrice.GetPercent(startPrice):0.00}%.";
-            stockNotes.Add(noteInvestment, 0, startPrice > endPrice ? -1 : startPrice < endPrice ? 1 : 0, null);
             await _tradingResultData.SaveTestTradingResultAsync(new()
             {
                 Symbol = symbol,
-                Principle = 1,
+                Principle = 3,
                 IsBuy = false,
                 BuyPrice = chartPrices[^1].ClosePrice,
                 IsSell = false,
@@ -548,18 +546,16 @@ namespace Pl.Sas.Core.Services
                 TotalTax = 0,
                 TradingNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(new List<KeyValuePair<int, string>>() { new(startPrice > endPrice ? -1 : startPrice < endPrice ? 1 : 0, noteInvestment) })),
             });
-
             #endregion
 
             #region Macd Trading
             var macdCase = MacdTrading.Trading(tradingHistories);
             var macdNote = $"Trading {Utilities.GetPrincipleName(3).ToLower()} {tradingHistories.Count} phiên từ ngày {tradingHistories[0].TradingDate:dd/MM/yyyy}, Lợi nhuận {macdCase.Profit(tradingHistories[^1].ClosePrice):0,0} ({macdCase.ProfitPercent(tradingHistories[^1].ClosePrice):0,0.00}%), thuế {macdCase.TotalTax:0,0}, xem chi tiết tại tab \"Lợi nhuận và đầu tư TN\".";
             var macdType = macdCase.FixedCapital < macdCase.Profit(tradingHistories[^1].ClosePrice) ? 1 : macdCase.FixedCapital == macdCase.Profit(tradingHistories[^1].ClosePrice) ? 0 : -1;
-            stockNotes.Add(macdNote, 0, macdType, null);
             await _tradingResultData.SaveTestTradingResultAsync(new()
             {
                 Symbol = symbol,
-                Principle = 3,
+                Principle = 1,
                 IsBuy = isBuy,
                 BuyPrice = macdCase.BuyPrice,
                 IsSell = isSell,
@@ -572,15 +568,14 @@ namespace Pl.Sas.Core.Services
             MacdTrading.Dispose();
             #endregion
 
-            #region Macd Trading
-            var sarCase = SarTrading.Trading(tradingHistories);
+            #region Experiment Trading
+            var sarCase = ExperimentTrading.Trading(tradingHistories);
             var sarNote = $"Trading {Utilities.GetPrincipleName(3).ToLower()} {tradingHistories.Count} phiên từ ngày {tradingHistories[0].TradingDate:dd/MM/yyyy}, Lợi nhuận {sarCase.Profit(tradingHistories[^1].ClosePrice):0,0} ({sarCase.ProfitPercent(tradingHistories[^1].ClosePrice):0,0.00}%), thuế {sarCase.TotalTax:0,0}, xem chi tiết tại tab \"Lợi nhuận và đầu tư TN\".";
             var sarType = sarCase.FixedCapital < sarCase.Profit(tradingHistories[^1].ClosePrice) ? 1 : sarCase.FixedCapital == sarCase.Profit(tradingHistories[^1].ClosePrice) ? 0 : -1;
-            stockNotes.Add(sarNote, 0, sarType, null);
             await _tradingResultData.SaveTestTradingResultAsync(new()
             {
                 Symbol = symbol,
-                Principle = 4,
+                Principle = 0,
                 IsBuy = isBuy,
                 BuyPrice = sarCase.BuyPrice,
                 IsSell = isSell,
@@ -590,11 +585,12 @@ namespace Pl.Sas.Core.Services
                 TotalTax = sarCase.TotalTax,
                 TradingNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(sarCase.ExplainNotes)),
             });
-            SarTrading.Dispose();
-            chartPrices = null;
-            tradingHistories = null;
+            ExperimentTrading.Dispose();
             #endregion
 
+            chartPrices = null;
+            tradingHistories = null;
+            stock = null;
             return await _keyValueData.SetAsync(checkingKey, true);
         }
 

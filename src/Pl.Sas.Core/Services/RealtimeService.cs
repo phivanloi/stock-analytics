@@ -111,28 +111,31 @@ namespace Pl.Sas.Core.Services
                 return;
             }
 
-            //var chartPrices = await _chartPriceData.CacheFindAllAsync(symbol, "D");
-            //if (chartPrices is null || chartPrices.Count <= 0)
-            //{
-            //    return;
-            //}
+            var chartPrices = await _chartPriceData.CacheFindAllAsync(symbol, "D");
+            if (chartPrices is null || chartPrices.Count <= 0)
+            {
+                return;
+            }
 
-            //foreach (var realtimeItem in chartPricesRealtime)
-            //{
-            //    var chartPrice = chartPrices.FirstOrDefault(q => q.TradingDate == realtimeItem.TradingDate);
-            //    if (chartPrice is null)
-            //    {
-            //        chartPrices.Add(realtimeItem);
-            //    }
-            //    else
-            //    {
-            //        chartPrice.TotalMatchVol = realtimeItem.TotalMatchVol;
-            //        chartPrice.ClosePrice = realtimeItem.ClosePrice;
-            //        chartPrice.LowestPrice = realtimeItem.LowestPrice;
-            //        chartPrice.HighestPrice = realtimeItem.HighestPrice;
-            //        chartPrice.OpenPrice = realtimeItem.OpenPrice;
-            //    }
-            //}
+            foreach (var realtimeItem in chartPricesRealtime)
+            {
+                var chartPrice = chartPrices.FirstOrDefault(q => q.TradingDate == realtimeItem.TradingDate);
+                if (chartPrice is null)
+                {
+                    chartPrices.Add(realtimeItem);
+                }
+                else
+                {
+                    chartPrice.TotalMatchVol = realtimeItem.TotalMatchVol;
+                    chartPrice.ClosePrice = realtimeItem.ClosePrice;
+                    chartPrice.LowestPrice = realtimeItem.LowestPrice;
+                    chartPrice.HighestPrice = realtimeItem.HighestPrice;
+                    chartPrice.OpenPrice = realtimeItem.OpenPrice;
+                }
+            }
+
+            chartPrices = chartPrices.OrderBy(q => q.TradingDate).ToList();
+
 
 
         }
@@ -151,35 +154,35 @@ namespace Pl.Sas.Core.Services
             {
                 if (transactionCont > 100000)
                 {
-                    type14.AddOrUpdateOptions("SleepTime", "15");
+                    type14.AddOrUpdateOptions("SleepTime", "10");
                 }
                 else if (transactionCont > 50000)
                 {
-                    type14.AddOrUpdateOptions("SleepTime", "30");
+                    type14.AddOrUpdateOptions("SleepTime", "15");
                 }
                 else if (transactionCont > 10000)
                 {
-                    type14.AddOrUpdateOptions("SleepTime", "60");
+                    type14.AddOrUpdateOptions("SleepTime", "30");
                 }
                 else if (transactionCont > 5000)
                 {
-                    type14.AddOrUpdateOptions("SleepTime", "120");
+                    type14.AddOrUpdateOptions("SleepTime", "60");
                 }
                 else if (transactionCont > 1000)
                 {
-                    type14.AddOrUpdateOptions("SleepTime", "300");
+                    type14.AddOrUpdateOptions("SleepTime", "150");
                 }
                 else if (transactionCont > 500)
                 {
-                    type14.AddOrUpdateOptions("SleepTime", "600");
+                    type14.AddOrUpdateOptions("SleepTime", "300");
                 }
                 else if (transactionCont > 100)
                 {
-                    type14.AddOrUpdateOptions("SleepTime", "1200");
+                    type14.AddOrUpdateOptions("SleepTime", "600");
                 }
                 else
                 {
-                    type14.AddOrUpdateOptions("SleepTime", "2400");
+                    type14.AddOrUpdateOptions("SleepTime", "1200");
                 }
                 await _scheduleData.UpdateAsync(type14);
             }

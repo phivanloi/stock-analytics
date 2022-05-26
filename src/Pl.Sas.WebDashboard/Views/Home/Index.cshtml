@@ -74,11 +74,10 @@
         <div class="col-sm-2">
             <div class="form-group">
                 <select id="principle" onchange="LoadMarket()" class="form-control seach-control">
-                    <option value="0">Thử nghiệm</option>
-                    <option selected="selected" value="1">Mua và nắm giữ</option>
-                    <option value="2">Dài hạn</option>
-                    <option value="3">Phương pháp macd</option>
-                    <option value="4">Phương pháp sar</option>
+                    <option selected="selected" value="0">Thử nghiệm</option>
+                    <option value="1">Macd trading</option>
+                    <option value="2">Tích sản khi giá rẻ</option>
+                    <option value="3">Mua và nắm giữ</option>
                 </select>
             </div>
         </div>
@@ -168,7 +167,7 @@
                 Ordinal: $('#ordinal').val(),
                 IndustryCode: $('#industry').val(),
                 Exchange: $('#exchange').val(),
-                Code: $('#code').val(),
+                Symbol: $('#code').val(),
                 Zone: $('#zone').val()
             });
             $.ajax({
