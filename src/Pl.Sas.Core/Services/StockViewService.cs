@@ -268,7 +268,7 @@ namespace Pl.Sas.Core.Services
                     }
                 }
                 #region Convulsion
-                if (chartPrices.Count >= 1)
+                if (chartPrices.Count >= 2)
                 {
                     stockView.PricePercentConvulsion1 = chartPrices[0].ClosePrice.GetPercent(chartPrices[1].ClosePrice);
                 }
@@ -419,7 +419,7 @@ namespace Pl.Sas.Core.Services
             company = null;
 
             var cacheKey = $"{Constants.StockViewCachePrefix}-SM-{symbol}";
-            await _asyncCacheService.SetValueAsync(cacheKey, stockView);
+            await _asyncCacheService.SetValueAsync(cacheKey, stockView, Constants.DefaultCacheTime * 60 * 24 * 30);
             var sendMessage = new QueueMessage("UpdateStockView");
             sendMessage.KeyValues.Add("Data", JsonSerializer.Serialize(stockView));
             sendMessage.KeyValues.Add("Symbol", symbol);

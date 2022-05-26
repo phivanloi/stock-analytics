@@ -126,8 +126,7 @@ namespace Pl.Sas.Infrastructure.RabbitmqMessageQueue
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, $"Run SubscribeBuildViewTask error");
-                    _logger.LogError(JsonSerializer.Serialize(message));
+                    _logger.LogError(new Exception(JsonSerializer.Serialize(message) + ex.ToString()), "Run SubscribeBuildViewTask error");
                 }
                 finally
                 {
