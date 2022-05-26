@@ -23,9 +23,9 @@ namespace Pl.Sas.InvestmentPrinciplesTests
             {
                 Console.Clear();
                 Console.OutputEncoding = Encoding.UTF8;
-                DateTime fromDate = new(2020, 1, 1);
+                DateTime fromDate = new(2018, 1, 1);
                 DateTime toDate = new(2019, 10, 1);
-                var symbol = "VND";
+                var symbol = "HSG";
                 var chartPrices = (await _chartPriceData.FindAllAsync(symbol)).OrderBy(q => q.TradingDate).ToList();
                 var tradingHistories = chartPrices.Where(q => q.TradingDate >= fromDate).OrderBy(q => q.TradingDate).ToList();
                 var startPrice = tradingHistories[0].ClosePrice;

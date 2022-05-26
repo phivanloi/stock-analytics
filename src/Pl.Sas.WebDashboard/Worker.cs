@@ -37,6 +37,7 @@ namespace Pl.Sas.WebDashboard
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            await _stockViewService.InitialAsync();
             while (!stoppingToken.IsCancellationRequested)
             {
                 _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
