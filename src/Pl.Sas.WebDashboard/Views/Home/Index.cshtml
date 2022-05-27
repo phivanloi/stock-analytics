@@ -74,11 +74,10 @@
         <div class="col-sm-2">
             <div class="form-group">
                 <select id="principle" onchange="LoadMarket()" class="form-control seach-control">
-                    <option value="0">Thử nghiệm</option>
-                    <option selected="selected" value="1">Mua và nắm giữ</option>
-                    <option value="2">Dài hạn</option>
-                    <option value="3">Phương pháp macd</option>
-                    <option value="4">Phương pháp sar</option>
+                    <option selected="selected" value="0">Thử nghiệm</option>
+                    <option value="1">Macd trading</option>
+                    <option value="2">Tích sản khi giá rẻ</option>
+                    <option value="3">Mua và nắm giữ</option>
                 </select>
             </div>
         </div>
@@ -98,9 +97,9 @@
                 <td colspan="2" title="Phân tích các yếu tố vĩ mô tác động vào cổ phiếu">Vĩ mô</td>
                 <td colspan="4" title="Điểm đánh giá doanh nghiệp và các chỉ số tài chính hiện tại của doanh nghiệp">Giá trị DN</td>
                 <td colspan="3" title="Điểm đánh giá tốc độ tăng trưởng của doanh nghiệp">Tăng trưởng DN</td>
-                <td colspan="12" title="Điểm đánh giá tăng trưởng thị giá và phân tích kỹ thuật">Kỹ thuật và % Tăng trưởng thị giá</td>
+                <td colspan="8" title="Điểm đánh giá tăng trưởng thị giá và phân tích kỹ thuật">Kỹ thuật và % Tăng trưởng thị giá</td>
                 <td colspan="3" title="Đánh giá về cổ phiếu của các đơn vị khác">Đánh giá khác</td>
-                <td colspan="2" title="Kết quả giao dịch thử nhiệm đầu tư từ ngày @Pl.Sas.Core.Constants.StartTime.ToString("dd/MM/yyyy") và nếu chỉ mua và nắm giữ">Giao dịch TN </td>
+                <td colspan="4" title="Kết quả các phương pháp khi cho đầu tư từ @Pl.Sas.Core.Constants.StartTime.ToString("dd/MM/yyyy")">Thử nghiệm và đánh giá</td>
                 <td colspan="2" title="Trạng thái đánh giá Mua/Theo dõi - Giá mua">ĐG Giao dịch</td>
             </tr>
             <tr style="text-align:center; color:#fff">
@@ -120,21 +119,19 @@
                 <td title="Chỉ số beta">Beta</td>
                 <td title="Khối lượng khớp lệnh phiên trước và % so với bình quân 3,5,10 phiên trước">KL khớp</td>
                 <td title="Giá đóng của phiên giao mới nhất">Giá ĐC</td>
-                <td title="% biến động giá trong 1 phiên" >1P</td>
-                <td title="% biến động giá trong 5 phiên" >5P</td>
-                <td title="% biến động giá trong 10 phiên" >10P</td>
-                <td title="% biến động giá trong 30 phiên" >30P</td>
-                <td title="% biến động giá trong 60 phiên" >60P</td>
-                <td title="% biến động giá trong 120 phiên" >120P</td>
-                <td title="% biến động giá trong 240 phiên" >240P</td>
-                <td title="% biến động giá trong 480 phiên" >480P</td>
+                <td title="% biến động giá trong 1 phiên">1P</td>
+                <td title="% biến động giá trong 5 phiên">5P</td>
+                <td title="% biến động giá trong 10 phiên">10P</td>
+                <td title="% biến động giá trong 30 phiên">30P</td>
 
                 <td title="Đánh giá của fiintrading">FIIN</td>
                 <td title="Đánh giá của vndirect">VND</td>
                 <td title="Giá dự phóng của các công ty chứng khoán">Giá DP</td>
 
-                <td title="% Lợi nhuận thu được khi cho đầu tư thử nghiệm từ ngày @Pl.Sas.Core.Constants.StartTime.ToString("dd/MM/yyyy")">% LN</td>
-                <td title="% Lợi nhuận thu được khi mua và nắm giữ từ ngày @Pl.Sas.Core.Constants.StartTime.ToString("dd/MM/yyyy")">% BĐ</td>
+                <td title="% Lợi nhuận của phương pháp thử nghiệm">TN</td>
+                <td title="% Lợi nhuận của phương pháp macd">Macd</td>
+                <td title="% Lợi nhuận của phương pháp tích sản">TS</td>
+                <td title="% Lợi nhuận của phương pháp mua và nắm giữ">MG</td>
 
                 <td title="Trạng thái đánh giá Mua/Theo dõi - Giá mua">Mua</td>
                 <td title="Trạng thái đánh giá Bán/Theo dõi - Giá bán">Bán</td>
@@ -148,46 +145,46 @@
     </table>
 </section>
 @section Scripts{
-    <script>
-        $(function () {
-            LoadMarket();
+<script>
+    $(function () {
+        LoadMarket();
 
-            $('#code').keypress(function (e) {
-                if (e.which == 13) {
-                    LoadMarket();
-                }
-            });
+        $('#code').keypress(function (e) {
+            if (e.which == 13) {
+                LoadMarket();
+            }
         });
+    });
 
-        function LoadMarket() {
-            var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            $('#user-invest-table-body').html('<tr><td colspan="29" class="text-center"><p class="fas fa-sync-alt fa-spin"></p></td></tr>');
-            $('#number-row').html('Mã');
-            var postData = JSON.stringify({
-                Principle: $('#principle').val(),
-                Ordinal: $('#ordinal').val(),
-                IndustryCode: $('#industry').val(),
-                Exchange: $('#exchange').val(),
-                Code: $('#code').val(),
-                Zone: $('#zone').val()
-            });
-            $.ajax({
-                type: "POST",
-                contentType: "application/json",
-                cache: false,
-                data: postData,
-                url: "/home/marketlist",
-                success: function (html) {
-                    if (html.length > 0) {
-                        $('#user-invest-table-body').html(html);
-                        $('#number-row').prop('title', $('#user-invest-table-body').children().length);
-                        document.documentElement.scrollTop = document.body.scrollTop = scrollTop;
-                    }
-                    else {
-                        setTimeout(LoadMarket, 5000);
-                    }
+    function LoadMarket() {
+        var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        $('#user-invest-table-body').html('<tr><td colspan="29" class="text-center"><p class="fas fa-sync-alt fa-spin"></p></td></tr>');
+        $('#number-row').html('Mã');
+        var postData = JSON.stringify({
+            Principle: $('#principle').val(),
+            Ordinal: $('#ordinal').val(),
+            IndustryCode: $('#industry').val(),
+            Exchange: $('#exchange').val(),
+            Symbol: $('#code').val(),
+            Zone: $('#zone').val()
+        });
+        $.ajax({
+            type: "POST",
+            contentType: "application/json",
+            cache: false,
+            data: postData,
+            url: "/home/marketlist",
+            success: function (html) {
+                if (html.length > 0) {
+                    $('#user-invest-table-body').html(html);
+                    $('#number-row').prop('title', $('#user-invest-table-body').children().length);
+                    document.documentElement.scrollTop = document.body.scrollTop = scrollTop;
                 }
-            });
-        };
-    </script>
+                else {
+                    setTimeout(LoadMarket, 5000);
+                }
+            }
+        });
+    };
+</script>
 }

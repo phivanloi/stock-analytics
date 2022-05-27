@@ -120,5 +120,12 @@
             }
         }
         #endregion
+
+        #region Experiment
+        /// <summary>
+        /// vị thế tài sản
+        /// </summary>
+        public string AssetPosition { get; set; } = "100% tiền mặt";
+        #endregion
     }
 }

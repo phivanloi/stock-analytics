@@ -74,8 +74,11 @@ namespace Pl.Sas.Infrastructure.Data
                                     Id = @checkId
                             END
                             COMMIT";
-            using SqlConnection connection = new(_connectionStrings.MarketConnection);
-            return await connection.ExecuteAsync(query, vndStockScore) > 0;
+            return await _dbAsyncRetry.ExecuteAsync(async () =>
+            {
+                using SqlConnection connection = new(_connectionStrings.MarketConnection);
+                return await connection.ExecuteAsync(query, vndStockScore) > 0;
+            });
         }
     }
 }

@@ -4,7 +4,7 @@
 @model MarketListViewModel
 @for (int i = 0; i < Model.StockViews.Count; i++)
 {
-    Model.StockViews[i].TradingViews.TryGetValue(Model.Principle, out JudgeResult? judgeResult);
+    Model.StockViews[i].TradingViews.TryGetValue(0, out JudgeResult? judgeResult);
     if (judgeResult is null)
     {
         <tr>
@@ -41,10 +41,6 @@
         <td class="text-right @Model.StockViews[i].PricePercentConvulsion5.GetTextColorCss()">@Model.StockViews[i].PricePercentConvulsion5.ShowPercent()</td>
         <td class="text-right @Model.StockViews[i].PricePercentConvulsion10.GetTextColorCss()">@Model.StockViews[i].PricePercentConvulsion10.ShowPercent()</td>
         <td class="text-right @Model.StockViews[i].PricePercentConvulsion30.GetTextColorCss()">@Model.StockViews[i].PricePercentConvulsion30.ShowPercent()</td>
-        <td class="text-right @Model.StockViews[i].PricePercentConvulsion60.GetTextColorCss()">@Model.StockViews[i].PricePercentConvulsion60.ShowPercent()</td>
-        <td class="text-right @Model.StockViews[i].PricePercentConvulsion120.GetTextColorCss()">@Model.StockViews[i].PricePercentConvulsion120.ShowPercent()</td>
-        <td class="text-right @Model.StockViews[i].PricePercentConvulsion240.GetTextColorCss()">@Model.StockViews[i].PricePercentConvulsion240.ShowPercent()</td>
-        <td class="text-right @Model.StockViews[i].PricePercentConvulsion480.GetTextColorCss()" title="960P: @Model.StockViews[i].PricePercentConvulsion960.ShowPercent(), 1920P: @Model.StockViews[i].PricePercentConvulsion1920.ShowPercent(), 3840P: @Model.StockViews[i].PricePercentConvulsion3840.ShowPercent()">@Model.StockViews[i].PricePercentConvulsion480.ShowPercent()</td>
 
         <td class="text-right @Model.StockViews[i].FiinScore.GetTextColorCss()">@Model.StockViews[i].FiinScore.ToString("0")</td>
         <td class="text-right @Model.StockViews[i].VndScore.GetTextColorCss()">@Model.StockViews[i].VndScore.ToString("0")</td>
@@ -52,22 +48,24 @@
 
         <td class="text-right @judgeResult.ProfitPercent.GetTextColorCss(Model.BankInterestRate12)">@judgeResult.ProfitPercent.ShowPercent()</td>
         <td class="text-right @Model.StockViews[i].PricePercentConvulsionStartTrading.GetTextColorCss(Model.BankInterestRate12)">@Model.StockViews[i].PricePercentConvulsionStartTrading.ShowPercent()</td>
+        <td class="text-right @judgeResult.ProfitPercent.GetTextColorCss(Model.BankInterestRate12)">@judgeResult.ProfitPercent.ShowPercent()</td>
+        <td class="text-right @Model.StockViews[i].PricePercentConvulsionStartTrading.GetTextColorCss(Model.BankInterestRate12)">@Model.StockViews[i].PricePercentConvulsionStartTrading.ShowPercent()</td>
 
         @if (judgeResult.TodayIsBuy)
         {
-            <td class="text-danger" title="@judgeResult.OptimalBuyPrice.GetPercent(Model.StockViews[i].LastClosePrice).ShowPercent()%">Mua(@judgeResult.OptimalBuyPrice.ShowPrice())</td>
+            <td class="text-danger" title="@judgeResult.OptimalBuyPrice.GetPercent(Model.StockViews[i].LastClosePrice).ShowPercent()%">Mua(@judgeResult.OptimalBuyPrice.ShowPrice(1))</td>
         }
         else
         {
-            <td title="@judgeResult.OptimalBuyPrice.GetPercent(Model.StockViews[i].LastClosePrice).ShowPercent()%">TD(@judgeResult.OptimalBuyPrice.ShowPrice())</td>
+            <td title="@judgeResult.OptimalBuyPrice.GetPercent(Model.StockViews[i].LastClosePrice).ShowPercent()%">TD(@judgeResult.OptimalBuyPrice.ShowPrice(1))</td>
         }
         @if (judgeResult.TodayIsSell)
         {
-            <td class="text-success" title="@judgeResult.OptimalSellPrice.GetPercent(Model.StockViews[i].LastClosePrice).ShowPercent()%">Bán(@judgeResult.OptimalSellPrice.ShowPrice())</td>
+            <td class="text-success" title="@judgeResult.OptimalSellPrice.GetPercent(Model.StockViews[i].LastClosePrice).ShowPercent()%">Bán(@judgeResult.OptimalSellPrice.ShowPrice(1))</td>
         }
         else
         {
-            <td title="@judgeResult.OptimalSellPrice.GetPercent(Model.StockViews[i].LastClosePrice).ShowPercent()%">TD(@judgeResult.OptimalSellPrice.ShowPrice())</td>
+            <td title="@judgeResult.OptimalSellPrice.GetPercent(Model.StockViews[i].LastClosePrice).ShowPercent()%">TD(@judgeResult.OptimalSellPrice.ShowPrice(1))</td>
         }
     </tr>
 }
