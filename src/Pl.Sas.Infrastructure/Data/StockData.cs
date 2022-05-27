@@ -64,11 +64,8 @@ namespace Pl.Sas.Infrastructure.Data
             dataTableUpdate.Columns.Add("Id");
             dataTableUpdate.Columns.Add("Name");
             dataTableUpdate.Columns.Add("FullName");
-            dataTableUpdate.Columns.Add("Description");
             dataTableUpdate.Columns.Add("Exchange");
             dataTableUpdate.Columns.Add("Type");
-            dataTableUpdate.Columns.Add("CompanyName");
-            dataTableUpdate.Columns.Add("CompanyNameEn");
             foreach (var company in stocks)
             {
                 var row = dataTableUpdate.NewRow();
