@@ -22,7 +22,7 @@ namespace Pl.Sas.Infrastructure.Loging
         }
 
         public void Dispose()
-        {
+        {            
             GC.SuppressFinalize(this);
         }
     }
