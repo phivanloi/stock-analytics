@@ -159,41 +159,6 @@
         public float PricePercentConvulsion60 { get; set; }
 
         /// <summary>
-        /// Biến động giá trong 90 phiên
-        /// </summary>
-        public float PricePercentConvulsion90 { get; set; }
-
-        /// <summary>
-        /// Biến động giá trong 120 phiên
-        /// </summary>
-        public float PricePercentConvulsion120 { get; set; }
-
-        /// <summary>
-        /// Biến động giá trong 240 phiên
-        /// </summary>
-        public float PricePercentConvulsion240 { get; set; }
-
-        /// <summary>
-        /// Biến động giá trong 480 phiên
-        /// </summary>
-        public float PricePercentConvulsion480 { get; set; }
-
-        /// <summary>
-        /// Biến động giá trong 960 phiên
-        /// </summary>
-        public float PricePercentConvulsion960 { get; set; }
-
-        /// <summary>
-        /// Biến động giá trong 1920 phiên
-        /// </summary>
-        public float PricePercentConvulsion1920 { get; set; }
-
-        /// <summary>
-        /// Biến động giá trong 3840 phiên
-        /// </summary>
-        public float PricePercentConvulsion3840 { get; set; }
-
-        /// <summary>
         /// Giá đóng cửa gần nhất
         /// </summary>
         public float LastClosePrice { get; set; }
@@ -404,51 +369,52 @@
 
         #endregion
 
+        #region Trading
         /// <summary>
-        /// Danh sách các kết quả đầu tư thử nghiệm theo phương pháp
-        /// 1 => dài hạn
-        /// 2 => ngắn hạng
-        /// 3 => hoàng béo
+        /// % lợi nhuận bằng phương pháp thử nghiệm
         /// </summary>
-        public Dictionary<int, JudgeResult> TradingViews { get; set; } = new();
+        public float ExperimentTradingProfitPercent { get; set; }
 
         /// <summary>
-        /// Biến động giá từ ngày bắt đầu giao dịch thử nghiệm
+        /// Trạng thái tài sản và giao dịch hiện tại của phương pháp thử nghiệm
         /// </summary>
-        public float PricePercentConvulsionStartTrading { get; set; }
+        public string ExperimentTradingStatus { get; set; } = null!;
+
+        /// <summary>
+        /// % lợi nhuận bằng phương pháp chính
+        /// </summary>
+        public float MainTradingProfitPercent { get; set; }
+
+        /// <summary>
+        /// Trạng thái tài sản và giao dịch hiện tại của phương pháp chính
+        /// </summary>
+        public string MainTradingStatus { get; set; } = null!;
+
+        /// <summary>
+        /// % lợi nhuận khi tích sản
+        /// </summary>
+        public float AssetsProfitPercent { get; set; }
+
+        /// <summary>
+        /// Trạng thái tài sản và giao dịch hiện tại của phương pháp tích sản
+        /// </summary>
+        public string AssetsStatus { get; set; } = null!;
+
+        /// <summary>
+        /// % lợi nhuận khi chỉ mua và giữ
+        /// </summary>
+        public float BuyAndHoldProfitPercent { get; set; }
+
+        /// <summary>
+        /// Trạng thái tài sản và giao dịch hiện tại của phương pháp mua và nắm giữ
+        /// </summary>
+        public string BuyAndHoldStatus { get; set; } = null!;
+        #endregion
 
         /// <summary>
         /// Tổng hợp điểm đánh giá, 
         /// tạm thời là tổng của MacroeconomicsScore * 1, CompanyValueScore * 1, CompanyGrowthScore * 1, StockScore * 1. Tưởng lai có thể thay đổi các biến số để đánh trọng số cao hơn cho các score
         /// </summary>
         public int TotalScore => MacroeconomicsScore + CompanyValueScore + CompanyGrowthScore + StockScore;
-    }
-
-    public class JudgeResult
-    {
-        /// <summary>
-        /// Hôm nay có lên mua hay không
-        /// </summary>
-        public bool TodayIsBuy { get; set; }
-
-        /// <summary>
-        /// Giá mua tối ưu
-        /// </summary>
-        public float OptimalBuyPrice { get; set; }
-
-        /// <summary>
-        /// Hôm nay có lên bán hay không
-        /// </summary>
-        public bool TodayIsSell { get; set; }
-
-        /// <summary>
-        /// Giá bán tối ưu
-        /// </summary>
-        public float OptimalSellPrice { get; set; }
-
-        /// <summary>
-        /// $ Lợi nhuận cao nhất khi kiểm tra giao dịch thử
-        /// </summary>
-        public float ProfitPercent { get; set; }
     }
 }

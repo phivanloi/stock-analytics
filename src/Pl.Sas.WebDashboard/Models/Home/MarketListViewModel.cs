@@ -4,14 +4,15 @@ namespace Pl.Sas.WebDashboard.Models
 {
     public class MarketListViewModel
     {
+        /// <summary>
+        /// Danh sách các mã chứng khoán người dùng theo dõi
+        /// </summary>
         public List<string> UserFollowSymbols { get; set; } = null!;
 
-        public List<StockView> StockViews { get; set; } = null!;
-
         /// <summary>
-        /// Phương pháp hiển thị
+        /// Danh sách dữ liệu phân tích
         /// </summary>
-        public int Principle { get; set; } = 1;
+        public List<StockView> StockViews { get; set; } = null!;
 
         /// <summary>
         /// Lãi suất ngân hàng 12 tháng cao nhất

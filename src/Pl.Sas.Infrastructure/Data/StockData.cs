@@ -84,7 +84,7 @@ namespace Pl.Sas.Infrastructure.Data
 	                                            FullName nvarchar(256) NULL,
                                                 Exchange nvarchar(16) NULL,
                                                 Type nvarchar(16) NULL)";
-            var updateAndDropTableCommand = $@"  UPDATE
+            var updateAndDropTableCommand = $@" UPDATE
                                                     Stocks
                                                 SET
                                                     Stocks.Name = Ttb.Name,

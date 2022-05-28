@@ -62,7 +62,7 @@ namespace Pl.Sas.Core.Services
             }, Constants.DefaultCacheTime * 60 * 24);
         }
 
-        public virtual List<StockView> GetMarketStocksView(int principle = 1, string? exchange = null, string? industryCode = null, string? symbol = null, string? ordinal = null, string? zone = null, List<string>? followSymbols = null)
+        public virtual List<StockView> GetMarketStocksView(string? exchange = null, string? industryCode = null, string? symbol = null, string? ordinal = null, string? zone = null, List<string>? followSymbols = null)
         {
             var query = _stockViews.Select(q => q.Value).AsQueryable();
             if (!string.IsNullOrEmpty(exchange))
@@ -106,7 +106,6 @@ namespace Pl.Sas.Core.Services
             {
                 return ordinal switch
                 {
-                    "lntn" => query.OrderByDescending(q => q.TradingViews[principle].ProfitPercent).ToList(),
                     "idt" => query.OrderByDescending(q => q.IndustryRank).ThenByDescending(q => q.TotalScore).ToList(),
                     "klmkn" => query.OrderByDescending(q => q.LastForeignPurchasingPower).ToList(),
                     "ddgdn" => query.OrderByDescending(q => q.TotalScore).ToList(),
@@ -178,7 +177,7 @@ namespace Pl.Sas.Core.Services
                 IndustryRank = MarketAnalyticsService.IndustryTrend(new(), industry),
             };
 
-            if (analyticsResults is not null)//Phân tích
+            if (analyticsResults is not null)
             {
                 stockView.MacroeconomicsScore = analyticsResults.MarketScore;
                 stockView.CompanyValueScore = analyticsResults.CompanyValueScore;
@@ -312,72 +311,6 @@ namespace Pl.Sas.Core.Services
                 {
                     stockView.PricePercentConvulsion60 = chartPrices[0].ClosePrice.GetPercent(chartPrices.Last().ClosePrice);
                 }
-                if (chartPrices.Count >= 90)
-                {
-                    stockView.PricePercentConvulsion90 = chartPrices[0].ClosePrice.GetPercent(chartPrices[89].ClosePrice);
-                }
-                else
-                {
-                    stockView.PricePercentConvulsion90 = chartPrices[0].ClosePrice.GetPercent(chartPrices.Last().ClosePrice);
-                }
-                if (chartPrices.Count >= 120)
-                {
-                    stockView.PricePercentConvulsion120 = chartPrices[0].ClosePrice.GetPercent(chartPrices[119].ClosePrice);
-                }
-                else
-                {
-                    stockView.PricePercentConvulsion120 = chartPrices[0].ClosePrice.GetPercent(chartPrices.Last().ClosePrice);
-                }
-                if (chartPrices.Count >= 240)
-                {
-                    stockView.PricePercentConvulsion240 = chartPrices[0].ClosePrice.GetPercent(chartPrices[239].ClosePrice);
-                }
-                else
-                {
-                    stockView.PricePercentConvulsion240 = chartPrices[0].ClosePrice.GetPercent(chartPrices.Last().ClosePrice);
-                }
-                if (chartPrices.Count >= 480)
-                {
-                    stockView.PricePercentConvulsion480 = chartPrices[0].ClosePrice.GetPercent(chartPrices[479].ClosePrice);
-                }
-                else
-                {
-                    stockView.PricePercentConvulsion480 = chartPrices[0].ClosePrice.GetPercent(chartPrices.Last().ClosePrice);
-                }
-                if (chartPrices.Count >= 960)
-                {
-                    stockView.PricePercentConvulsion960 = chartPrices[0].ClosePrice.GetPercent(chartPrices[959].ClosePrice);
-                }
-                else
-                {
-                    stockView.PricePercentConvulsion960 = chartPrices[0].ClosePrice.GetPercent(chartPrices.Last().ClosePrice);
-                }
-                if (chartPrices.Count >= 1920)
-                {
-                    stockView.PricePercentConvulsion1920 = chartPrices[0].ClosePrice.GetPercent(chartPrices[1919].ClosePrice);
-                }
-                else
-                {
-                    stockView.PricePercentConvulsion1920 = chartPrices[0].ClosePrice.GetPercent(chartPrices.Last().ClosePrice);
-                }
-                if (chartPrices.Count >= 3840)
-                {
-                    stockView.PricePercentConvulsion3840 = chartPrices[0].ClosePrice.GetPercent(chartPrices[3839].ClosePrice);
-                }
-                else
-                {
-                    stockView.PricePercentConvulsion3840 = chartPrices[0].ClosePrice.GetPercent(chartPrices.Last().ClosePrice);
-                }
-
-                var startTradingItem = chartPrices.LastOrDefault(q => q.TradingDate >= Constants.StartTime);
-                if (startTradingItem is not null)
-                {
-                    stockView.PricePercentConvulsionStartTrading = chartPrices[0].ClosePrice.GetPercent(startTradingItem.ClosePrice);
-                }
-                else
-                {
-                    stockView.PricePercentConvulsionStartTrading = stockView.PricePercentConvulsion960;
-                }
                 #endregion
                 chartPrices = null;
             }
@@ -395,7 +328,11 @@ namespace Pl.Sas.Core.Services
 
             #region Trading info
             var tradingResults = await _tradingResultData.FindAllAsync(symbol);
-            var principles = new int[] { 0, 1, 2, 3, 4 };
+            var trading = tradingResults.FirstOrDefault(q => q.Principle == 0);
+            if (trading is not null)
+            {
+                stockView.ExperimentTradingProfitPercent = trading.ProfitPercent
+            }
 
             foreach (var principle in principles)
             {

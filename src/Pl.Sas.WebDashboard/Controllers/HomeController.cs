@@ -72,9 +72,8 @@ namespace Pl.Sas.WebDashboard.Controllers
             var followSymbols = (await userFollowStocksTask).Select(q => q.Symbol).ToList();
             var model = new MarketListViewModel()
             {
-                StockViews = _stockViewService.GetMarketStocksView(marketSearchModel?.Principle ?? 1, marketSearchModel?.Exchange, marketSearchModel?.IndustryCode, marketSearchModel?.Symbol, marketSearchModel?.Ordinal, marketSearchModel?.Zone, followSymbols),
+                StockViews = _stockViewService.GetMarketStocksView(marketSearchModel?.Exchange, marketSearchModel?.IndustryCode, marketSearchModel?.Symbol, marketSearchModel?.Ordinal, marketSearchModel?.Zone, followSymbols),
                 UserFollowSymbols = followSymbols,
-                Principle = marketSearchModel?.Principle ?? 1,
                 BankInterestRate12 = (await bankInterestRate12Task)?.GetValue<float>() ?? 6.8f,
             };
             return PartialView(model);

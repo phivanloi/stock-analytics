@@ -28,7 +28,6 @@
                     <option selected="selected" value="ddgdn">Điểm đánh giá DN giảm dần</option>
                     <option value="klk">Khối lượng khớp giảm dần</option>
                     <option value="idt">Đánh giá mã ngành giảm dần</option>
-                    <option value="lntn">% Lợi nhuận TN giảm dần</option>
                     <option value="klmkn">Khối lượng mua KN giảm dần</option>
                     <option value="cpuad">% Giá thay đổi giảm dần</option>
                     <option value="mcdesc">Vốn hóa giảm dần</option>
@@ -161,7 +160,6 @@
         $('#user-invest-table-body').html('<tr><td colspan="29" class="text-center"><p class="fas fa-sync-alt fa-spin"></p></td></tr>');
         $('#number-row').html('Mã');
         var postData = JSON.stringify({
-            Principle: $('#principle').val(),
             Ordinal: $('#ordinal').val(),
             IndustryCode: $('#industry').val(),
             Exchange: $('#exchange').val(),
