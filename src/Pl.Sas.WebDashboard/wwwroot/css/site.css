@@ -161,3 +161,27 @@ label {
     padding: 2px 15px;
     line-height: 38px;
 }
+
+.t-r {
+    text-align: right;
+}
+
+.t-w {
+    color: white;
+}
+
+.t-d {
+    color: #dc3545 !important
+}
+
+.t-s {
+    color: #28a745 !important
+}
+
+t-wn {
+    color: #ffc107 !important
+}
+
+t-i {
+    color: #17a2b8 !important
+}

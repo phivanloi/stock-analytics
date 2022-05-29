@@ -109,15 +109,15 @@ namespace Pl.Sas.WebDashboard
         {
             if (first > second)
             {
-                return "text-success";
+                return "t-s";
             }
             else if (first == second)
             {
-                return "text-warning";
+                return "t-wn";
             }
             else
             {
-                return "text-danger";
+                return "t-d";
             }
         }
 
@@ -131,15 +131,15 @@ namespace Pl.Sas.WebDashboard
         {
             if (first > second)
             {
-                return "text-success";
+                return "t-s";
             }
             else if (first == second)
             {
-                return "text-warning";
+                return "t-wn";
             }
             else
             {
-                return "text-danger";
+                return "t-d";
             }
         }
 
@@ -155,13 +155,13 @@ namespace Pl.Sas.WebDashboard
         {
             if (value < start)
             {
-                return "text-danger";
+                return "t-d";
             }
             else if (value > end)
             {
-                return "text-success";
+                return "t-s";
             }
-            return "text-info";
+            return "t-i";
         }
 
         /// <summary>
@@ -175,13 +175,13 @@ namespace Pl.Sas.WebDashboard
         {
             if (value < start)
             {
-                return "text-success";
+                return "t-s";
             }
             else if (value > end)
             {
                 return "text-warning";
             }
-            return "text-info";
+            return "t-i";
         }
 
         /// <summary>
@@ -196,13 +196,13 @@ namespace Pl.Sas.WebDashboard
         {
             if (value < start)
             {
-                return "text-danger";
+                return "t-d";
             }
             else if (value > end)
             {
-                return "text-success";
+                return "t-s";
             }
-            return "text-info";
+            return "t-i";
         }
 
         /// <summary>
