@@ -62,7 +62,7 @@ namespace Pl.Sas.Core.Services
             }, Constants.DefaultCacheTime * 60 * 24);
         }
 
-        public virtual List<StockView> GetMarketStocksView(int principle = 1, string? exchange = null, string? industryCode = null, string? symbol = null, string? ordinal = null, string? zone = null, List<string>? followSymbols = null)
+        public virtual List<StockView> GetMarketStocksView(string? exchange = null, string? industryCode = null, string? symbol = null, string? ordinal = null, string? zone = null, List<string>? followSymbols = null)
         {
             var query = _stockViews.Select(q => q.Value).AsQueryable();
             if (!string.IsNullOrEmpty(exchange))
@@ -106,7 +106,6 @@ namespace Pl.Sas.Core.Services
             {
                 return ordinal switch
                 {
-                    "lntn" => query.OrderByDescending(q => q.TradingViews[principle].ProfitPercent).ToList(),
                     "idt" => query.OrderByDescending(q => q.IndustryRank).ThenByDescending(q => q.TotalScore).ToList(),
                     "klmkn" => query.OrderByDescending(q => q.LastForeignPurchasingPower).ToList(),
                     "ddgdn" => query.OrderByDescending(q => q.TotalScore).ToList(),
@@ -127,7 +126,6 @@ namespace Pl.Sas.Core.Services
                 return;
             }
             _stockViews.AddOrUpdate(symbol, stockView, (key, oldValue) => stockView);
-            stockView = null;
         }
 
         public virtual async Task<QueueMessage?> HandleStockViewEventAsync(QueueMessage queueMessage)
@@ -178,7 +176,7 @@ namespace Pl.Sas.Core.Services
                 IndustryRank = MarketAnalyticsService.IndustryTrend(new(), industry),
             };
 
-            if (analyticsResults is not null)//Phân tích
+            if (analyticsResults is not null)
             {
                 stockView.MacroeconomicsScore = analyticsResults.MarketScore;
                 stockView.CompanyValueScore = analyticsResults.CompanyValueScore;
@@ -242,6 +240,52 @@ namespace Pl.Sas.Core.Services
                 stockPrices = null;
             }
 
+            BindingPercentConvulsionToView(ref stockView, chartPrices);
+            chartPrices = null;
+
+            if (financialIndicators is not null && financialIndicators.Count > 2)
+            {
+                var topTwoYear = financialIndicators.OrderByDescending(q => q.YearReport).Where(q => q.LengthReport == 5).Take(2).ToList();
+                if (topTwoYear is not null && topTwoYear.Count > 1)
+                {
+                    stockView.YearlyRevenueGrowthPercent = topTwoYear[0].Revenue.GetPercent(topTwoYear[1].Revenue);
+                    stockView.YearlyRevenueGrowthPercent = topTwoYear[0].Profit.GetPercent(topTwoYear[1].Profit);
+                }
+                financialIndicators = null;
+            }
+
+            var tradingResults = await _tradingResultData.GetForViewAsync(symbol);
+            BindingTradingResultToView(ref stockView, tradingResults);
+            tradingResults = null;
+
+            industry = null;
+            company = null;
+            var cacheKey = $"{Constants.StockViewCachePrefix}-SM-{symbol}";
+            var setCacheTask = _asyncCacheService.SetValueAsync(cacheKey, stockView, Constants.DefaultCacheTime * 60 * 24 * 30);
+            var sendMessage = new QueueMessage("UpdateStockView");
+            sendMessage.KeyValues.Add("Data", JsonSerializer.Serialize(stockView));
+            sendMessage.KeyValues.Add("Symbol", symbol);
+            await setCacheTask;
+            return sendMessage;
+        }
+
+        public virtual async Task InitialAsync()
+        {
+            var stocks = await _stockData.FindAllAsync();
+            foreach (var stock in stocks)
+            {
+                var cacheKey = $"{Constants.StockViewCachePrefix}-SM-{stock.Symbol}";
+                var stockView = await _asyncCacheService.GetByKeyAsync<StockView>(cacheKey);
+                if (stockView != null)
+                {
+                    _stockViews.AddOrUpdate(stock.Symbol, stockView, (key, oldValue) => stockView);
+                }
+            }
+            stocks = null;
+        }
+
+        public static void BindingPercentConvulsionToView(ref StockView stockView, List<ChartPrice>? chartPrices)
+        {
             if (chartPrices is not null && chartPrices.Count > 0)
             {
                 chartPrices = chartPrices.OrderByDescending(q => q.TradingDate).ToList();
@@ -312,133 +356,40 @@ namespace Pl.Sas.Core.Services
                 {
                     stockView.PricePercentConvulsion60 = chartPrices[0].ClosePrice.GetPercent(chartPrices.Last().ClosePrice);
                 }
-                if (chartPrices.Count >= 90)
-                {
-                    stockView.PricePercentConvulsion90 = chartPrices[0].ClosePrice.GetPercent(chartPrices[89].ClosePrice);
-                }
-                else
-                {
-                    stockView.PricePercentConvulsion90 = chartPrices[0].ClosePrice.GetPercent(chartPrices.Last().ClosePrice);
-                }
-                if (chartPrices.Count >= 120)
-                {
-                    stockView.PricePercentConvulsion120 = chartPrices[0].ClosePrice.GetPercent(chartPrices[119].ClosePrice);
-                }
-                else
-                {
-                    stockView.PricePercentConvulsion120 = chartPrices[0].ClosePrice.GetPercent(chartPrices.Last().ClosePrice);
-                }
-                if (chartPrices.Count >= 240)
-                {
-                    stockView.PricePercentConvulsion240 = chartPrices[0].ClosePrice.GetPercent(chartPrices[239].ClosePrice);
-                }
-                else
-                {
-                    stockView.PricePercentConvulsion240 = chartPrices[0].ClosePrice.GetPercent(chartPrices.Last().ClosePrice);
-                }
-                if (chartPrices.Count >= 480)
-                {
-                    stockView.PricePercentConvulsion480 = chartPrices[0].ClosePrice.GetPercent(chartPrices[479].ClosePrice);
-                }
-                else
-                {
-                    stockView.PricePercentConvulsion480 = chartPrices[0].ClosePrice.GetPercent(chartPrices.Last().ClosePrice);
-                }
-                if (chartPrices.Count >= 960)
-                {
-                    stockView.PricePercentConvulsion960 = chartPrices[0].ClosePrice.GetPercent(chartPrices[959].ClosePrice);
-                }
-                else
-                {
-                    stockView.PricePercentConvulsion960 = chartPrices[0].ClosePrice.GetPercent(chartPrices.Last().ClosePrice);
-                }
-                if (chartPrices.Count >= 1920)
-                {
-                    stockView.PricePercentConvulsion1920 = chartPrices[0].ClosePrice.GetPercent(chartPrices[1919].ClosePrice);
-                }
-                else
-                {
-                    stockView.PricePercentConvulsion1920 = chartPrices[0].ClosePrice.GetPercent(chartPrices.Last().ClosePrice);
-                }
-                if (chartPrices.Count >= 3840)
-                {
-                    stockView.PricePercentConvulsion3840 = chartPrices[0].ClosePrice.GetPercent(chartPrices[3839].ClosePrice);
-                }
-                else
-                {
-                    stockView.PricePercentConvulsion3840 = chartPrices[0].ClosePrice.GetPercent(chartPrices.Last().ClosePrice);
-                }
-
-                var startTradingItem = chartPrices.LastOrDefault(q => q.TradingDate >= Constants.StartTime);
-                if (startTradingItem is not null)
-                {
-                    stockView.PricePercentConvulsionStartTrading = chartPrices[0].ClosePrice.GetPercent(startTradingItem.ClosePrice);
-                }
-                else
-                {
-                    stockView.PricePercentConvulsionStartTrading = stockView.PricePercentConvulsion960;
-                }
                 #endregion
-                chartPrices = null;
             }
-
-            if (financialIndicators is not null && financialIndicators.Count > 2)
-            {
-                var topTwoYear = financialIndicators.OrderByDescending(q => q.YearReport).Where(q => q.LengthReport == 5).Take(2).ToList();
-                if (topTwoYear is not null && topTwoYear.Count > 1)
-                {
-                    stockView.YearlyRevenueGrowthPercent = topTwoYear[0].Revenue.GetPercent(topTwoYear[1].Revenue);
-                    stockView.YearlyRevenueGrowthPercent = topTwoYear[0].Profit.GetPercent(topTwoYear[1].Profit);
-                }
-                financialIndicators = null;
-            }
-
-            #region Trading info
-            var tradingResults = await _tradingResultData.FindAllAsync(symbol);
-            var principles = new int[] { 0, 1, 2, 3, 4 };
-
-            foreach (var principle in principles)
-            {
-                var tadingResult = tradingResults.FirstOrDefault(q => q.Principle == principle);
-                if (tadingResult is not null)
-                {
-                    var judgeResult = new JudgeResult()
-                    {
-                        OptimalBuyPrice = tadingResult.BuyPrice,
-                        OptimalSellPrice = tadingResult.SellPrice,
-                        ProfitPercent = tadingResult.ProfitPercent,
-                        TodayIsBuy = tadingResult.IsBuy,
-                        TodayIsSell = tadingResult.IsSell
-                    };
-                    stockView.TradingViews.Add(principle, judgeResult);
-                }
-            }
-            #endregion
-
-            industry = null;
-            company = null;
-
-            var cacheKey = $"{Constants.StockViewCachePrefix}-SM-{symbol}";
-            await _asyncCacheService.SetValueAsync(cacheKey, stockView, Constants.DefaultCacheTime * 60 * 24 * 30);
-            var sendMessage = new QueueMessage("UpdateStockView");
-            sendMessage.KeyValues.Add("Data", JsonSerializer.Serialize(stockView));
-            sendMessage.KeyValues.Add("Symbol", symbol);
-            return sendMessage;
         }
 
-        public virtual async Task InitialAsync()
+        public static void BindingTradingResultToView(ref StockView stockView, List<TradingResult>? tradingResults)
         {
-            var stocks = await _stockData.FindAllAsync();
-            foreach (var stock in stocks)
+            if (tradingResults is not null && tradingResults.Count > 0)
             {
-                var cacheKey = $"{Constants.StockViewCachePrefix}-SM-{stock.Symbol}";
-                var stockView = await _asyncCacheService.GetByKeyAsync<StockView>(cacheKey);
-                if (stockView != null)
+                var result = tradingResults.FirstOrDefault(q => q.Principle == 0);
+                if (result is not null)
                 {
-                    _stockViews.AddOrUpdate(stock.Symbol, stockView, (key, oldValue) => stockView);
+                    stockView.ExperimentProfitPercent = result.ProfitPercent;
+                    stockView.ExperimentAssetPosition = result.AssetPosition;
                 }
+                result = tradingResults.FirstOrDefault(q => q.Principle == 1);
+                if (result is not null)
+                {
+                    stockView.MainProfitPercent = result.ProfitPercent;
+                    stockView.MainAssetPosition = result.AssetPosition;
+                }
+                result = tradingResults.FirstOrDefault(q => q.Principle == 2);
+                if (result is not null)
+                {
+                    stockView.AccumulationProfitPercent = result.ProfitPercent;
+                    stockView.AccumulationAssetPosition = result.AssetPosition;
+                }
+                result = tradingResults.FirstOrDefault(q => q.Principle == 3);
+                if (result is not null)
+                {
+                    stockView.BuyAndHoldProfitPercent = result.ProfitPercent;
+                    stockView.BuyAndHoldAssetPosition = result.AssetPosition;
+                }
+                result = null;
             }
-            stocks = null;
         }
     }
 }

@@ -73,19 +73,9 @@
         public float SellPrice { get; set; }
 
         /// <summary>
-        /// Trạng thái tài sản
+        /// vị thế tài sản
         /// </summary>
-        public string AssetStats
-        {
-            get
-            {
-                if (NumberStock <= 0)
-                {
-                    return "Tiền mặt";
-                }
-                return "Chứng khoán";
-            }
-        }
+        public string AssetPosition { get; set; } = "100% tiền";
         #endregion
 
         #region Note

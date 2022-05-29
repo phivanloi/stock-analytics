@@ -23,14 +23,14 @@ namespace Pl.Sas.InvestmentPrinciplesTests
             {
                 Console.Clear();
                 Console.OutputEncoding = Encoding.UTF8;
-                DateTime fromDate = new(2018, 1, 1);
+                DateTime fromDate = new(2020, 1, 1);
                 DateTime toDate = new(2019, 10, 1);
-                var symbol = "HSG";
+                var symbol = "SSI";
                 var chartPrices = (await _chartPriceData.FindAllAsync(symbol)).OrderBy(q => q.TradingDate).ToList();
                 var tradingHistories = chartPrices.Where(q => q.TradingDate >= fromDate).OrderBy(q => q.TradingDate).ToList();
                 var startPrice = tradingHistories[0].ClosePrice;
                 var endPrice = tradingHistories[^1].ClosePrice;
-                var tradingCase = MacdTrading.Trading(tradingHistories);
+                var tradingCase = ExperimentTrading.Trading(tradingHistories);
                 var lastChartPrice = tradingHistories[^1];
                 Console.WriteLine($"Quá trình đầu tư ngắn hạn:");
                 Console.WriteLine($"Bắt đầu--------------------------------");
@@ -43,11 +43,15 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 Console.WriteLine($"kết quả ----------------------------------------------- trading {symbol}");
                 $"Số lần mua bán thắng/thua {tradingCase.WinNumber}/{tradingCase.LoseNumber}".WriteConsole(tradingCase.FixedCapital <= tradingCase.Profit(lastChartPrice.ClosePrice) ? ConsoleColor.Green : ConsoleColor.Red);
                 $"Lợi nhuận {tradingCase.Profit(lastChartPrice.ClosePrice):0,0} ({tradingCase.ProfitPercent(lastChartPrice.ClosePrice):0,0.00}%), thuế {tradingCase.TotalTax:0,0}".WriteConsole(tradingCase.FixedCapital <= tradingCase.Profit(lastChartPrice.ClosePrice) ? ConsoleColor.Green : ConsoleColor.Red);
+                tradingCase.AssetPosition.WriteConsole();
                 Console.WriteLine();
                 Console.WriteLine($"Với chỉ mua và nắm giữ -------------------------------- {symbol}");
                 $"Thực hiện đầu tư {tradingHistories.Count} phiên: Giá đóng cửa đầu kỳ {tradingHistories[0].TradingDate:dd-MM-yyyy}: {startPrice * 1000:0,0.00} giá đóng cửa cuối kỳ {tradingHistories[^1].TradingDate:dd-MM-yyyy}: {endPrice * 1000:0,0.00} lợi nhuận {endPrice.GetPercent(startPrice):0.00}%.".WriteConsole(endPrice > startPrice ? ConsoleColor.Green : ConsoleColor.Red);
                 Console.WriteLine();
-                MacdTrading.Dispose();
+                chartPrices = null;
+                tradingHistories = null;
+                tradingCase = null;
+                ExperimentTrading.Dispose();
             }
             catch (Exception ex)
             {

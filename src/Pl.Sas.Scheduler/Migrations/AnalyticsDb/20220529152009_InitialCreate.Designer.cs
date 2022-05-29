@@ -12,7 +12,7 @@ using Pl.Sas.Scheduler.DataContexts;
 namespace Pl.Sas.Scheduler.Migrations.AnalyticsDb
 {
     [DbContext(typeof(AnalyticsDbContext))]
-    [Migration("20220523131419_InitialCreate")]
+    [Migration("20220529152009_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -77,7 +77,7 @@ namespace Pl.Sas.Scheduler.Migrations.AnalyticsDb
                     b.Property<DateTime>("UpdatedTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<byte[]>("VndNote")
+                    b.Property<byte[]>("VndNotes")
                         .HasColumnType("varbinary(max)");
 
                     b.Property<int>("VndScore")
@@ -124,20 +124,28 @@ namespace Pl.Sas.Scheduler.Migrations.AnalyticsDb
                         .HasMaxLength(22)
                         .HasColumnType("nvarchar(22)");
 
-                    b.Property<float>("BuyPrice")
-                        .HasColumnType("real");
+                    b.Property<string>("AssetPosition")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
-                    b.Property<float>("Capital")
+                    b.Property<float>("BuyPrice")
                         .HasColumnType("real");
 
                     b.Property<DateTime>("CreatedTime")
                         .HasColumnType("datetime2");
+
+                    b.Property<float>("FixedCapital")
+                        .HasColumnType("real");
 
                     b.Property<bool>("IsBuy")
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsSell")
                         .HasColumnType("bit");
+
+                    b.Property<int>("LoseNumber")
+                        .HasColumnType("int");
 
                     b.Property<int>("Principle")
                         .HasColumnType("int");
@@ -161,6 +169,9 @@ namespace Pl.Sas.Scheduler.Migrations.AnalyticsDb
 
                     b.Property<DateTime>("UpdatedTime")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("WinNumber")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 

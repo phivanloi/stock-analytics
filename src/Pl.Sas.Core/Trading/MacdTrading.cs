@@ -8,33 +8,31 @@ namespace Pl.Sas.Core.Trading
         private static List<MacdResult> _macd_12_26_9 = new();
         private static TradingCase tradingCase = new();
 
-        public static TradingCase Trading(List<ChartPrice> chartPrices, bool isNoteTrading = true)
+        public static TradingCase Trading(List<ChartPrice> chartPrices, bool isNote = true)
         {
-            tradingCase.IsNote = isNoteTrading;
-            LoadIndicatorSet(chartPrices);
-            var numberChangeDay = 10;
+            tradingCase.IsNote = isNote;
+            var numberChangeDay = 0;
             var tradingHistory = new List<ChartPrice>();
             float? lastBuyPrice = null;
-            ChartPrice? previousChart = null;
 
             foreach (var day in chartPrices)
             {
-                if (previousChart is null)
+                if (tradingHistory.Count <= 0)
                 {
+                    tradingCase.AssetPosition = "100% Tiền";
                     tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản:{tradingCase.Profit(day.ClosePrice):0,0}, không giao dịch ngày đầu tiên");
-                    previousChart = day;
                     tradingHistory.Add(day);
                     continue;
                 }
 
                 tradingCase.IsBuy = false;
                 tradingCase.IsSell = false;
-                tradingCase.BuyPrice = CalculateOptimalBuyPrice(tradingHistory, previousChart.ClosePrice);
-                tradingCase.SellPrice = CalculateOptimalSellPrice(tradingHistory, previousChart.ClosePrice);
+                tradingCase.BuyPrice = CalculateOptimalBuyPrice(tradingHistory, tradingHistory[^1].ClosePrice);
+                tradingCase.SellPrice = CalculateOptimalSellPrice(tradingHistory, tradingHistory[^1].ClosePrice);
 
-                if (lastBuyPrice is null)
+                if (tradingCase.NumberStock <= 0)
                 {
-                    tradingCase.IsBuy = BuyCondition(day.TradingDate) > 0;
+                    tradingCase.IsBuy = BuyCondition(tradingHistory[^1].TradingDate) > 0;
                     if (tradingCase.IsBuy)
                     {
                         if (tradingCase.BuyPrice <= day.LowestPrice)
@@ -47,10 +45,12 @@ namespace Pl.Sas.Core.Trading
                         tradingCase.NumberStock += stockCount;
                         lastBuyPrice = tradingCase.BuyPrice;
                         numberChangeDay = 0;
+                        tradingCase.AssetPosition = $"Mua ({tradingCase.BuyPrice * 1000:0,0.00})";
                         tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản:{tradingCase.Profit(day.ClosePrice):0,0}, Mua {tradingCase.NumberStock:0,0} cổ giá {tradingCase.BuyPrice * 1000:0,0} thuế {totalTax:0,0}");
                     }
                     else
                     {
+                        tradingCase.AssetPosition = "100% Tiền";
                         tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản:{tradingCase.Profit(day.ClosePrice):0,0}, Không giao dịch.");
                     }
                 }
@@ -58,7 +58,7 @@ namespace Pl.Sas.Core.Trading
                 {
                     if (numberChangeDay > 2)
                     {
-                        tradingCase.IsSell = SellCondition(day.TradingDate) > 0;
+                        tradingCase.IsSell = SellCondition(tradingHistory[^1].TradingDate) > 0;
                         if (tradingCase.IsSell)
                         {
                             if (tradingCase.SellPrice >= day.HighestPrice)
@@ -71,23 +71,38 @@ namespace Pl.Sas.Core.Trading
                             var selNumberStock = tradingCase.NumberStock;
                             tradingCase.NumberStock = 0;
                             numberChangeDay = 0;
+                            tradingCase.AssetPosition = $"Bán ({tradingCase.SellPrice * 1000:0,0.00})";
                             tradingCase.AddNote(tradingCase.SellPrice > lastBuyPrice ? 1 : -1, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản:{tradingCase.Profit(day.ClosePrice):0,0}, Bán {selNumberStock:0,0} cổ giá {tradingCase.SellPrice * 1000:0,0} thuế {totalTax:0,0}");
-                            lastBuyPrice = null;
                         }
                         else
                         {
+                            tradingCase.AssetPosition = "100% cổ";
                             tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản:{tradingCase.Profit(day.ClosePrice):0,0}, Không giao dịch");
                         }
                     }
                     else
                     {
+                        tradingCase.AssetPosition = "100% cổ";
                         tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản:{tradingCase.Profit(day.ClosePrice):0,0}, Không giao dịch do mới mua {numberChangeDay} ngày");
                     }
                 }
 
-                previousChart = day;
                 numberChangeDay++;
                 tradingHistory.Add(day);
+            }
+
+            tradingCase.IsBuy = false;
+            tradingCase.IsSell = false;
+            tradingCase.BuyPrice = CalculateOptimalBuyPrice(tradingHistory, tradingHistory[^1].ClosePrice);
+            tradingCase.SellPrice = CalculateOptimalSellPrice(tradingHistory, tradingHistory[^1].ClosePrice);
+
+            if (tradingCase.NumberStock > 0)
+            {
+                tradingCase.IsSell = SellCondition(tradingHistory[^1].TradingDate) > 0;
+            }
+            else
+            {
+                tradingCase.IsBuy = BuyCondition(tradingHistory[^1].TradingDate) > 0;
             }
 
             _macd_12_26_9 = new List<MacdResult>();
@@ -140,40 +155,7 @@ namespace Pl.Sas.Core.Trading
             return (float)Math.Round((decimal)buyPrice, 2);
         }
 
-        public static (float TotalProfit, float TotalTax) Sell(long stockCount, float stockPrice)
-        {
-            var totalMoney = stockCount * stockPrice;
-            var totalTax = totalMoney * _sellTax;
-            return (totalMoney - totalTax, totalTax);
-        }
-
-        public static (long StockCount, float ExcessCash, float TotalTax) Buy(float totalMoney, float stockPrice, int numberChangeDay)
-        {
-            if (stockPrice == 0)
-            {
-                return (0, totalMoney, 0);
-            }
-
-            var buyTax = _buyTax;
-            if (numberChangeDay < 3)
-            {
-                buyTax += _advanceTax;
-            }
-
-            var totalBuyMoney = totalMoney - (totalMoney * buyTax);
-            var buyStockCount = (long)Math.Floor(totalBuyMoney / stockPrice);
-            if (buyStockCount <= 0)
-            {
-                return (0, totalMoney, 0);
-            }
-
-            var totalValueStock = buyStockCount * stockPrice;
-            var totalTax = totalValueStock * buyTax;
-            var excessCash = totalMoney - (totalValueStock + totalTax);
-            return (buyStockCount, excessCash, totalTax);
-        }
-
-        private static void LoadIndicatorSet(List<ChartPrice> chartPrices)
+        public static void LoadIndicatorSet(List<ChartPrice> chartPrices)
         {
             var quotes = chartPrices.Select(q => new Quote()
             {
@@ -185,6 +167,7 @@ namespace Pl.Sas.Core.Trading
                 Date = q.TradingDate
             }).OrderBy(q => q.Date).ToList();
             _macd_12_26_9 = quotes.GetMacd(12, 26, 9, CandlePart.Close).ToList();
+            quotes = null;
         }
 
         public static void Dispose()

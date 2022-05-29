@@ -63,6 +63,11 @@ namespace Pl.Sas.WebDashboard
                         await _stockRealtimeHub.Clients.All.SendAsync("UpdateStockView");
                         break;
 
+                    case "UpdateRealtimeView":
+                        _stockViewService.UpdateChangeStockView(message);
+                        await _stockRealtimeHub.Clients.All.SendAsync("UpdateRealtimeView", message.KeyValues["Data"]);
+                        break;
+
                     default:
                         _logger.LogWarning("ViewMessage id {Id}, don't match any function", message.Id);
                         break;

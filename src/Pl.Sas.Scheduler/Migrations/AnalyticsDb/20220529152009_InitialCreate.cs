@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -58,13 +59,16 @@ namespace Pl.Sas.Scheduler.Migrations.AnalyticsDb
                     Id = table.Column<string>(type: "nvarchar(22)", maxLength: 22, nullable: false),
                     Symbol = table.Column<string>(type: "nvarchar(16)", maxLength: 16, nullable: false),
                     Principle = table.Column<int>(type: "int", nullable: false),
+                    FixedCapital = table.Column<float>(type: "real", nullable: false),
+                    WinNumber = table.Column<int>(type: "int", nullable: false),
+                    LoseNumber = table.Column<int>(type: "int", nullable: false),
+                    Profit = table.Column<float>(type: "real", nullable: false),
+                    TotalTax = table.Column<float>(type: "real", nullable: false),
                     IsBuy = table.Column<bool>(type: "bit", nullable: false),
                     BuyPrice = table.Column<float>(type: "real", nullable: false),
                     IsSell = table.Column<bool>(type: "bit", nullable: false),
                     SellPrice = table.Column<float>(type: "real", nullable: false),
-                    Capital = table.Column<float>(type: "real", nullable: false),
-                    Profit = table.Column<float>(type: "real", nullable: false),
-                    TotalTax = table.Column<float>(type: "real", nullable: false),
+                    AssetPosition = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
                     TradingNotes = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
                     CreatedTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedTime = table.Column<DateTime>(type: "datetime2", nullable: false)

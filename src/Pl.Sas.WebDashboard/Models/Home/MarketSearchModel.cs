@@ -3,11 +3,6 @@
     public class MarketSearchModel
     {
         /// <summary>
-        /// Phương pháp
-        /// </summary>
-        public int Principle { get; set; } = 1;
-
-        /// <summary>
         /// thứ tự sắp xếp
         /// </summary>
         public string? Ordinal { get; set; }
