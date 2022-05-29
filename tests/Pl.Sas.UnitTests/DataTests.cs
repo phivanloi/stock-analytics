@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Pl.Sas.Core.Interfaces;
-using Pl.Sas.Core.Services;
 using Pl.Sas.Infrastructure.Loging;
 using System;
 using System.Threading;

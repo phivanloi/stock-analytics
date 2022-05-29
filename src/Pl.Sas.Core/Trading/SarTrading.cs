@@ -127,39 +127,6 @@ namespace Pl.Sas.Core.Trading
             return 0;
         }
 
-        public static (float TotalProfit, float TotalTax) Sell(long stockCount, float stockPrice)
-        {
-            var totalMoney = stockCount * stockPrice;
-            var totalTax = totalMoney * _sellTax;
-            return (totalMoney - totalTax, totalTax);
-        }
-
-        public static (long StockCount, float ExcessCash, float TotalTax) Buy(float totalMoney, float stockPrice, int numberChangeDay)
-        {
-            if (stockPrice == 0)
-            {
-                return (0, totalMoney, 0);
-            }
-
-            var buyTax = _buyTax;
-            if (numberChangeDay < 3)
-            {
-                buyTax += _advanceTax;
-            }
-
-            var totalBuyMoney = totalMoney - (totalMoney * buyTax);
-            var buyStockCount = (long)Math.Floor(totalBuyMoney / stockPrice);
-            if (buyStockCount <= 0)
-            {
-                return (0, totalMoney, 0);
-            }
-
-            var totalValueStock = buyStockCount * stockPrice;
-            var totalTax = totalValueStock * buyTax;
-            var excessCash = totalMoney - (totalValueStock + totalTax);
-            return (buyStockCount, excessCash, totalTax);
-        }
-
         private static void LoadIndicatorSet(List<ChartPrice> chartPrices)
         {
             var quotes = chartPrices.Select(q => new Quote()

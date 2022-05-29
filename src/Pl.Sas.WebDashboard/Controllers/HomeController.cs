@@ -138,7 +138,7 @@ namespace Pl.Sas.WebDashboard.Controllers
                     model.TradingResults.Add(tradingResult.Principle, new()
                     {
                         TradingExplainNotes = tradingResult.TradingNotes is not null ? JsonSerializer.Deserialize<List<KeyValuePair<int, string>>>(_zipHelper.UnZipByte(tradingResult.TradingNotes)) : new List<KeyValuePair<int, string>>(),
-                        Capital = tradingResult.Capital,
+                        Capital = tradingResult.FixedCapital,
                         Profit = tradingResult.Profit,
                         ProfitPercent = tradingResult.ProfitPercent,
                         TotalTax = tradingResult.TotalTax

@@ -519,75 +519,94 @@ namespace Pl.Sas.Core.Services
             var checkingKey = $"{symbol}-Analytics-TestTrading";
             var stock = await _stockData.GetByCodeAsync(symbol);
             var chartPrices = (await _chartPriceData.FindAllAsync(symbol, "D")).OrderBy(q => q.TradingDate).ToList();
-            var tradingHistories = chartPrices.Where(q => q.TradingDate >= Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
-            if (stock is null || chartPrices.Count <= 2 || tradingHistories.Count <= 0)
+            if (stock is null || chartPrices.Count <= 2)
             {
                 _logger.LogWarning("TestTradingAnalyticsAsync => stock is null or chartPrices is null for {symbol}", symbol);
                 return await _keyValueData.SetAsync(checkingKey, false);
             }
-            var isBuy = false;
-            var isSell = false;
 
+            var tradingHistories = chartPrices.Where(q => q.TradingDate >= Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
+            var listTradingResult = new List<TradingResult>();
             #region Buy and wait
             var startPrice = tradingHistories[0].ClosePrice;
             var endPrice = tradingHistories[^1].ClosePrice;
-            var countInStock = chartPrices.Count(q => q.TradingDate >= Constants.StartTime);
             var noteInvestment = $"Mua và nắm giữ {tradingHistories.Count} phiên từ ngày {tradingHistories[0].TradingDate:dd/MM/yyyy}: Giá đóng cửa đầu kỳ {startPrice:0,0} giá đóng cửa cuối kỳ {endPrice:0,0} lợi nhuận {endPrice.GetPercent(startPrice):0.00}%.";
-            await _tradingResultData.SaveTestTradingResultAsync(new()
+            var buyAndWaitResult = new TradingResult()
             {
                 Symbol = symbol,
                 Principle = 3,
                 IsBuy = false,
-                BuyPrice = chartPrices[^1].ClosePrice,
                 IsSell = false,
-                SellPrice = chartPrices[^1].ClosePrice,
-                Capital = 10000000,
-                Profit = (10000000 / startPrice) * endPrice,
+                BuyPrice = tradingHistories[^1].ClosePrice,
+                SellPrice = tradingHistories[^1].ClosePrice,
+                FixedCapital = 100000000,
+                Profit = (100000000 / startPrice) * endPrice,
                 TotalTax = 0,
+                AssetPosition = "100% cổ phiếu",
+                LoseNumber = startPrice <= endPrice ? 1 : 0,
+                WinNumber = startPrice > endPrice ? 1 : 0,
                 TradingNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(new List<KeyValuePair<int, string>>() { new(startPrice > endPrice ? -1 : startPrice < endPrice ? 1 : 0, noteInvestment) })),
-            });
+            };
+            listTradingResult.Add(buyAndWaitResult);
+            await _tradingResultData.SaveTestTradingResultAsync(buyAndWaitResult);
             #endregion
 
             #region Macd Trading
+            MacdTrading.LoadIndicatorSet(chartPrices);
             var macdCase = MacdTrading.Trading(tradingHistories);
-            var macdNote = $"Trading {Utilities.GetPrincipleName(3).ToLower()} {tradingHistories.Count} phiên từ ngày {tradingHistories[0].TradingDate:dd/MM/yyyy}, Lợi nhuận {macdCase.Profit(tradingHistories[^1].ClosePrice):0,0} ({macdCase.ProfitPercent(tradingHistories[^1].ClosePrice):0,0.00}%), thuế {macdCase.TotalTax:0,0}, xem chi tiết tại tab \"Lợi nhuận và đầu tư TN\".";
+            var macdNote = $"Trading {Utilities.GetPrincipleName(1).ToLower()} {tradingHistories.Count} phiên từ ngày {tradingHistories[0].TradingDate:dd/MM/yyyy}, Lợi nhuận {macdCase.Profit(tradingHistories[^1].ClosePrice):0,0} ({macdCase.ProfitPercent(tradingHistories[^1].ClosePrice):0,0.00}%), thuế {macdCase.TotalTax:0,0}, xem chi tiết tại tab \"Lợi nhuận và đầu tư TN\".";
             var macdType = macdCase.FixedCapital < macdCase.Profit(tradingHistories[^1].ClosePrice) ? 1 : macdCase.FixedCapital == macdCase.Profit(tradingHistories[^1].ClosePrice) ? 0 : -1;
-            await _tradingResultData.SaveTestTradingResultAsync(new()
+            var macdResult = new TradingResult()
             {
                 Symbol = symbol,
                 Principle = 1,
-                IsBuy = isBuy,
+                IsBuy = macdCase.IsBuy,
+                IsSell = macdCase.IsSell,
                 BuyPrice = macdCase.BuyPrice,
-                IsSell = isSell,
                 SellPrice = macdCase.SellPrice,
-                Capital = macdCase.FixedCapital,
+                FixedCapital = macdCase.FixedCapital,
                 Profit = macdCase.Profit(tradingHistories[^1].ClosePrice),
                 TotalTax = macdCase.TotalTax,
+                AssetPosition = macdCase.AssetPosition,
+                LoseNumber = macdCase.LoseNumber,
+                WinNumber = macdCase.WinNumber,
                 TradingNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(macdCase.ExplainNotes)),
-            });
+            };
+            listTradingResult.Add(macdResult);
+            await _tradingResultData.SaveTestTradingResultAsync(macdResult);
             MacdTrading.Dispose();
             #endregion
 
             #region Experiment Trading
-            var sarCase = ExperimentTrading.Trading(tradingHistories);
-            var sarNote = $"Trading {Utilities.GetPrincipleName(3).ToLower()} {tradingHistories.Count} phiên từ ngày {tradingHistories[0].TradingDate:dd/MM/yyyy}, Lợi nhuận {sarCase.Profit(tradingHistories[^1].ClosePrice):0,0} ({sarCase.ProfitPercent(tradingHistories[^1].ClosePrice):0,0.00}%), thuế {sarCase.TotalTax:0,0}, xem chi tiết tại tab \"Lợi nhuận và đầu tư TN\".";
-            var sarType = sarCase.FixedCapital < sarCase.Profit(tradingHistories[^1].ClosePrice) ? 1 : sarCase.FixedCapital == sarCase.Profit(tradingHistories[^1].ClosePrice) ? 0 : -1;
-            await _tradingResultData.SaveTestTradingResultAsync(new()
+            ExperimentTrading.LoadIndicatorSet(chartPrices);
+            var experCase = ExperimentTrading.Trading(tradingHistories);
+            var experNote = $"Trading {Utilities.GetPrincipleName(0).ToLower()} {tradingHistories.Count} phiên từ ngày {tradingHistories[0].TradingDate:dd/MM/yyyy}, Lợi nhuận {experCase.Profit(tradingHistories[^1].ClosePrice):0,0} ({experCase.ProfitPercent(tradingHistories[^1].ClosePrice):0,0.00}%), thuế {experCase.TotalTax:0,0}, xem chi tiết tại tab \"Lợi nhuận và đầu tư TN\".";
+            var experType = experCase.FixedCapital < experCase.Profit(tradingHistories[^1].ClosePrice) ? 1 : experCase.FixedCapital == experCase.Profit(tradingHistories[^1].ClosePrice) ? 0 : -1;
+            var experResult = new TradingResult()
             {
                 Symbol = symbol,
-                Principle = 0,
-                IsBuy = isBuy,
-                BuyPrice = sarCase.BuyPrice,
-                IsSell = isSell,
-                SellPrice = sarCase.SellPrice,
-                Capital = sarCase.FixedCapital,
-                Profit = sarCase.Profit(tradingHistories[^1].ClosePrice),
-                TotalTax = sarCase.TotalTax,
-                TradingNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(sarCase.ExplainNotes)),
-            });
+                Principle = 1,
+                IsBuy = experCase.IsBuy,
+                IsSell = experCase.IsSell,
+                BuyPrice = experCase.BuyPrice,
+                SellPrice = experCase.SellPrice,
+                FixedCapital = experCase.FixedCapital,
+                Profit = experCase.Profit(tradingHistories[^1].ClosePrice),
+                TotalTax = experCase.TotalTax,
+                AssetPosition = experCase.AssetPosition,
+                LoseNumber = experCase.LoseNumber,
+                WinNumber = experCase.WinNumber,
+                TradingNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(experCase.ExplainNotes)),
+            };
+            listTradingResult.Add(experResult);
+            await _tradingResultData.SaveTestTradingResultAsync(experResult);
             ExperimentTrading.Dispose();
             #endregion
 
+            buyAndWaitResult = null;
+            macdResult = null;
+            experResult = null;
+            listTradingResult = null;
             chartPrices = null;
             tradingHistories = null;
             stock = null;

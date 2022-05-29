@@ -369,36 +369,37 @@
 
         #endregion
 
+
         #region Trading
         /// <summary>
         /// % lợi nhuận bằng phương pháp thử nghiệm
         /// </summary>
-        public float ExperimentTradingProfitPercent { get; set; }
+        public float ExperimentProfitPercent { get; set; }
 
         /// <summary>
         /// Trạng thái tài sản và giao dịch hiện tại của phương pháp thử nghiệm
         /// </summary>
-        public string ExperimentTradingStatus { get; set; } = null!;
+        public string ExperimentAssetPosition { get; set; } = null!;
 
         /// <summary>
         /// % lợi nhuận bằng phương pháp chính
         /// </summary>
-        public float MainTradingProfitPercent { get; set; }
+        public float MainProfitPercent { get; set; }
 
         /// <summary>
         /// Trạng thái tài sản và giao dịch hiện tại của phương pháp chính
         /// </summary>
-        public string MainTradingStatus { get; set; } = null!;
+        public string MainAssetPosition { get; set; } = null!;
 
         /// <summary>
         /// % lợi nhuận khi tích sản
         /// </summary>
-        public float AssetsProfitPercent { get; set; }
+        public float AccumulationProfitPercent { get; set; }
 
         /// <summary>
         /// Trạng thái tài sản và giao dịch hiện tại của phương pháp tích sản
         /// </summary>
-        public string AssetsStatus { get; set; } = null!;
+        public string AccumulationAssetPosition { get; set; } = null!;
 
         /// <summary>
         /// % lợi nhuận khi chỉ mua và giữ
@@ -408,7 +409,7 @@
         /// <summary>
         /// Trạng thái tài sản và giao dịch hiện tại của phương pháp mua và nắm giữ
         /// </summary>
-        public string BuyAndHoldStatus { get; set; } = null!;
+        public string BuyAndHoldAssetPosition { get; set; } = null!;
         #endregion
 
         /// <summary>

@@ -126,7 +126,6 @@ namespace Pl.Sas.Core.Services
                 return;
             }
             _stockViews.AddOrUpdate(symbol, stockView, (key, oldValue) => stockView);
-            stockView = null;
         }
 
         public virtual async Task<QueueMessage?> HandleStockViewEventAsync(QueueMessage queueMessage)
@@ -241,6 +240,52 @@ namespace Pl.Sas.Core.Services
                 stockPrices = null;
             }
 
+            BindingPercentConvulsionToView(ref stockView, chartPrices);
+            chartPrices = null;
+
+            if (financialIndicators is not null && financialIndicators.Count > 2)
+            {
+                var topTwoYear = financialIndicators.OrderByDescending(q => q.YearReport).Where(q => q.LengthReport == 5).Take(2).ToList();
+                if (topTwoYear is not null && topTwoYear.Count > 1)
+                {
+                    stockView.YearlyRevenueGrowthPercent = topTwoYear[0].Revenue.GetPercent(topTwoYear[1].Revenue);
+                    stockView.YearlyRevenueGrowthPercent = topTwoYear[0].Profit.GetPercent(topTwoYear[1].Profit);
+                }
+                financialIndicators = null;
+            }
+
+            var tradingResults = await _tradingResultData.GetForViewAsync(symbol);
+            BindingTradingResultToView(ref stockView, tradingResults);
+            tradingResults = null;
+
+            industry = null;
+            company = null;
+            var cacheKey = $"{Constants.StockViewCachePrefix}-SM-{symbol}";
+            var setCacheTask = _asyncCacheService.SetValueAsync(cacheKey, stockView, Constants.DefaultCacheTime * 60 * 24 * 30);
+            var sendMessage = new QueueMessage("UpdateStockView");
+            sendMessage.KeyValues.Add("Data", JsonSerializer.Serialize(stockView));
+            sendMessage.KeyValues.Add("Symbol", symbol);
+            await setCacheTask;
+            return sendMessage;
+        }
+
+        public virtual async Task InitialAsync()
+        {
+            var stocks = await _stockData.FindAllAsync();
+            foreach (var stock in stocks)
+            {
+                var cacheKey = $"{Constants.StockViewCachePrefix}-SM-{stock.Symbol}";
+                var stockView = await _asyncCacheService.GetByKeyAsync<StockView>(cacheKey);
+                if (stockView != null)
+                {
+                    _stockViews.AddOrUpdate(stock.Symbol, stockView, (key, oldValue) => stockView);
+                }
+            }
+            stocks = null;
+        }
+
+        public static void BindingPercentConvulsionToView(ref StockView stockView, List<ChartPrice>? chartPrices)
+        {
             if (chartPrices is not null && chartPrices.Count > 0)
             {
                 chartPrices = chartPrices.OrderByDescending(q => q.TradingDate).ToList();
@@ -312,70 +357,39 @@ namespace Pl.Sas.Core.Services
                     stockView.PricePercentConvulsion60 = chartPrices[0].ClosePrice.GetPercent(chartPrices.Last().ClosePrice);
                 }
                 #endregion
-                chartPrices = null;
             }
-
-            if (financialIndicators is not null && financialIndicators.Count > 2)
-            {
-                var topTwoYear = financialIndicators.OrderByDescending(q => q.YearReport).Where(q => q.LengthReport == 5).Take(2).ToList();
-                if (topTwoYear is not null && topTwoYear.Count > 1)
-                {
-                    stockView.YearlyRevenueGrowthPercent = topTwoYear[0].Revenue.GetPercent(topTwoYear[1].Revenue);
-                    stockView.YearlyRevenueGrowthPercent = topTwoYear[0].Profit.GetPercent(topTwoYear[1].Profit);
-                }
-                financialIndicators = null;
-            }
-
-            #region Trading info
-            var tradingResults = await _tradingResultData.FindAllAsync(symbol);
-            var trading = tradingResults.FirstOrDefault(q => q.Principle == 0);
-            if (trading is not null)
-            {
-                stockView.ExperimentTradingProfitPercent = trading.ProfitPercent
-            }
-
-            foreach (var principle in principles)
-            {
-                var tadingResult = tradingResults.FirstOrDefault(q => q.Principle == principle);
-                if (tadingResult is not null)
-                {
-                    var judgeResult = new JudgeResult()
-                    {
-                        OptimalBuyPrice = tadingResult.BuyPrice,
-                        OptimalSellPrice = tadingResult.SellPrice,
-                        ProfitPercent = tadingResult.ProfitPercent,
-                        TodayIsBuy = tadingResult.IsBuy,
-                        TodayIsSell = tadingResult.IsSell
-                    };
-                    stockView.TradingViews.Add(principle, judgeResult);
-                }
-            }
-            #endregion
-
-            industry = null;
-            company = null;
-
-            var cacheKey = $"{Constants.StockViewCachePrefix}-SM-{symbol}";
-            await _asyncCacheService.SetValueAsync(cacheKey, stockView, Constants.DefaultCacheTime * 60 * 24 * 30);
-            var sendMessage = new QueueMessage("UpdateStockView");
-            sendMessage.KeyValues.Add("Data", JsonSerializer.Serialize(stockView));
-            sendMessage.KeyValues.Add("Symbol", symbol);
-            return sendMessage;
         }
 
-        public virtual async Task InitialAsync()
+        public static void BindingTradingResultToView(ref StockView stockView, List<TradingResult>? tradingResults)
         {
-            var stocks = await _stockData.FindAllAsync();
-            foreach (var stock in stocks)
+            if (tradingResults is not null && tradingResults.Count > 0)
             {
-                var cacheKey = $"{Constants.StockViewCachePrefix}-SM-{stock.Symbol}";
-                var stockView = await _asyncCacheService.GetByKeyAsync<StockView>(cacheKey);
-                if (stockView != null)
+                var result = tradingResults.FirstOrDefault(q => q.Principle == 0);
+                if (result is not null)
                 {
-                    _stockViews.AddOrUpdate(stock.Symbol, stockView, (key, oldValue) => stockView);
+                    stockView.ExperimentProfitPercent = result.ProfitPercent;
+                    stockView.ExperimentAssetPosition = result.AssetPosition;
                 }
+                result = tradingResults.FirstOrDefault(q => q.Principle == 1);
+                if (result is not null)
+                {
+                    stockView.MainProfitPercent = result.ProfitPercent;
+                    stockView.MainAssetPosition = result.AssetPosition;
+                }
+                result = tradingResults.FirstOrDefault(q => q.Principle == 2);
+                if (result is not null)
+                {
+                    stockView.AccumulationProfitPercent = result.ProfitPercent;
+                    stockView.AccumulationAssetPosition = result.AssetPosition;
+                }
+                result = tradingResults.FirstOrDefault(q => q.Principle == 3);
+                if (result is not null)
+                {
+                    stockView.BuyAndHoldProfitPercent = result.ProfitPercent;
+                    stockView.BuyAndHoldAssetPosition = result.AssetPosition;
+                }
+                result = null;
             }
-            stocks = null;
         }
     }
 }
