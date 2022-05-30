@@ -94,14 +94,15 @@ namespace Pl.Sas.Infrastructure.RabbitmqMessageQueue
             var consumer = new EventingBasicConsumer(_subscribeDownloadChannel);
             consumer.Received += async (model, ea) =>
             {
+                var message = JsonSerializer.Deserialize<QueueMessage>(_zipHelper.UnZipByte(ea.Body.ToArray()));
                 try
                 {
-                    var message = JsonSerializer.Deserialize<QueueMessage>(_zipHelper.UnZipByte(ea.Body.ToArray()));
                     Guard.Against.Null(message, nameof(message));
                     await func(message);
                 }
                 catch (Exception ex)
                 {
+                    ex.Data.Add("Message", JsonSerializer.Serialize(message));
                     _logger.LogError(ex, "Run SubscribeAnalyticsTask error");
                 }
                 finally
