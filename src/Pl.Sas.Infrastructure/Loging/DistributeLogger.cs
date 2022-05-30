@@ -74,10 +74,10 @@ namespace Pl.Sas.Infrastructure.Loging
                     Type = (byte)logLevel
                 };
                 await _httpClient.PostAsync($"write", new StringContent(JsonSerializer.Serialize(postObject), Encoding.UTF8, "application/json"), CancellationToken.None);
+                fullMessage = null;
+                message = null;
+                postObject = null;
             });
-
-            fullMessage = null;
-            message = null;
 
             string CreateFullMessage(LogLevel logLevel, EventId eventId, string message, Exception? exception)
             {
