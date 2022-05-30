@@ -102,7 +102,7 @@ namespace Pl.Sas.Infrastructure.RabbitmqMessageQueue
                 }
                 catch (Exception ex)
                 {
-                    ex.Data.Add("Message", JsonSerializer.Serialize(message));
+                    _logger.LogError(new Exception(JsonSerializer.Serialize(message)), "Message");
                     _logger.LogError(ex, "Run SubscribeAnalyticsTask error");
                 }
                 finally

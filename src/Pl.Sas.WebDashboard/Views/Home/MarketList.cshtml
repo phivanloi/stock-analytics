@@ -22,12 +22,8 @@
 
         <td class="t-r @view.StockScore.GetRangeTextColorCss(-2, 1)">@view.StockScore.ToString("0")</td>
         <td class="t-r">@view.Beta.ShowPercent()</td>
-        <td class="t-r @view.LastTotalMatchVol.GetTextColorCss(view.LastOneTotalMatchVol)" title="Phiên trước @view.LastOneTotalMatchVol.ShowMoney(1), TB 3P @view.LastAvgThreeTotalMatchVol.ShowMoney(1) (@view.ThreeTotalMatchVolPercent.ShowPercent()%), TB 5P @view.LastAvgFiveTotalMatchVol.ShowMoney(1) (@view.FiveTotalMatchVolPercent.ShowPercent()%), TB 10P @view.LastAvgTenTotalMatchVol.ShowMoney(1) (@view.TenTotalMatchVolPercent.ShowPercent()%)">
-            @view.LastTotalMatchVol.ShowMoney(1)
-        </td>
-        <td class="t-r @view.LastClosePrice.GetTextColorCss(view.LastOneClosePrice)" title="Phiên trước @view.LastOneClosePrice.ShowPrice(), @view.GetClosePriceTrend">
-            @view.LastClosePrice.ShowPrice()
-        </td>
+        <td class="t-r @view.LastTotalMatchVol.GetTextColorCss(view.LastOneTotalMatchVol)" title="Phiên trước @view.LastOneTotalMatchVol.ShowMoney(1), TB 3P @view.LastAvgThreeTotalMatchVol.ShowMoney(1) (@view.ThreeTotalMatchVolPercent.ShowPercent()%), TB 5P @view.LastAvgFiveTotalMatchVol.ShowMoney(1) (@view.FiveTotalMatchVolPercent.ShowPercent()%), TB 10P @view.LastAvgTenTotalMatchVol.ShowMoney(1) (@view.TenTotalMatchVolPercent.ShowPercent()%)">@view.LastTotalMatchVol.ShowMoney(1)</td>
+        <td class="t-r c-lcp @view.LastClosePrice.GetTextColorCss(view.LastOneClosePrice)" title="Phiên trước @view.LastOneClosePrice.ShowPrice(), @view.GetClosePriceTrend">@view.LastClosePrice.ShowPrice()</td>
         <td class="t-r @view.PricePercentConvulsion1.GetTextColorCss()">@view.PricePercentConvulsion1.ShowPercent()</td>
         <td class="t-r @view.PricePercentConvulsion5.GetTextColorCss()">@view.PricePercentConvulsion5.ShowPercent()</td>
         <td class="t-r @view.PricePercentConvulsion10.GetTextColorCss()">@view.PricePercentConvulsion10.ShowPercent()</td>

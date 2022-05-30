@@ -1,4 +1,7 @@
-﻿namespace Pl.Sas.Core.Entities
+﻿using System.Text.Json;
+using Pl.Sas.Core;
+
+namespace Pl.Sas.Core.Entities
 {
     public class StockView
     {
@@ -369,7 +372,6 @@
 
         #endregion
 
-
         #region Trading
         /// <summary>
         /// % lợi nhuận bằng phương pháp thử nghiệm
@@ -417,5 +419,29 @@
         /// tạm thời là tổng của MacroeconomicsScore * 1, CompanyValueScore * 1, CompanyGrowthScore * 1, StockScore * 1. Tưởng lai có thể thay đổi các biến số để đánh trọng số cao hơn cho các score
         /// </summary>
         public int TotalScore => MacroeconomicsScore + CompanyValueScore + CompanyGrowthScore + StockScore;
+
+        /// <summary>
+        /// Lấy object dùng cho đẩy xuống client ở websocket
+        /// </summary>
+        /// <returns>dynamic</returns>
+        public string GetSocketView()
+        {
+            return JsonSerializer.Serialize(new
+            {
+                smb = Symbol,
+                clcp = LastClosePrice.ShowPrice(),
+                LastOpenPrice,
+                LastHighestPrice,
+                LastLowestPrice,
+                cepp = ExperimentProfitPercent.ShowPercent(),
+                ceap = ExperimentAssetPosition,
+                cmpp = MainProfitPercent.ShowPercent(),
+                cmap = MainAssetPosition,
+                capp = AccumulationProfitPercent.ShowPercent(),
+                caap = AccumulationAssetPosition,
+                cbpp = BuyAndHoldProfitPercent.ShowPercent(),
+                cbap = BuyAndHoldAssetPosition,
+            });
+        }
     }
 }

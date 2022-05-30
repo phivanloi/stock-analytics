@@ -527,6 +527,7 @@ namespace Pl.Sas.Core.Services
 
             var tradingHistories = chartPrices.Where(q => q.TradingDate >= Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
             var listTradingResult = new List<TradingResult>();
+
             #region Buy and wait
             var startPrice = tradingHistories[0].ClosePrice;
             var endPrice = tradingHistories[^1].ClosePrice;
@@ -585,7 +586,7 @@ namespace Pl.Sas.Core.Services
             var experResult = new TradingResult()
             {
                 Symbol = symbol,
-                Principle = 1,
+                Principle = 0,
                 IsBuy = experCase.IsBuy,
                 IsSell = experCase.IsSell,
                 BuyPrice = experCase.BuyPrice,
