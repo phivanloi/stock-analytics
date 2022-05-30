@@ -60,5 +60,183 @@ namespace Pl.Sas.Core
         {
             return $"Lợi nhuận {tradingCase.ProfitPercent:0,0.00}%, thuế {tradingCase.TotalTax:0,0}";
         }
+
+        /// <summary>
+        /// Hỗ trợ tính toán lấy màu khi hiển thị
+        /// </summary>
+        /// <param name="first">Số cần kiểm tra</param>
+        /// <param name="second">Số lấy mốc kiểm tra</param>
+        /// <returns>string</returns>
+        public static string GetTextColorCss(this float first, float second = 0)
+        {
+            if (first > second)
+            {
+                return "t-s";
+            }
+            else if (first == second)
+            {
+                return "t-wn";
+            }
+            else
+            {
+                return "t-d";
+            }
+        }
+
+        /// <summary>
+        /// Hỗ trợ tính toán lấy màu khi hiển thị
+        /// </summary>
+        /// <param name="first">Số cần kiểm tra</param>
+        /// <param name="second">Số lấy mốc kiểm tra</param>
+        /// <returns>string</returns>
+        public static string GetTextColorCss(this int first, int second = 0)
+        {
+            if (first > second)
+            {
+                return "t-s";
+            }
+            else if (first == second)
+            {
+                return "t-wn";
+            }
+            else
+            {
+                return "t-d";
+            }
+        }
+
+        /// <summary>
+        /// Hỗ trợ tính toán lấy màu khi hiển thị cho một dải chỉ số có chặn đầu và chặn cuối
+        /// Nếu giá trị nhỏ hơn chỉ số bắt đầu thì danger lớn hơn chỉ số kết thúc thì success và trong khoảng thì warning
+        /// </summary>
+        /// <param name="value">Giá trị cần check</param>
+        /// <param name="start">Chỉ số bắt đầu</param>
+        /// <param name="end">Chỉ số kết thúc</param>
+        /// <returns>string</returns>
+        public static string GetRangeTextColorCss(this int value, int start = -1, int end = 1)
+        {
+            if (value < start)
+            {
+                return "t-d";
+            }
+            else if (value > end)
+            {
+                return "t-s";
+            }
+            return "t-i";
+        }
+
+        /// <summary>
+        /// Hàm lấy màu chữ cho chỉ báo Stochastic
+        /// </summary>
+        /// <param name="value">Giá trị cần check</param>
+        /// <param name="start">Giá trị nền mặc định 20</param>
+        /// <param name="end">Giá trị đỉnh mặc định 80</param>
+        /// <returns>string</returns>
+        public static string GetStochasticColorCss(this float value, int start = 20, int end = 80)
+        {
+            if (value < start)
+            {
+                return "t-s";
+            }
+            else if (value > end)
+            {
+                return "text-warning";
+            }
+            return "t-i";
+        }
+
+        /// <summary>
+        /// Hỗ trợ tính toán lấy màu khi hiển thị cho một dải chỉ số có chặn đầu và chặn cuối
+        /// Nếu giá trị nhỏ hơn chỉ số bắt đầu thì danger lớn hơn chỉ số kết thúc thì success và trong khoảng thì warning
+        /// </summary>
+        /// <param name="value">Giá trị cần check</param>
+        /// <param name="start">Chỉ số bắt đầu</param>
+        /// <param name="end">Chỉ số kết thúc</param>
+        /// <returns>string</returns>
+        public static string GetRangeTextColorCss(this float value, float start = -1, float end = 1)
+        {
+            if (value < start)
+            {
+                return "t-d";
+            }
+            else if (value > end)
+            {
+                return "t-s";
+            }
+            return "t-i";
+        }
+
+        /// <summary>
+        /// Hiển thị số tiền ra view
+        /// </summary>
+        /// <param name="money">Số tiền cần hiển thị</param>
+        /// <param name="rate">Tỉ lệ</param>
+        /// <returns>string</returns>
+        public static string ShowMoney(this float money, int rate = 1000)
+        {
+            return $"{money / rate:0,0}";
+        }
+
+        /// <summary>
+        /// Hiển thị giá cổ phiếu ra view
+        /// </summary>
+        /// <param name="money">Số tiền cần hiển thị</param>
+        /// <param name="rate">Tỉ lệ</param>
+        /// <returns>string</returns>
+        public static string ShowPrice(this float money, int rate = 1000)
+        {
+            return $"{money / rate:0.00}";
+        }
+
+        /// <summary>
+        /// Hiển thị giá cổ phiếu ra view
+        /// </summary>
+        /// <param name="money">Số tiền cần hiển thị</param>
+        /// <param name="rate">Tỉ lệ</param>
+        /// <returns>string</returns>
+        public static string ShowPriceZezoToNull(this float money, int rate = 1000)
+        {
+            if (money == 0)
+            {
+                return "";
+            }
+            return $"{money / rate:0.00}";
+        }
+
+        /// <summary>
+        /// Hiển thị % ra view
+        /// </summary>
+        /// <param name="percent">% cần hiển thị</param>
+        /// <param name="format">cách hiển thị</param>
+        /// <returns>string</returns>
+        public static string ShowPercent(this float percent, string format = "0.0")
+        {
+            return $"{percent.ToString(format)}";
+        }
+
+        /// <summary>
+        /// Lấy css class cho loại thông báo phân tích
+        /// </summary>
+        /// <param name="analyticsMessageType">Loại thông báo phân tích</param>
+        /// <returns>string</returns>
+        public static string GetAnalyticsTypeColorCss(this int analyticsMessageType)
+        {
+            if (analyticsMessageType <= -2)
+            {
+                return "danger";
+            }
+            if (analyticsMessageType >= 2)
+            {
+                return "primary";
+            }
+            return analyticsMessageType switch
+            {
+                -1 => "warning",
+                0 => "info",
+                1 => "success",
+                _ => "",
+            };
+        }
     }
 }

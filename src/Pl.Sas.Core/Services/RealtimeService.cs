@@ -70,12 +70,14 @@ namespace Pl.Sas.Core.Services
             var chartPricesRealtime = JsonSerializer.Deserialize<List<ChartPrice>>(chartPricesJsonString);
             if (chartPricesRealtime is null || chartPricesRealtime.Count <= 0)
             {
+                _logger.LogInformation("UpdateViewRealtimeOnPriceChange {symbol} is null chartPricesRealtime or count 0", symbol);
                 return;
             }
 
             var chartPrices = await _chartPriceData.CacheFindAllAsync(symbol, "D");
             if (chartPrices is null || chartPrices.Count <= 0)
             {
+                _logger.LogInformation("UpdateViewRealtimeOnPriceChange {symbol} is null chartPrices from cache", symbol);
                 return;
             }
 
@@ -104,6 +106,7 @@ namespace Pl.Sas.Core.Services
             var stockView = await stockViewTask;
             if (stockView is null)
             {
+                _logger.LogInformation("UpdateViewRealtimeOnPriceChange {symbol} is null stockView from cache", symbol);
                 return;
             }
 
@@ -187,6 +190,7 @@ namespace Pl.Sas.Core.Services
             sendMessage.KeyValues.Add("Data", JsonSerializer.Serialize(stockView));
             sendMessage.KeyValues.Add("Symbol", symbol);
             _workerQueueService.BroadcastViewUpdatedTask(sendMessage);
+            _logger.LogInformation("UpdateViewRealtimeOnPriceChange {symbol} send UpdateRealtimeView event", symbol);
             listTradingResult = null;
             chartPrices = null;
             tradingHistories = null;

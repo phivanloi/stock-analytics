@@ -1,14 +1,31 @@
-﻿var connection = new signalR.HubConnectionBuilder().withUrl("/stockrealtime").build();
-connection.on("UpdateStockView", function () {
-    LoadMarket();
-});
-
-$(function () {
-    connection.start().then(function () {
-        console.log('Realtime stock connected.');
-    }).catch(function (err) {
-        return console.error(err.toString());
+﻿$(function () {
+    const srConnection = new signalR.HubConnectionBuilder().withUrl("/stockrealtime").withAutomaticReconnect().build();
+    srConnection.on("UpdateStockView", () => { LoadMarket(); });
+    srConnection.on("UpdateRealtimeView", (jsonData) => {
+        var obj = JSON.parse(jsonData);
+        $('#' + obj.smb + ' .c-epp').text(obj.cepp);
+        $('#' + obj.smb + ' .c-eap').text(obj.ceap);
+        $('#' + obj.smb + ' .c-mpp').text(obj.cmpp);
+        $('#' + obj.smb + ' .c-map').text(obj.cmap);
+        $('#' + obj.smb + ' .c-app').text(obj.capp);
+        $('#' + obj.smb + ' .c-aap').text(obj.caap);
+        $('#' + obj.smb + ' .c-bpp').text(obj.cbpp);
+        $('#' + obj.smb + ' .c-bap').text(obj.cbap);
+        $('#' + obj.smb + ' .c-lcp').text(obj.clcp);
+        console.log(obj);
     });
+
+    async function srStartListen() {
+        try {
+            await srConnection.start();
+            console.log("Realtime stock connected.");
+        } catch (err) {
+            console.log(err);
+            setTimeout(srStartListen, 5000);
+        }
+    };
+    srConnection.onclose(async () => { await start(); });
+    srStartListen();
 
     $(document).on('click', '.s-c', function (e) {
         OpenModalDetails(e.target.innerText, e.target.attributes['title'].nodeValue, e.target.attributes['fo'].nodeValue);

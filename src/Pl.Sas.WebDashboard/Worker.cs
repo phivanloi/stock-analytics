@@ -1,9 +1,12 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
 using Pl.Sas.Core;
+using Pl.Sas.Core.Entities;
 using Pl.Sas.Core.Interfaces;
 using Pl.Sas.Core.Services;
 using Pl.Sas.WebDashboard.RealtimeHub;
+using Polly;
+using System.Text.Json;
 
 namespace Pl.Sas.WebDashboard
 {
@@ -60,18 +63,24 @@ namespace Pl.Sas.WebDashboard
                 {
                     case "UpdateStockView":
                         _stockViewService.UpdateChangeStockView(message);
-                        await _stockRealtimeHub.Clients.All.SendAsync("UpdateStockView");
+                        var rateLimit = Policy.RateLimitAsync(20, TimeSpan.FromSeconds(10), 1);
+                        await rateLimit.ExecuteAsync(async () => await _stockRealtimeHub.Clients.All.SendAsync("UpdateStockView", cancellationToken));
                         break;
 
                     case "UpdateRealtimeView":
                         _stockViewService.UpdateChangeStockView(message);
-                        await _stockRealtimeHub.Clients.All.SendAsync("UpdateRealtimeView", message.KeyValues["Data"]);
+                        var stockView = JsonSerializer.Deserialize<StockView>(message.KeyValues["Data"]);
+                        if (stockView is not null)
+                        {
+                            await _stockRealtimeHub.Clients.All.SendAsync("UpdateRealtimeView", stockView.GetSocketView(), cancellationToken);
+                        }
                         break;
 
                     default:
                         _logger.LogWarning("ViewMessage id {Id}, don't match any function", message.Id);
                         break;
                 }
+                GC.Collect();
             });
 
             return base.StartAsync(cancellationToken);
