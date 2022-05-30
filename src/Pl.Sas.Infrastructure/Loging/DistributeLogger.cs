@@ -63,7 +63,7 @@ namespace Pl.Sas.Infrastructure.Loging
                 };
                 _httpClient.DefaultRequestHeaders.Add("SecurityKey", _distributeLogOptions.Secret);
             }
-
+            
             _loggingBackgroundTaskQueue.QueueBackgroundWorkItem(async token =>
             {
                 var postObject = new

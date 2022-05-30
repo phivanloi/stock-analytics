@@ -237,7 +237,7 @@ namespace Pl.Sas.Core.Services
                 {
                     type14.AddOrUpdateOptions("SleepTime", "1200");
                 }
-                await _scheduleData.UpdateAsync(type14);
+                return await _scheduleData.UpdateAsync(type14);
             }
             return false;
         }
