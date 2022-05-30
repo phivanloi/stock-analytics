@@ -205,31 +205,31 @@ namespace Pl.Sas.Core.Services
             var type14 = await _scheduleData.FindAsync(14, symbol);
             if (type14 != null)
             {
-                if (transactionCont > 100000)
+                if (transactionCont > 50000)
                 {
                     type14.AddOrUpdateOptions("SleepTime", "10");
                 }
-                else if (transactionCont > 50000)
+                else if (transactionCont > 10000)
                 {
                     type14.AddOrUpdateOptions("SleepTime", "15");
                 }
-                else if (transactionCont > 10000)
+                else if (transactionCont > 5000)
                 {
                     type14.AddOrUpdateOptions("SleepTime", "30");
                 }
-                else if (transactionCont > 5000)
+                else if (transactionCont > 1000)
                 {
                     type14.AddOrUpdateOptions("SleepTime", "60");
                 }
-                else if (transactionCont > 1000)
+                else if (transactionCont > 500)
                 {
                     type14.AddOrUpdateOptions("SleepTime", "150");
                 }
-                else if (transactionCont > 500)
+                else if (transactionCont > 100)
                 {
                     type14.AddOrUpdateOptions("SleepTime", "300");
                 }
-                else if (transactionCont > 100)
+                else if (transactionCont > 50)
                 {
                     type14.AddOrUpdateOptions("SleepTime", "600");
                 }

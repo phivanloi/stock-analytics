@@ -196,6 +196,7 @@ namespace Pl.Sas.Core.Services
                             });
                         }
                     }
+                    vndChartPrices = null;
                 }
             }
             catch (Exception ex)
@@ -222,6 +223,7 @@ namespace Pl.Sas.Core.Services
                             });
                         }
                     }
+                    ssiChartPrices = null;
                 }
             }
 
@@ -235,6 +237,7 @@ namespace Pl.Sas.Core.Services
                         {"ChartPrices", JsonSerializer.Serialize(chartPrices) }
                     }
                 });
+                chartPrices = null;
             }
         }
 
@@ -463,14 +466,14 @@ namespace Pl.Sas.Core.Services
                 };
                 listTransactionDetails.Add(addItem);
             }
-
-            StockTransaction stockTransaction = new()
+            var stockTransaction = new StockTransaction()
             {
                 Symbol = schedule.DataKey,
                 TradingDate = Utilities.GetTradingDate(),
                 ZipDetails = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(listTransactionDetails))
             };
 
+            await _stockTransactionData.SaveStockTransactionAsync(stockTransaction);
             _workerQueueService.PublishRealtimeTask(new("SetupRealtimeSleepTimeByTransactionCount")
             {
                 KeyValues = new Dictionary<string, string>()
@@ -479,8 +482,7 @@ namespace Pl.Sas.Core.Services
                     { "TransactionCount", listTransactionDetails.Count.ToString() }
                 }
             });
-            var check = await _stockTransactionData.SaveStockTransactionAsync(stockTransaction);
-            return await _keyValueData.SetAsync(checkingKey, check);
+            return await _keyValueData.SetAsync(checkingKey, true);
         }
 
         /// <summary>
@@ -532,12 +534,15 @@ namespace Pl.Sas.Core.Services
                     insertList.Add(newLeadership);
                 }
             }
+            corporateActions = null;
+            ssiCorporateAction = null;
 
             if (size > 10)
             {
                 schedule.AddOrUpdateOptions("CorporateActionCrawlSize", "10");
             }
             await _corporateActionData.BulkInserAsync(insertList);
+            insertList = null;
             return await _keyValueData.SetAsync(checkingKey, true);
         }
 
