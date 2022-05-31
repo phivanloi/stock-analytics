@@ -65,6 +65,7 @@ namespace Pl.Sas.Core.Services
         /// <returns></returns>
         public virtual async Task UpdateViewRealtimeOnPriceChange(string symbol, string chartPricesJsonString)
         {
+            _logger.LogWarning("UpdateViewRealtimeOnPriceChange {symbol}:", symbol);
             Guard.Against.NullOrEmpty(symbol, nameof(symbol));
             Guard.Against.NullOrEmpty(chartPricesJsonString, nameof(chartPricesJsonString));
             var chartPricesRealtime = JsonSerializer.Deserialize<List<ChartPrice>>(chartPricesJsonString);
@@ -190,7 +191,7 @@ namespace Pl.Sas.Core.Services
             sendMessage.KeyValues.Add("Data", JsonSerializer.Serialize(stockView));
             sendMessage.KeyValues.Add("Symbol", symbol);
             _workerQueueService.BroadcastViewUpdatedTask(sendMessage);
-            _logger.LogInformation("UpdateViewRealtimeOnPriceChange {symbol} send UpdateRealtimeView event", symbol);
+            _logger.LogWarning("UpdateViewRealtimeOnPriceChange {symbol} send UpdateRealtimeView event", symbol);
             listTradingResult = null;
             chartPrices = null;
             tradingHistories = null;
