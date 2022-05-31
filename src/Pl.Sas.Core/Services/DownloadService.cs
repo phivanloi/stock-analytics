@@ -159,7 +159,7 @@ namespace Pl.Sas.Core.Services
             }
             else
             {
-                _logger.LogError("Worker HandleEventAsync null scheduler Id: {Id}.", queueMessage.Id);
+                _logger.LogWarning("Worker HandleEventAsync null scheduler Id: {Id}.", queueMessage.Id);
             }
         }
 
@@ -950,7 +950,7 @@ namespace Pl.Sas.Core.Services
             {
                 if (string.IsNullOrEmpty(datum.Type) || (datum.Type != "s" && datum.Type != "i"))
                 {
-                    _logger.LogInformation("Initial stock {Code} is ignore.", datum.Code);
+                    _logger.LogWarning("Initial stock {Code} is ignore.", datum.Code);
                     continue;
                 }
                 var stockCode = datum.Code.ToUpper();
