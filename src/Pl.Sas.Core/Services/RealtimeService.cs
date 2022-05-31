@@ -212,35 +212,35 @@ namespace Pl.Sas.Core.Services
             {
                 if (transactionCont > 50000)
                 {
-                    type14.AddOrUpdateOptions("SleepTime", "10");
+                    type14.AddOrUpdateOptions("SleepTime", "30");
                 }
                 else if (transactionCont > 10000)
                 {
-                    type14.AddOrUpdateOptions("SleepTime", "15");
+                    type14.AddOrUpdateOptions("SleepTime", "60");
                 }
                 else if (transactionCont > 5000)
                 {
-                    type14.AddOrUpdateOptions("SleepTime", "30");
+                    type14.AddOrUpdateOptions("SleepTime", "100");
                 }
                 else if (transactionCont > 1000)
                 {
-                    type14.AddOrUpdateOptions("SleepTime", "60");
+                    type14.AddOrUpdateOptions("SleepTime", "140");
                 }
                 else if (transactionCont > 500)
                 {
-                    type14.AddOrUpdateOptions("SleepTime", "150");
+                    type14.AddOrUpdateOptions("SleepTime", "200");
                 }
                 else if (transactionCont > 100)
                 {
-                    type14.AddOrUpdateOptions("SleepTime", "300");
+                    type14.AddOrUpdateOptions("SleepTime", "360");
                 }
                 else if (transactionCont > 50)
                 {
-                    type14.AddOrUpdateOptions("SleepTime", "600");
+                    type14.AddOrUpdateOptions("SleepTime", "1200");
                 }
                 else
                 {
-                    type14.AddOrUpdateOptions("SleepTime", "1200");
+                    type14.AddOrUpdateOptions("SleepTime", "2400");
                 }
                 return await _scheduleData.UpdateAsync(type14);
             }

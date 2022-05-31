@@ -202,6 +202,10 @@ namespace Pl.Sas.Core.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "UpdateChartPricesRealtimeAsync is error.");
+            }
+
+            if (chartPrices.Count <= 0)
+            {
                 var ssiChartPrices = await _downloadData.DownloadSsiChartPricesRealTimeAsync(symbol, "D");
                 if (ssiChartPrices is not null && ssiChartPrices.Time?.Length > 0)
                 {
