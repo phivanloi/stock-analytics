@@ -232,15 +232,15 @@ namespace Pl.Sas.Core.Services
                 }
                 else if (transactionCont > 100)
                 {
-                    type14.AddOrUpdateOptions("SleepTime", "300");
+                    type14.AddOrUpdateOptions("SleepTime", "360");
                 }
                 else if (transactionCont > 50)
                 {
-                    type14.AddOrUpdateOptions("SleepTime", "600");
+                    type14.AddOrUpdateOptions("SleepTime", "1200");
                 }
                 else
                 {
-                    type14.AddOrUpdateOptions("SleepTime", "1200");
+                    type14.AddOrUpdateOptions("SleepTime", "2400");
                 }
                 return await _scheduleData.UpdateAsync(type14);
             }
