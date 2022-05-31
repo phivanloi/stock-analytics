@@ -105,7 +105,7 @@ namespace Pl.Sas.Core.Trading
                 tradingCase.IsSell = SellCondition(tradingHistory[^1].TradingDate) > 0;
                 if (tradingCase.IsSell)
                 {
-                    tradingCase.AssetPosition = $"S: DC";
+                    tradingCase.AssetPosition = $"S: ATC";
                 }
                 else
                 {
@@ -117,7 +117,7 @@ namespace Pl.Sas.Core.Trading
                 tradingCase.IsBuy = BuyCondition(tradingHistory[^1].TradingDate) > 0;
                 if (tradingCase.IsBuy)
                 {
-                    tradingCase.AssetPosition = $"B: DC";
+                    tradingCase.AssetPosition = $"B: ATC";
                 }
                 else
                 {
