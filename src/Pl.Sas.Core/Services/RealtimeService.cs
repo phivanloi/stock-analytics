@@ -65,20 +65,19 @@ namespace Pl.Sas.Core.Services
         /// <returns></returns>
         public virtual async Task UpdateViewRealtimeOnPriceChange(string symbol, string chartPricesJsonString)
         {
-            _logger.LogWarning("UpdateViewRealtimeOnPriceChange {symbol}:", symbol);
             Guard.Against.NullOrEmpty(symbol, nameof(symbol));
             Guard.Against.NullOrEmpty(chartPricesJsonString, nameof(chartPricesJsonString));
             var chartPricesRealtime = JsonSerializer.Deserialize<List<ChartPrice>>(chartPricesJsonString);
             if (chartPricesRealtime is null || chartPricesRealtime.Count <= 0)
             {
-                _logger.LogInformation("UpdateViewRealtimeOnPriceChange {symbol} is null chartPricesRealtime or count 0", symbol);
+                _logger.LogWarning("UpdateViewRealtimeOnPriceChange {symbol} is null chartPricesRealtime or count 0", symbol);
                 return;
             }
 
             var chartPrices = await _chartPriceData.CacheFindAllAsync(symbol, "D");
             if (chartPrices is null || chartPrices.Count <= 0)
             {
-                _logger.LogInformation("UpdateViewRealtimeOnPriceChange {symbol} is null chartPrices from cache", symbol);
+                _logger.LogWarning("UpdateViewRealtimeOnPriceChange {symbol} is null chartPrices from cache", symbol);
                 return;
             }
 
@@ -107,7 +106,7 @@ namespace Pl.Sas.Core.Services
             var stockView = await stockViewTask;
             if (stockView is null)
             {
-                _logger.LogInformation("UpdateViewRealtimeOnPriceChange {symbol} is null stockView from cache", symbol);
+                _logger.LogWarning("UpdateViewRealtimeOnPriceChange {symbol} is null stockView from cache", symbol);
                 return;
             }
 
@@ -179,11 +178,11 @@ namespace Pl.Sas.Core.Services
             });
             #endregion
 
-            stockView.LastClosePrice = chartPrices[^1].OpenPrice;
-            stockView.LastOpenPrice = chartPrices[^1].OpenPrice;
-            stockView.LastHighestPrice = chartPrices[^1].HighestPrice;
-            stockView.LastLowestPrice = chartPrices[^1].LowestPrice;
-            stockView.LastTotalMatchVol = chartPrices[^1].TotalMatchVol;
+            stockView.LastClosePrice = chartPrices[^1].OpenPrice * 1000;
+            stockView.LastOpenPrice = chartPrices[^1].OpenPrice * 1000;
+            stockView.LastHighestPrice = chartPrices[^1].HighestPrice * 1000;
+            stockView.LastLowestPrice = chartPrices[^1].LowestPrice * 1000;
+            stockView.LastTotalMatchVol = chartPrices[^1].TotalMatchVol * 1000;
             StockViewService.BindingTradingResultToView(ref stockView, listTradingResult);
             StockViewService.BindingPercentConvulsionToView(ref stockView, chartPrices);
 
@@ -191,7 +190,6 @@ namespace Pl.Sas.Core.Services
             sendMessage.KeyValues.Add("Data", JsonSerializer.Serialize(stockView));
             sendMessage.KeyValues.Add("Symbol", symbol);
             _workerQueueService.BroadcastViewUpdatedTask(sendMessage);
-            _logger.LogWarning("UpdateViewRealtimeOnPriceChange {symbol} send UpdateRealtimeView event", symbol);
             listTradingResult = null;
             chartPrices = null;
             tradingHistories = null;
