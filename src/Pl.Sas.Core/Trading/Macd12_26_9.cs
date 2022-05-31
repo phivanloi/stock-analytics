@@ -6,7 +6,7 @@ namespace Pl.Sas.Core.Trading
     /// <summary>
     /// Trading thử nghiệm
     /// </summary>
-    public class ExperimentTrading : BaseTrading
+    public class Macd12_26_9 : BaseTrading
     {
         private static List<MacdResult> _macd_12_26_9 = new();
         private static TradingCase tradingCase = new();
