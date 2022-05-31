@@ -548,7 +548,7 @@ namespace Pl.Sas.Core.Services
                 FixedCapital = 100000000,
                 Profit = (100000000 / startPrice) * endPrice,
                 TotalTax = 0,
-                AssetPosition = "100% cổ phiếu",
+                AssetPosition = "100% C",
                 LoseNumber = startPrice <= endPrice ? 1 : 0,
                 WinNumber = startPrice > endPrice ? 1 : 0,
                 TradingNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(new List<KeyValuePair<int, string>>() { new(startPrice > endPrice ? -1 : startPrice < endPrice ? 1 : 0, noteInvestment) })),
