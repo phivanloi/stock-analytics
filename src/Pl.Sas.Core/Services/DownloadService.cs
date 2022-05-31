@@ -242,7 +242,7 @@ namespace Pl.Sas.Core.Services
             }
             else
             {
-                _logger.LogInformation("{symbol} is null chart price realtime", symbol);
+                _logger.LogWarning("PublishRealtimeTask {symbol} is null chart price realtime", symbol);
             }
         }
 
