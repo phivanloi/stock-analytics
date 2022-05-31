@@ -68,10 +68,12 @@ namespace Pl.Sas.WebDashboard
                         break;
 
                     case "UpdateRealtimeView":
+                        _logger.LogWarning("UpdateRealtimeView active {symbol}:", message.Id);
                         _stockViewService.UpdateChangeStockView(message);
                         var stockView = JsonSerializer.Deserialize<StockView>(message.KeyValues["Data"]);
                         if (stockView is not null)
                         {
+                            _logger.LogWarning("UpdateRealtimeView send client {symbol}:", message.Id);
                             await _stockRealtimeHub.Clients.All.SendAsync("UpdateRealtimeView", stockView.GetSocketView(), cancellationToken);
                         }
                         break;
