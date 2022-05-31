@@ -64,7 +64,10 @@ namespace Pl.Sas.Core.Trading
                     }
                 }
 
-                indicatorSet.Add(chartPrices[i].DatePath, addItem);
+                if (!indicatorSet.ContainsKey(chartPrices[i].DatePath))
+                {
+                    indicatorSet.Add(chartPrices[i].DatePath, addItem);
+                }
             }
             return indicatorSet;
         }
