@@ -429,7 +429,7 @@ namespace Pl.Sas.Core.Entities
             return JsonSerializer.Serialize(new
             {
                 smb = Symbol,
-                clcp = LastClosePrice.ShowPrice(),
+                clcp = LastClosePrice.ShowPrice(1),
                 LastOpenPrice,
                 LastHighestPrice,
                 LastLowestPrice,
