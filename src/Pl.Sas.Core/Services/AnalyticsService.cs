@@ -620,22 +620,19 @@ namespace Pl.Sas.Core.Services
         }
 
         /// <summary>
-        /// Phân tích trạng thái thị trường
+        /// Phân tích thị trường
         /// </summary>
-        /// <param name="workerMessageQueueService">message queue service</param>
         /// <param name="schedule">Thông tin lịch làm việc</param>
         /// <returns></returns>
         public virtual async Task MarketSentimentAnalyticsAsync(Schedule schedule)
         {
-            if (string.IsNullOrEmpty(schedule.DataKey))
-            {
-                _logger.LogWarning("MarketSentimentAnalyticsAsync null data key");
-                return;
-            }
+            Guard.Against.NullOrEmpty(schedule.DataKey, nameof(schedule.DataKey));
+            var key = $"{schedule.DataKey}-Analytics-MarketSentiment";
             var indexPrices = await _chartPriceData.FindAllAsync(schedule.DataKey, "D", DateTime.Now.Date.AddDays(-512));
             if (indexPrices.Count < 5)
             {
                 _logger.LogWarning("Chỉ số {DataKey} không được phân tích tâm lý do không đủ dữ liệu để phân tích.", schedule.DataKey);
+                await _keyValueData.SetAsync(key, -1);
                 return;
             }
             var indicatorSet = BaseTrading.BuildIndicatorSet(indexPrices);
@@ -643,7 +640,7 @@ namespace Pl.Sas.Core.Services
             var score = 0;
             var marketSentimentNotes = new List<AnalyticsNote>();
             score += MarketAnalyticsService.IndexValueTrend(marketSentimentNotes, indexPrices, indicatorSet);
-            var key = $"{schedule.DataKey}-Analytics-MarketSentiment";
+            
             await _keyValueData.SetAsync(key, score);
         }
 

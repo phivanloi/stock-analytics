@@ -55,6 +55,7 @@ namespace Pl.Sas.Logger.Controllers
                 Type = writeObject.Type
             };
             await _loggerData.WriteAsync(writeItem);
+            writeItem = null;
             return Ok();
         }
 

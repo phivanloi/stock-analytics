@@ -185,3 +185,9 @@ t-wn {
 t-i {
     color: #17a2b8 !important
 }
+.market td {
+    transition: all 1s ease;
+}
+.c-dtac{
+    background-color:#fff
+}
