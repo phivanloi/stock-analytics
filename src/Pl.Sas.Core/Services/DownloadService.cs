@@ -941,7 +941,7 @@ namespace Pl.Sas.Core.Services
                 return;
             }
 
-            var allStocks = (await _stockData.FindAllAsync()).ToDictionary(s => s.Symbol, s => s);
+            var allStocks = (await _stockData.FindAllAsync(null)).ToDictionary(s => s.Symbol, s => s);
             var insertSchedules = new List<Schedule>();
             var updateStocks = new List<Stock>();
             var insertStocks = new List<Stock>();
@@ -1067,10 +1067,10 @@ namespace Pl.Sas.Core.Services
                             Type = 14,
                             Name = $"Thu thập giá realtime: {stockCode}",
                             DataKey = stockCode,
-                            ActiveTime = currentTime.AddMinutes(random.Next(30, 40)),
+                            ActiveTime = currentTime.AddHours(1).AddMinutes(random.Next(30, 40)),
                             OptionsJson = JsonSerializer.Serialize(new Dictionary<string, string>()
                             {
-                                {"SleepTime", "300" }
+                                {"SleepTime", "2400" }
                             })
                         });
 

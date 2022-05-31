@@ -140,15 +140,16 @@
         srConnection.on("UpdateStockView", () => { LoadMarket(); });
         srConnection.on("UpdateRealtimeView", (jsonData) => {
             var obj = JSON.parse(jsonData);
-            $('#' + obj.smb + ' .c-epp').text(obj.cepp);
-            $('#' + obj.smb + ' .c-eap').text(obj.ceap);
-            $('#' + obj.smb + ' .c-mpp').text(obj.cmpp);
-            $('#' + obj.smb + ' .c-map').text(obj.cmap);
-            $('#' + obj.smb + ' .c-app').text(obj.capp);
-            $('#' + obj.smb + ' .c-aap').text(obj.caap);
-            $('#' + obj.smb + ' .c-bpp').text(obj.cbpp);
-            $('#' + obj.smb + ' .c-bap').text(obj.cbap);
-            $('#' + obj.smb + ' .c-lcp').text(obj.clcp);
+            setContent('#' + obj.smb + ' .c-epp', obj.cepp);
+            setContent('#' + obj.smb + ' .c-epp', obj.cepp);
+            setContent('#' + obj.smb + ' .c-eap', obj.ceap);
+            setContent('#' + obj.smb + ' .c-mpp', obj.cmpp);
+            setContent('#' + obj.smb + ' .c-map', obj.cmap);
+            setContent('#' + obj.smb + ' .c-app', obj.capp);
+            setContent('#' + obj.smb + ' .c-aap', obj.caap);
+            setContent('#' + obj.smb + ' .c-bpp', obj.cbpp);
+            setContent('#' + obj.smb + ' .c-bap', obj.cbap);
+            setContent('#' + obj.smb + ' .c-lcp', obj.clcp);
         });
 
         async function srStartListen() {
@@ -168,7 +169,7 @@
             $(selecter).addClass('c-dtac');
             setTimeout(function () {
                 $(selecter).removeClass('c-dtac');
-            }, 1000);
+            }, 800);
         }
 
         $('#code').keypress(function (e) {

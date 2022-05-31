@@ -166,6 +166,11 @@ label {
     text-align: right;
 }
 
+.t-c {
+    text-align: center;
+}
+
+
 .t-w {
     color: white;
 }
@@ -189,5 +194,5 @@ t-i {
     transition: all 1s ease;
 }
 .c-dtac{
-    background-color:#fff
+    background-color:#dadada5a
 }
