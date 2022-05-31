@@ -237,7 +237,6 @@ namespace Pl.Sas.Core.Services
                         {"ChartPrices", JsonSerializer.Serialize(chartPrices) }
                     }
                 });
-                _logger.LogWarning("PublishRealtimeTask {symbol}", symbol);
                 chartPrices = null;
             }
             else
