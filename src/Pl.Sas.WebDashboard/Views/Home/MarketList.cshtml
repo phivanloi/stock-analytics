@@ -6,7 +6,7 @@
 {
     var view = Model.StockViews[i];
     <tr id="@view.Symbol">
-        <td class="s-c t-w" fo="@(Model.UserFollowSymbols.Contains(view.Symbol) ? "1" : "0")" title="@view.Description">@view.Symbol</td>
+        <td class="s-c t-w t-c" fo="@(Model.UserFollowSymbols.Contains(view.Symbol) ? "1" : "0")" title="@view.Description">@view.Symbol</td>
 
         <td class="t-r @view.MacroeconomicsScore.GetTextColorCss(0)">@view.MacroeconomicsScore.ToString("0")</td>
         <td class="t-r @view.IndustryRank.GetTextColorCss(0)">@view.IndustryRank.ToString("0")</td>

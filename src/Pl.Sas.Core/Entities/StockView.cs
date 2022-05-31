@@ -30,18 +30,13 @@ namespace Pl.Sas.Core.Entities
         #region Macroeconomic
         /// <summary>
         /// Điểm đánh giá trạng thái kinh tế vĩ mô với thị trường chứng khoán, dưới đây liệt kê các vấn đề tác động.
-        /// <para>- Dịch bệnh</para>
-        /// <para>- Thiên tai</para>
-        /// <para>- Chiến tranh</para>
-        /// <para>- Sự hỗ trợ của thể chế</para>
-        /// <para>- Tâm lý nhà đầu tư</para>
-        /// <para>- Các chỉ số vĩ mô</para>
-        /// <para>- Đánh giá su thế ngành</para>
+        /// <para>- Trạng thái thị trường</para>
+        /// <para>- Dòng tiền theo ngành</para>
         /// </summary>
         public int MacroeconomicsScore { get; set; }
 
         /// <summary>
-        /// Điểm mã ngành tổng hợp của mã ngành đánh giá và mã ngành phân tích tự động.
+        /// Điểm dòng tiền theo ngành
         /// </summary>
         public int IndustryRank { get; set; }
         #endregion

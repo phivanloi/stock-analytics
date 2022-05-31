@@ -137,11 +137,15 @@ namespace Pl.Sas.Infrastructure.Data
             });
         }
 
-        public virtual async Task<IEnumerable<Stock>> FindAllAsync()
+        public virtual async Task<IEnumerable<Stock>> FindAllAsync(string? type = "s")
         {
-            var query = "SELECT * FROM Stocks WHERE [Type] = 's'";
+            var query = "SELECT * FROM Stocks";
+            if (!string.IsNullOrEmpty(type))
+            {
+                query += " WHERE [Type] = @type";
+            }
             using SqlConnection connection = new(_connectionStrings.MarketConnection);
-            return await connection.QueryAsync<Stock>(query);
+            return await connection.QueryAsync<Stock>(query, new { type });
         }
 
         public virtual async Task<Stock> GetByCodeAsync(string symbol)

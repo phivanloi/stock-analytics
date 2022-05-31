@@ -71,16 +71,6 @@
             </div>
         </div>
         <div class="col-sm-2">
-            <div class="form-group">
-                <select id="principle" onchange="LoadMarket()" class="form-control seach-control">
-                    <option selected="selected" value="0">Thử nghiệm</option>
-                    <option value="1">Macd trading</option>
-                    <option value="2">Tích sản khi giá rẻ</option>
-                    <option value="3">Mua và nắm giữ</option>
-                </select>
-            </div>
-        </div>
-        <div class="col-sm-2">
             <div class="input-group">
                 <input type="text" class="form-control seach-control" id="code" placeholder="Mã">
                 <div class="input-group-append">
@@ -89,7 +79,7 @@
             </div>
         </div>
     </div>
-    <table class="table table-bordered table-hover">
+    <table class="table table-bordered table-hover market">
         <thead>
             <tr style="text-align:center; color:#fff">
                 <td rowspan="2" title="Tên doanh nghiệp - lĩnh vực hoạt động" id="number-row">Mã</td>
@@ -146,13 +136,48 @@
 @section Scripts{
 <script>
     $(function () {
-        LoadMarket();
+        const srConnection = new signalR.HubConnectionBuilder().withUrl("/stockrealtime").withAutomaticReconnect().build();
+        srConnection.on("UpdateStockView", () => { LoadMarket(); });
+        srConnection.on("UpdateRealtimeView", (jsonData) => {
+            var obj = JSON.parse(jsonData);
+            setContent('#' + obj.smb + ' .c-epp', obj.cepp);
+            setContent('#' + obj.smb + ' .c-epp', obj.cepp);
+            setContent('#' + obj.smb + ' .c-eap', obj.ceap);
+            setContent('#' + obj.smb + ' .c-mpp', obj.cmpp);
+            setContent('#' + obj.smb + ' .c-map', obj.cmap);
+            setContent('#' + obj.smb + ' .c-app', obj.capp);
+            setContent('#' + obj.smb + ' .c-aap', obj.caap);
+            setContent('#' + obj.smb + ' .c-bpp', obj.cbpp);
+            setContent('#' + obj.smb + ' .c-bap', obj.cbap);
+            setContent('#' + obj.smb + ' .c-lcp', obj.clcp);
+        });
+
+        async function srStartListen() {
+            try {
+                await srConnection.start();
+                console.log("Realtime stock connected.");
+            } catch (err) {
+                console.log(err);
+                setTimeout(srStartListen, 5000);
+            }
+        };
+        srConnection.onclose(async () => { await start(); });
+        srStartListen();
+
+        function setContent(selecter, value){
+            $(selecter).text(value);
+            $(selecter).addClass('c-dtac');
+            setTimeout(function () {
+                $(selecter).removeClass('c-dtac');
+            }, 800);
+        }
 
         $('#code').keypress(function (e) {
             if (e.which == 13) {
                 LoadMarket();
             }
         });
+        LoadMarket();
     });
 
     function LoadMarket() {

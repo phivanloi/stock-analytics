@@ -164,17 +164,17 @@ namespace Pl.Sas.Core.Trading
             return 0;
         }
 
-        public static float CalculateOptimalBuyPrice(List<ChartPrice> chartPrices, float openPriceToday)
+        public static float CalculateOptimalBuyPrice(List<ChartPrice> chartPrices, float price)
         {
             var percent = chartPrices.OrderByDescending(q => q.TradingDate).Take(30).Select(q => Math.Abs(q.ClosePrice.GetPercent(q.HighestPrice))).Average() / 100;
-            var buyPrice = openPriceToday - (openPriceToday * percent);
+            var buyPrice = price - (price * percent);
             return (float)Math.Round((decimal)buyPrice, 2);
         }
 
-        public static float CalculateOptimalSellPrice(List<ChartPrice> chartPrices, float openPriceToday)
+        public static float CalculateOptimalSellPrice(List<ChartPrice> chartPrices, float price)
         {
             var percent = chartPrices.OrderByDescending(q => q.TradingDate).Take(30).Select(q => Math.Abs(q.ClosePrice.GetPercent(q.LowestPrice))).Average() / 100;
-            var buyPrice = openPriceToday + (openPriceToday * percent);
+            var buyPrice = price + (price * percent);
             return (float)Math.Round((decimal)buyPrice, 2);
         }
 

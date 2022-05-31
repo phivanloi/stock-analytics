@@ -271,7 +271,7 @@ namespace Pl.Sas.Core.Services
 
         public virtual async Task InitialAsync()
         {
-            var stocks = await _stockData.FindAllAsync();
+            var stocks = await _stockData.FindAllAsync("s");
             foreach (var stock in stocks)
             {
                 var cacheKey = $"{Constants.StockViewCachePrefix}-SM-{stock.Symbol}";
