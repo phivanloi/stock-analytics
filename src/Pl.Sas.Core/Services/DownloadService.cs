@@ -173,36 +173,30 @@ namespace Pl.Sas.Core.Services
         {
             var symbol = schedule.DataKey ?? throw new Exception($"Schedule Null DataKey, di: {schedule.Id}, type: {schedule.Type}");
             var chartPrices = new List<ChartPrice>();
-            try
-            {
-                var vndChartPrices = await _downloadData.DownloadVndChartPricesRealTimeAsync(symbol, "D");
-                if (vndChartPrices is not null && vndChartPrices.Time?.Length > 0)
-                {
-                    for (int i = 0; i < vndChartPrices.Time.Length; i++)
-                    {
-                        var tradingDate = DateTimeOffset.FromUnixTimeSeconds(vndChartPrices.Time[i]).Date;
-                        if (!chartPrices.Any(q => q.TradingDate == tradingDate))
-                        {
-                            chartPrices.Add(new()
-                            {
-                                Symbol = schedule.DataKey,
-                                TradingDate = tradingDate,
-                                ClosePrice = vndChartPrices.Close[i],
-                                OpenPrice = vndChartPrices.Open[i],
-                                HighestPrice = vndChartPrices.Highest[i],
-                                LowestPrice = vndChartPrices.Lowest[i],
-                                TotalMatchVol = vndChartPrices.Volumes[i],
-                                Type = "D"
-                            });
-                        }
-                    }
-                    vndChartPrices = null;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "UpdateChartPricesRealtimeAsync is error.");
-            }
+
+            //var vndChartPrices = await _downloadData.DownloadVndChartPricesRealTimeAsync(symbol, "D");
+            //if (vndChartPrices is not null && vndChartPrices.Time?.Length > 0)
+            //{
+            //    for (int i = 0; i < vndChartPrices.Time.Length; i++)
+            //    {
+            //        var tradingDate = DateTimeOffset.FromUnixTimeSeconds(vndChartPrices.Time[i]).Date;
+            //        if (!chartPrices.Any(q => q.TradingDate == tradingDate))
+            //        {
+            //            chartPrices.Add(new()
+            //            {
+            //                Symbol = schedule.DataKey,
+            //                TradingDate = tradingDate,
+            //                ClosePrice = vndChartPrices.Close[i],
+            //                OpenPrice = vndChartPrices.Open[i],
+            //                HighestPrice = vndChartPrices.Highest[i],
+            //                LowestPrice = vndChartPrices.Lowest[i],
+            //                TotalMatchVol = vndChartPrices.Volumes[i],
+            //                Type = "D"
+            //            });
+            //        }
+            //    }
+            //    vndChartPrices = null;
+            //}
 
             if (chartPrices.Count <= 0)
             {
@@ -241,7 +235,7 @@ namespace Pl.Sas.Core.Services
                         {"ChartPrices", JsonSerializer.Serialize(chartPrices) }
                     }
                 });
-                _logger.LogWarning("PublishRealtimeTask {symbol}:", symbol);
+                _logger.LogWarning("PublishRealtimeTask {symbol}", symbol);
                 chartPrices = null;
             }
             else
