@@ -17,27 +17,25 @@ namespace Pl.Sas.Core.Trading
             var numberChangeDay = 10;
             var tradingHistory = new List<ChartPrice>();
             float? lastBuyPrice = null;
-            ChartPrice? previousChart = null;
 
             foreach (var day in chartPrices)
             {
-                if (previousChart is null)
+                if (tradingHistory.Count <= 0)
                 {
                     tradingCase.AssetPosition = "100% T";
                     tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản:{tradingCase.Profit(day.ClosePrice):0,0}, không giao dịch ngày đầu tiên");
-                    previousChart = day;
                     tradingHistory.Add(day);
                     continue;
                 }
 
                 tradingCase.IsBuy = false;
                 tradingCase.IsSell = false;
-                tradingCase.BuyPrice = CalculateOptimalBuyPrice(tradingHistory, previousChart.ClosePrice);
-                tradingCase.SellPrice = CalculateOptimalSellPrice(tradingHistory, previousChart.ClosePrice);
+                tradingCase.BuyPrice = day.ClosePrice;//CalculateOptimalBuyPrice(tradingHistory, tradingHistory[^1].ClosePrice);
+                tradingCase.SellPrice = day.ClosePrice; //CalculateOptimalSellPrice(tradingHistory, tradingHistory[^1].ClosePrice);
 
                 if (lastBuyPrice is null)
                 {
-                    tradingCase.IsBuy = BuyCondition(previousChart.TradingDate) > 0;
+                    tradingCase.IsBuy = BuyCondition(day.TradingDate) > 0;
                     if (tradingCase.IsBuy)
                     {
                         if (tradingCase.BuyPrice <= day.LowestPrice)
@@ -63,7 +61,7 @@ namespace Pl.Sas.Core.Trading
                 {
                     if (numberChangeDay > 2)
                     {
-                        tradingCase.IsSell = SellCondition(previousChart.TradingDate) > 0;
+                        tradingCase.IsSell = SellCondition(day.TradingDate) > 0;
                         if (tradingCase.IsSell)
                         {
                             if (tradingCase.SellPrice >= day.HighestPrice)
@@ -93,22 +91,21 @@ namespace Pl.Sas.Core.Trading
                     }
                 }
 
-                previousChart = day;
                 numberChangeDay++;
                 tradingHistory.Add(day);
             }
 
             tradingCase.IsBuy = false;
             tradingCase.IsSell = false;
-            tradingCase.BuyPrice = CalculateOptimalBuyPrice(tradingHistory, tradingHistory[^1].ClosePrice);
-            tradingCase.SellPrice = CalculateOptimalSellPrice(tradingHistory, tradingHistory[^1].ClosePrice);
+            tradingCase.BuyPrice = 0;
+            tradingCase.SellPrice = 0;
 
             if (tradingCase.NumberStock > 0)
             {
                 tradingCase.IsSell = SellCondition(tradingHistory[^1].TradingDate) > 0;
                 if (tradingCase.IsSell)
                 {
-                    tradingCase.AssetPosition = $"S: {tradingCase.SellPrice:0,0.00}";
+                    tradingCase.AssetPosition = $"S: ATC";
                 }
                 else
                 {
@@ -120,7 +117,7 @@ namespace Pl.Sas.Core.Trading
                 tradingCase.IsBuy = BuyCondition(tradingHistory[^1].TradingDate) > 0;
                 if (tradingCase.IsBuy)
                 {
-                    tradingCase.AssetPosition = $"B: {tradingCase.BuyPrice:0,0.00}";
+                    tradingCase.AssetPosition = $"B: ATC";
                 }
                 else
                 {
@@ -166,14 +163,14 @@ namespace Pl.Sas.Core.Trading
 
         public static float CalculateOptimalBuyPrice(List<ChartPrice> chartPrices, float price)
         {
-            var percent = chartPrices.OrderByDescending(q => q.TradingDate).Take(30).Select(q => Math.Abs(q.ClosePrice.GetPercent(q.HighestPrice))).Average() / 100;
+            var percent = chartPrices.OrderByDescending(q => q.TradingDate).Take(10).Select(q => Math.Abs(q.ClosePrice.GetPercent(q.HighestPrice))).Average() / 100;
             var buyPrice = price - (price * percent);
             return (float)Math.Round((decimal)buyPrice, 2);
         }
 
         public static float CalculateOptimalSellPrice(List<ChartPrice> chartPrices, float price)
         {
-            var percent = chartPrices.OrderByDescending(q => q.TradingDate).Take(30).Select(q => Math.Abs(q.ClosePrice.GetPercent(q.LowestPrice))).Average() / 100;
+            var percent = chartPrices.OrderByDescending(q => q.TradingDate).Take(10).Select(q => Math.Abs(q.ClosePrice.GetPercent(q.LowestPrice))).Average() / 100;
             var buyPrice = price + (price * percent);
             return (float)Math.Round((decimal)buyPrice, 2);
         }
