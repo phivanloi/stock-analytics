@@ -526,8 +526,13 @@ namespace Pl.Sas.Core.Services
             }
 
             var tradingHistories = chartPrices.Where(q => q.TradingDate >= Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
-            var listTradingResult = new List<TradingResult>();
+            if (tradingHistories.Count <= 0)
+            {
+                _logger.LogWarning("TestTradingAnalyticsAsync => tradingHistories is null for {symbol}", symbol);
+                return await _keyValueData.SetAsync(checkingKey, false);
+            }
 
+            var listTradingResult = new List<TradingResult>();
             #region Buy and wait
             var startPrice = tradingHistories[0].ClosePrice;
             var endPrice = tradingHistories[^1].ClosePrice;

@@ -172,7 +172,7 @@ namespace Pl.Sas.Core.Services
                 Profit = (100000000 / startPrice) * endPrice,
                 TotalTax = 0,
                 TradingNotes = null,
-                AssetPosition = "100% cổ phiếu",
+                AssetPosition = "100% C",
                 LoseNumber = startPrice <= endPrice ? 1 : 0,
                 WinNumber = startPrice > endPrice ? 1 : 0,
             });
