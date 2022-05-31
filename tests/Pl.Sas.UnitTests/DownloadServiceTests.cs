@@ -101,9 +101,9 @@ namespace Pl.Sas.UnitTests
 
             await downloadService.UpdateChartPricesRealtimeAsync(new()
             {
-                Name = $"Tải dữ liệu chỉ số: VNINDEX",
+                Name = $"Tải dữ liệu chỉ số: HID ",
                 Type = 14,
-                DataKey = "FPT",
+                DataKey = "HID",
                 ActiveTime = DateTime.Now
             });
             Assert.True(1 == 1);
