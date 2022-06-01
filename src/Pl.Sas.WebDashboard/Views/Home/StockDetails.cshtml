@@ -75,11 +75,11 @@
                                 <thead>
                                     <tr class="text-center">
                                         <th>Ngày</th>
-                                        <th title="Giá đóng cửa(% thay đổi)">Đóng cửa</th>
-                                        <th title="Giá đóng cửa điều chỉnh">ĐC ĐC</th>
                                         <th title="Giá mở cửa">Mở</th>
                                         <th title="Giá cao nhất và % so với giá mở cửa">Cao</th>
                                         <th title="Giá thấp nhất và % so với giá mở cửa">Thấp</th>
+                                        <th title="Giá đóng cửa(% thay đổi)">Đóng</th>
+                                        <th title="Giá đóng cửa điều chỉnh">Đóng ĐC</th>
                                         <th title="Giá trần">Trần</th>
                                         <th title="Giá sàn">Sàn</th>
                                         <th title="Khối lượng khớp lệnh">KL KL</th>
@@ -98,11 +98,11 @@
                                         }
                                         <tr>
                                             <td>@Model.StockPrices[i].TradingDate.ToString("dd-MM-yy")</td>
-                                            <td class="text-right @Model.StockPrices[i].ClosePrice.GetTextColorCss(Model.StockPrices[i + 1].ClosePrice)">@Model.StockPrices[i].ClosePrice.ShowPrice() (@Model.StockPrices[i].ClosePrice.GetPercent(Model.StockPrices[i + 1].ClosePrice).ShowPercent()%)</td>
-                                            <td class="text-right @Model.StockPrices[i].ClosePriceAdjusted.GetTextColorCss(Model.StockPrices[i + 1].ClosePriceAdjusted)">@Model.StockPrices[i].ClosePriceAdjusted.ShowPrice() (@Model.StockPrices[i].ClosePriceAdjusted.GetPercent(Model.StockPrices[i + 1].ClosePriceAdjusted).ShowPercent()%)</td>
                                             <td class="text-right">@Model.StockPrices[i].OpenPrice.ShowPrice()</td>
                                             <td class="text-right">@Model.StockPrices[i].HighestPrice.ShowPrice() (@Model.StockPrices[i].HighestPrice.GetPercent(Model.StockPrices[i].OpenPrice).ShowPercent()%)</td>
                                             <td class="text-right">@Model.StockPrices[i].LowestPrice.ShowPrice() (@Model.StockPrices[i].LowestPrice.GetPercent(Model.StockPrices[i].OpenPrice).ShowPercent()%)</td>
+                                            <td class="text-right @Model.StockPrices[i].ClosePrice.GetTextColorCss(Model.StockPrices[i + 1].ClosePrice)">@Model.StockPrices[i].ClosePrice.ShowPrice() (@Model.StockPrices[i].ClosePrice.GetPercent(Model.StockPrices[i + 1].ClosePrice).ShowPercent()%)</td>
+                                            <td class="text-right @Model.StockPrices[i].ClosePriceAdjusted.GetTextColorCss(Model.StockPrices[i + 1].ClosePriceAdjusted)">@Model.StockPrices[i].ClosePriceAdjusted.ShowPrice() (@Model.StockPrices[i].ClosePriceAdjusted.GetPercent(Model.StockPrices[i + 1].ClosePriceAdjusted).ShowPercent()%)</td>
                                             <td class="text-right">@Model.StockPrices[i].CeilingPrice.ShowPrice()</td>
                                             <td class="text-right">@Model.StockPrices[i].FloorPrice.ShowPrice()</td>
                                             <td class="text-right">@Model.StockPrices[i].TotalMatchVol.ShowMoney(1)</td>

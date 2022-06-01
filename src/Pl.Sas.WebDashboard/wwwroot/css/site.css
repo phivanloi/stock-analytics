@@ -190,9 +190,15 @@ t-wn {
 t-i {
     color: #17a2b8 !important
 }
+
 .market td {
     transition: all 1s ease;
 }
-.c-dtac{
-    background-color:#dadada5a
+
+.c-dtac {
+    background-color: #dadada5a
+}
+
+.modal-lg, .modal-xl {
+    max-width: 95% !important;
 }
