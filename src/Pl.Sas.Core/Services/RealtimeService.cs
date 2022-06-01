@@ -112,8 +112,8 @@ namespace Pl.Sas.Core.Services
 
             var listTradingResult = new List<TradingResult>();
             #region Experiment Trading
-            ExperimentTrading.LoadIndicatorSet(chartPrices);
-            var experCase = ExperimentTrading.Trading(tradingHistories, false);
+            Macd12_26_9.LoadIndicatorSet(chartPrices);
+            var experCase = Macd12_26_9.Trading(tradingHistories, false);
             listTradingResult.Add(new()
             {
                 Symbol = symbol,
@@ -131,7 +131,7 @@ namespace Pl.Sas.Core.Services
                 WinNumber = experCase.WinNumber,
             });
             experCase = null;
-            ExperimentTrading.Dispose();
+            Macd12_26_9.Dispose();
             #endregion
 
             #region Main Trading

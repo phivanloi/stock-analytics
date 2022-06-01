@@ -6,15 +6,16 @@ namespace Pl.Sas.Core.Trading
     /// <summary>
     /// Trading thử nghiệm
     /// </summary>
-    public class ExperimentTrading : BaseTrading
+    public class Macd12_26_9 : BaseTrading
     {
         private static List<MacdResult> _macd_12_26_9 = new();
         private static TradingCase tradingCase = new();
 
-        public static TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, bool isNoteTrading = true)
+        public static TradingCase Trading(List<ChartPrice> chartPrices, bool isNoteTrading = true)
         {
             tradingCase.IsNote = isNoteTrading;
             var numberChangeDay = 10;
+            var tradingHistory = new List<ChartPrice>();
             float? lastBuyPrice = null;
 
             foreach (var day in chartPrices)
@@ -26,12 +27,11 @@ namespace Pl.Sas.Core.Trading
                     tradingHistory.Add(day);
                     continue;
                 }
-                LoadIndicatorSet(tradingHistory, day);
 
                 tradingCase.IsBuy = false;
                 tradingCase.IsSell = false;
-                tradingCase.BuyPrice = CalculateOptimalBuyPrice(tradingHistory, day.OpenPrice);
-                tradingCase.SellPrice = CalculateOptimalSellPrice(tradingHistory, day.OpenPrice);
+                tradingCase.BuyPrice = day.ClosePrice;
+                tradingCase.SellPrice = day.ClosePrice;
 
                 if (lastBuyPrice is null)
                 {
@@ -95,6 +95,36 @@ namespace Pl.Sas.Core.Trading
                 tradingHistory.Add(day);
             }
 
+            tradingCase.IsBuy = false;
+            tradingCase.IsSell = false;
+            tradingCase.BuyPrice = 0;
+            tradingCase.SellPrice = 0;
+
+            if (tradingCase.NumberStock > 0)
+            {
+                tradingCase.IsSell = SellCondition(tradingHistory[^1].TradingDate) > 0;
+                if (tradingCase.IsSell)
+                {
+                    tradingCase.AssetPosition = $"S: ATC";
+                }
+                else
+                {
+                    tradingCase.AssetPosition = "100% C";
+                }
+            }
+            else
+            {
+                tradingCase.IsBuy = BuyCondition(tradingHistory[^1].TradingDate) > 0;
+                if (tradingCase.IsBuy)
+                {
+                    tradingCase.AssetPosition = $"B: ATC";
+                }
+                else
+                {
+                    tradingCase.AssetPosition = "100% T";
+                }
+            }
+
             _macd_12_26_9 = new List<MacdResult>();
             return tradingCase;
         }
@@ -131,21 +161,7 @@ namespace Pl.Sas.Core.Trading
             return 0;
         }
 
-        public static float CalculateOptimalBuyPrice(List<ChartPrice> chartPrices, float rootPrice)
-        {
-            var percent = chartPrices.OrderByDescending(q => q.TradingDate).Take(30).Select(q => Math.Abs(q.OpenPrice.GetPercent(q.HighestPrice))).Average() / 100;
-            var buyPrice = rootPrice - (rootPrice * 0.03);
-            return (float)Math.Round((decimal)buyPrice, 2);
-        }
-
-        public static float CalculateOptimalSellPrice(List<ChartPrice> chartPrices, float rootPrice)
-        {
-            var percent = chartPrices.OrderByDescending(q => q.TradingDate).Take(30).Select(q => Math.Abs(q.OpenPrice.GetPercent(q.LowestPrice))).Average() / 100;
-            var buyPrice = rootPrice + (rootPrice * 0.03);
-            return (float)Math.Round((decimal)buyPrice, 2);
-        }
-
-        public static void LoadIndicatorSet(List<ChartPrice> chartPrices, ChartPrice today)
+        public static void LoadIndicatorSet(List<ChartPrice> chartPrices)
         {
             var quotes = chartPrices.Select(q => new Quote()
             {
@@ -155,20 +171,7 @@ namespace Pl.Sas.Core.Trading
                 Low = (decimal)q.LowestPrice,
                 Volume = (decimal)q.TotalMatchVol,
                 Date = q.TradingDate
-            }).ToList();
-            if (!quotes.Any(q => q.Date == today.TradingDate))
-            {
-                quotes.Add(new Quote()
-                {
-                    Close = (decimal)today.OpenPrice,
-                    Open = (decimal)today.OpenPrice,
-                    High = (decimal)today.HighestPrice,
-                    Low = (decimal)today.LowestPrice,
-                    Volume = (decimal)today.TotalMatchVol,
-                    Date = today.TradingDate
-                });
-            }
-            quotes = quotes.OrderBy(q => q.Date).ToList();
+            }).OrderBy(q => q.Date).ToList();
             _macd_12_26_9 = quotes.GetMacd(12, 26, 9, CandlePart.Close).ToList();
         }
 
