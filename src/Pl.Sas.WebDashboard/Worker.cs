@@ -10,9 +10,6 @@ using System.Text.Json;
 
 namespace Pl.Sas.WebDashboard
 {
-    /// <summary>
-    /// Thực hiện tạo task từ bảng
-    /// </summary>
     public class Worker : BackgroundService
     {
         private readonly ILogger<Worker> _logger;
