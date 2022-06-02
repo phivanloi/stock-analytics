@@ -25,13 +25,14 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 Console.OutputEncoding = Encoding.UTF8;
                 DateTime fromDate = new(2020, 1, 1);
                 DateTime toDate = new(2019, 10, 1);
-                var symbol = "SSI";
+                var symbol = "VIX";
                 var chartPrices = (await _chartPriceData.FindAllAsync(symbol)).OrderBy(q => q.TradingDate).ToList();
-                var tradingHistories = chartPrices.Where(q => q.TradingDate >= fromDate).OrderBy(q => q.TradingDate).ToList();
-                var startPrice = tradingHistories[0].ClosePrice;
-                var endPrice = tradingHistories[^1].ClosePrice;
-                var tradingCase = ExperimentTrading.Trading(tradingHistories);
-                var lastChartPrice = tradingHistories[^1];
+                var tradingCharts = chartPrices.Where(q => q.TradingDate >= fromDate).OrderBy(q => q.TradingDate).ToList();
+                var tradingHistory = chartPrices.Where(q => q.TradingDate < fromDate).OrderBy(q => q.TradingDate).ToList();
+                var startPrice = tradingCharts[0].ClosePrice;
+                var endPrice = tradingCharts[^1].ClosePrice;
+                var tradingCase = ExperimentTrading.Trading(tradingCharts, tradingHistory);
+                var lastChartPrice = tradingCharts[^1];
                 Console.WriteLine($"Quá trình đầu tư ngắn hạn:");
                 Console.WriteLine($"Bắt đầu--------------------------------");
                 foreach (var note in tradingCase.ExplainNotes)
@@ -46,10 +47,10 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 tradingCase.AssetPosition.WriteConsole();
                 Console.WriteLine();
                 Console.WriteLine($"Với chỉ mua và nắm giữ -------------------------------- {symbol}");
-                $"Thực hiện đầu tư {tradingHistories.Count} phiên: Giá đóng cửa đầu kỳ {tradingHistories[0].TradingDate:dd-MM-yyyy}: {startPrice * 1000:0,0.00} giá đóng cửa cuối kỳ {tradingHistories[^1].TradingDate:dd-MM-yyyy}: {endPrice * 1000:0,0.00} lợi nhuận {endPrice.GetPercent(startPrice):0.00}%.".WriteConsole(endPrice > startPrice ? ConsoleColor.Green : ConsoleColor.Red);
+                $"Thực hiện đầu tư {tradingCharts.Count} phiên: Giá đóng cửa đầu kỳ {tradingCharts[0].TradingDate:dd-MM-yyyy}: {startPrice * 1000:0,0.00} giá đóng cửa cuối kỳ {tradingCharts[^1].TradingDate:dd-MM-yyyy}: {endPrice * 1000:0,0.00} lợi nhuận {endPrice.GetPercent(startPrice):0.00}%.".WriteConsole(endPrice > startPrice ? ConsoleColor.Green : ConsoleColor.Red);
                 Console.WriteLine();
                 chartPrices = null;
-                tradingHistories = null;
+                tradingCharts = null;
                 tradingCase = null;
                 ExperimentTrading.Dispose();
             }

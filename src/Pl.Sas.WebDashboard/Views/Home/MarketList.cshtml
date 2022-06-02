@@ -6,7 +6,7 @@
 {
     var view = Model.StockViews[i];
     <tr id="@view.Symbol">
-        <td class="s-c t-w" fo="@(Model.UserFollowSymbols.Contains(view.Symbol) ? "1" : "0")" title="@view.Description">@view.Symbol</td>
+        <td class="s-c t-w t-c" fo="@(Model.UserFollowSymbols.Contains(view.Symbol) ? "1" : "0")" title="@view.Description">@view.Symbol</td>
 
         <td class="t-r @view.MacroeconomicsScore.GetTextColorCss(0)">@view.MacroeconomicsScore.ToString("0")</td>
         <td class="t-r @view.IndustryRank.GetTextColorCss(0)">@view.IndustryRank.ToString("0")</td>
@@ -15,10 +15,12 @@
         <td class="t-r">@view.Eps.ShowMoney(1)</td>
         <td class="t-r">@view.Pe.ShowPercent()</td>
         <td class="t-r">@view.Pb.ShowPercent()</td>
-
         <td class="t-r @view.CompanyGrowthScore.GetRangeTextColorCss(0, 15)">@view.CompanyGrowthScore.ToString("0")</td>
         <td class="t-r @view.YearlyRevenueGrowthPercent.GetTextColorCss(Model.BankInterestRate12)">@view.YearlyRevenueGrowthPercent.ShowPercent()</td>
         <td class="t-r @view.YearlyProfitGrowthPercent.GetTextColorCss(Model.BankInterestRate12)">@view.YearlyProfitGrowthPercent.ShowPercent()</td>
+        <td class="t-r @view.FiinScore.GetTextColorCss()">@view.FiinScore.ToString("0")</td>
+        <td class="t-r @view.VndScore.GetTextColorCss()">@view.VndScore.ToString("0")</td>
+        <td class="t-r @view.TargetPrice.GetTextColorCss(view.LastClosePrice / 1000)">@view.TargetPrice.ShowPriceZezoToNull(1)</td>
 
         <td class="t-r @view.StockScore.GetRangeTextColorCss(-2, 1)">@view.StockScore.ToString("0")</td>
         <td class="t-r">@view.Beta.ShowPercent()</td>
@@ -29,18 +31,14 @@
         <td class="t-r @view.PricePercentConvulsion10.GetTextColorCss()">@view.PricePercentConvulsion10.ShowPercent()</td>
         <td class="t-r @view.PricePercentConvulsion30.GetTextColorCss()">@view.PricePercentConvulsion30.ShowPercent()</td>
 
-        <td class="t-r @view.FiinScore.GetTextColorCss()">@view.FiinScore.ToString("0")</td>
-        <td class="t-r @view.VndScore.GetTextColorCss()">@view.VndScore.ToString("0")</td>
-        <td class="t-r @view.TargetPrice.GetTextColorCss(view.LastClosePrice / 1000)">@view.TargetPrice.ShowPriceZezoToNull(1)</td>
-
         <td class="t-r c-epp @view.ExperimentProfitPercent.GetTextColorCss(Model.BankInterestRate12)">@view.ExperimentProfitPercent.ShowPercent()</td>
         <td class="t-r c-mpp @view.MainProfitPercent.GetTextColorCss(Model.BankInterestRate12)">@view.MainProfitPercent.ShowPercent()</td>
-        <td class="t-r c-app @view.AccumulationProfitPercent.GetTextColorCss(Model.BankInterestRate12)">@view.AccumulationProfitPercent.ShowPercent()</td>
+        @*<td class="t-r c-app @view.AccumulationProfitPercent.GetTextColorCss(Model.BankInterestRate12)">@view.AccumulationProfitPercent.ShowPercent()</td>*@
         <td class="t-r c-bpp @view.BuyAndHoldProfitPercent.GetTextColorCss(Model.BankInterestRate12)">@view.BuyAndHoldProfitPercent.ShowPercent()</td>
 
         <td class="t-r c-eap">@view.ExperimentAssetPosition</td>
         <td class="t-r c-map">@view.MainAssetPosition</td>
-        <td class="t-r c-aap">@view.AccumulationAssetPosition</td>
+        @*<td class="t-r c-aap">@view.AccumulationAssetPosition</td>*@
         <td class="t-r c-bap">@view.BuyAndHoldAssetPosition</td>
     </tr>
 }

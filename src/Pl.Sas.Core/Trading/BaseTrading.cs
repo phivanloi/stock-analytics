@@ -5,9 +5,9 @@ namespace Pl.Sas.Core.Trading
 {
     public class BaseTrading
     {
-        protected const float _buyTax = 0.25f / 100;
-        protected const float _sellTax = 0.35f / 100;
-        protected const float _advanceTax = 0.15f / 100;
+        protected const float _buyTax = 0.13f / 100;
+        protected const float _sellTax = 0.23f / 100;
+        protected const float _advanceTax = 0.13f / 100;
         protected const int _batch = 100;
 
         /// <summary>

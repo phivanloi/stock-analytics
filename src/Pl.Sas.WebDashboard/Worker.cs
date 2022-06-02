@@ -60,7 +60,7 @@ namespace Pl.Sas.WebDashboard
                 {
                     case "UpdateStockView":
                         _stockViewService.UpdateChangeStockView(message);
-                        var rateLimit = Policy.RateLimitAsync(20, TimeSpan.FromSeconds(10), 1);
+                        var rateLimit = Policy.RateLimitAsync(1, TimeSpan.FromSeconds(10), 1);
                         await rateLimit.ExecuteAsync(async () => await _stockRealtimeHub.Clients.All.SendAsync("UpdateStockView", cancellationToken));
                         break;
 
