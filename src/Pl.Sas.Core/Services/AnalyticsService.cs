@@ -525,8 +525,9 @@ namespace Pl.Sas.Core.Services
                 return await _keyValueData.SetAsync(checkingKey, false);
             }
 
-            var tradingHistories = chartPrices.Where(q => q.TradingDate >= Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
-            if (tradingHistories.Count <= 0)
+            var chartTrading = chartPrices.Where(q => q.TradingDate >= Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
+            var tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
+            if (chartTrading.Count <= 0)
             {
                 _logger.LogWarning("TestTradingAnalyticsAsync => tradingHistories is null for {symbol}", symbol);
                 return await _keyValueData.SetAsync(checkingKey, false);
@@ -534,17 +535,17 @@ namespace Pl.Sas.Core.Services
 
             var listTradingResult = new List<TradingResult>();
             #region Buy and wait
-            var startPrice = tradingHistories[0].ClosePrice;
-            var endPrice = tradingHistories[^1].ClosePrice;
-            var noteInvestment = $"Mua và nắm giữ {tradingHistories.Count} phiên từ ngày {tradingHistories[0].TradingDate:dd/MM/yyyy}: Giá đóng cửa đầu kỳ {startPrice:0,0} giá đóng cửa cuối kỳ {endPrice:0,0} lợi nhuận {endPrice.GetPercent(startPrice):0.00}%.";
+            var startPrice = chartTrading[0].ClosePrice;
+            var endPrice = chartTrading[^1].ClosePrice;
+            var noteInvestment = $"Mua và nắm giữ {chartTrading.Count} phiên từ ngày {chartTrading[0].TradingDate:dd/MM/yyyy}: Giá đóng cửa đầu kỳ {startPrice:0,0} giá đóng cửa cuối kỳ {endPrice:0,0} lợi nhuận {endPrice.GetPercent(startPrice):0.00}%.";
             var buyAndWaitResult = new TradingResult()
             {
                 Symbol = symbol,
                 Principle = 3,
                 IsBuy = false,
                 IsSell = false,
-                BuyPrice = tradingHistories[^1].ClosePrice,
-                SellPrice = tradingHistories[^1].ClosePrice,
+                BuyPrice = chartTrading[^1].ClosePrice,
+                SellPrice = chartTrading[^1].ClosePrice,
                 FixedCapital = 100000000,
                 Profit = (100000000 / startPrice) * endPrice,
                 TotalTax = 0,
@@ -559,9 +560,9 @@ namespace Pl.Sas.Core.Services
 
             #region Macd Trading
             MacdTrading.LoadIndicatorSet(chartPrices);
-            var macdCase = MacdTrading.Trading(tradingHistories);
-            var macdNote = $"Trading {Utilities.GetPrincipleName(1).ToLower()} {tradingHistories.Count} phiên từ ngày {tradingHistories[0].TradingDate:dd/MM/yyyy}, Lợi nhuận {macdCase.Profit(tradingHistories[^1].ClosePrice):0,0} ({macdCase.ProfitPercent(tradingHistories[^1].ClosePrice):0,0.00}%), thuế {macdCase.TotalTax:0,0}, xem chi tiết tại tab \"Lợi nhuận và đầu tư TN\".";
-            var macdType = macdCase.FixedCapital < macdCase.Profit(tradingHistories[^1].ClosePrice) ? 1 : macdCase.FixedCapital == macdCase.Profit(tradingHistories[^1].ClosePrice) ? 0 : -1;
+            var macdCase = MacdTrading.Trading(chartTrading, tradingHistory);
+            var macdNote = $"Trading {Utilities.GetPrincipleName(1).ToLower()} {chartTrading.Count} phiên từ ngày {chartTrading[0].TradingDate:dd/MM/yyyy}, Lợi nhuận {macdCase.Profit(chartTrading[^1].ClosePrice):0,0} ({macdCase.ProfitPercent(chartTrading[^1].ClosePrice):0,0.00}%), thuế {macdCase.TotalTax:0,0}, xem chi tiết tại tab \"Lợi nhuận và đầu tư TN\".";
+            var macdType = macdCase.FixedCapital < macdCase.Profit(chartTrading[^1].ClosePrice) ? 1 : macdCase.FixedCapital == macdCase.Profit(chartTrading[^1].ClosePrice) ? 0 : -1;
             var macdResult = new TradingResult()
             {
                 Symbol = symbol,
@@ -571,7 +572,7 @@ namespace Pl.Sas.Core.Services
                 BuyPrice = macdCase.BuyPrice,
                 SellPrice = macdCase.SellPrice,
                 FixedCapital = macdCase.FixedCapital,
-                Profit = macdCase.Profit(tradingHistories[^1].ClosePrice),
+                Profit = macdCase.Profit(chartTrading[^1].ClosePrice),
                 TotalTax = macdCase.TotalTax,
                 AssetPosition = macdCase.AssetPosition,
                 LoseNumber = macdCase.LoseNumber,
@@ -584,10 +585,9 @@ namespace Pl.Sas.Core.Services
             #endregion
 
             #region Experiment Trading
-            Macd12_26_9.LoadIndicatorSet(chartPrices);
-            var experCase = Macd12_26_9.Trading(tradingHistories);
-            var experNote = $"Trading {Utilities.GetPrincipleName(0).ToLower()} {tradingHistories.Count} phiên từ ngày {tradingHistories[0].TradingDate:dd/MM/yyyy}, Lợi nhuận {experCase.Profit(tradingHistories[^1].ClosePrice):0,0} ({experCase.ProfitPercent(tradingHistories[^1].ClosePrice):0,0.00}%), thuế {experCase.TotalTax:0,0}, xem chi tiết tại tab \"Lợi nhuận và đầu tư TN\".";
-            var experType = experCase.FixedCapital < experCase.Profit(tradingHistories[^1].ClosePrice) ? 1 : experCase.FixedCapital == experCase.Profit(tradingHistories[^1].ClosePrice) ? 0 : -1;
+            var experCase = ExperimentTrading.Trading(chartTrading, tradingHistory);
+            var experNote = $"Trading {Utilities.GetPrincipleName(0).ToLower()} {chartTrading.Count} phiên từ ngày {chartTrading[0].TradingDate:dd/MM/yyyy}, Lợi nhuận {experCase.Profit(chartTrading[^1].ClosePrice):0,0} ({experCase.ProfitPercent(chartTrading[^1].ClosePrice):0,0.00}%), thuế {experCase.TotalTax:0,0}, xem chi tiết tại tab \"Lợi nhuận và đầu tư TN\".";
+            var experType = experCase.FixedCapital < experCase.Profit(chartTrading[^1].ClosePrice) ? 1 : experCase.FixedCapital == experCase.Profit(chartTrading[^1].ClosePrice) ? 0 : -1;
             var experResult = new TradingResult()
             {
                 Symbol = symbol,
@@ -597,7 +597,7 @@ namespace Pl.Sas.Core.Services
                 BuyPrice = experCase.BuyPrice,
                 SellPrice = experCase.SellPrice,
                 FixedCapital = experCase.FixedCapital,
-                Profit = experCase.Profit(tradingHistories[^1].ClosePrice),
+                Profit = experCase.Profit(chartTrading[^1].ClosePrice),
                 TotalTax = experCase.TotalTax,
                 AssetPosition = experCase.AssetPosition,
                 LoseNumber = experCase.LoseNumber,
@@ -606,7 +606,7 @@ namespace Pl.Sas.Core.Services
             };
             listTradingResult.Add(experResult);
             await _tradingResultData.SaveTestTradingResultAsync(experResult);
-            Macd12_26_9.Dispose();
+            ExperimentTrading.Dispose();
             #endregion
 
             buyAndWaitResult = null;
@@ -614,7 +614,7 @@ namespace Pl.Sas.Core.Services
             experResult = null;
             listTradingResult = null;
             chartPrices = null;
-            tradingHistories = null;
+            chartTrading = null;
             stock = null;
             return await _keyValueData.SetAsync(checkingKey, true);
         }
@@ -640,7 +640,7 @@ namespace Pl.Sas.Core.Services
             var score = 0;
             var marketSentimentNotes = new List<AnalyticsNote>();
             score += MarketAnalyticsService.IndexValueTrend(marketSentimentNotes, indexPrices, indicatorSet);
-            
+
             await _keyValueData.SetAsync(key, score);
         }
 
