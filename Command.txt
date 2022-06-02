@@ -122,3 +122,11 @@
 		database_id = DB_ID()
 	GROUP BY 
 		database_id
+
+	Xóa các bản ghi chùng
+	WITH CTE AS(
+	SELECT Symbol,
+		   RN = ROW_NUMBER()OVER(PARTITION BY Symbol ORDER BY Symbol)
+	   FROM Stocks where [Type] = 's'
+	)
+	DELETE FROM CTE WHERE RN > 1

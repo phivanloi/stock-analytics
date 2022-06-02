@@ -70,7 +70,7 @@
                 </select>
             </div>
         </div>
-        <div class="col-sm-2">
+        <div class="col-sm-4">
             <div class="input-group">
                 <input type="text" class="form-control seach-control" id="code" placeholder="Mã">
                 <div class="input-group-append">
@@ -83,12 +83,10 @@
         <thead>
             <tr style="text-align:center; color:#fff">
                 <td rowspan="2" title="Tên doanh nghiệp - lĩnh vực hoạt động" id="number-row">Mã</td>
-                <td colspan="2" title="Phân tích các yếu tố vĩ mô tác động vào cổ phiếu">Vĩ mô</td>
-                <td colspan="4" title="Điểm đánh giá doanh nghiệp và các chỉ số tài chính hiện tại của doanh nghiệp">Giá trị DN</td>
-                <td colspan="3" title="Điểm đánh giá tốc độ tăng trưởng của doanh nghiệp">Tăng trưởng DN</td>
-                <td colspan="8" title="Điểm đánh giá tăng trưởng thị giá và phân tích kỹ thuật">Kỹ thuật và % Tăng trưởng thị giá</td>
-                <td colspan="3" title="Đánh giá về cổ phiếu của các đơn vị khác">Đánh giá khác</td>
-                <td colspan="8" title="Kết quả các phương pháp khi cho đầu tư từ @Pl.Sas.Core.Constants.StartTime.ToString("dd/MM/yyyy") và đánh giá mua/bán">Thử nghiệm và đánh giá</td>
+                <td colspan="2" title="Phân tích các yếu tố vĩ mô tác động vào cổ phiếu">Dòng tiền</td>
+                <td colspan="10" title="Điểm đánh giá doanh nghiệp và các chỉ số tài chính hiện tại của doanh nghiệp">Doanh nghiệp</td>
+                <td colspan="8" title="Điểm đánh giá tăng trưởng thị giá và phân tích kỹ thuật">Kỹ thuật</td>
+                <td colspan="6" title="Kết quả các phương pháp khi cho đầu tư từ @Pl.Sas.Core.Constants.StartTime.ToString("dd/MM/yyyy") và đánh giá mua/bán">Khuyến nghị</td>
             </tr>
             <tr style="text-align:center; color:#fff">
                 <td title="Tổng điểm đánh giá vĩ mô">TH</td>
@@ -98,10 +96,12 @@
                 <td title="Chỉ số EPS, EPS = (LNST-cổ tức của cổ phiếu ưu đãi) / (KLCP lưu hành bình quân trong kỳ)">EPS</td>
                 <td title="Chỉ số P/E, P/E = giá cổ phiếu / EPS">P/E</td>
                 <td title="Chỉ số P/B, Giá cổ phiếu / (Book value / số lượng cổ phiếu đang lưu hành bình quân)">P/B</td>
-
                 <td title="Tổng hợp điểm đánh giá tăng trưởng doanh nghiệp">TH</td>
                 <td title="% tăng trưởng doanh thu trung bình 4 năm">%DT</td>
                 <td title="% tăng trưởng lợi nhuận trung bình 4 năm">%LN</td>
+                <td title="Đánh giá của fiintrading">FIIN</td>
+                <td title="Đánh giá của vndirect">VND</td>
+                <td title="Giá dự phóng của các công ty chứng khoán">Giá DP</td>
 
                 <td title="Tổng điểm đánh giá tăng trưởng giá">TH</td>
                 <td title="Chỉ số beta">Beta</td>
@@ -112,17 +112,13 @@
                 <td title="% biến động giá trong 10 phiên">10P</td>
                 <td title="% biến động giá trong 30 phiên">30P</td>
 
-                <td title="Đánh giá của fiintrading">FIIN</td>
-                <td title="Đánh giá của vndirect">VND</td>
-                <td title="Giá dự phóng của các công ty chứng khoán">Giá DP</td>
-
                 <td title="% Lợi nhuận của phương pháp thử nghiệm">TN</td>
                 <td title="% Lợi nhuận của phương pháp chính">CH</td>
-                <td title="% Lợi nhuận của phương pháp tích sản">TS</td>
+                @*<td title="% Lợi nhuận của phương pháp tích sản">TS</td>*@
                 <td title="% Lợi nhuận của phương pháp mua và nắm giữ">MG</td>
                 <td title="Trạng thái tài sản của phương pháp thử nghiệm">ĐG TN</td>
                 <td title="Trạng thái tài sản của phương pháp chính">ĐG CH</td>
-                <td title="Trạng thái tài sản của phương pháp tích sản">DG TS</td>
+                @*<td title="Trạng thái tài sản của phương pháp tích sản">DG TS</td>*@
                 <td title="Trạng thái tài sản của phương pháp mua và nắm giữ" ">DG MG</td>
             </tr>
         </thead>
@@ -145,10 +141,10 @@
             setContent('#' + obj.smb + ' .c-eap', obj.ceap);
             setContent('#' + obj.smb + ' .c-mpp', obj.cmpp);
             setContent('#' + obj.smb + ' .c-map', obj.cmap);
-            setContent('#' + obj.smb + ' .c-app', obj.capp);
+            //setContent('#' + obj.smb + ' .c-app', obj.capp);
             setContent('#' + obj.smb + ' .c-aap', obj.caap);
             setContent('#' + obj.smb + ' .c-bpp', obj.cbpp);
-            setContent('#' + obj.smb + ' .c-bap', obj.cbap);
+            //setContent('#' + obj.smb + ' .c-bap', obj.cbap);
             setContent('#' + obj.smb + ' .c-lcp', obj.clcp);
         });
 
@@ -182,7 +178,7 @@
 
     function LoadMarket() {
         var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        $('#user-invest-table-body').html('<tr><td colspan="29" class="text-center"><p class="fas fa-sync-alt fa-spin"></p></td></tr>');
+        $('#user-invest-table-body').html('<tr><td colspan="27" class="text-center"><p class="fas fa-sync-alt fa-spin"></p></td></tr>');
         $('#number-row').html('Mã');
         var postData = JSON.stringify({
             Ordinal: $('#ordinal').val(),

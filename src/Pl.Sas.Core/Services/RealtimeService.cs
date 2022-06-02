@@ -101,7 +101,8 @@ namespace Pl.Sas.Core.Services
                 }
             }
             chartPrices = chartPrices.OrderBy(q => q.TradingDate).ToList();
-            var tradingHistories = chartPrices.Where(q => q.TradingDate >= Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
+            var chartTrading = chartPrices.Where(q => q.TradingDate >= Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
+            var tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
 
             var stockView = await stockViewTask;
             if (stockView is null)
@@ -112,8 +113,8 @@ namespace Pl.Sas.Core.Services
 
             var listTradingResult = new List<TradingResult>();
             #region Experiment Trading
-            Macd12_26_9.LoadIndicatorSet(chartPrices);
-            var experCase = Macd12_26_9.Trading(tradingHistories, false);
+            MacdTrading.LoadIndicatorSet(chartPrices);
+            var experCase = MacdTrading.Trading(chartTrading, tradingHistory, false);
             listTradingResult.Add(new()
             {
                 Symbol = symbol,
@@ -123,7 +124,7 @@ namespace Pl.Sas.Core.Services
                 BuyPrice = experCase.BuyPrice,
                 SellPrice = experCase.SellPrice,
                 FixedCapital = experCase.FixedCapital,
-                Profit = experCase.Profit(tradingHistories[^1].ClosePrice),
+                Profit = experCase.Profit(chartTrading[^1].ClosePrice),
                 TotalTax = experCase.TotalTax,
                 TradingNotes = null,
                 AssetPosition = experCase.AssetPosition,
@@ -131,12 +132,12 @@ namespace Pl.Sas.Core.Services
                 WinNumber = experCase.WinNumber,
             });
             experCase = null;
-            Macd12_26_9.Dispose();
+            MacdTrading.Dispose();
             #endregion
 
             #region Main Trading
             MacdTrading.LoadIndicatorSet(chartPrices);
-            var macdCase = MacdTrading.Trading(tradingHistories, false);
+            var macdCase = MacdTrading.Trading(chartTrading, tradingHistory, false);
             listTradingResult.Add(new()
             {
                 Symbol = symbol,
@@ -146,7 +147,7 @@ namespace Pl.Sas.Core.Services
                 BuyPrice = macdCase.BuyPrice,
                 SellPrice = macdCase.SellPrice,
                 FixedCapital = macdCase.FixedCapital,
-                Profit = macdCase.Profit(tradingHistories[^1].ClosePrice),
+                Profit = macdCase.Profit(chartTrading[^1].ClosePrice),
                 TotalTax = macdCase.TotalTax,
                 TradingNotes = null,
                 AssetPosition = macdCase.AssetPosition,
@@ -158,8 +159,8 @@ namespace Pl.Sas.Core.Services
             #endregion
 
             #region Buy and wait
-            var startPrice = tradingHistories[0].ClosePrice;
-            var endPrice = tradingHistories[^1].ClosePrice;
+            var startPrice = chartTrading[0].ClosePrice;
+            var endPrice = chartTrading[^1].ClosePrice;
             listTradingResult.Add(new TradingResult()
             {
                 Symbol = symbol,
@@ -192,7 +193,7 @@ namespace Pl.Sas.Core.Services
             _workerQueueService.BroadcastViewUpdatedTask(sendMessage);
             listTradingResult = null;
             chartPrices = null;
-            tradingHistories = null;
+            chartTrading = null;
             stockView = null;
         }
 

@@ -140,7 +140,7 @@ namespace Pl.Sas.Core.Entities
                 211 => baseTime.Date.AddDays(1).AddHours(4).AddMinutes(17),//Phân tích đáng giá của vnd
                 212 => baseTime.Date.AddDays(300).AddHours(9).AddMinutes(0),//Tìm kiếm các chỉ báo kỹ thuật phù hợp cho chứng khoán
 
-                300 => baseTime.AddMinutes(120),//Xử lý hiển thị dữ liệu chứng khoán cho hiển thị.
+                300 => baseTime.AddMinutes(240),//Xử lý hiển thị dữ liệu chứng khoán cho hiển thị.
                 _ => baseTime.AddHours(1),
             };
         }
@@ -154,7 +154,7 @@ namespace Pl.Sas.Core.Entities
             //{
             //    return baseTime.AddSeconds(int.Parse(Options["SleepTime"]) - random.Next(-10, 10));
             //}
-            //return baseTime.Date.AddDays(1).AddHours(8).AddMinutes(random.Next(50, 60));
+            //return baseTime.Date.AddDays(1).AddHours(8).AddMinutes(random.Next(30, 60));
         }
     }
 }
