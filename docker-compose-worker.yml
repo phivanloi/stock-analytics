@@ -1,0 +1,24 @@
+version: '3.4'
+
+services:
+  plworker:
+    build:
+      context: .
+      dockerfile: src/Pl.Sas.Worker/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - TZ=Asia/Ho_Chi_Minh
+      - ApplicationId=pl-worker
+      - SERVICE_PORTS=80
+    deploy:
+      replicas: 5
+    ports:
+      - "80"
+    restart: always
+    networks:
+      - pl-application-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"

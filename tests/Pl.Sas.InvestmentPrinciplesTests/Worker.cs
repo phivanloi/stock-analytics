@@ -25,7 +25,7 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 Console.OutputEncoding = Encoding.UTF8;
                 DateTime fromDate = new(2020, 1, 1);
                 DateTime toDate = new(2019, 10, 1);
-                var symbol = "VIX";
+                var symbol = "VND";
                 var chartPrices = (await _chartPriceData.FindAllAsync(symbol)).OrderBy(q => q.TradingDate).ToList();
                 var tradingCharts = chartPrices.Where(q => q.TradingDate >= fromDate).OrderBy(q => q.TradingDate).ToList();
                 var tradingHistory = chartPrices.Where(q => q.TradingDate < fromDate).OrderBy(q => q.TradingDate).ToList();
