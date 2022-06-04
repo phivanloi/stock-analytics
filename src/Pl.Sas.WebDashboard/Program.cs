@@ -146,7 +146,7 @@ else
 }
 
 app.UseResponseCompression();
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();

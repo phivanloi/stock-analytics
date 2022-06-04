@@ -83,15 +83,12 @@
         <thead>
             <tr style="text-align:center; color:#fff">
                 <td rowspan="2" title="Tên doanh nghiệp - lĩnh vực hoạt động" id="number-row">Mã</td>
-                <td colspan="2" title="Phân tích các yếu tố vĩ mô tác động vào cổ phiếu">Dòng tiền</td>
                 <td colspan="10" title="Điểm đánh giá doanh nghiệp và các chỉ số tài chính hiện tại của doanh nghiệp">Doanh nghiệp</td>
+                <td colspan="2" title="Phân tích các yếu tố vĩ mô tác động vào cổ phiếu">Dòng tiền</td>
                 <td colspan="8" title="Điểm đánh giá tăng trưởng thị giá và phân tích kỹ thuật">Kỹ thuật</td>
-                <td colspan="6" title="Kết quả các phương pháp khi cho đầu tư từ @Pl.Sas.Core.Constants.StartTime.ToString("dd/MM/yyyy") và đánh giá mua/bán">Khuyến nghị</td>
+                <td colspan="5" title="Kết quả các phương pháp khi cho đầu tư từ @Pl.Sas.Core.Constants.StartTime.ToString("dd/MM/yyyy") và đánh giá mua/bán">Khuyến nghị</td>
             </tr>
-            <tr style="text-align:center; color:#fff">
-                <td title="Tổng điểm đánh giá vĩ mô">TH</td>
-                <td title="Điểm đánh giá su thế ngành">ĐN</td>
-
+            <tr class="t-c t-w">
                 <td title="Tổng hợp điểm đánh giá của doanh nghiệp">TH</td>
                 <td title="Chỉ số EPS, EPS = (LNST-cổ tức của cổ phiếu ưu đãi) / (KLCP lưu hành bình quân trong kỳ)">EPS</td>
                 <td title="Chỉ số P/E, P/E = giá cổ phiếu / EPS">P/E</td>
@@ -102,6 +99,9 @@
                 <td title="Đánh giá của fiintrading">FIIN</td>
                 <td title="Đánh giá của vndirect">VND</td>
                 <td title="Giá dự phóng của các công ty chứng khoán">Giá DP</td>
+
+                <td title="Tổng điểm đánh giá vĩ mô">TH</td>
+                <td title="Điểm đánh giá su thế ngành">ĐN</td>
 
                 <td title="Tổng điểm đánh giá tăng trưởng giá">TH</td>
                 <td title="Chỉ số beta">Beta</td>
@@ -119,12 +119,12 @@
                 <td title="Trạng thái tài sản của phương pháp thử nghiệm">ĐG TN</td>
                 <td title="Trạng thái tài sản của phương pháp chính">ĐG CH</td>
                 @*<td title="Trạng thái tài sản của phương pháp tích sản">DG TS</td>*@
-                <td title="Trạng thái tài sản của phương pháp mua và nắm giữ" ">DG MG</td>
+                @*<td title="Trạng thái tài sản của phương pháp mua và nắm giữ" ">DG MG</td>*@
             </tr>
         </thead>
         <tbody id="user-invest-table-body">
             <tr>
-                <td colspan="29" class="text-center"><p class="fas fa-sync-alt fa-spin"></p></td>
+                <td colspan="26" class="text-center"><p class="fas fa-sync-alt fa-spin"></p></td>
             </tr>
         </tbody>
     </table>
@@ -145,7 +145,7 @@
             setContent('#' + obj.smb + ' .c-aap', obj.caap);
             setContent('#' + obj.smb + ' .c-bpp', obj.cbpp);
             //setContent('#' + obj.smb + ' .c-bap', obj.cbap);
-            setContent('#' + obj.smb + ' .c-lcp', obj.clcp);
+            //setContent('#' + obj.smb + ' .c-lcp', obj.clcp);
         });
 
         async function srStartListen() {
@@ -178,7 +178,7 @@
 
     function LoadMarket() {
         var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        $('#user-invest-table-body').html('<tr><td colspan="27" class="text-center"><p class="fas fa-sync-alt fa-spin"></p></td></tr>');
+        $('#user-invest-table-body').html('<tr><td colspan="26" class="text-center"><p class="fas fa-sync-alt fa-spin"></p></td></tr>');
         $('#number-row').html('Mã');
         var postData = JSON.stringify({
             Ordinal: $('#ordinal').val(),

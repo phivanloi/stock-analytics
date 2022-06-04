@@ -24,4 +24,4 @@ jobs:
       run: docker builder prune -a -f
     - name: clean all temp image
       run: docker image prune -f
-    needs: application
+    needs: restarthaproxy

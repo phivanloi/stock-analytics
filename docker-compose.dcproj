@@ -9,6 +9,7 @@
     <DockerServiceName>pl.sas.webdashboard</DockerServiceName>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="docker-compose-worker.yml" />
     <None Include="docker-compose-haproxy.yml" />
     <None Include="docker-compose-infastructure.yml" />
     <None Include="docker-compose.yml" />

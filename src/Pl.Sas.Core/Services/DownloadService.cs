@@ -174,7 +174,7 @@ namespace Pl.Sas.Core.Services
             var symbol = schedule.DataKey ?? throw new Exception($"Schedule Null DataKey, di: {schedule.Id}, type: {schedule.Type}");
             var chartPrices = new List<ChartPrice>();
             var random = new Random();
-            if (random.Next(0, 2000) > 1000)
+            if (random.Next(0, 3000) > 2000)
             {
                 var vndChartPrices = await _downloadData.DownloadVndChartPricesRealTimeAsync(symbol, "D");
                 if (vndChartPrices is not null && vndChartPrices.Time?.Length > 0)
@@ -202,28 +202,57 @@ namespace Pl.Sas.Core.Services
             }
             else
             {
-                var ssiChartPrices = await _downloadData.DownloadSsiChartPricesRealTimeAsync(symbol, "D");
-                if (ssiChartPrices is not null && ssiChartPrices.Time?.Length > 0)
+                if (random.Next(0, 2000) > 1000)
                 {
-                    for (int i = 0; i < ssiChartPrices.Time.Length; i++)
+                    var ssiChartPrices = await _downloadData.DownloadSsiChartPricesRealTimeAsync(symbol, "D");
+                    if (ssiChartPrices is not null && ssiChartPrices.Time?.Length > 0)
                     {
-                        var tradingDate = DateTimeOffset.FromUnixTimeSeconds(ssiChartPrices.Time[i]).Date;
-                        if (!chartPrices.Any(q => q.TradingDate == tradingDate))
+                        for (int i = 0; i < ssiChartPrices.Time.Length; i++)
                         {
-                            chartPrices.Add(new()
+                            var tradingDate = DateTimeOffset.FromUnixTimeSeconds(ssiChartPrices.Time[i]).Date;
+                            if (!chartPrices.Any(q => q.TradingDate == tradingDate))
                             {
-                                Symbol = schedule.DataKey,
-                                TradingDate = tradingDate,
-                                ClosePrice = string.IsNullOrEmpty(ssiChartPrices.Close[i]) ? 0 : float.Parse(ssiChartPrices.Close[i]),
-                                OpenPrice = string.IsNullOrEmpty(ssiChartPrices.Open[i]) ? 0 : float.Parse(ssiChartPrices.Open[i]),
-                                HighestPrice = string.IsNullOrEmpty(ssiChartPrices.Highest[i]) ? 0 : float.Parse(ssiChartPrices.Highest[i]),
-                                LowestPrice = string.IsNullOrEmpty(ssiChartPrices.Lowest[i]) ? 0 : float.Parse(ssiChartPrices.Lowest[i]),
-                                TotalMatchVol = string.IsNullOrEmpty(ssiChartPrices.Volumes[i]) ? 0 : float.Parse(ssiChartPrices.Volumes[i]),
-                                Type = "D"
-                            });
+                                chartPrices.Add(new()
+                                {
+                                    Symbol = schedule.DataKey,
+                                    TradingDate = tradingDate,
+                                    ClosePrice = string.IsNullOrEmpty(ssiChartPrices.Close[i]) ? 0 : float.Parse(ssiChartPrices.Close[i]),
+                                    OpenPrice = string.IsNullOrEmpty(ssiChartPrices.Open[i]) ? 0 : float.Parse(ssiChartPrices.Open[i]),
+                                    HighestPrice = string.IsNullOrEmpty(ssiChartPrices.Highest[i]) ? 0 : float.Parse(ssiChartPrices.Highest[i]),
+                                    LowestPrice = string.IsNullOrEmpty(ssiChartPrices.Lowest[i]) ? 0 : float.Parse(ssiChartPrices.Lowest[i]),
+                                    TotalMatchVol = string.IsNullOrEmpty(ssiChartPrices.Volumes[i]) ? 0 : float.Parse(ssiChartPrices.Volumes[i]),
+                                    Type = "D"
+                                });
+                            }
                         }
+                        ssiChartPrices = null;
                     }
-                    ssiChartPrices = null;
+                }
+                else
+                {
+                    var vpsChartPrices = await _downloadData.DownloadVpsChartPricesRealTimeAsync(symbol, "D");
+                    if (vpsChartPrices is not null && vpsChartPrices.Time?.Length > 0)
+                    {
+                        for (int i = 0; i < vpsChartPrices.Time.Length; i++)
+                        {
+                            var tradingDate = DateTimeOffset.FromUnixTimeSeconds(vpsChartPrices.Time[i]).Date;
+                            if (!chartPrices.Any(q => q.TradingDate == tradingDate))
+                            {
+                                chartPrices.Add(new()
+                                {
+                                    Symbol = schedule.DataKey,
+                                    TradingDate = tradingDate,
+                                    ClosePrice = vpsChartPrices.Close[i],
+                                    OpenPrice = vpsChartPrices.Open[i],
+                                    HighestPrice = vpsChartPrices.Highest[i],
+                                    LowestPrice = vpsChartPrices.Lowest[i],
+                                    TotalMatchVol = vpsChartPrices.Volumes[i],
+                                    Type = "D"
+                                });
+                            }
+                        }
+                        vpsChartPrices = null;
+                    }
                 }
             }
 
