@@ -6,6 +6,14 @@ namespace Pl.Sas.Core.Interfaces
     public interface IDownloadData
     {
         /// <summary>
+        /// Tải dữ liệu chart realtime của vps
+        /// </summary>
+        /// <param name="symbol">Mã chứng khoán</param>
+        /// <param name="type">mặc định là chart ngày</param>
+        /// <returns>VndChartPrice</returns>
+        Task<VndChartPrice?> DownloadVpsChartPricesRealTimeAsync(string symbol, string type = "D");
+
+        /// <summary>
         /// Tải dữ liệu chart realtime của vnd
         /// </summary>
         /// <param name="symbol">Mã chứng khoán</param>

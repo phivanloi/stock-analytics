@@ -11,11 +11,13 @@ namespace Pl.Sas.Infrastructure
         private readonly HttpClient _ssiHttpClient;
         private readonly HttpClient _vndHttpClient;
         private readonly HttpClient _fiinHttpClient;
+        private readonly HttpClient _vpsHttpClient;
         public DownloadData(IHttpClientFactory httpClientFactory)
         {
             _ssiHttpClient = httpClientFactory.CreateClient("ssidownloader");
             _vndHttpClient = httpClientFactory.CreateClient("vnddownloader");
             _fiinHttpClient = httpClientFactory.CreateClient("fiindownloader");
+            _vpsHttpClient = httpClientFactory.CreateClient("vpsdownloader");
         }
 
         public virtual async Task<SsiAllStock?> DownloadInitialMarketStockAsync()
@@ -177,6 +179,14 @@ namespace Pl.Sas.Infrastructure
             var fromTime = DateTimeOffset.Now.AddDays(-5).ToUnixTimeSeconds();
             var requestUrl = $"https://iboard.ssi.com.vn/dchart/api/history?resolution={type}&symbol={symbol}&from={fromTime}&to={toTime}";
             return await _ssiHttpClient.GetJsonAsync<SsiChartPrice>(requestUrl);
+        }
+
+        public virtual async Task<VndChartPrice?> DownloadVpsChartPricesRealTimeAsync(string symbol, string type = "D")
+        {
+            var toTime = DateTimeOffset.Now.ToUnixTimeSeconds();
+            var fromTime = DateTimeOffset.Now.AddDays(-5).ToUnixTimeSeconds();
+            var requestUrl = $"https://histdatafeed.vps.com.vn/tradingview/history?resolution={type}&symbol={symbol}&from={fromTime}&to={toTime}";
+            return await _vpsHttpClient.GetJsonAsync<VndChartPrice>(requestUrl);
         }
 
         public virtual async Task<List<SsiChartPrice>> DownloadSsiChartPricesAsync(string symbol, long configTime, string type = "D")
