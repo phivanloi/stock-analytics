@@ -300,7 +300,7 @@ namespace Pl.Sas.Core.Services
                 stockView.KlhtCss = "klht t-r ";
                 if (checkChartPrices.Count > 2)
                 {
-                    var avg30MatchVol = chartPrices.Where(q => q.TradingDate > checkChartPrices[0].TradingDate)
+                    var avg30MatchVol = chartPrices.Where(q => q.TradingDate < checkChartPrices[0].TradingDate)
                         .OrderByDescending(q => q.TradingDate)
                         .Take(30)
                         .Average(q => q.TotalMatchVol);

@@ -20,7 +20,7 @@ namespace Pl.Sas.UnitTests
             var hostedService = serviceProvider.GetService<IHostedService>() as LoggingQueuedHostedService ?? throw new Exception("Can't get LoggingQueuedHostedService");
             await hostedService.StartAsync(CancellationToken.None);
 
-            await stockViewService.BindingStocksViewAndSetCacheAsync("LDW");
+            await stockViewService.BindingStocksViewAndSetCacheAsync("HPG");
             Assert.True(true);
 
             await hostedService.StopAsync(CancellationToken.None);
