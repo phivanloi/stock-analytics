@@ -533,7 +533,6 @@ namespace Pl.Sas.Core.Services
                 return await _keyValueData.SetAsync(checkingKey, false);
             }
 
-            var listTradingResult = new List<TradingResult>();
             #region Buy and wait
             var startPrice = chartTrading[0].ClosePrice;
             var endPrice = chartTrading[^1].ClosePrice;
@@ -554,7 +553,6 @@ namespace Pl.Sas.Core.Services
                 WinNumber = startPrice > endPrice ? 1 : 0,
                 TradingNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(new List<KeyValuePair<int, string>>() { new(startPrice > endPrice ? -1 : startPrice < endPrice ? 1 : 0, noteInvestment) })),
             };
-            listTradingResult.Add(buyAndWaitResult);
             await _tradingResultData.SaveTestTradingResultAsync(buyAndWaitResult);
             #endregion
 
@@ -579,7 +577,6 @@ namespace Pl.Sas.Core.Services
                 WinNumber = macdCase.WinNumber,
                 TradingNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(macdCase.ExplainNotes)),
             };
-            listTradingResult.Add(macdResult);
             await _tradingResultData.SaveTestTradingResultAsync(macdResult);
             MacdTrading.Dispose();
             #endregion
@@ -605,7 +602,6 @@ namespace Pl.Sas.Core.Services
                 WinNumber = experCase.WinNumber,
                 TradingNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(experCase.ExplainNotes)),
             };
-            listTradingResult.Add(experResult);
             await _tradingResultData.SaveTestTradingResultAsync(experResult);
             ExperimentTrading.Dispose();
             #endregion
@@ -613,7 +609,6 @@ namespace Pl.Sas.Core.Services
             buyAndWaitResult = null;
             macdResult = null;
             experResult = null;
-            listTradingResult = null;
             chartPrices = null;
             chartTrading = null;
             stock = null;
