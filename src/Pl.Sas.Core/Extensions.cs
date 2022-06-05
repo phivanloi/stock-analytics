@@ -123,7 +123,7 @@ namespace Pl.Sas.Core
             {
                 return "t-s";
             }
-            return "t-i";
+            return "t-w";
         }
 
         /// <summary>

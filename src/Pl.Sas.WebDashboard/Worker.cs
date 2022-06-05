@@ -78,7 +78,7 @@ namespace Pl.Sas.WebDashboard
                         var stockView = JsonSerializer.Deserialize<StockView>(message.KeyValues["Data"]);
                         if (stockView is not null)
                         {
-                            await _stockRealtimeHub.Clients.All.SendAsync("UpdateRealtimeView", stockView.GetSocketView(), cancellationToken);
+                            await _stockRealtimeHub.Clients.All.SendAsync("UpdateRealtimeView", stockView, cancellationToken);
                         }
                         break;
 

@@ -18,8 +18,10 @@ namespace Pl.Sas.Core.Services
         private readonly IScheduleData _scheduleData;
         private readonly IChartPriceData _chartPriceData;
         private readonly IAsyncCacheService _asyncCacheService;
+        private readonly IKeyValueData _keyValueData;
 
         public RealtimeService(
+            IKeyValueData keyValueData,
             IAsyncCacheService asyncCacheService,
             IScheduleData scheduleData,
             IChartPriceData chartPriceData,
@@ -31,6 +33,7 @@ namespace Pl.Sas.Core.Services
             _workerQueueService = workerQueueService;
             _scheduleData = scheduleData;
             _asyncCacheService = asyncCacheService;
+            _keyValueData = keyValueData;
         }
 
         public async Task HandleEventAsync(QueueMessage queueMessage)
@@ -79,6 +82,7 @@ namespace Pl.Sas.Core.Services
                 return;
             }
 
+            var bankInterestRate12 = await _keyValueData.CacheGetAsync(Constants.BankInterestRate12Key);
             var cacheKey = $"{Constants.StockViewCachePrefix}-SM-{symbol}";
             var stockViewTask = _asyncCacheService.GetByKeyAsync<StockView>(cacheKey);
 
@@ -182,7 +186,7 @@ namespace Pl.Sas.Core.Services
             stockView.LastHighestPrice = chartPrices[^1].HighestPrice * 1000;
             stockView.LastLowestPrice = chartPrices[^1].LowestPrice * 1000;
             stockView.LastTotalMatchVol = chartPrices[^1].TotalMatchVol;
-            StockViewService.BindingTradingResultToView(ref stockView, listTradingResult);
+            StockViewService.BindingTradingResultToView(ref stockView, listTradingResult, bankInterestRate12?.GetValue<float>() ?? 6.8f);
             StockViewService.BindingPercentConvulsionToView(ref stockView, chartPrices);
 
             var sendMessage = new QueueMessage("UpdateRealtimeView");

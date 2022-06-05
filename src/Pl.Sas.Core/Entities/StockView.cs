@@ -117,46 +117,6 @@ namespace Pl.Sas.Core.Entities
         public int StockScore { get; set; }
 
         /// <summary>
-        /// <para>Chỉ số BETA đo lường khả năng biến động giá so với thị trường(vnindex) </para>
-        /// <para>+ Bằng 1, mức biến động của giá chứng khoán này sẽ bằng với mức biến động của thị trường.</para>
-        /// <para>+ Nhỏ hơn 1, mức độ biến động của giá chứng khoán này thấp hơn mức biến động của thị trường.</para>
-        /// <para>+ Lớn hơn 1: mức độ biến động giá của chứng khoán này lớn hơn mức biến động của thị trường.</para>
-        /// <para>Cụ thể hơn, nếu một chứng khoán có beta bằng 1,2 thì trên lý thuyết mức biến động của chứng khoán này sẽ cao hơn mức biến động chung của thị trường 20%.</para>
-        /// <para>http://s.cafef.vn/help/hesobeta.aspx</para>
-        /// </summary>
-        public float Beta { get; set; }
-
-        /// <summary>
-        /// Biến động giá trong 1 phiên
-        /// </summary>
-        public float PricePercentConvulsion1 { get; set; }
-
-        /// <summary>
-        /// Biến động giá trong 5 phiên
-        /// </summary>
-        public float PricePercentConvulsion5 { get; set; }
-
-        /// <summary>
-        /// Biến động giá trong 10 phiên
-        /// </summary>
-        public float PricePercentConvulsion10 { get; set; }
-
-        /// <summary>
-        /// Biến động giá trong 30 phiên
-        /// </summary>
-        public float PricePercentConvulsion30 { get; set; }
-
-        /// <summary>
-        /// Biến động giá trong 50 phiên
-        /// </summary>
-        public float PricePercentConvulsion50 { get; set; }
-
-        /// <summary>
-        /// Biến động giá trong 60 phiên
-        /// </summary>
-        public float PricePercentConvulsion60 { get; set; }
-
-        /// <summary>
         /// Giá đóng cửa gần nhất
         /// </summary>
         public float LastClosePrice { get; set; }
@@ -195,35 +155,6 @@ namespace Pl.Sas.Core.Entities
         /// Giá biến động cao nhất trong 5 phiên
         /// </summary>
         public float LastHistoryMinHighestPrice { get; set; }
-
-        /// <summary>
-        /// Số lần tăng giá liên tuc trong số lịch sử mà trading thử nhiệm tìm được
-        /// </summary>
-        public int NumberOfClosePriceIncreases { get; set; }
-
-        /// <summary>
-        /// Số lần giảm giá liên tuc trong số lịch sử mà trading thử nhiệm tìm được
-        /// </summary>
-        public int NumberOfClosePriceDecrease { get; set; }
-
-        /// <summary>
-        /// Lấy xu thế giá đóng cửa trong số lịch sử mà trading thử nhiệm tìm được
-        /// </summary>
-        public string GetClosePriceTrend
-        {
-            get
-            {
-                if (NumberOfClosePriceIncreases > 0)
-                {
-                    return $"Tăng {NumberOfClosePriceIncreases} phiên";
-                }
-                if (NumberOfClosePriceDecrease > 0)
-                {
-                    return $"Giảm {NumberOfClosePriceDecrease} phiên";
-                }
-                return "Giữ giá";
-            }
-        }
 
         #endregion
 
@@ -374,19 +305,9 @@ namespace Pl.Sas.Core.Entities
         public float ExperimentProfitPercent { get; set; }
 
         /// <summary>
-        /// Trạng thái tài sản và giao dịch hiện tại của phương pháp thử nghiệm
-        /// </summary>
-        public string ExperimentAssetPosition { get; set; } = null!;
-
-        /// <summary>
         /// % lợi nhuận bằng phương pháp chính
         /// </summary>
         public float MainProfitPercent { get; set; }
-
-        /// <summary>
-        /// Trạng thái tài sản và giao dịch hiện tại của phương pháp chính
-        /// </summary>
-        public string MainAssetPosition { get; set; } = null!;
 
         /// <summary>
         /// % lợi nhuận khi tích sản
@@ -415,28 +336,68 @@ namespace Pl.Sas.Core.Entities
         /// </summary>
         public int TotalScore => MacroeconomicsScore + CompanyValueScore + CompanyGrowthScore + StockScore;
 
-        /// <summary>
-        /// Lấy object dùng cho đẩy xuống client ở websocket
-        /// </summary>
-        /// <returns>dynamic</returns>
-        public string GetSocketView()
-        {
-            return JsonSerializer.Serialize(new
-            {
-                smb = Symbol,
-                clcp = LastClosePrice.ShowPrice(),
-                LastOpenPrice,
-                LastHighestPrice,
-                LastLowestPrice,
-                cepp = ExperimentProfitPercent.ShowPercent(),
-                ceap = ExperimentAssetPosition,
-                cmpp = MainProfitPercent.ShowPercent(),
-                cmap = MainAssetPosition,
-                capp = AccumulationProfitPercent.ShowPercent(),
-                caap = AccumulationAssetPosition,
-                cbpp = BuyAndHoldProfitPercent.ShowPercent(),
-                cbap = BuyAndHoldAssetPosition,
-            });
-        }
+        #region Cột chỉ số beta
+        public string Beta { get; set; } = null!;
+        #endregion
+
+        #region Cột khối lượng hiện tại
+        public string Klht { get; set; } = null!;
+        public string KlhtCss { get; set; } = null!;
+        #endregion
+
+        #region Cột giá hiện tại
+        public string Ght { get; set; } = null!;
+        public string GhtCss { get; set; } = null!;
+        #endregion
+
+        #region Cột % biến động giá 2 phiên tăng giảm so với phiên trước
+        public string Bd2 { get; set; } = null!;
+        public string Bd2Css { get; set; } = null!;
+        #endregion
+
+        #region Cột % biến động giá 5 phiên
+        public string Bd5 { get; set; } = null!;
+        public string Bd5Css { get; set; } = null!;
+        #endregion
+
+        #region Cột % biến động giá 10 phiên
+        public string Bd10 { get; set; } = null!;
+        public string Bd10Css { get; set; } = null!;
+        #endregion
+
+        #region Cột % biến động giá 30 phiên
+        public string Bd30 { get; set; } = null!;
+        public string Bd30Css { get; set; } = null!;
+        #endregion
+
+        #region Cột % biến động giá 60 phiên
+        public string Bd60 { get; set; } = null!;
+        public string Bd60Css { get; set; } = null!;
+        #endregion
+
+        #region Cột % Lợi nhận phương pháp thử nghiệm
+        public string Lntn { get; set; } = null!;
+        public string LntnCss { get; set; } = null!;
+        #endregion
+
+        #region Cột % Lợi nhận phương pháp chính
+        public string Lnc { get; set; } = null!;
+        public string LncCss { get; set; } = null!;
+        #endregion
+
+        #region Cột % Lợi nhận mua và giữ
+        public string Lnmg { get; set; } = null!;
+        public string LnmgCss { get; set; } = null!;
+        #endregion
+
+        #region Cột Khuyến nghị theo phương pháp thử nghiệm
+        public string Kntn { get; set; } = null!;
+        public string KntnCss { get; set; } = null!;
+        #endregion
+
+        #region Cột Khuyến nghị theo phương pháp chính
+        public string Knc { get; set; } = null!;
+        public string KncCss { get; set; } = null!;
+        #endregion
     }
 }
