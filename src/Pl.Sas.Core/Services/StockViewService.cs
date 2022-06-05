@@ -293,8 +293,8 @@ namespace Pl.Sas.Core.Services
             {
                 var checkChartPrices = chartPrices.OrderByDescending(q => q.TradingDate).ToList();
                 var lastPercent = checkChartPrices[0].ClosePrice.GetPercent(checkChartPrices[^1].ClosePrice);
-                stockView.Ght = checkChartPrices[0].ClosePrice.ShowPrice();
-                stockView.GhtCss = "klht t-r " + lastPercent.GetTextColorCss();
+                stockView.Ght = checkChartPrices[0].ClosePrice.ShowPrice(1);
+                stockView.GhtCss = "ght t-r " + lastPercent.GetTextColorCss();
 
                 stockView.Klht = checkChartPrices[0].TotalMatchVol.ShowMoney(1);
                 stockView.KlhtCss = "klht t-r ";
@@ -381,47 +381,31 @@ namespace Pl.Sas.Core.Services
                     if (result.Principle == 0)
                     {
                         stockView.Lntn = result.ProfitPercent.ShowPercent();
-                        stockView.LntnCss = $"Lntn {result.ProfitPercent.GetTextColorCss(bankInterestRate12)}";
+                        stockView.LntnCss = $"lntn t-r {result.ProfitPercent.GetTextColorCss(bankInterestRate12)}";
                         stockView.Kntn = result.AssetPosition;
-                        stockView.KntnCss = "kntn ";
-                        if (result.IsBuy)
+                        stockView.KntnCss = "kntn";
+                        if (result.IsBuy || result.IsSell)
                         {
-                            stockView.KntnCss += "t-d";
-                        }
-                        else if (result.IsSell)
-                        {
-                            stockView.KntnCss += "t-s";
+                            stockView.KntnCss += " t-i";
                         }
                     }
                     else if (result.Principle == 1)
                     {
                         stockView.Lnc = result.ProfitPercent.ShowPercent();
-                        stockView.LncCss = $"lnc {result.ProfitPercent.GetTextColorCss(bankInterestRate12)}";
+                        stockView.LncCss = $"lnc t-r {result.ProfitPercent.GetTextColorCss(bankInterestRate12)}";
                         stockView.Knc = result.AssetPosition;
-                        stockView.KncCss = "knc ";
-                        if (result.IsBuy)
+                        stockView.KncCss = "knc t-c ";
+                        if (result.IsBuy || result.IsSell)
                         {
-                            stockView.KncCss += "t-d";
-                        }
-                        if (result.IsSell)
-                        {
-                            stockView.KncCss += "t-s";
+                            stockView.KntnCss += " t-i";
                         }
                     }
                     else if (result.Principle == 3)
                     {
                         stockView.Lnmg = result.ProfitPercent.ShowPercent();
-                        stockView.LnmgCss = $"lnmg {result.ProfitPercent.GetTextColorCss(bankInterestRate12)}";
+                        stockView.LnmgCss = $"lnmg t-r {result.ProfitPercent.GetTextColorCss(bankInterestRate12)}";
                         stockView.Knc = result.AssetPosition;
-                        stockView.KncCss = "knc ";
-                        if (result.IsBuy)
-                        {
-                            stockView.KncCss += "t-d";
-                        }
-                        if (result.IsSell)
-                        {
-                            stockView.KncCss += "t-s";
-                        }
+                        stockView.KncCss = "knc t-c";
                     }
                 }
             }
