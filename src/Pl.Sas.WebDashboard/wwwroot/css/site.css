@@ -198,7 +198,3 @@ t-i {
 .c-dtac {
     background-color: #dadada5a
 }
-
-.modal-lg, .modal-xl {
-    max-width: 95% !important;
-}

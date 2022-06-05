@@ -33,25 +33,25 @@
     </div>
 </section>
 @section Scripts{
-<script>
-    function RankChange(textbox) {
-        $.ajax({
-            cache: false,
-            type: "POST",
-            dataType: 'json',
-            url: "/home/industrysave?code=" + $(textbox).attr('id') + '&rank=' + $(textbox).val(),
-            success: function (data) {
-                if (data.status == 1) {
-                    OpenToast('<span class="text-success">' + data.message + '</span>');
+    <script>
+        function RankChange(textbox) {
+            $.ajax({
+                cache: false,
+                type: "POST",
+                dataType: 'json',
+                url: "/home/industrysave?code=" + $(textbox).attr('id') + '&rank=' + $(textbox).val(),
+                success: function(data) {
+                    if (data.status == 1) {
+                        OpenToast('<span class="text-success">' + data.message + '</span>');
+                    }
+                    else {
+                        OpenToast('<span class="text-danger">' + data.message + '</span>');
+                    }
+                },
+                error: function() {
+                    OpenToast('<span class="text-danger">Thay đổi không thành công.</span>');
                 }
-                else {
-                    OpenToast('<span class="text-danger">' + data.message + '</span>');
-                }
-            },
-            error: function () {
-                OpenToast('<span class="text-danger">Thay đổi không thành công.</span>');
-            }
-        });
-    }
-</script>
+            });
+        }
+    </script>
 }
