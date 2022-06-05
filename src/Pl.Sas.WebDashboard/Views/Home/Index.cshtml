@@ -130,80 +130,80 @@
     </table>
 </section>
 @section Scripts{
-<script>
-    $(function () {
-        const srConnection = new signalR.HubConnectionBuilder().withUrl("/stockrealtime").withAutomaticReconnect().build();
-        srConnection.on("UpdateStockView", () => { LoadMarket(); });
-        srConnection.on("UpdateRealtimeView", (jsonData) => {
-            var obj = JSON.parse(jsonData);
-            setContent('#' + obj.smb + ' .c-epp', obj.cepp);
-            setContent('#' + obj.smb + ' .c-epp', obj.cepp);
-            setContent('#' + obj.smb + ' .c-eap', obj.ceap);
-            setContent('#' + obj.smb + ' .c-mpp', obj.cmpp);
-            setContent('#' + obj.smb + ' .c-map', obj.cmap);
-            //setContent('#' + obj.smb + ' .c-app', obj.capp);
-            setContent('#' + obj.smb + ' .c-aap', obj.caap);
-            setContent('#' + obj.smb + ' .c-bpp', obj.cbpp);
-            //setContent('#' + obj.smb + ' .c-bap', obj.cbap);
-            //setContent('#' + obj.smb + ' .c-lcp', obj.clcp);
+    <script>
+        $(function() {
+            const srConnection = new signalR.HubConnectionBuilder().withUrl("/stockrealtime").withAutomaticReconnect().build();
+            srConnection.on("UpdateStockView", () => { LoadMarket(); });
+            srConnection.on("UpdateRealtimeView", (jsonData) => {
+                var obj = JSON.parse(jsonData);
+                setContent('#' + obj.smb + ' .c-epp', obj.cepp);
+                setContent('#' + obj.smb + ' .c-epp', obj.cepp);
+                setContent('#' + obj.smb + ' .c-eap', obj.ceap);
+                setContent('#' + obj.smb + ' .c-mpp', obj.cmpp);
+                setContent('#' + obj.smb + ' .c-map', obj.cmap);
+                //setContent('#' + obj.smb + ' .c-app', obj.capp);
+                setContent('#' + obj.smb + ' .c-aap', obj.caap);
+                setContent('#' + obj.smb + ' .c-bpp', obj.cbpp);
+                //setContent('#' + obj.smb + ' .c-bap', obj.cbap);
+                //setContent('#' + obj.smb + ' .c-lcp', obj.clcp);
+            });
+
+            async function srStartListen() {
+                try {
+                    await srConnection.start();
+                    console.log("Realtime stock connected.");
+                } catch (err) {
+                    console.log(err);
+                    setTimeout(srStartListen, 5000);
+                }
+            };
+            srConnection.onclose(async () => { await start(); });
+            srStartListen();
+
+            function setContent(selecter, value) {
+                $(selecter).text(value);
+                $(selecter).addClass('c-dtac');
+                setTimeout(function() {
+                    $(selecter).removeClass('c-dtac');
+                }, 800);
+            }
+
+            $('#code').keypress(function(e) {
+                if (e.which == 13) {
+                    LoadMarket();
+                }
+            });
+            LoadMarket();
         });
 
-        async function srStartListen() {
-            try {
-                await srConnection.start();
-                console.log("Realtime stock connected.");
-            } catch (err) {
-                console.log(err);
-                setTimeout(srStartListen, 5000);
-            }
+        function LoadMarket() {
+            var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            $('#user-invest-table-body').html('<tr><td colspan="26" class="text-center"><p class="fas fa-sync-alt fa-spin"></p></td></tr>');
+            $('#number-row').html('Mã');
+            var postData = JSON.stringify({
+                Ordinal: $('#ordinal').val(),
+                IndustryCode: $('#industry').val(),
+                Exchange: $('#exchange').val(),
+                Symbol: $('#code').val(),
+                Zone: $('#zone').val()
+            });
+            $.ajax({
+                type: "POST",
+                contentType: "application/json",
+                cache: false,
+                data: postData,
+                url: "/home/marketlist",
+                success: function(html) {
+                    if (html.length > 0) {
+                        $('#user-invest-table-body').html(html);
+                        $('#number-row').prop('title', $('#user-invest-table-body').children().length);
+                        document.documentElement.scrollTop = document.body.scrollTop = scrollTop;
+                    }
+                    else {
+                        setTimeout(LoadMarket, 5000);
+                    }
+                }
+            });
         };
-        srConnection.onclose(async () => { await start(); });
-        srStartListen();
-
-        function setContent(selecter, value){
-            $(selecter).text(value);
-            $(selecter).addClass('c-dtac');
-            setTimeout(function () {
-                $(selecter).removeClass('c-dtac');
-            }, 800);
-        }
-
-        $('#code').keypress(function (e) {
-            if (e.which == 13) {
-                LoadMarket();
-            }
-        });
-        LoadMarket();
-    });
-
-    function LoadMarket() {
-        var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        $('#user-invest-table-body').html('<tr><td colspan="26" class="text-center"><p class="fas fa-sync-alt fa-spin"></p></td></tr>');
-        $('#number-row').html('Mã');
-        var postData = JSON.stringify({
-            Ordinal: $('#ordinal').val(),
-            IndustryCode: $('#industry').val(),
-            Exchange: $('#exchange').val(),
-            Symbol: $('#code').val(),
-            Zone: $('#zone').val()
-        });
-        $.ajax({
-            type: "POST",
-            contentType: "application/json",
-            cache: false,
-            data: postData,
-            url: "/home/marketlist",
-            success: function (html) {
-                if (html.length > 0) {
-                    $('#user-invest-table-body').html(html);
-                    $('#number-row').prop('title', $('#user-invest-table-body').children().length);
-                    document.documentElement.scrollTop = document.body.scrollTop = scrollTop;
-                }
-                else {
-                    setTimeout(LoadMarket, 5000);
-                }
-            }
-        });
-    };
-</script>
+    </script>
 }

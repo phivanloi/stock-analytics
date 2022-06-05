@@ -280,7 +280,7 @@
                                         <div class="card-header">
                                             <h3 class="card-title" style="color:#b4b4b4">
                                                 <i class="fas fa-notes-medical"></i>
-                                                Diễn giải quá trình đầu tư với số vốn ban đâu @tradingResult.Value.Capital.ShowMoney(1):
+                                                Diễn giải quá trình đầu tư từ:@Constants.StartTime.ToString("dd/mm/yyyy") với số vốn ban đâu @tradingResult.Value.Capital.ShowMoney(1): Thắng/Thua @tradingResult.Value.WinNumber / @tradingResult.Value.LoseNumber, Trạng thái tài sản: @tradingResult.Value.AssetPosition
                                             </h3>
                                         </div>
                                         <div class="card-body">
@@ -344,7 +344,7 @@
     <script src="~/js/adminlte.min.js"></script>
     <script src="~/js/admin.min.js"></script>
     <script>
-        $(function () {
+        $(function() {
             $('#price-history').DataTable({
                 "paging": true,
                 "lengthChange": false,
@@ -362,7 +362,7 @@
                         "first": "Trang đầu"
                     }
                 },
-                "fnInitComplete": function () {
+                "fnInitComplete": function() {
                     $("#price-history").show();
                 }
             });

@@ -128,7 +128,7 @@ namespace Pl.Sas.WebDashboard.Controllers
                 Details = stock,
                 StockPrices = await allStockPricesTask,
                 AnalyticsResultInfo = analyticsResult,
-                CompanyInfo = await companyTask,
+                CompanyInfo = await companyTask
             };
 
             foreach (var tradingResult in await tradingResultsTask)
@@ -141,7 +141,10 @@ namespace Pl.Sas.WebDashboard.Controllers
                         Capital = tradingResult.FixedCapital,
                         Profit = tradingResult.Profit,
                         ProfitPercent = tradingResult.ProfitPercent,
-                        TotalTax = tradingResult.TotalTax
+                        TotalTax = tradingResult.TotalTax,
+                        AssetPosition = tradingResult.AssetPosition,
+                        LoseNumber = tradingResult.LoseNumber,
+                        WinNumber = tradingResult.WinNumber,
                     });
                 }
             }
@@ -196,11 +199,11 @@ namespace Pl.Sas.WebDashboard.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> IndustrySaveAsync(string id, int rank)
+        public async Task<IActionResult> IndustrySaveAsync(string code, int rank)
         {
             var message = "Thay đổi không thành công.";
             var updateResult = false;
-            var industry = await _industryData.GetByIdAsync(id);
+            var industry = await _industryData.GetByIdAsync(code);
             if (industry is not null)
             {
                 industry.Rank = rank;
