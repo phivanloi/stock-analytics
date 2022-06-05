@@ -127,11 +127,6 @@ namespace Pl.Sas.Core.Entities
         public float LastOneClosePrice { get; set; }
 
         /// <summary>
-        /// % giá đóng của mới nhất so với giá phiên trước đó
-        /// </summary>
-        public float LastClosePricePercent => LastClosePrice.GetPercent(LastOneClosePrice);
-
-        /// <summary>
         /// Giá mở cửa phiên cuối cùng
         /// </summary>
         public float LastOpenPrice { get; set; }
@@ -145,16 +140,6 @@ namespace Pl.Sas.Core.Entities
         /// Giá thấp nhất phiên cuối cùng
         /// </summary>
         public float LastLowestPrice { get; set; }
-
-        /// <summary>
-        /// Giá biến động thấp nhất trong 5 phiên
-        /// </summary>
-        public float LastHistoryMinLowestPrice { get; set; }
-
-        /// <summary>
-        /// Giá biến động cao nhất trong 5 phiên
-        /// </summary>
-        public float LastHistoryMinHighestPrice { get; set; }
 
         #endregion
 
@@ -351,6 +336,7 @@ namespace Pl.Sas.Core.Entities
         #endregion
 
         #region Cột % biến động giá 2 phiên tăng giảm so với phiên trước
+        public float Bd2Value { get; set; }
         public string Bd2 { get; set; } = null!;
         public string Bd2Css { get; set; } = null!;
         #endregion

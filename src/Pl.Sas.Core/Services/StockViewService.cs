@@ -111,7 +111,7 @@ namespace Pl.Sas.Core.Services
                     "idt" => query.OrderByDescending(q => q.IndustryRank).ThenByDescending(q => q.TotalScore).ToList(),
                     "klmkn" => query.OrderByDescending(q => q.LastForeignPurchasingPower).ToList(),
                     "ddgdn" => query.OrderByDescending(q => q.TotalScore).ToList(),
-                    "cpuad" => query.OrderByDescending(q => q.LastClosePricePercent).ToList(),
+                    "cpuad" => query.OrderByDescending(q => q.Bd2Value).ToList(),
                     "mcdesc" => query.OrderByDescending(q => q.MarketCap).ToList(),
                     _ => query.OrderByDescending(q => q.LastTotalMatchVol).ToList(),
                 };
@@ -227,8 +227,6 @@ namespace Pl.Sas.Core.Services
 
                 if (topThreeHistories.Count > 2)
                 {
-                    stockView.LastHistoryMinLowestPrice = topFiveHistories.Min(q => q.LowestPrice);
-                    stockView.LastHistoryMinHighestPrice = topFiveHistories.Max(q => q.HighestPrice);
                     stockView.LastAvgThreeTotalMatchVol = topThreeHistories?.Average(q => q.TotalMatchVol) ?? stockView.LastOneTotalMatchVol;
                     stockView.LastAvgFiveTotalMatchVol = topFiveHistories?.Average(q => q.TotalMatchVol) ?? stockView.LastAvgThreeTotalMatchVol;
                     stockView.LastAvgTenTotalMatchVol = stockPrices?.Average(q => q.TotalMatchVol) ?? stockView.LastAvgFiveTotalMatchVol;
@@ -313,11 +311,13 @@ namespace Pl.Sas.Core.Services
                 if (checkChartPrices.Count >= 2)
                 {
                     currentPercent = checkChartPrices[0].ClosePrice.GetPercent(checkChartPrices[1].ClosePrice);
+                    stockView.Bd2Value = currentPercent;
                     stockView.Bd2 = currentPercent.ShowPercent();
                     stockView.Bd2Css = "bd2 t-r " + currentPercent.GetTextColorCss();
                 }
                 else
                 {
+                    stockView.Bd2Value = lastPercent;
                     stockView.Bd2 = lastPercent.ShowPercent();
                     stockView.Bd2Css = "bd2 t-r " + lastPercent.GetTextColorCss();
                 }
@@ -383,7 +383,7 @@ namespace Pl.Sas.Core.Services
                         stockView.Lntn = result.ProfitPercent.ShowPercent();
                         stockView.LntnCss = $"lntn t-r {result.ProfitPercent.GetTextColorCss(bankInterestRate12)}";
                         stockView.Kntn = result.AssetPosition;
-                        stockView.KntnCss = "kntn";
+                        stockView.KntnCss = "kntn t-c";
                         if (result.IsBuy || result.IsSell)
                         {
                             stockView.KntnCss += " t-i";
@@ -394,7 +394,7 @@ namespace Pl.Sas.Core.Services
                         stockView.Lnc = result.ProfitPercent.ShowPercent();
                         stockView.LncCss = $"lnc t-r {result.ProfitPercent.GetTextColorCss(bankInterestRate12)}";
                         stockView.Knc = result.AssetPosition;
-                        stockView.KncCss = "knc t-c ";
+                        stockView.KncCss = "knc t-c";
                         if (result.IsBuy || result.IsSell)
                         {
                             stockView.KntnCss += " t-i";
@@ -404,8 +404,6 @@ namespace Pl.Sas.Core.Services
                     {
                         stockView.Lnmg = result.ProfitPercent.ShowPercent();
                         stockView.LnmgCss = $"lnmg t-r {result.ProfitPercent.GetTextColorCss(bankInterestRate12)}";
-                        stockView.Knc = result.AssetPosition;
-                        stockView.KncCss = "knc t-c";
                     }
                 }
             }
