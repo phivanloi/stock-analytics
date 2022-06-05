@@ -268,10 +268,6 @@ namespace Pl.Sas.Core.Services
                 });
                 chartPrices = null;
             }
-            else
-            {
-                _logger.LogWarning("PublishRealtimeTask {symbol} is null chart price realtime", symbol);
-            }
         }
 
         /// <summary>
