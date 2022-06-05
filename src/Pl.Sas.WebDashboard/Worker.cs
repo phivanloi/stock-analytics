@@ -6,18 +6,21 @@ using Pl.Sas.Core.Interfaces;
 using Pl.Sas.Core.Services;
 using Pl.Sas.WebDashboard.RealtimeHub;
 using Polly;
+using Polly.RateLimit;
 using System.Text.Json;
 
 namespace Pl.Sas.WebDashboard
 {
     public class Worker : BackgroundService
     {
+        protected static readonly SemaphoreSlim _refreshViewThreadLock = new(1);
         private readonly ILogger<Worker> _logger;
         private readonly AppSettings _appSettings;
         private readonly IWebDashboardQueueService _webDashboardQueueService;
         private readonly IMemoryUpdateService _memoryUpdateService;
         private readonly StockViewService _stockViewService;
         private readonly IHubContext<StockRealtimeHub> _stockRealtimeHub;
+        private readonly static AsyncRateLimitPolicy _asyncRateLimitPolicy = Policy.RateLimitAsync(1, TimeSpan.FromSeconds(10));
 
         public Worker(
             IHubContext<StockRealtimeHub> stockRealtimeHub,
@@ -60,8 +63,14 @@ namespace Pl.Sas.WebDashboard
                 {
                     case "UpdateStockView":
                         _stockViewService.UpdateChangeStockView(message);
-                        var rateLimit = Policy.RateLimitAsync(1, TimeSpan.FromSeconds(10), 1);
-                        await rateLimit.ExecuteAsync(() => _stockRealtimeHub.Clients.All.SendAsync("UpdateStockView", cancellationToken));
+                        try
+                        {
+                            await _asyncRateLimitPolicy.ExecuteAsync(() => _stockRealtimeHub.Clients.All.SendAsync("UpdateStockView", cancellationToken));
+                        }
+                        catch (RateLimitRejectedException ex)
+                        {
+                            _logger.LogInformation("UpdateStockView after: {RetryAfter}", ex.RetryAfter);
+                        }
                         break;
 
                     case "UpdateRealtimeView":

@@ -70,14 +70,12 @@ namespace Pl.Sas.Core.Services
             var chartPricesRealtime = JsonSerializer.Deserialize<List<ChartPrice>>(chartPricesJsonString);
             if (chartPricesRealtime is null || chartPricesRealtime.Count <= 0)
             {
-                _logger.LogWarning("UpdateViewRealtimeOnPriceChange {symbol} is null chartPricesRealtime or count 0", symbol);
                 return;
             }
 
             var chartPrices = await _chartPriceData.CacheFindAllAsync(symbol, "D");
             if (chartPrices is null || chartPrices.Count <= 0)
             {
-                _logger.LogWarning("UpdateViewRealtimeOnPriceChange {symbol} is null chartPrices from cache", symbol);
                 return;
             }
 
