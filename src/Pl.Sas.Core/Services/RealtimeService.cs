@@ -186,8 +186,8 @@ namespace Pl.Sas.Core.Services
             stockView.LastHighestPrice = chartPrices[^1].HighestPrice * 1000;
             stockView.LastLowestPrice = chartPrices[^1].LowestPrice * 1000;
             stockView.LastTotalMatchVol = chartPrices[^1].TotalMatchVol;
-            StockViewService.BindingTradingResultToView(ref stockView, listTradingResult, bankInterestRate12?.GetValue<float>() ?? 6.8f);
             StockViewService.BindingPercentConvulsionToView(ref stockView, chartPrices);
+            StockViewService.BindingTradingResultToView(ref stockView, listTradingResult, bankInterestRate12?.GetValue<float>() ?? 6.8f);
 
             var sendMessage = new QueueMessage("UpdateRealtimeView");
             sendMessage.KeyValues.Add("Data", JsonSerializer.Serialize(stockView));
