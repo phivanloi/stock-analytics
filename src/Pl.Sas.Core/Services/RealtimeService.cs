@@ -113,6 +113,7 @@ namespace Pl.Sas.Core.Services
 
             var listTradingResult = new List<TradingResult>();
             #region Experiment Trading
+            ExperimentTrading.LoadIndicatorSet(chartPrices);
             var experCase = ExperimentTrading.Trading(chartTrading, tradingHistory, false);
             listTradingResult.Add(new()
             {

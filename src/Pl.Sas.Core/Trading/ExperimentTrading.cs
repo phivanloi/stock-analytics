@@ -26,7 +26,6 @@ namespace Pl.Sas.Core.Trading
                     tradingHistory.Add(day);
                     continue;
                 }
-                LoadIndicatorSet(tradingHistory, day);
 
                 tradingCase.IsBuy = false;
                 tradingCase.IsSell = false;
@@ -64,7 +63,7 @@ namespace Pl.Sas.Core.Trading
                         tradingCase.IsSell = SellCondition(day.TradingDate) > 0;
                         if (tradingCase.IsSell)
                         {
-                            if(tradingCase.SellPrice >= day.HighestPrice)
+                            if (tradingCase.SellPrice >= day.HighestPrice)
                             {
                                 tradingCase.SellPrice = day.ClosePrice;
                             }
@@ -175,7 +174,7 @@ namespace Pl.Sas.Core.Trading
             return (float)Math.Round((decimal)buyPrice, 2);
         }
 
-        public static void LoadIndicatorSet(List<ChartPrice> chartPrices, ChartPrice today)
+        public static void LoadIndicatorSet(List<ChartPrice> chartPrices)
         {
             var quotes = chartPrices.Select(q => new Quote()
             {
@@ -185,20 +184,7 @@ namespace Pl.Sas.Core.Trading
                 Low = (decimal)q.LowestPrice,
                 Volume = (decimal)q.TotalMatchVol,
                 Date = q.TradingDate
-            }).ToList();
-            if (!quotes.Any(q => q.Date == today.TradingDate))
-            {
-                quotes.Add(new Quote()
-                {
-                    Close = (decimal)today.OpenPrice,
-                    Open = (decimal)today.OpenPrice,
-                    High = (decimal)today.HighestPrice,
-                    Low = (decimal)today.LowestPrice,
-                    Volume = (decimal)today.TotalMatchVol,
-                    Date = today.TradingDate
-                });
-            }
-            quotes = quotes.OrderBy(q => q.Date).ToList();
+            }).OrderBy(q => q.Date).ToList();
             _macd_12_26_9 = quotes.GetMacd(12, 26, 9, CandlePart.Close).ToList();
         }
 
