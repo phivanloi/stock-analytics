@@ -203,7 +203,7 @@ namespace Pl.Sas.WebDashboard.Controllers
         {
             var message = "Thay đổi không thành công.";
             var updateResult = false;
-            var industry = await _industryData.GetByIdAsync(code);
+            var industry = await _industryData.GetByCodeAsync(code);
             if (industry is not null)
             {
                 industry.Rank = rank;

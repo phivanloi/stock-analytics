@@ -23,8 +23,10 @@ namespace Pl.Sas.Core.Services
         private readonly IFinancialIndicatorData _financialIndicatorData;
         private readonly ITradingResultData _tradingResultData;
         private readonly IStockData _stockData;
+        private readonly IKeyValueData _keyValueData;
 
         public StockViewService(
+            IKeyValueData keyValueData,
             IStockData stockData,
             ITradingResultData tradingResultData,
             IFinancialIndicatorData financialIndicatorData,
@@ -50,6 +52,7 @@ namespace Pl.Sas.Core.Services
             _asyncCacheService = asyncCacheService;
             _logger = logger;
             _memoryCacheService = memoryCacheService;
+            _keyValueData = keyValueData;
         }
 
         public virtual async Task<Dictionary<string, string>> CacheGetIndustriesAsync()
@@ -96,7 +99,6 @@ namespace Pl.Sas.Core.Services
                         query = query.Where(q =>
                         q.TotalScore > 15
                         && q.IndustryCode == industries.FirstOrDefault().Key
-                        && q.PricePercentConvulsion10 > 10
                         && q.LastAvgTenTotalMatchVol > 300000);
                         break;
                 }
@@ -165,13 +167,14 @@ namespace Pl.Sas.Core.Services
             var analyticsResults = await _analyticsResultData.FindAsync(symbol);
             var financialIndicators = await _financialIndicatorData.GetTopAsync(symbol, 10);
             var industry = await _industryData.GetByCodeAsync(company.SubsectorCode);
+            var bankInterestRate12 = await _keyValueData.CacheGetAsync(Constants.BankInterestRate12Key);
             var stockView = new StockView()
             {
                 Symbol = symbol,
                 IndustryCode = company.SubsectorCode,
                 Description = $"{company.Exchange} - {company.CompanyName} - {company.Supersector} - {company.Sector}",
                 Exchange = company.Exchange.ToUpper().Trim(),
-                Beta = company.Beta,
+                Beta = company.Beta.ShowPercent(),
                 MarketCap = company.MarketCap,
                 IndustryRank = MarketAnalyticsService.IndustryTrend(new(), industry),
             };
@@ -255,7 +258,7 @@ namespace Pl.Sas.Core.Services
             }
 
             var tradingResults = await _tradingResultData.GetForViewAsync(symbol);
-            BindingTradingResultToView(ref stockView, tradingResults);
+            BindingTradingResultToView(ref stockView, tradingResults, bankInterestRate12?.GetValue<float>() ?? 6.8f);
             tradingResults = null;
 
             industry = null;
@@ -288,107 +291,139 @@ namespace Pl.Sas.Core.Services
         {
             if (chartPrices is not null && chartPrices.Count > 0)
             {
-                chartPrices = chartPrices.OrderByDescending(q => q.TradingDate).ToList();
-                for (int i = 0; i < chartPrices.Count - 1; i++)
+                var checkChartPrices = chartPrices.OrderByDescending(q => q.TradingDate).ToList();
+                var lastPercent = checkChartPrices[0].ClosePrice.GetPercent(checkChartPrices[^1].ClosePrice);
+                stockView.Ght = checkChartPrices[0].ClosePrice.ShowPrice();
+                stockView.GhtCss = "klht t-r " + lastPercent.GetTextColorCss();
+
+                stockView.Klht = checkChartPrices[0].TotalMatchVol.ShowMoney(1);
+                stockView.KlhtCss = "klht t-r ";
+                if (checkChartPrices.Count > 2)
                 {
-                    if (chartPrices[i].ClosePrice > chartPrices[i + 1].ClosePrice)
-                    {
-                        stockView.NumberOfClosePriceIncreases++;
-                    }
-                    else
-                    {
-                        break;
-                    }
+                    var avg30MatchVol = chartPrices.Where(q => q.TradingDate > checkChartPrices[0].TradingDate)
+                        .OrderByDescending(q => q.TradingDate)
+                        .Take(30)
+                        .Average(q => q.TotalMatchVol);
+
+                    stockView.KlhtCss += checkChartPrices[0].TotalMatchVol.GetTextColorCss(avg30MatchVol);
                 }
-                for (int i = 0; i < chartPrices.Count - 1; i++)
+
+
+                var currentPercent = 0f;
+                if (checkChartPrices.Count >= 2)
                 {
-                    if (chartPrices[i].ClosePrice <= chartPrices[i + 1].ClosePrice)
-                    {
-                        stockView.NumberOfClosePriceDecrease++;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-                #region Convulsion
-                if (chartPrices.Count >= 2)
-                {
-                    stockView.PricePercentConvulsion1 = chartPrices[0].ClosePrice.GetPercent(chartPrices[1].ClosePrice);
-                }
-                if (chartPrices.Count >= 5)
-                {
-                    stockView.PricePercentConvulsion5 = chartPrices[0].ClosePrice.GetPercent(chartPrices[4].ClosePrice);
+                    currentPercent = checkChartPrices[0].ClosePrice.GetPercent(checkChartPrices[1].ClosePrice);
+                    stockView.Bd2 = currentPercent.ShowPercent();
+                    stockView.Bd2Css = "bd2 t-r " + currentPercent.GetTextColorCss();
                 }
                 else
                 {
-                    stockView.PricePercentConvulsion5 = chartPrices[0].ClosePrice.GetPercent(chartPrices.Last().ClosePrice);
+                    stockView.Bd2 = lastPercent.ShowPercent();
+                    stockView.Bd2Css = "bd2 t-r " + lastPercent.GetTextColorCss();
                 }
-                if (chartPrices.Count >= 10)
+
+                if (checkChartPrices.Count >= 5)
                 {
-                    stockView.PricePercentConvulsion10 = chartPrices[0].ClosePrice.GetPercent(chartPrices[9].ClosePrice);
+                    currentPercent = checkChartPrices[0].ClosePrice.GetPercent(checkChartPrices[4].ClosePrice);
+                    stockView.Bd5 = currentPercent.ShowPercent();
+                    stockView.Bd5Css = "bd5 t-r " + currentPercent.GetTextColorCss();
                 }
                 else
                 {
-                    stockView.PricePercentConvulsion10 = chartPrices[0].ClosePrice.GetPercent(chartPrices.Last().ClosePrice);
+                    stockView.Bd5 = lastPercent.ShowPercent();
+                    stockView.Bd5Css = "bd5 t-r " + lastPercent.GetTextColorCss();
                 }
-                if (chartPrices.Count >= 30)
+
+                if (checkChartPrices.Count >= 10)
                 {
-                    stockView.PricePercentConvulsion30 = chartPrices[0].ClosePrice.GetPercent(chartPrices[29].ClosePrice);
+                    currentPercent = checkChartPrices[0].ClosePrice.GetPercent(checkChartPrices[9].ClosePrice);
+                    stockView.Bd10 = currentPercent.ShowPercent();
+                    stockView.Bd10Css = "bd10 t-r " + currentPercent.GetTextColorCss();
                 }
                 else
                 {
-                    stockView.PricePercentConvulsion30 = chartPrices[0].ClosePrice.GetPercent(chartPrices.Last().ClosePrice);
+                    stockView.Bd10 = lastPercent.ShowPercent();
+                    stockView.Bd10Css = "bd10 t-r " + lastPercent.GetTextColorCss();
                 }
-                if (chartPrices.Count >= 50)
+
+                if (checkChartPrices.Count >= 30)
                 {
-                    stockView.PricePercentConvulsion50 = chartPrices[0].ClosePrice.GetPercent(chartPrices[49].ClosePrice);
+                    currentPercent = checkChartPrices[0].ClosePrice.GetPercent(checkChartPrices[29].ClosePrice);
+                    stockView.Bd30 = currentPercent.ShowPercent();
+                    stockView.Bd30Css = "bd30 t-r " + currentPercent.GetTextColorCss();
                 }
                 else
                 {
-                    stockView.PricePercentConvulsion50 = chartPrices[0].ClosePrice.GetPercent(chartPrices.Last().ClosePrice);
+                    stockView.Bd30 = lastPercent.ShowPercent();
+                    stockView.Bd30Css = "bd30 t-r " + lastPercent.GetTextColorCss();
                 }
-                if (chartPrices.Count >= 60)
+
+                if (checkChartPrices.Count >= 60)
                 {
-                    stockView.PricePercentConvulsion60 = chartPrices[0].ClosePrice.GetPercent(chartPrices[59].ClosePrice);
+                    currentPercent = checkChartPrices[0].ClosePrice.GetPercent(checkChartPrices[1].ClosePrice);
+                    stockView.Bd60 = currentPercent.ShowPercent();
+                    stockView.Bd60Css = "bd60 t-r " + currentPercent.GetTextColorCss();
                 }
                 else
                 {
-                    stockView.PricePercentConvulsion60 = chartPrices[0].ClosePrice.GetPercent(chartPrices.Last().ClosePrice);
+                    stockView.Bd60 = lastPercent.ShowPercent();
+                    stockView.Bd60Css = "bd60 t-r " + lastPercent.GetTextColorCss();
                 }
-                #endregion
             }
         }
 
-        public static void BindingTradingResultToView(ref StockView stockView, List<TradingResult>? tradingResults)
+        public static void BindingTradingResultToView(ref StockView stockView, List<TradingResult>? tradingResults, float bankInterestRate12)
         {
             if (tradingResults is not null && tradingResults.Count > 0)
             {
-                var result = tradingResults.FirstOrDefault(q => q.Principle == 0);
-                if (result is not null)
+                foreach (var result in tradingResults)
                 {
-                    stockView.ExperimentProfitPercent = result.ProfitPercent;
-                    stockView.ExperimentAssetPosition = result.AssetPosition;
+                    if (result.Principle == 0)
+                    {
+                        stockView.Lntn = result.ProfitPercent.ShowPercent();
+                        stockView.LntnCss = $"Lntn {result.ProfitPercent.GetTextColorCss(bankInterestRate12)}";
+                        stockView.Kntn = result.AssetPosition;
+                        stockView.KntnCss = "kntn ";
+                        if (result.IsBuy)
+                        {
+                            stockView.KntnCss += "t-d";
+                        }
+                        else if (result.IsSell)
+                        {
+                            stockView.KntnCss += "t-s";
+                        }
+                    }
+                    else if (result.Principle == 1)
+                    {
+                        stockView.Lnc = result.ProfitPercent.ShowPercent();
+                        stockView.LncCss = $"lnc {result.ProfitPercent.GetTextColorCss(bankInterestRate12)}";
+                        stockView.Knc = result.AssetPosition;
+                        stockView.KncCss = "knc ";
+                        if (result.IsBuy)
+                        {
+                            stockView.KncCss += "t-d";
+                        }
+                        if (result.IsSell)
+                        {
+                            stockView.KncCss += "t-s";
+                        }
+                    }
+                    else if (result.Principle == 3)
+                    {
+                        stockView.Lnmg = result.ProfitPercent.ShowPercent();
+                        stockView.LnmgCss = $"lnmg {result.ProfitPercent.GetTextColorCss(bankInterestRate12)}";
+                        stockView.Knc = result.AssetPosition;
+                        stockView.KncCss = "knc ";
+                        if (result.IsBuy)
+                        {
+                            stockView.KncCss += "t-d";
+                        }
+                        if (result.IsSell)
+                        {
+                            stockView.KncCss += "t-s";
+                        }
+                    }
                 }
-                result = tradingResults.FirstOrDefault(q => q.Principle == 1);
-                if (result is not null)
-                {
-                    stockView.MainProfitPercent = result.ProfitPercent;
-                    stockView.MainAssetPosition = result.AssetPosition;
-                }
-                result = tradingResults.FirstOrDefault(q => q.Principle == 2);
-                if (result is not null)
-                {
-                    stockView.AccumulationProfitPercent = result.ProfitPercent;
-                    stockView.AccumulationAssetPosition = result.AssetPosition;
-                }
-                result = tradingResults.FirstOrDefault(q => q.Principle == 3);
-                if (result is not null)
-                {
-                    stockView.BuyAndHoldProfitPercent = result.ProfitPercent;
-                    stockView.BuyAndHoldAssetPosition = result.AssetPosition;
-                }
-                result = null;
             }
         }
     }

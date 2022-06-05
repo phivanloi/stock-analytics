@@ -114,12 +114,9 @@
 
                 <td title="% Lợi nhuận của phương pháp thử nghiệm">TN</td>
                 <td title="% Lợi nhuận của phương pháp chính">CH</td>
-                @*<td title="% Lợi nhuận của phương pháp tích sản">TS</td>*@
-                <td title="% Lợi nhuận của phương pháp mua và nắm giữ">MG</td>
-                <td title="Trạng thái tài sản của phương pháp thử nghiệm">ĐG TN</td>
-                <td title="Trạng thái tài sản của phương pháp chính">ĐG CH</td>
-                @*<td title="Trạng thái tài sản của phương pháp tích sản">DG TS</td>*@
-                @*<td title="Trạng thái tài sản của phương pháp mua và nắm giữ" ">DG MG</td>*@
+                <td title="% lợi nhuận của phương pháp mua và giữ">LNMG</td>
+                <td title="Khuyến nghị theo phương pháp thử nghiệm">KNTN</td>
+                <td title="Khuyến nghị theo phương pháp chính">KNC</td>
             </tr>
         </thead>
         <tbody id="user-invest-table-body">
@@ -135,17 +132,18 @@
             const srConnection = new signalR.HubConnectionBuilder().withUrl("/stockrealtime").withAutomaticReconnect().build();
             srConnection.on("UpdateStockView", () => { LoadMarket(); });
             srConnection.on("UpdateRealtimeView", (jsonData) => {
-                var obj = JSON.parse(jsonData);
-                setContent('#' + obj.smb + ' .c-epp', obj.cepp);
-                setContent('#' + obj.smb + ' .c-epp', obj.cepp);
-                setContent('#' + obj.smb + ' .c-eap', obj.ceap);
-                setContent('#' + obj.smb + ' .c-mpp', obj.cmpp);
-                setContent('#' + obj.smb + ' .c-map', obj.cmap);
-                //setContent('#' + obj.smb + ' .c-app', obj.capp);
-                setContent('#' + obj.smb + ' .c-aap', obj.caap);
-                setContent('#' + obj.smb + ' .c-bpp', obj.cbpp);
-                //setContent('#' + obj.smb + ' .c-bap', obj.cbap);
-                //setContent('#' + obj.smb + ' .c-lcp', obj.clcp);
+                var view = JSON.parse(jsonData);
+                setContent('#' + view.smb + ' .klht', view.Klht, view.KlhtCss);
+                setContent('#' + view.smb + ' .ght', view.Ght, view.GhtCss);
+                setContent('#' + view.smb + ' .bd2', view.Bd2, view.Bd2Css);
+                setContent('#' + view.smb + ' .bd5', view.Bd5, view.Bd5Css);
+                setContent('#' + view.smb + ' .Bd10', view.Bd10, view.Bd10Css);
+                setContent('#' + view.smb + ' .bd30', view.Bd30, view.Bd30Css, '60 phiên: ' + view.Bd60);
+                setContent('#' + view.smb + ' .lntn', view.Lntn, view.LntnCss);
+                setContent('#' + view.smb + ' .lnc', view.Lnc, view.LncCss);
+                setContent('#' + view.smb + ' .lnmg', view.Lnmg, view.LnmgCss);
+                setContent('#' + view.smb + ' .kntn', view.Kntn, view.KntnCss);
+                setContent('#' + view.smb + ' .knc', view.Knc, view.KncCss);
             });
 
             async function srStartListen() {
@@ -160,9 +158,12 @@
             srConnection.onclose(async () => { await start(); });
             srStartListen();
 
-            function setContent(selecter, value) {
+            function setContent(selecter, value, css, title) {
                 $(selecter).text(value);
-                $(selecter).addClass('c-dtac');
+                $(selecter).prop('class', css + 'c-dtac');
+                if (title) {
+                    $(selecter).prop('title', title);
+                }
                 setTimeout(function() {
                     $(selecter).removeClass('c-dtac');
                 }, 800);
