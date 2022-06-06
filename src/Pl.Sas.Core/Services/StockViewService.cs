@@ -98,8 +98,7 @@ namespace Pl.Sas.Core.Services
                         var industries = CacheGetIndustriesAsync().Result;
                         query = query.Where(q =>
                         q.TotalScore > 15
-                        && q.IndustryCode == industries.FirstOrDefault().Key
-                        && q.LastAvgTenTotalMatchVol > 300000);
+                        && q.IndustryCode == industries.FirstOrDefault().Key);
                         break;
                 }
             }
@@ -109,14 +108,13 @@ namespace Pl.Sas.Core.Services
                 return ordinal switch
                 {
                     "idt" => query.OrderByDescending(q => q.IndustryRank).ThenByDescending(q => q.TotalScore).ToList(),
-                    "klmkn" => query.OrderByDescending(q => q.LastForeignPurchasingPower).ToList(),
                     "ddgdn" => query.OrderByDescending(q => q.TotalScore).ToList(),
                     "cpuad" => query.OrderByDescending(q => q.Bd2Value).ToList(),
                     "mcdesc" => query.OrderByDescending(q => q.MarketCap).ToList(),
-                    _ => query.OrderByDescending(q => q.LastTotalMatchVol).ToList(),
+                    _ => query.OrderByDescending(q => q.KlhtValue).ToList(),
                 };
             }
-            return query.OrderByDescending(q => q.LastTotalMatchVol).ToList();
+            return query.OrderByDescending(q => q.KlhtValue).ToList();
         }
 
         public virtual void UpdateChangeStockView(QueueMessage queueMessage)
@@ -210,37 +208,10 @@ namespace Pl.Sas.Core.Services
                 financialIndicators = null;
             }
 
-            if (stockPrices is not null && stockPrices.Count > 1)
+            if ((chartPrices is null || chartPrices.Count <= 0) && stockPrices is not null && stockPrices.Count > 0)
             {
-                var topThreeHistories = stockPrices.Take(3).ToList();
-                var topFiveHistories = stockPrices.Take(5).ToList();
-
-                stockView.LastClosePrice = stockPrices[0].ClosePrice;
-                stockView.LastOneClosePrice = stockPrices[1].ClosePrice;
-                stockView.LastTotalMatchVol = stockPrices[0].TotalMatchVol;
-                stockView.LastOneTotalMatchVol = stockPrices[1].TotalMatchVol;
-                stockView.LastForeignBuyVolTotal = stockPrices[0].ForeignBuyVolTotal;
-                stockView.LastForeignSellVolTotal = stockPrices[0].ForeignSellVolTotal;
-                stockView.LastOpenPrice = stockPrices[0].OpenPrice;
-                stockView.LastHighestPrice = stockPrices[0].HighestPrice;
-                stockView.LastLowestPrice = stockPrices[0].LowestPrice;
-
-                if (topThreeHistories.Count > 2)
-                {
-                    stockView.LastAvgThreeTotalMatchVol = topThreeHistories?.Average(q => q.TotalMatchVol) ?? stockView.LastOneTotalMatchVol;
-                    stockView.LastAvgFiveTotalMatchVol = topFiveHistories?.Average(q => q.TotalMatchVol) ?? stockView.LastAvgThreeTotalMatchVol;
-                    stockView.LastAvgTenTotalMatchVol = stockPrices?.Average(q => q.TotalMatchVol) ?? stockView.LastAvgFiveTotalMatchVol;
-                    stockView.LastAvgThreeForeignBuyVolTotal = topThreeHistories?.Average(q => q.ForeignBuyVolTotal) ?? stockView.LastForeignBuyVolTotal;
-                    stockView.LastAvgFiveForeignBuyVolTotal = topFiveHistories?.Average(q => q.ForeignBuyVolTotal) ?? stockView.LastAvgThreeForeignBuyVolTotal;
-                    stockView.LastAvgTenForeignBuyVolTotal = stockPrices?.Average(q => q.ForeignBuyVolTotal) ?? stockView.LastAvgFiveForeignBuyVolTotal;
-                    stockView.LastAvgThreeForeignSellVolTotal = topThreeHistories?.Average(q => q.ForeignSellVolTotal) ?? stockView.LastForeignSellVolTotal;
-                    stockView.LastAvgFiveForeignSellVolTotal = topFiveHistories?.Average(q => q.ForeignSellVolTotal) ?? stockView.LastAvgThreeForeignSellVolTotal;
-                    stockView.LastAvgTenForeignSellVolTotal = stockPrices?.Average(q => q.ForeignSellVolTotal) ?? stockView.LastAvgFiveForeignSellVolTotal;
-                }
-
-                stockPrices = null;
+                chartPrices = stockPrices.Select(q => q.ToChartPrice()).ToList();
             }
-
             BindingPercentConvulsionToView(ref stockView, chartPrices);
             chartPrices = null;
 
@@ -294,8 +265,10 @@ namespace Pl.Sas.Core.Services
                 stockView.Ght = checkChartPrices[0].ClosePrice.ShowPrice(1);
                 stockView.GhtCss = "ght t-r " + lastPercent.GetTextColorCss();
 
+                stockView.KlhtValue = checkChartPrices[0].TotalMatchVol;
                 stockView.Klht = checkChartPrices[0].TotalMatchVol.ShowMoney(1);
                 stockView.KlhtCss = "klht t-r ";
+
                 if (checkChartPrices.Count > 2)
                 {
                     var avg30MatchVol = chartPrices.Where(q => q.TradingDate < checkChartPrices[0].TradingDate)
@@ -305,7 +278,6 @@ namespace Pl.Sas.Core.Services
 
                     stockView.KlhtCss += checkChartPrices[0].TotalMatchVol.GetTextColorCss(avg30MatchVol);
                 }
-
 
                 var currentPercent = 0f;
                 if (checkChartPrices.Count >= 2)

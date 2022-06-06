@@ -181,11 +181,6 @@ namespace Pl.Sas.Core.Services
             });
             #endregion
 
-            stockView.LastClosePrice = chartPrices[^1].OpenPrice * 1000;
-            stockView.LastOpenPrice = chartPrices[^1].OpenPrice * 1000;
-            stockView.LastHighestPrice = chartPrices[^1].HighestPrice * 1000;
-            stockView.LastLowestPrice = chartPrices[^1].LowestPrice * 1000;
-            stockView.LastTotalMatchVol = chartPrices[^1].TotalMatchVol;
             StockViewService.BindingPercentConvulsionToView(ref stockView, chartPrices);
             StockViewService.BindingTradingResultToView(ref stockView, listTradingResult, bankInterestRate12?.GetValue<float>() ?? 6.8f);
 
