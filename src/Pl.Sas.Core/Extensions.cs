@@ -238,12 +238,12 @@ namespace Pl.Sas.Core
         {
             return new ChartPrice()
             {
-                ClosePrice = stockPrice.ClosePrice,
+                ClosePrice = stockPrice.ClosePrice / 1000,
                 CreatedTime = stockPrice.CreatedTime,
-                HighestPrice = stockPrice.HighestPrice,
+                HighestPrice = stockPrice.HighestPrice / 1000,
                 Id = stockPrice.Id,
-                LowestPrice = stockPrice.LowestPrice,
-                OpenPrice = stockPrice.OpenPrice,
+                LowestPrice = stockPrice.LowestPrice / 1000,
+                OpenPrice = stockPrice.OpenPrice / 1000,
                 Symbol = stockPrice.Symbol,
                 TotalMatchVol = stockPrice.TotalMatchVol,
                 TradingDate = stockPrice.TradingDate,
