@@ -15,7 +15,7 @@
         <td class="t-r @view.YearlyProfitGrowthPercent.GetTextColorCss(Model.BankInterestRate12)">@view.YearlyProfitGrowthPercent.ShowPercent()</td>
         <td class="t-r @view.FiinScore.GetTextColorCss()">@view.FiinScore.ToString("0")</td>
         <td class="t-r @view.VndScore.GetTextColorCss()">@view.VndScore.ToString("0")</td>
-        <td class="t-r @view.TargetPrice.GetTextColorCss(view.LastClosePrice / 1000)">@view.TargetPrice.ShowPriceZezoToNull(1)</td>
+        <td class="t-r">@view.TargetPrice.ShowPriceZezoToNull(1)</td>
 
         <td class="t-r @view.MacroeconomicsScore.GetTextColorCss(0)">@view.MacroeconomicsScore.ToString("0")</td>
         <td class="t-r @view.IndustryRank.GetTextColorCss(0)">@view.IndustryRank.ToString("0")</td>

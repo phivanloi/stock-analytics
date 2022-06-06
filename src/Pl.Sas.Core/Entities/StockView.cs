@@ -109,37 +109,12 @@ namespace Pl.Sas.Core.Entities
         public float YearlyProfitGrowthPercent { get; set; }
         #endregion
 
-        #region Price Crowth
+        #region Price score
 
         /// <summary>
         /// Điểm đánh giá giao dịch
         /// </summary>
         public int StockScore { get; set; }
-
-        /// <summary>
-        /// Giá đóng cửa gần nhất
-        /// </summary>
-        public float LastClosePrice { get; set; }
-
-        /// <summary>
-        /// Giá đóng cửa cách ngày gần nhất 1 ngày
-        /// </summary>
-        public float LastOneClosePrice { get; set; }
-
-        /// <summary>
-        /// Giá mở cửa phiên cuối cùng
-        /// </summary>
-        public float LastOpenPrice { get; set; }
-
-        /// <summary>
-        /// Giá cao nhất phiên cuối cùng
-        /// </summary>
-        public float LastHighestPrice { get; set; }
-
-        /// <summary>
-        /// Giá thấp nhất phiên cuối cùng
-        /// </summary>
-        public float LastLowestPrice { get; set; }
 
         #endregion
 
@@ -162,159 +137,6 @@ namespace Pl.Sas.Core.Entities
 
         #endregion
 
-        #region TotalMatchVol
-        /// <summary>
-        /// Khối lượng khớp lệnh phiên cuối
-        /// </summary>
-        public float LastTotalMatchVol { get; set; }
-
-        /// <summary>
-        /// Khối lượng khớp lệnh phiên cuối cách ngày gần nhất 1 ngày
-        /// </summary>
-        public float LastOneTotalMatchVol { get; set; }
-
-        /// <summary>
-        /// Khối lượng khớp lệnh bình quân 3 phiên cuối
-        /// </summary>
-        public float LastAvgThreeTotalMatchVol { get; set; }
-
-        /// <summary>
-        ///  % Khối lượng khớp lệnh bình quân 3 phiên cuối so với phiên gần nhất
-        /// </summary>
-        public float ThreeTotalMatchVolPercent => LastTotalMatchVol.GetPercent(LastAvgThreeTotalMatchVol);
-
-        /// <summary>
-        /// Khối lượng khớp lệnh bình quân 5 phiên cuối
-        /// </summary>
-        public float LastAvgFiveTotalMatchVol { get; set; }
-
-        /// <summary>
-        ///  % Khối lượng khớp lệnh bình quân 5 phiên cuối so với phiên gần nhất
-        /// </summary>
-        public float FiveTotalMatchVolPercent => LastTotalMatchVol.GetPercent(LastAvgFiveTotalMatchVol);
-
-        /// <summary>
-        /// Khối lượng khớp lệnh bình quân 10 phiên cuối
-        /// </summary>
-        public float LastAvgTenTotalMatchVol { get; set; }
-
-        /// <summary>
-        ///  % Khối lượng khớp lệnh bình quân 10 phiên cuối so với phiên gần nhất
-        /// </summary>
-        public float TenTotalMatchVolPercent => LastTotalMatchVol.GetPercent(LastAvgTenTotalMatchVol);
-        #endregion
-
-        #region Foreign
-
-        /// <summary>
-        /// Tổng khối lượng mua nước ngoài
-        /// </summary>
-        public float LastForeignBuyVolTotal { get; set; }
-
-        /// <summary>
-        /// Tổng khối lượng mua nước ngoài bình quân 3 phiên cuối
-        /// </summary>
-        public float LastAvgThreeForeignBuyVolTotal { get; set; }
-
-        /// <summary>
-        /// Tổng khối lượng mua nước ngoài bình quân 5 phiên cuối
-        /// </summary>
-        public float LastAvgFiveForeignBuyVolTotal { get; set; }
-
-        /// <summary>
-        /// Tổng khối lượng mua nước ngoài bình quân 10 phiên cuối
-        /// </summary>
-        public float LastAvgTenForeignBuyVolTotal { get; set; }
-
-        /// <summary>
-        /// Tổng khối lượng bán nước ngoài
-        /// </summary>
-        public float LastForeignSellVolTotal { get; set; }
-
-        /// <summary>
-        /// Tổng khối lượng bán nước ngoài bình quân 3 phiên cuối
-        /// </summary>
-        public float LastAvgThreeForeignSellVolTotal { get; set; }
-
-        /// <summary>
-        /// Tổng khối lượng bán nước ngoài bình quân 5 phiên cuối
-        /// </summary>
-        public float LastAvgFiveForeignSellVolTotal { get; set; }
-
-        /// <summary>
-        /// Tổng khối lượng bán nước ngoài bình quân 10 phiên cuối
-        /// </summary>
-        public float LastAvgTenForeignSellVolTotal { get; set; }
-
-        /// <summary>
-        /// Sức mua khối khoại, hay mua dòng khối khoại ngày cuối cùng
-        /// </summary>
-        public float LastForeignPurchasingPower => LastForeignBuyVolTotal - LastForeignSellVolTotal;
-
-        /// <summary>
-        /// Tổng bình quân sức mua khối ngoại trong vòng 3 ngày gần đây nhất
-        /// </summary>
-        public float LastAvgThreeForeignPurchasingPower => LastAvgThreeForeignBuyVolTotal - LastAvgThreeForeignSellVolTotal;
-
-        /// <summary>
-        /// Tổng bình quân sức mua khối ngoại trong vòng 5 ngày gần đây nhất
-        /// </summary>
-        public float LastAvgFiveForeignPurchasingPower => LastAvgFiveForeignBuyVolTotal - LastAvgFiveForeignSellVolTotal;
-
-        /// <summary>
-        /// Tổng bình quân sức mua khối ngoại trong vòng 10 ngày gần đây nhất
-        /// </summary>
-        public float LastAvgTenForeignPurchasingPower => LastAvgTenForeignBuyVolTotal - LastAvgTenForeignSellVolTotal;
-
-        /// <summary>
-        ///  % khối lượng mua nước ngoài bình quân 3 phiên so với phiên cuối
-        /// </summary>
-        public float ThreeForeignPurchasingPowerPercent => LastForeignPurchasingPower.GetPercent(LastAvgThreeForeignPurchasingPower);
-
-        /// <summary>
-        ///  % khối lượng mua nước ngoài bình quân 5 phiên so với phiên cuối
-        /// </summary>
-        public float FiveForeignPurchasingPowerPercent => LastForeignPurchasingPower.GetPercent(LastAvgFiveForeignPurchasingPower);
-
-        /// <summary>
-        ///  % khối lượng mua nước ngoài bình quân 10 phiên so với phiên cuối
-        /// </summary>
-        public float TenForeignPurchasingPowerPercent => LastForeignPurchasingPower.GetPercent(LastAvgTenForeignPurchasingPower);
-
-        #endregion
-
-        #region Trading
-        /// <summary>
-        /// % lợi nhuận bằng phương pháp thử nghiệm
-        /// </summary>
-        public float ExperimentProfitPercent { get; set; }
-
-        /// <summary>
-        /// % lợi nhuận bằng phương pháp chính
-        /// </summary>
-        public float MainProfitPercent { get; set; }
-
-        /// <summary>
-        /// % lợi nhuận khi tích sản
-        /// </summary>
-        public float AccumulationProfitPercent { get; set; }
-
-        /// <summary>
-        /// Trạng thái tài sản và giao dịch hiện tại của phương pháp tích sản
-        /// </summary>
-        public string AccumulationAssetPosition { get; set; } = null!;
-
-        /// <summary>
-        /// % lợi nhuận khi chỉ mua và giữ
-        /// </summary>
-        public float BuyAndHoldProfitPercent { get; set; }
-
-        /// <summary>
-        /// Trạng thái tài sản và giao dịch hiện tại của phương pháp mua và nắm giữ
-        /// </summary>
-        public string BuyAndHoldAssetPosition { get; set; } = null!;
-        #endregion
-
         /// <summary>
         /// Tổng hợp điểm đánh giá, 
         /// tạm thời là tổng của MacroeconomicsScore * 1, CompanyValueScore * 1, CompanyGrowthScore * 1, StockScore * 1. Tưởng lai có thể thay đổi các biến số để đánh trọng số cao hơn cho các score
@@ -326,6 +148,7 @@ namespace Pl.Sas.Core.Entities
         #endregion
 
         #region Cột khối lượng hiện tại
+        public float KlhtValue { get; set; }
         public string Klht { get; set; } = null!;
         public string KlhtCss { get; set; } = null!;
         #endregion

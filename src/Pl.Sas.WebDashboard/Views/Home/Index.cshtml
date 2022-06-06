@@ -28,7 +28,6 @@
                     <option value="ddgdn">Điểm đánh giá DN giảm dần</option>
                     <option selected="selected" value="klk">Khối lượng khớp giảm dần</option>
                     <option value="idt">Đánh giá mã ngành giảm dần</option>
-                    <option value="klmkn">Khối lượng mua KN giảm dần</option>
                     <option value="cpuad">% Giá thay đổi giảm dần</option>
                     <option value="mcdesc">Vốn hóa giảm dần</option>
                 </select>
@@ -141,8 +140,8 @@
                 setContent('#' + view.symbol + ' .lntn', view.lntn, view.lntnCss);
                 setContent('#' + view.symbol + ' .lnc', view.lnc, view.lncCss);
                 setContent('#' + view.symbol + ' .lnmg', view.lnmg, view.lnmgCss);
-                setContent('#' + view.symbol + ' .kntn', view.kntn, view.lntnCss);
-                setContent('#' + view.symbol + ' .knc', view.knc, view.lncCss);
+                setContent('#' + view.symbol + ' .kntn', view.kntn, view.kntnCss);
+                setContent('#' + view.symbol + ' .knc', view.knc, view.kncCss);
             });
 
             async function srStartListen() {

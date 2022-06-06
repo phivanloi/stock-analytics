@@ -52,16 +52,6 @@ namespace Pl.Sas.Core
         }
 
         /// <summary>
-        /// Lấy mô tả kết quả dạng string
-        /// </summary>
-        /// <param name="tradingCase">Trường hợp đầu tư cần lấy</param>
-        /// <returns>string</returns>
-        public static string ResultString(this TradingCaseV3 tradingCase)
-        {
-            return $"Lợi nhuận {tradingCase.ProfitPercent:0,0.00}%, thuế {tradingCase.TotalTax:0,0}";
-        }
-
-        /// <summary>
         /// Hỗ trợ tính toán lấy màu khi hiển thị
         /// </summary>
         /// <param name="first">Số cần kiểm tra</param>
@@ -236,6 +226,29 @@ namespace Pl.Sas.Core
                 0 => "info",
                 1 => "success",
                 _ => "",
+            };
+        }
+
+        /// <summary>
+        /// Chuyển một stock price to chart price
+        /// </summary>
+        /// <param name="stockPrice">stock price</param>
+        /// <returns>ChartPrice</returns>
+        public static ChartPrice ToChartPrice(this StockPrice stockPrice)
+        {
+            return new ChartPrice()
+            {
+                ClosePrice = stockPrice.ClosePrice,
+                CreatedTime = stockPrice.CreatedTime,
+                HighestPrice = stockPrice.HighestPrice,
+                Id = stockPrice.Id,
+                LowestPrice = stockPrice.LowestPrice,
+                OpenPrice = stockPrice.OpenPrice,
+                Symbol = stockPrice.Symbol,
+                TotalMatchVol = stockPrice.TotalMatchVol,
+                TradingDate = stockPrice.TradingDate,
+                Type = "s",
+                UpdatedTime = stockPrice.UpdatedTime,
             };
         }
     }
