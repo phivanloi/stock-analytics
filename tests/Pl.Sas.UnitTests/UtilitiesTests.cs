@@ -1,3 +1,4 @@
+using MathNet.Numerics;
 using Pl.Sas.Core;
 using System;
 using Xunit;
@@ -40,6 +41,15 @@ namespace Pl.Sas.UnitTests
             }
             DateTime.Now.Date.AddHours(8).AddMinutes(random.Next(50, 60));
             Assert.True(true);
+        }
+
+        [Fact]
+        public void LinearRegressionTest()
+        {
+            double[] xdata = new double[] { 10.3, 20, 30 };
+            double[] ydata = new double[] { 10, 20, 30 };
+            var p = Fit.Line(xdata, ydata);
+            Assert.True(p.A == 10);
         }
     }
 }
