@@ -6,7 +6,7 @@ namespace Pl.Sas.Core.Trading
     /// <summary>
     /// Trading thử nghiệm
     /// </summary>
-    public class ExperimentTrading : BaseTrading
+    public class ExperimentTradingBk : BaseTrading
     {
         private static List<MacdResult> _macd_12_26_9 = new();
         private static TradingCase tradingCase = new();
@@ -141,6 +141,21 @@ namespace Pl.Sas.Core.Trading
                 return 100;
             }
 
+            var topThree = _macd_12_26_9.Where(q => q.Date <= tradingDate).OrderByDescending(q => q.Date).Take(3).ToList();
+            if (topThree.Count != 3 || topThree[0].Histogram is null || topThree[1].Histogram is null || topThree[2].Histogram is null)
+            {
+                return 0;
+            }
+
+            if (topThree[0].Histogram > topThree[1].Histogram && topThree[1].Histogram > topThree[2].Histogram)
+            {
+                var avgValue = ((topThree[0].Histogram - topThree[1].Histogram) + (topThree[1].Histogram - topThree[2].Histogram)) / 2;
+                if (avgValue > -topThree[0].Histogram)
+                {
+                    return 100;
+                }
+            }
+
             return 0;
         }
 
@@ -155,6 +170,21 @@ namespace Pl.Sas.Core.Trading
             if (macd.Macd < macd.Signal)
             {
                 return 100;
+            }
+
+            var topThree = _macd_12_26_9.Where(q => q.Date <= tradingDate).OrderByDescending(q => q.Date).Take(3).ToList();
+            if (topThree.Count != 3 || topThree[0].Histogram is null || topThree[1].Histogram is null || topThree[2].Histogram is null)
+            {
+                return 0;
+            }
+
+            if (topThree[0].Histogram < topThree[1].Histogram && topThree[1].Histogram < topThree[2].Histogram)
+            {
+                var avgValue = ((topThree[0].Histogram - topThree[1].Histogram) + (topThree[1].Histogram - topThree[2].Histogram)) / 2;
+                if (-avgValue > topThree[0].Histogram)
+                {
+                    return 100;
+                }
             }
 
             return 0;

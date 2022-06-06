@@ -109,7 +109,6 @@ namespace Pl.Sas.Core.Services
                 {
                     "idt" => query.OrderByDescending(q => q.IndustryRank).ThenByDescending(q => q.TotalScore).ToList(),
                     "ddgdn" => query.OrderByDescending(q => q.TotalScore).ToList(),
-                    "cpuad" => query.OrderByDescending(q => q.Bd2Value).ToList(),
                     "mcdesc" => query.OrderByDescending(q => q.MarketCap).ToList(),
                     _ => query.OrderByDescending(q => q.KlhtValue).ToList(),
                 };
