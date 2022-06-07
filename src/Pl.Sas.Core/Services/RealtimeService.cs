@@ -19,8 +19,10 @@ namespace Pl.Sas.Core.Services
         private readonly IChartPriceData _chartPriceData;
         private readonly IAsyncCacheService _asyncCacheService;
         private readonly IKeyValueData _keyValueData;
+        private readonly IStockData _stockData;
 
         public RealtimeService(
+            IStockData stockData,
             IKeyValueData keyValueData,
             IAsyncCacheService asyncCacheService,
             IScheduleData scheduleData,
@@ -34,6 +36,7 @@ namespace Pl.Sas.Core.Services
             _scheduleData = scheduleData;
             _asyncCacheService = asyncCacheService;
             _keyValueData = keyValueData;
+            _stockData = stockData;
         }
 
         public async Task HandleEventAsync(QueueMessage queueMessage)
@@ -76,8 +79,9 @@ namespace Pl.Sas.Core.Services
                 return;
             }
 
+            var stock = await _stockData.FindBySymbolAsync(symbol);
             var chartPrices = await _chartPriceData.CacheFindAllAsync(symbol, "D");
-            if (chartPrices is null || chartPrices.Count <= 0)
+            if (chartPrices is null || chartPrices.Count <= 0 || stock is null)
             {
                 return;
             }
@@ -116,7 +120,7 @@ namespace Pl.Sas.Core.Services
             var listTradingResult = new List<TradingResult>();
             #region Experiment Trading
             ExperimentTrading.LoadIndicatorSet(chartPrices);
-            var experCase = ExperimentTrading.Trading(chartTrading, tradingHistory, false);
+            var experCase = ExperimentTrading.Trading(chartTrading, tradingHistory, stock.Exchange, false);
             listTradingResult.Add(new()
             {
                 Symbol = symbol,
@@ -139,7 +143,7 @@ namespace Pl.Sas.Core.Services
 
             #region Main Trading
             MacdTrading.LoadIndicatorSet(chartPrices);
-            var macdCase = MacdTrading.Trading(chartTrading, tradingHistory, false);
+            var macdCase = MacdTrading.Trading(chartTrading, tradingHistory, stock.Exchange, false);
             listTradingResult.Add(new()
             {
                 Symbol = symbol,

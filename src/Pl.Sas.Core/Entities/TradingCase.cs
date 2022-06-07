@@ -96,6 +96,16 @@
         /// Số ngày giữ tiền
         /// </summary>
         public int NumberDayInMoney { get; set; } = 0;
+
+        /// <summary>
+        /// Số lần khớp giá mong muốn
+        /// </summary>
+        public int NumberPriceNeed { get; set; } = 0;
+
+        /// <summary>
+        /// Số lần khớp giá với giá đóng cửa
+        /// </summary>
+        public int NumberPriceClose { get; set; } = 0;
         #endregion
 
         #region Note
