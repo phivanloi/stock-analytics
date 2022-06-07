@@ -152,7 +152,7 @@
                     setTimeout(srStartListen, 5000);
                 }
             };
-            srConnection.onclose(async () => { await start(); });
+            srConnection.onclose(async () => { await srStartListen(); });
             srStartListen();
 
             function setContent(selecter, value, css, title) {
