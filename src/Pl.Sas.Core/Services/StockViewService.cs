@@ -368,7 +368,7 @@ namespace Pl.Sas.Core.Services
                         stockView.KncCss = "knc t-c";
                         if (result.IsBuy || result.IsSell)
                         {
-                            stockView.KntnCss += " t-i";
+                            stockView.KncCss += " t-i";
                         }
                     }
                     else if (result.Principle == 3)
