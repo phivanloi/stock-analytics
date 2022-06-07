@@ -28,9 +28,9 @@ namespace Pl.Sas.Core.Interfaces
         /// <summary>
         /// Lấy toán bộ thông tin cổ phiếu theo mã cổ phiếu
         /// </summary>
-        /// <param name="code">Mã cổ phiếu</param>
+        /// <param name="symbol">Mã cổ phiếu</param>
         /// <returns>Stock</returns>
-        Task<Stock> GetByCodeAsync(string code);
+        Task<Stock> FindBySymbolAsync(string symbol);
 
         /// <summary>
         /// xóa một cổ phiếu theo id

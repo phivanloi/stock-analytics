@@ -148,7 +148,7 @@ namespace Pl.Sas.Infrastructure.Data
             return await connection.QueryAsync<Stock>(query, new { type });
         }
 
-        public virtual async Task<Stock> GetByCodeAsync(string symbol)
+        public virtual async Task<Stock> FindBySymbolAsync(string symbol)
         {
             var query = "SELECT * FROM Stocks WHERE Symbol = @symbol";
             using SqlConnection connection = new(_connectionStrings.MarketConnection);

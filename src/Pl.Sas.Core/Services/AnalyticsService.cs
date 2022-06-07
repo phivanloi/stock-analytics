@@ -324,7 +324,7 @@ namespace Pl.Sas.Core.Services
             Guard.Against.NullOrEmpty(symbol, nameof(symbol));
             var checkingKey = $"{symbol}-Analytics-StockPrice";
             var stockPrices = await _stockPriceData.FindAllForTradingAsync(symbol, 50);
-            var stock = await _stockData.GetByCodeAsync(symbol);
+            var stock = await _stockData.FindBySymbolAsync(symbol);
             if (stock is null || stockPrices.Count <= 0)
             {
                 _logger.LogWarning("StockPriceAnalyticsAsync can't find last stock price with symbol: {symbol}", symbol);
@@ -517,7 +517,7 @@ namespace Pl.Sas.Core.Services
         public virtual async Task<bool> TestTradingAnalyticsAsync(string symbol)
         {
             var checkingKey = $"{symbol}-Analytics-TestTrading";
-            var stock = await _stockData.GetByCodeAsync(symbol);
+            var stock = await _stockData.FindBySymbolAsync(symbol);
             var chartPrices = (await _chartPriceData.FindAllAsync(symbol, "D")).OrderBy(q => q.TradingDate).ToList();
             if (stock is null || chartPrices.Count <= 2)
             {
@@ -558,7 +558,7 @@ namespace Pl.Sas.Core.Services
 
             #region Macd Trading
             MacdTrading.LoadIndicatorSet(chartPrices);
-            var macdCase = MacdTrading.Trading(chartTrading, tradingHistory);
+            var macdCase = MacdTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
             var macdNote = $"Trading {Utilities.GetPrincipleName(1).ToLower()} {chartTrading.Count} phiên từ ngày {chartTrading[0].TradingDate:dd/MM/yyyy}, Lợi nhuận {macdCase.Profit(chartTrading[^1].ClosePrice):0,0} ({macdCase.ProfitPercent(chartTrading[^1].ClosePrice):0,0.00}%), thuế {macdCase.TotalTax:0,0}, xem chi tiết tại tab \"Lợi nhuận và đầu tư TN\".";
             var macdType = macdCase.FixedCapital < macdCase.Profit(chartTrading[^1].ClosePrice) ? 1 : macdCase.FixedCapital == macdCase.Profit(chartTrading[^1].ClosePrice) ? 0 : -1;
             var macdResult = new TradingResult()
@@ -583,7 +583,7 @@ namespace Pl.Sas.Core.Services
 
             #region Experiment Trading
             ExperimentTrading.LoadIndicatorSet(chartPrices);
-            var experCase = ExperimentTrading.Trading(chartTrading, tradingHistory);
+            var experCase = ExperimentTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
             var experNote = $"Trading {Utilities.GetPrincipleName(0).ToLower()} {chartTrading.Count} phiên từ ngày {chartTrading[0].TradingDate:dd/MM/yyyy}, Lợi nhuận {experCase.Profit(chartTrading[^1].ClosePrice):0,0} ({experCase.ProfitPercent(chartTrading[^1].ClosePrice):0,0.00}%), thuế {experCase.TotalTax:0,0}, xem chi tiết tại tab \"Lợi nhuận và đầu tư TN\".";
             var experType = experCase.FixedCapital < experCase.Profit(chartTrading[^1].ClosePrice) ? 1 : experCase.FixedCapital == experCase.Profit(chartTrading[^1].ClosePrice) ? 0 : -1;
             var experResult = new TradingResult()

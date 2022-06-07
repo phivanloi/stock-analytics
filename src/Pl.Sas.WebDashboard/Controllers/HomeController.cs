@@ -106,7 +106,7 @@ namespace Pl.Sas.WebDashboard.Controllers
 
         public async Task<IActionResult> StockDetailsAsync(string symbol)
         {
-            var stockTask = _stockData.GetByCodeAsync(symbol);
+            var stockTask = _stockData.FindBySymbolAsync(symbol);
             var analyticsResultTask = _analyticsResultData.FindAsync(symbol);
             var allStockPricesTask = _stockPriceData.FindAllAsync(symbol);
             var companyTask = _companyData.GetByCodeAsync(symbol);
