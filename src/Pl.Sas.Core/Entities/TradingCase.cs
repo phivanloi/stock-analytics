@@ -76,6 +76,26 @@
         /// vị thế tài sản
         /// </summary>
         public string AssetPosition { get; set; } = "100% tiền";
+
+        /// <summary>
+        /// Giá thực hiện mua/bán
+        /// </summary>
+        public float ActionPrice { get; set; } = 0;
+
+        /// <summary>
+        /// Số ngày thay đổi trạng thái
+        /// </summary>
+        public int NumberChangeDay { get; set; } = 10;
+
+        /// <summary>
+        /// Số ngày giữ cổ phiếu
+        /// </summary>
+        public int NumberDayInStock { get; set; } = 0;
+
+        /// <summary>
+        /// Số ngày giữ tiền
+        /// </summary>
+        public int NumberDayInMoney { get; set; } = 0;
         #endregion
 
         #region Note

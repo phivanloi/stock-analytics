@@ -104,5 +104,95 @@ namespace Pl.Sas.Core.Trading
             var excessCash = totalMoney - (totalValueStock + totalTax);
             return (buyStockCount, excessCash, totalTax);
         }
+
+        public static TimeTrading GetTimeTrading(string exchangeName, DateTime checkTime)
+        {
+            return exchangeName switch
+            {
+                "HOSE" => HoseTime(checkTime),
+                "HNX" => HnxTime(checkTime),
+                "UPCOM" => UpcomTime(checkTime),
+                _ => throw new Exception("GetTimeTrading can't find exchange definition."),
+            };
+
+            TimeTrading UpcomTime(DateTime time)
+            {
+                var hour = time.Hour;
+                var minute = time.Minute;
+                if (hour < 9 || hour >= 15)
+                {
+                    return TimeTrading.DON;
+                }
+
+                if (hour == 14 && minute >= 55)
+                {
+                    return TimeTrading.TMP;
+                }
+
+                return TimeTrading.CTA;
+            }
+
+            TimeTrading HnxTime(DateTime time)
+            {
+                var hour = time.Hour;
+                var minute = time.Minute;
+                if (hour < 9 || hour >= 15)
+                {
+                    return TimeTrading.DON;
+                }
+
+                if (hour == 14 && minute >= 30 && minute < 45)
+                {
+                    return TimeTrading.ATC;
+                }
+
+                if (hour == 14 && minute >= 45)
+                {
+                    return TimeTrading.PUT;
+                }
+
+                return TimeTrading.CTA;
+            }
+
+            TimeTrading HoseTime(DateTime time)
+            {
+                var hour = time.Hour;
+                var minute = time.Minute;
+                if (hour < 9 || hour >= 15)
+                {
+                    return TimeTrading.DON;
+                }
+
+                if (hour == 9 && minute < 15)
+                {
+                    return TimeTrading.ATO;
+                }
+
+                if (hour == 14 && minute >= 30 && minute < 45)
+                {
+                    return TimeTrading.ATC;
+                }
+
+                if (hour == 14 && minute >= 45)
+                {
+                    return TimeTrading.PUT;
+                }
+
+                return TimeTrading.CTA;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Định nghĩa các khung thời gian trading
+    /// </summary>
+    public enum TimeTrading
+    {
+        ATO, //At the Opening
+        CTA, //Continuous auction
+        ATC, //At the Close
+        PUT, //Put through
+        TMP, //Time to MP
+        DON, //Done
     }
 }
