@@ -1,4 +1,3 @@
-using MathNet.Numerics;
 using Pl.Sas.Core;
 using System;
 using Xunit;
