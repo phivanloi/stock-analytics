@@ -177,7 +177,6 @@
         function LoadMarket() {
             var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
             $('#user-invest-table-body').html('<tr><td colspan="26" class="text-center"><p class="fas fa-sync-alt fa-spin"></p></td></tr>');
-            $('#number-row').html('Mã');
             var postData = JSON.stringify({
                 Ordinal: $('#ordinal').val(),
                 IndustryCode: $('#industry').val(),
@@ -194,7 +193,7 @@
                 success: function(html) {
                     if (html.length > 0) {
                         $('#user-invest-table-body').html(html);
-                        $('#number-row').prop('title', $('#user-invest-table-body').children().length);
+                        $('#number-row').html( $('#user-invest-table-body').children().length + '</br> Mã');
                         document.documentElement.scrollTop = document.body.scrollTop = scrollTop;
                     }
                     else {
