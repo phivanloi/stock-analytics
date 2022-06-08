@@ -30,7 +30,7 @@ namespace Pl.Sas.Core.Trading
         /// <summary>
         /// Build tập hợp các chỉ báo theo lịch sử chart
         /// </summary>
-        /// <param name="chartPrices">Danh sách dữ liệu chart sắp sếp theo ngày trang dinh lớn dần</param>
+        /// <param name="chartPrices">Danh sách dữ liệu chart sắp sếp theo ngày trading lớn dần</param>
         /// <returns>Dictionary string, IndicatorSet</returns>
         public static Dictionary<string, IndicatorSet> BuildIndicatorSet(List<ChartPrice> chartPrices)
         {
