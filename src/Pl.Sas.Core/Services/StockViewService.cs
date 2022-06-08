@@ -160,7 +160,7 @@ namespace Pl.Sas.Core.Services
         public virtual async Task<QueueMessage?> BindingStocksViewAndSetCacheAsync(string symbol)
         {
             Guard.Against.NullOrEmpty(symbol, nameof(symbol));
-            var company = await _companyData.GetByCodeAsync(symbol);
+            var company = await _companyData.FindABySymbolAsync(symbol);
             if (company is null)
             {
                 _logger.LogWarning("Can't build view data for stock code {symbol} by company info is null.", symbol);
