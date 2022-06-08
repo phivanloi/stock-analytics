@@ -357,7 +357,7 @@ namespace Pl.Sas.Infrastructure.Data
             return (await connection.QueryAsync<Company>(query, new { subsectorCode })).AsList();
         }
 
-        public virtual async Task<Company> GetByCodeAsync(string symbol)
+        public virtual async Task<Company> FindABySymbolAsync(string symbol)
         {
             Guard.Against.NullOrEmpty(symbol, nameof(symbol));
             var query = "SELECT * FROM Companies WHERE Symbol = @symbol";

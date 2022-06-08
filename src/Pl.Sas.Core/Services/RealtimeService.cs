@@ -138,7 +138,6 @@ namespace Pl.Sas.Core.Services
                 LoseNumber = experCase.LoseNumber,
                 WinNumber = experCase.WinNumber,
             });
-            experCase = null;
             ExperimentTrading.Dispose();
             #endregion
 
@@ -162,7 +161,6 @@ namespace Pl.Sas.Core.Services
                 LoseNumber = macdCase.LoseNumber,
                 WinNumber = macdCase.WinNumber,
             });
-            macdCase = null;
             MacdTrading.Dispose();
             #endregion
 
@@ -197,10 +195,6 @@ namespace Pl.Sas.Core.Services
             sendMessage.KeyValues.Add("Symbol", symbol);
             _workerQueueService.BroadcastViewUpdatedTask(sendMessage);
             await setCacheTask;
-            listTradingResult = null;
-            chartPrices = null;
-            chartTrading = null;
-            stockView = null;
         }
 
         /// <summary>
