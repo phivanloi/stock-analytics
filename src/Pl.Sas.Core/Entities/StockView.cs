@@ -1,7 +1,4 @@
-﻿using System.Text.Json;
-using Pl.Sas.Core;
-
-namespace Pl.Sas.Core.Entities
+﻿namespace Pl.Sas.Core.Entities
 {
     public class StockView
     {
@@ -109,15 +106,6 @@ namespace Pl.Sas.Core.Entities
         public float YearlyProfitGrowthPercent { get; set; }
         #endregion
 
-        #region Price score
-
-        /// <summary>
-        /// Điểm đánh giá giao dịch
-        /// </summary>
-        public int StockScore { get; set; }
-
-        #endregion
-
         #region Recommendation
 
         /// <summary>
@@ -143,8 +131,28 @@ namespace Pl.Sas.Core.Entities
         /// </summary>
         public int TotalScore => MacroeconomicsScore + CompanyValueScore + CompanyGrowthScore + StockScore;
 
+        #region Cột điểm số kỹ thuật
+        public int StockScore { get; set; }
+        #endregion
+
         #region Cột chỉ số beta
         public string Beta { get; set; } = null!;
+        public string BetaCss { get; set; } = null!;
+        #endregion
+
+        #region Cột Sức mạnh giá rsi 14
+        public string Rsi14 { get; set; } = null!;
+        public string Rsi14Css { get; set; } = null!;
+        #endregion
+
+        #region Cột giá hỗ trợ
+        public string Nght { get; set; } = null!;
+        public string NghtCss { get; set; } = null!;
+        #endregion
+
+        #region Cột giá kháng cự
+        public string Ngkc { get; set; } = null!;
+        public string NgkcCss { get; set; } = null!;
         #endregion
 
         #region Cột khối lượng hiện tại

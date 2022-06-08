@@ -140,21 +140,29 @@ namespace Pl.Sas.Core.Entities
                 211 => baseTime.Date.AddDays(1).AddHours(4).AddMinutes(17),//Phân tích đáng giá của vnd
                 212 => baseTime.Date.AddDays(300).AddHours(9).AddMinutes(0),//Tìm kiếm các chỉ báo kỹ thuật phù hợp cho chứng khoán
 
-                300 => baseTime.AddMinutes(240),//Xử lý hiển thị dữ liệu chứng khoán cho hiển thị.
+                300 => ViewSchedule(baseTime),//Xử lý hiển thị dữ liệu chứng khoán cho hiển thị.
                 _ => baseTime.AddHours(1),
             };
+        }
+
+        private DateTime ViewSchedule(DateTime baseTime)
+        {
+            var random = new Random();
+            if (DateTime.Now.Hour > 5 && DateTime.Now.Hour < 6)
+            {
+                return baseTime.AddMinutes(random.Next(31, 35));
+            }
+            return baseTime.Date.AddDays(1).AddHours(5).AddMinutes(random.Next(1, 5));
         }
 
         private DateTime RealtimeSchedule(DateTime baseTime)
         {
             var random = new Random();
-            return baseTime.AddSeconds(int.Parse(Options["SleepTime"]) - random.Next(-10, 10));
-
-            //if (DateTime.Now.Hour > 9 && DateTime.Now.Hour < 15 && DateTime.Now.DayOfWeek != DayOfWeek.Sunday && DateTime.Now.DayOfWeek != DayOfWeek.Saturday)
-            //{
-            //    return baseTime.AddSeconds(int.Parse(Options["SleepTime"]) - random.Next(-10, 10));
-            //}
-            //return baseTime.Date.AddDays(1).AddHours(8).AddMinutes(random.Next(30, 60));
+            if (DateTime.Now.Hour > 8 && DateTime.Now.Hour < 14 && DateTime.Now.DayOfWeek != DayOfWeek.Sunday && DateTime.Now.DayOfWeek != DayOfWeek.Saturday)
+            {
+                return baseTime.AddSeconds(int.Parse(Options["SleepTime"]) - random.Next(-3, 3));
+            }
+            return baseTime.Date.AddDays(1).AddHours(8).AddMinutes(random.Next(30, 60));
         }
     }
 }

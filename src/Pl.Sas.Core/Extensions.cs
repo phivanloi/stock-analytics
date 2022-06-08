@@ -1,4 +1,5 @@
 ﻿using Pl.Sas.Core.Entities;
+using Skender.Stock.Indicators;
 
 namespace Pl.Sas.Core
 {
@@ -236,19 +237,37 @@ namespace Pl.Sas.Core
         /// <returns>ChartPrice</returns>
         public static ChartPrice ToChartPrice(this StockPrice stockPrice)
         {
-            return new ChartPrice()
+            var changePercent = (stockPrice.ClosePrice - stockPrice.ClosePriceAdjusted) / stockPrice.ClosePrice;
+            return new()
             {
-                ClosePrice = stockPrice.ClosePrice / 1000,
-                CreatedTime = stockPrice.CreatedTime,
-                HighestPrice = stockPrice.HighestPrice / 1000,
-                Id = stockPrice.Id,
-                LowestPrice = stockPrice.LowestPrice / 1000,
-                OpenPrice = stockPrice.OpenPrice / 1000,
                 Symbol = stockPrice.Symbol,
-                TotalMatchVol = stockPrice.TotalMatchVol,
                 TradingDate = stockPrice.TradingDate,
-                Type = "s",
+                OpenPrice = (stockPrice.OpenPrice - (stockPrice.OpenPrice * changePercent)) / 1000,
+                HighestPrice = (stockPrice.HighestPrice - (stockPrice.HighestPrice * changePercent)) / 1000,
+                LowestPrice = (stockPrice.LowestPrice - (stockPrice.LowestPrice * changePercent)) / 1000,
+                ClosePrice = stockPrice.ClosePriceAdjusted / 1000,
+                TotalMatchVol = stockPrice.TotalMatchVol,
                 UpdatedTime = stockPrice.UpdatedTime,
+                CreatedTime = stockPrice.CreatedTime,
+                Type = "s",
+            };
+        }
+
+        /// <summary>
+        /// Chuyển một stock price to quote để tín chỉ báo
+        /// </summary>
+        /// <param name="chartPrice">chart price</param>
+        /// <returns>ChartPrice</returns>
+        public static Quote ToQuote(this ChartPrice chartPrice)
+        {
+            return new()
+            {
+                Close = (decimal)chartPrice.ClosePrice,
+                Open = (decimal)chartPrice.OpenPrice,
+                High = (decimal)chartPrice.HighestPrice,
+                Low = (decimal)chartPrice.LowestPrice,
+                Volume = (decimal)chartPrice.TotalMatchVol,
+                Date = chartPrice.TradingDate
             };
         }
     }
