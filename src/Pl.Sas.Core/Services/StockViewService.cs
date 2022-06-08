@@ -267,16 +267,6 @@ namespace Pl.Sas.Core.Services
                 stockView.Klht = checkChartPrices[0].TotalMatchVol.ShowMoney(1);
                 stockView.KlhtCss = "klht t-r ";
 
-                if (checkChartPrices.Count > 2)
-                {
-                    var avg30MatchVol = chartPrices.Where(q => q.TradingDate < checkChartPrices[0].TradingDate)
-                        .OrderByDescending(q => q.TradingDate)
-                        .Take(30)
-                        .Average(q => q.TotalMatchVol);
-
-                    stockView.KlhtCss += checkChartPrices[0].TotalMatchVol.GetTextColorCss(avg30MatchVol);
-                }
-
                 var currentPercent = 0f;
                 if (checkChartPrices.Count >= 2)
                 {
@@ -285,6 +275,16 @@ namespace Pl.Sas.Core.Services
                     stockView.Bd2 = currentPercent.ShowPercent();
                     stockView.Bd2Css = "bd2 t-r " + currentPercent.GetTextColorCss();
                     stockView.GhtCss = "ght t-r " + currentPercent.GetTextColorCss();
+
+                    var avg30MatchVol = chartPrices.Where(q => q.TradingDate < checkChartPrices[0].TradingDate)
+                        .OrderByDescending(q => q.TradingDate)
+                        .Take(30)
+                        .Average(q => q.TotalMatchVol);
+
+                    if (checkChartPrices[0].TotalMatchVol > avg30MatchVol)
+                    {
+                        stockView.KlhtCss += currentPercent.GetTextColorCss();
+                    }
                 }
                 else
                 {
