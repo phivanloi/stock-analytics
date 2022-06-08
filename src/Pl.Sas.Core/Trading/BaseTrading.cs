@@ -5,8 +5,8 @@ namespace Pl.Sas.Core.Trading
 {
     public class BaseTrading
     {
-        protected const float _buyTax = 0.25f / 100;
-        protected const float _sellTax = 0.35f / 100;
+        protected const float _buyTax = 0.15f / 100;
+        protected const float _sellTax = 0.25f / 100;
         protected const float _advanceTax = 0.15f / 100;
         protected const int _batch = 100;
 
@@ -30,7 +30,7 @@ namespace Pl.Sas.Core.Trading
         /// <summary>
         /// Build tập hợp các chỉ báo theo lịch sử chart
         /// </summary>
-        /// <param name="chartPrices">Danh sách dữ liệu chart sắp sếp theo ngày trang dinh lớn dần</param>
+        /// <param name="chartPrices">Danh sách dữ liệu chart sắp sếp theo ngày trading lớn dần</param>
         /// <returns>Dictionary string, IndicatorSet</returns>
         public static Dictionary<string, IndicatorSet> BuildIndicatorSet(List<ChartPrice> chartPrices)
         {
@@ -64,9 +64,146 @@ namespace Pl.Sas.Core.Trading
                     }
                 }
 
-                indicatorSet.Add(chartPrices[i].DatePath, addItem);
+                if (!indicatorSet.ContainsKey(chartPrices[i].DatePath))
+                {
+                    indicatorSet.Add(chartPrices[i].DatePath, addItem);
+                }
             }
             return indicatorSet;
         }
+
+        public static (float TotalProfit, float TotalTax) Sell(long stockCount, float stockPrice)
+        {
+            var totalMoney = stockCount * stockPrice;
+            var totalTax = totalMoney * _sellTax;
+            return (totalMoney - totalTax, totalTax);
+        }
+
+        public static (long StockCount, float ExcessCash, float TotalTax) Buy(float totalMoney, float stockPrice, int numberChangeDay)
+        {
+            if (stockPrice == 0)
+            {
+                return (0, totalMoney, 0);
+            }
+
+            var buyTax = _buyTax;
+            if (numberChangeDay < 3)
+            {
+                buyTax += _advanceTax;
+            }
+
+            var totalBuyMoney = totalMoney - (totalMoney * buyTax);
+            var buyStockCount = (long)Math.Floor(totalBuyMoney / stockPrice);
+            if (buyStockCount <= 0)
+            {
+                return (0, totalMoney, 0);
+            }
+
+            var totalValueStock = buyStockCount * stockPrice;
+            var totalTax = totalValueStock * buyTax;
+            var excessCash = totalMoney - (totalValueStock + totalTax);
+            return (buyStockCount, excessCash, totalTax);
+        }
+
+        public static TimeTrading GetTimeTrading(string exchangeName, DateTime checkTime)
+        {
+            return exchangeName switch
+            {
+                "HOSE" => HoseTime(checkTime),
+                "HNX" => HnxTime(checkTime),
+                "UPCOM" => UpcomTime(checkTime),
+                _ => throw new Exception("GetTimeTrading can't find exchange definition."),
+            };
+
+            TimeTrading UpcomTime(DateTime time)
+            {
+                var hour = time.Hour;
+                var minute = time.Minute;
+                if (hour < 9 || hour >= 15)
+                {
+                    return TimeTrading.DON;
+                }
+
+                if (hour == 14 && minute >= 55)
+                {
+                    return TimeTrading.TMP;
+                }
+
+                return TimeTrading.CTA;
+            }
+
+            TimeTrading HnxTime(DateTime time)
+            {
+                var hour = time.Hour;
+                var minute = time.Minute;
+                if (hour < 9)
+                {
+                    return TimeTrading.NST;
+                }
+
+                if (hour >= 15)
+                {
+                    return TimeTrading.DON;
+                }
+
+                if (hour == 14 && minute >= 30 && minute < 45)
+                {
+                    return TimeTrading.ATC;
+                }
+
+                if (hour == 14 && minute >= 45)
+                {
+                    return TimeTrading.PUT;
+                }
+
+                return TimeTrading.CTA;
+            }
+
+            TimeTrading HoseTime(DateTime time)
+            {
+                var hour = time.Hour;
+                var minute = time.Minute;
+                if (hour < 9)
+                {
+                    return TimeTrading.NST;
+                }
+
+                if (hour >= 15)
+                {
+                    return TimeTrading.DON;
+                }
+
+                if (hour == 9 && minute < 15)
+                {
+                    return TimeTrading.ATO;
+                }
+
+                if (hour == 14 && minute >= 30 && minute < 45)
+                {
+                    return TimeTrading.ATC;
+                }
+
+                if (hour == 14 && minute >= 45)
+                {
+                    return TimeTrading.PUT;
+                }
+
+                return TimeTrading.CTA;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Định nghĩa các khung thời gian trading
+    /// </summary>
+    public enum TimeTrading
+    {
+        ATO, //At the Opening
+        CTA, //Continuous auction
+        ATC, //At the Close
+        PUT, //Put through
+        TMP, //Time to MP
+        DON, //Done
+        NST, //Not start trading
     }
 }

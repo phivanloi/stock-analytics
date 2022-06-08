@@ -159,7 +159,7 @@ namespace Pl.Sas.Core.Services
             }
             else
             {
-                _logger.LogError("Worker HandleEventAsync null scheduler Id: {Id}.", queueMessage.Id);
+                _logger.LogWarning("Worker HandleEventAsync null scheduler Id: {Id}.", queueMessage.Id);
             }
         }
 
@@ -173,7 +173,8 @@ namespace Pl.Sas.Core.Services
         {
             var symbol = schedule.DataKey ?? throw new Exception($"Schedule Null DataKey, di: {schedule.Id}, type: {schedule.Type}");
             var chartPrices = new List<ChartPrice>();
-            try
+            var random = new Random();
+            if (random.Next(0, 3000) > 2000)
             {
                 var vndChartPrices = await _downloadData.DownloadVndChartPricesRealTimeAsync(symbol, "D");
                 if (vndChartPrices is not null && vndChartPrices.Time?.Length > 0)
@@ -185,7 +186,7 @@ namespace Pl.Sas.Core.Services
                         {
                             chartPrices.Add(new()
                             {
-                                Symbol = schedule.DataKey,
+                                Symbol = symbol,
                                 TradingDate = tradingDate,
                                 ClosePrice = vndChartPrices.Close[i],
                                 OpenPrice = vndChartPrices.Open[i],
@@ -196,31 +197,61 @@ namespace Pl.Sas.Core.Services
                             });
                         }
                     }
+                    vndChartPrices = null;
                 }
             }
-            catch (Exception ex)
+            else
             {
-                _logger.LogError(ex, "UpdateChartPricesRealtimeAsync is error.");
-                var ssiChartPrices = await _downloadData.DownloadSsiChartPricesRealTimeAsync(symbol, "D");
-                if (ssiChartPrices is not null && ssiChartPrices.Time?.Length > 0)
+                if (random.Next(0, 2000) > 1000)
                 {
-                    for (int i = 0; i < ssiChartPrices.Time.Length; i++)
+                    var ssiChartPrices = await _downloadData.DownloadSsiChartPricesRealTimeAsync(symbol, "D");
+                    if (ssiChartPrices is not null && ssiChartPrices.Time?.Length > 0)
                     {
-                        var tradingDate = DateTimeOffset.FromUnixTimeSeconds(ssiChartPrices.Time[i]).Date;
-                        if (!chartPrices.Any(q => q.TradingDate == tradingDate))
+                        for (int i = 0; i < ssiChartPrices.Time.Length; i++)
                         {
-                            chartPrices.Add(new()
+                            var tradingDate = DateTimeOffset.FromUnixTimeSeconds(ssiChartPrices.Time[i]).Date;
+                            if (!chartPrices.Any(q => q.TradingDate == tradingDate))
                             {
-                                Symbol = schedule.DataKey,
-                                TradingDate = tradingDate,
-                                ClosePrice = string.IsNullOrEmpty(ssiChartPrices.Close[i]) ? 0 : float.Parse(ssiChartPrices.Close[i]),
-                                OpenPrice = string.IsNullOrEmpty(ssiChartPrices.Open[i]) ? 0 : float.Parse(ssiChartPrices.Open[i]),
-                                HighestPrice = string.IsNullOrEmpty(ssiChartPrices.Highest[i]) ? 0 : float.Parse(ssiChartPrices.Highest[i]),
-                                LowestPrice = string.IsNullOrEmpty(ssiChartPrices.Lowest[i]) ? 0 : float.Parse(ssiChartPrices.Lowest[i]),
-                                TotalMatchVol = string.IsNullOrEmpty(ssiChartPrices.Volumes[i]) ? 0 : float.Parse(ssiChartPrices.Volumes[i]),
-                                Type = "D"
-                            });
+                                chartPrices.Add(new()
+                                {
+                                    Symbol = symbol,
+                                    TradingDate = tradingDate,
+                                    ClosePrice = string.IsNullOrEmpty(ssiChartPrices.Close[i]) ? 0 : float.Parse(ssiChartPrices.Close[i]),
+                                    OpenPrice = string.IsNullOrEmpty(ssiChartPrices.Open[i]) ? 0 : float.Parse(ssiChartPrices.Open[i]),
+                                    HighestPrice = string.IsNullOrEmpty(ssiChartPrices.Highest[i]) ? 0 : float.Parse(ssiChartPrices.Highest[i]),
+                                    LowestPrice = string.IsNullOrEmpty(ssiChartPrices.Lowest[i]) ? 0 : float.Parse(ssiChartPrices.Lowest[i]),
+                                    TotalMatchVol = string.IsNullOrEmpty(ssiChartPrices.Volumes[i]) ? 0 : float.Parse(ssiChartPrices.Volumes[i]),
+                                    Type = "D"
+                                });
+                            }
                         }
+                        ssiChartPrices = null;
+                    }
+                }
+                else
+                {
+                    var vpsChartPrices = await _downloadData.DownloadVpsChartPricesRealTimeAsync(symbol, "D");
+                    if (vpsChartPrices is not null && vpsChartPrices.Time?.Length > 0)
+                    {
+                        for (int i = 0; i < vpsChartPrices.Time.Length; i++)
+                        {
+                            var tradingDate = DateTimeOffset.FromUnixTimeSeconds(vpsChartPrices.Time[i]).Date;
+                            if (!chartPrices.Any(q => q.TradingDate == tradingDate))
+                            {
+                                chartPrices.Add(new()
+                                {
+                                    Symbol = symbol,
+                                    TradingDate = tradingDate,
+                                    ClosePrice = vpsChartPrices.Close[i],
+                                    OpenPrice = vpsChartPrices.Open[i],
+                                    HighestPrice = vpsChartPrices.Highest[i],
+                                    LowestPrice = vpsChartPrices.Lowest[i],
+                                    TotalMatchVol = vpsChartPrices.Volumes[i],
+                                    Type = "D"
+                                });
+                            }
+                        }
+                        vpsChartPrices = null;
                     }
                 }
             }
@@ -235,6 +266,7 @@ namespace Pl.Sas.Core.Services
                         {"ChartPrices", JsonSerializer.Serialize(chartPrices) }
                     }
                 });
+                chartPrices = null;
             }
         }
 
@@ -294,7 +326,7 @@ namespace Pl.Sas.Core.Services
                         {
                             chartPrices.Add(new()
                             {
-                                Symbol = schedule.DataKey,
+                                Symbol = symbol,
                                 TradingDate = tradingDate,
                                 ClosePrice = string.IsNullOrEmpty(block.Close[i]) ? 0 : float.Parse(block.Close[i]),
                                 OpenPrice = string.IsNullOrEmpty(block.Open[i]) ? 0 : float.Parse(block.Open[i]),
@@ -463,14 +495,14 @@ namespace Pl.Sas.Core.Services
                 };
                 listTransactionDetails.Add(addItem);
             }
-
-            StockTransaction stockTransaction = new()
+            var stockTransaction = new StockTransaction()
             {
                 Symbol = schedule.DataKey,
                 TradingDate = Utilities.GetTradingDate(),
                 ZipDetails = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(listTransactionDetails))
             };
 
+            await _stockTransactionData.SaveStockTransactionAsync(stockTransaction);
             _workerQueueService.PublishRealtimeTask(new("SetupRealtimeSleepTimeByTransactionCount")
             {
                 KeyValues = new Dictionary<string, string>()
@@ -479,8 +511,7 @@ namespace Pl.Sas.Core.Services
                     { "TransactionCount", listTransactionDetails.Count.ToString() }
                 }
             });
-            var check = await _stockTransactionData.SaveStockTransactionAsync(stockTransaction);
-            return await _keyValueData.SetAsync(checkingKey, check);
+            return await _keyValueData.SetAsync(checkingKey, true);
         }
 
         /// <summary>
@@ -532,12 +563,15 @@ namespace Pl.Sas.Core.Services
                     insertList.Add(newLeadership);
                 }
             }
+            corporateActions = null;
+            ssiCorporateAction = null;
 
             if (size > 10)
             {
                 schedule.AddOrUpdateOptions("CorporateActionCrawlSize", "10");
             }
             await _corporateActionData.BulkInserAsync(insertList);
+            insertList = null;
             return await _keyValueData.SetAsync(checkingKey, true);
         }
 
@@ -932,7 +966,7 @@ namespace Pl.Sas.Core.Services
                 return;
             }
 
-            var allStocks = (await _stockData.FindAllAsync()).ToDictionary(s => s.Symbol, s => s);
+            var allStocks = (await _stockData.FindAllAsync(null)).ToDictionary(s => s.Symbol, s => s);
             var insertSchedules = new List<Schedule>();
             var updateStocks = new List<Stock>();
             var insertStocks = new List<Stock>();
@@ -942,7 +976,7 @@ namespace Pl.Sas.Core.Services
             {
                 if (string.IsNullOrEmpty(datum.Type) || (datum.Type != "s" && datum.Type != "i"))
                 {
-                    _logger.LogInformation("Initial stock {Code} is ignore.", datum.Code);
+                    _logger.LogWarning("Initial stock {Code} is ignore.", datum.Code);
                     continue;
                 }
                 var stockCode = datum.Code.ToUpper();
@@ -1058,10 +1092,10 @@ namespace Pl.Sas.Core.Services
                             Type = 14,
                             Name = $"Thu thập giá realtime: {stockCode}",
                             DataKey = stockCode,
-                            ActiveTime = currentTime.AddMinutes(random.Next(30, 40)),
+                            ActiveTime = currentTime.AddHours(1).AddMinutes(random.Next(30, 40)),
                             OptionsJson = JsonSerializer.Serialize(new Dictionary<string, string>()
                             {
-                                {"SleepTime", "300" }
+                                {"SleepTime", "2400" }
                             })
                         });
 

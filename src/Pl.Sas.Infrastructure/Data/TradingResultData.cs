@@ -21,16 +21,21 @@ namespace Pl.Sas.Infrastructure.Data
             return (await connection.QueryAsync<TradingResult>(query, new { symbol, principle })).AsList();
         }
 
-        public virtual async Task<List<TradingResult>> GetForViewAsync(string symbol)
+        public virtual async Task<List<TradingResult>?> GetForViewAsync(string symbol)
         {
             string query = @"   SELECT
+                                    Symbol,
                                     Principle,
-                                    TradingDate,
+                                    FixedCapital,
+                                    WinNumber,
+                                    LoseNumber,
                                     Profit,
-                                    BuyPrice,
-                                    SellPrice,
+                                    TotalTax,
                                     IsBuy,
-                                    IsSell
+                                    BuyPrice,
+                                    IsSell,
+                                    SellPrice,
+                                    AssetPosition
                                 FROM
                                     TradingResults
                                 WHERE
@@ -50,14 +55,17 @@ namespace Pl.Sas.Infrastructure.Data
                                 INSERT INTO TradingResults
                                     (Id,
                                     Symbol,
-                                    PrinCiple,
+                                    Principle,
+                                    FixedCapital,
+                                    WinNumber,
+                                    LoseNumber,
+                                    Profit,
+                                    TotalTax,
                                     IsBuy,
                                     BuyPrice,
                                     IsSell,
                                     SellPrice,
-                                    Profit,
-                                    Capital,
-                                    TotalTax,
+                                    AssetPosition,
                                     TradingNotes,
                                     CreatedTime,
                                     UpdatedTime)
@@ -65,13 +73,16 @@ namespace Pl.Sas.Infrastructure.Data
                                     (@Id,
                                     @Symbol,
                                     @Principle,
+                                    @FixedCapital,
+                                    @WinNumber,
+                                    @LoseNumber,
+                                    @Profit,
+                                    @TotalTax,
                                     @IsBuy,
                                     @BuyPrice,
                                     @IsSell,
                                     @SellPrice,
-                                    @Profit,
-                                    @Capital,
-                                    @TotalTax,
+                                    @AssetPosition,
                                     @TradingNotes,
                                     GETDATE(),
                                     GETDATE());
@@ -79,13 +90,16 @@ namespace Pl.Sas.Infrastructure.Data
                             ELSE
                             BEGIN
                                 UPDATE TradingResults SET
+                                    FixedCapital = @FixedCapital,
+                                    WinNumber = @WinNumber,
+                                    LoseNumber = @LoseNumber,
+                                    Profit = @Profit,
+                                    TotalTax = @TotalTax,
                                     IsBuy = @IsBuy,
                                     BuyPrice = @BuyPrice,
                                     IsSell = @IsSell,
                                     SellPrice = @SellPrice,
-                                    Profit = @Profit,
-                                    Capital = @Capital,
-                                    TotalTax = @TotalTax,
+                                    AssetPosition = @AssetPosition,
                                     TradingNotes = @TradingNotes,
                                     UpdatedTime = GETDATE()
                                 WHERE

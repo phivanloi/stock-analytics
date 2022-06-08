@@ -64,11 +64,8 @@ namespace Pl.Sas.Infrastructure.Data
             dataTableUpdate.Columns.Add("Id");
             dataTableUpdate.Columns.Add("Name");
             dataTableUpdate.Columns.Add("FullName");
-            dataTableUpdate.Columns.Add("Description");
             dataTableUpdate.Columns.Add("Exchange");
             dataTableUpdate.Columns.Add("Type");
-            dataTableUpdate.Columns.Add("CompanyName");
-            dataTableUpdate.Columns.Add("CompanyNameEn");
             foreach (var company in stocks)
             {
                 var row = dataTableUpdate.NewRow();
@@ -87,7 +84,7 @@ namespace Pl.Sas.Infrastructure.Data
 	                                            FullName nvarchar(256) NULL,
                                                 Exchange nvarchar(16) NULL,
                                                 Type nvarchar(16) NULL)";
-            var updateAndDropTableCommand = $@"  UPDATE
+            var updateAndDropTableCommand = $@" UPDATE
                                                     Stocks
                                                 SET
                                                     Stocks.Name = Ttb.Name,
@@ -140,14 +137,18 @@ namespace Pl.Sas.Infrastructure.Data
             });
         }
 
-        public virtual async Task<IEnumerable<Stock>> FindAllAsync()
+        public virtual async Task<IEnumerable<Stock>> FindAllAsync(string? type = "s")
         {
-            var query = "SELECT * FROM Stocks WHERE [Type] = 's'";
+            var query = "SELECT * FROM Stocks";
+            if (!string.IsNullOrEmpty(type))
+            {
+                query += " WHERE [Type] = @type";
+            }
             using SqlConnection connection = new(_connectionStrings.MarketConnection);
-            return await connection.QueryAsync<Stock>(query);
+            return await connection.QueryAsync<Stock>(query, new { type });
         }
 
-        public virtual async Task<Stock> GetByCodeAsync(string symbol)
+        public virtual async Task<Stock> FindBySymbolAsync(string symbol)
         {
             var query = "SELECT * FROM Stocks WHERE Symbol = @symbol";
             using SqlConnection connection = new(_connectionStrings.MarketConnection);

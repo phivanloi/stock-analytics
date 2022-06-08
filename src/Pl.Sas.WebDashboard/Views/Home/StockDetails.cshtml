@@ -1,5 +1,4 @@
 ﻿@using Pl.Sas.Core
-@using Pl.Sas.Infrastructure
 @model StockDetailsModel
 <!DOCTYPE html>
 <html lang="vi">
@@ -75,11 +74,11 @@
                                 <thead>
                                     <tr class="text-center">
                                         <th>Ngày</th>
-                                        <th title="Giá đóng cửa(% thay đổi)">Đóng cửa</th>
-                                        <th title="Giá đóng cửa điều chỉnh">ĐC ĐC</th>
                                         <th title="Giá mở cửa">Mở</th>
                                         <th title="Giá cao nhất và % so với giá mở cửa">Cao</th>
                                         <th title="Giá thấp nhất và % so với giá mở cửa">Thấp</th>
+                                        <th title="Giá đóng cửa(% thay đổi)">Đóng</th>
+                                        <th title="Giá đóng cửa điều chỉnh">Đóng ĐC</th>
                                         <th title="Giá trần">Trần</th>
                                         <th title="Giá sàn">Sàn</th>
                                         <th title="Khối lượng khớp lệnh">KL KL</th>
@@ -98,11 +97,11 @@
                                         }
                                         <tr>
                                             <td>@Model.StockPrices[i].TradingDate.ToString("dd-MM-yy")</td>
-                                            <td class="text-right @Model.StockPrices[i].ClosePrice.GetTextColorCss(Model.StockPrices[i + 1].ClosePrice)">@Model.StockPrices[i].ClosePrice.ShowPrice() (@Model.StockPrices[i].ClosePrice.GetPercent(Model.StockPrices[i + 1].ClosePrice).ShowPercent()%)</td>
-                                            <td class="text-right @Model.StockPrices[i].ClosePriceAdjusted.GetTextColorCss(Model.StockPrices[i + 1].ClosePriceAdjusted)">@Model.StockPrices[i].ClosePriceAdjusted.ShowPrice() (@Model.StockPrices[i].ClosePriceAdjusted.GetPercent(Model.StockPrices[i + 1].ClosePriceAdjusted).ShowPercent()%)</td>
                                             <td class="text-right">@Model.StockPrices[i].OpenPrice.ShowPrice()</td>
                                             <td class="text-right">@Model.StockPrices[i].HighestPrice.ShowPrice() (@Model.StockPrices[i].HighestPrice.GetPercent(Model.StockPrices[i].OpenPrice).ShowPercent()%)</td>
                                             <td class="text-right">@Model.StockPrices[i].LowestPrice.ShowPrice() (@Model.StockPrices[i].LowestPrice.GetPercent(Model.StockPrices[i].OpenPrice).ShowPercent()%)</td>
+                                            <td class="text-right @Model.StockPrices[i].ClosePrice.GetTextColorCss(Model.StockPrices[i + 1].ClosePrice)">@Model.StockPrices[i].ClosePrice.ShowPrice() (@Model.StockPrices[i].ClosePrice.GetPercent(Model.StockPrices[i + 1].ClosePrice).ShowPercent()%)</td>
+                                            <td class="text-right @Model.StockPrices[i].ClosePriceAdjusted.GetTextColorCss(Model.StockPrices[i + 1].ClosePriceAdjusted)">@Model.StockPrices[i].ClosePriceAdjusted.ShowPrice() (@Model.StockPrices[i].ClosePriceAdjusted.GetPercent(Model.StockPrices[i + 1].ClosePriceAdjusted).ShowPercent()%)</td>
                                             <td class="text-right">@Model.StockPrices[i].CeilingPrice.ShowPrice()</td>
                                             <td class="text-right">@Model.StockPrices[i].FloorPrice.ShowPrice()</td>
                                             <td class="text-right">@Model.StockPrices[i].TotalMatchVol.ShowMoney(1)</td>
@@ -267,21 +266,21 @@
                     @foreach (var tradingResult in Model.TradingResults)
                     {
                         <li class="nav-item" role="presentation">
-                            <a class="nav-link @(tradingResult.Key == 4 ? "active" : "")" id="trading-tab-@tradingResult.Key" data-toggle="tab" href="#tab-@tradingResult.Key" role="tab" aria-controls="tab-@tradingResult.Key" aria-selected="true">@Utilities.GetPrincipleName(tradingResult.Key)</a>
+                            <a class="nav-link @(tradingResult.Key == 0 ? "active" : "")" id="trading-tab-@tradingResult.Key" data-toggle="tab" href="#tab-@tradingResult.Key" role="tab" aria-controls="tab-@tradingResult.Key" aria-selected="true">@Utilities.GetPrincipleName(tradingResult.Key)</a>
                         </li>
                     }
                 </ul>
                 <div class="tab-content" id="tradingTabContent">
                     @foreach (var tradingResult in Model.TradingResults)
                     {
-                        <div class="tab-pane fade @(tradingResult.Key == 4 ? "active show" : "")" id="tab-@tradingResult.Key" role="tabpanel" aria-labelledby="tab-@tradingResult.Key-tab">
+                        <div class="tab-pane fade @(tradingResult.Key == 0 ? "active show" : "")" id="tab-@tradingResult.Key" role="tabpanel" aria-labelledby="tab-@tradingResult.Key-tab">
                             <div class="row">
                                 <div class="col-md-12">
                                     <div class="card card-default bg-black">
                                         <div class="card-header">
                                             <h3 class="card-title" style="color:#b4b4b4">
                                                 <i class="fas fa-notes-medical"></i>
-                                                Diễn giải quá trình đầu tư với số vốn ban đâu @tradingResult.Value.Capital.ShowMoney(1):
+                                                Diễn giải quá trình đầu tư từ:@Constants.StartTime.ToString("dd/mm/yyyy") với số vốn ban đâu @tradingResult.Value.Capital.ShowMoney(1): Thắng/Thua @tradingResult.Value.WinNumber / @tradingResult.Value.LoseNumber, Trạng thái tài sản: @tradingResult.Value.AssetPosition
                                             </h3>
                                         </div>
                                         <div class="card-body">
@@ -345,7 +344,7 @@
     <script src="~/js/adminlte.min.js"></script>
     <script src="~/js/admin.min.js"></script>
     <script>
-        $(function () {
+        $(function() {
             $('#price-history').DataTable({
                 "paging": true,
                 "lengthChange": false,
@@ -363,7 +362,7 @@
                         "first": "Trang đầu"
                     }
                 },
-                "fnInitComplete": function () {
+                "fnInitComplete": function() {
                     $("#price-history").show();
                 }
             });

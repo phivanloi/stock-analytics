@@ -25,12 +25,9 @@
         <div class="col-sm-2">
             <div class="form-group">
                 <select id="ordinal" onchange="LoadMarket()" class="form-control seach-control">
-                    <option selected="selected" value="ddgdn">Điểm đánh giá DN giảm dần</option>
-                    <option value="klk">Khối lượng khớp giảm dần</option>
+                    <option value="ddgdn">Điểm đánh giá DN giảm dần</option>
+                    <option selected="selected" value="klk">Khối lượng khớp giảm dần</option>
                     <option value="idt">Đánh giá mã ngành giảm dần</option>
-                    <option value="lntn">% Lợi nhuận TN giảm dần</option>
-                    <option value="klmkn">Khối lượng mua KN giảm dần</option>
-                    <option value="cpuad">% Giá thay đổi giảm dần</option>
                     <option value="mcdesc">Vốn hóa giảm dần</option>
                 </select>
             </div>
@@ -71,18 +68,7 @@
                 </select>
             </div>
         </div>
-        <div class="col-sm-2">
-            <div class="form-group">
-                <select id="principle" onchange="LoadMarket()" class="form-control seach-control">
-                    <option value="0">Thử nghiệm</option>
-                    <option selected="selected" value="1">Mua và nắm giữ</option>
-                    <option value="2">Dài hạn</option>
-                    <option value="3">Phương pháp macd</option>
-                    <option value="4">Phương pháp sar</option>
-                </select>
-            </div>
-        </div>
-        <div class="col-sm-2">
+        <div class="col-sm-4">
             <div class="input-group">
                 <input type="text" class="form-control seach-control" id="code" placeholder="Mã">
                 <div class="input-group-append">
@@ -91,84 +77,111 @@
             </div>
         </div>
     </div>
-    <table class="table table-bordered table-hover">
+    <table class="table table-bordered table-hover market">
         <thead>
             <tr style="text-align:center; color:#fff">
                 <td rowspan="2" title="Tên doanh nghiệp - lĩnh vực hoạt động" id="number-row">Mã</td>
-                <td colspan="2" title="Phân tích các yếu tố vĩ mô tác động vào cổ phiếu">Vĩ mô</td>
-                <td colspan="4" title="Điểm đánh giá doanh nghiệp và các chỉ số tài chính hiện tại của doanh nghiệp">Giá trị DN</td>
-                <td colspan="3" title="Điểm đánh giá tốc độ tăng trưởng của doanh nghiệp">Tăng trưởng DN</td>
-                <td colspan="12" title="Điểm đánh giá tăng trưởng thị giá và phân tích kỹ thuật">Kỹ thuật và % Tăng trưởng thị giá</td>
-                <td colspan="3" title="Đánh giá về cổ phiếu của các đơn vị khác">Đánh giá khác</td>
-                <td colspan="2" title="Kết quả giao dịch thử nhiệm đầu tư từ ngày @Pl.Sas.Core.Constants.StartTime.ToString("dd/MM/yyyy") và nếu chỉ mua và nắm giữ">Giao dịch TN </td>
-                <td colspan="2" title="Trạng thái đánh giá Mua/Theo dõi - Giá mua">ĐG Giao dịch</td>
+                <td colspan="10" title="Điểm đánh giá doanh nghiệp và các chỉ số tài chính hiện tại của doanh nghiệp">Doanh nghiệp</td>
+                <td colspan="2" title="Phân tích các yếu tố vĩ mô tác động vào cổ phiếu">Dòng tiền</td>
+                <td colspan="8" title="Điểm đánh giá tăng trưởng thị giá và phân tích kỹ thuật">Kỹ thuật</td>
+                <td colspan="5" title="Kết quả các phương pháp khi cho đầu tư từ @Pl.Sas.Core.Constants.StartTime.ToString("dd/MM/yyyy") và đánh giá mua/bán">Khuyến nghị</td>
             </tr>
-            <tr style="text-align:center; color:#fff">
-                <td title="Tổng điểm đánh giá vĩ mô">TH</td>
-                <td title="Điểm đánh giá su thế ngành">ĐN</td>
-
+            <tr class="t-c t-w">
                 <td title="Tổng hợp điểm đánh giá của doanh nghiệp">TH</td>
                 <td title="Chỉ số EPS, EPS = (LNST-cổ tức của cổ phiếu ưu đãi) / (KLCP lưu hành bình quân trong kỳ)">EPS</td>
                 <td title="Chỉ số P/E, P/E = giá cổ phiếu / EPS">P/E</td>
                 <td title="Chỉ số P/B, Giá cổ phiếu / (Book value / số lượng cổ phiếu đang lưu hành bình quân)">P/B</td>
-
                 <td title="Tổng hợp điểm đánh giá tăng trưởng doanh nghiệp">TH</td>
                 <td title="% tăng trưởng doanh thu trung bình 4 năm">%DT</td>
                 <td title="% tăng trưởng lợi nhuận trung bình 4 năm">%LN</td>
+                <td title="Đánh giá của fiintrading">FIIN</td>
+                <td title="Đánh giá của vndirect">VND</td>
+                <td title="Giá dự phóng của các công ty chứng khoán">Giá DP</td>
+
+                <td title="Tổng điểm đánh giá vĩ mô">TH</td>
+                <td title="Điểm đánh giá su thế ngành">ĐN</td>
 
                 <td title="Tổng điểm đánh giá tăng trưởng giá">TH</td>
                 <td title="Chỉ số beta">Beta</td>
                 <td title="Khối lượng khớp lệnh phiên trước và % so với bình quân 3,5,10 phiên trước">KL khớp</td>
                 <td title="Giá đóng của phiên giao mới nhất">Giá ĐC</td>
-                <td title="% biến động giá trong 1 phiên" >1P</td>
-                <td title="% biến động giá trong 5 phiên" >5P</td>
-                <td title="% biến động giá trong 10 phiên" >10P</td>
-                <td title="% biến động giá trong 30 phiên" >30P</td>
-                <td title="% biến động giá trong 60 phiên" >60P</td>
-                <td title="% biến động giá trong 120 phiên" >120P</td>
-                <td title="% biến động giá trong 240 phiên" >240P</td>
-                <td title="% biến động giá trong 480 phiên" >480P</td>
+                <td title="% biến động giá trong 1 phiên">1P</td>
+                <td title="% biến động giá trong 5 phiên">5P</td>
+                <td title="% biến động giá trong 10 phiên">10P</td>
+                <td title="% biến động giá trong 30 phiên">30P</td>
 
-                <td title="Đánh giá của fiintrading">FIIN</td>
-                <td title="Đánh giá của vndirect">VND</td>
-                <td title="Giá dự phóng của các công ty chứng khoán">Giá DP</td>
-
-                <td title="% Lợi nhuận thu được khi cho đầu tư thử nghiệm từ ngày @Pl.Sas.Core.Constants.StartTime.ToString("dd/MM/yyyy")">% LN</td>
-                <td title="% Lợi nhuận thu được khi mua và nắm giữ từ ngày @Pl.Sas.Core.Constants.StartTime.ToString("dd/MM/yyyy")">% BĐ</td>
-
-                <td title="Trạng thái đánh giá Mua/Theo dõi - Giá mua">Mua</td>
-                <td title="Trạng thái đánh giá Bán/Theo dõi - Giá bán">Bán</td>
+                <td title="% Lợi nhuận của phương pháp thử nghiệm">TN</td>
+                <td title="% Lợi nhuận của phương pháp chính">CH</td>
+                <td title="% lợi nhuận của phương pháp mua và giữ">LNMG</td>
+                <td title="Khuyến nghị theo phương pháp thử nghiệm">KNTN</td>
+                <td title="Khuyến nghị theo phương pháp chính">KNC</td>
             </tr>
         </thead>
         <tbody id="user-invest-table-body">
             <tr>
-                <td colspan="29" class="text-center"><p class="fas fa-sync-alt fa-spin"></p></td>
+                <td colspan="26" class="text-center"><p class="fas fa-sync-alt fa-spin"></p></td>
             </tr>
         </tbody>
     </table>
 </section>
 @section Scripts{
     <script>
-        $(function () {
-            LoadMarket();
+        $(function() {
+            const srConnection = new signalR.HubConnectionBuilder().withUrl("/stockrealtime").withAutomaticReconnect().build();
+            srConnection.on("UpdateStockView", () => { LoadMarket(); });
+            srConnection.on("UpdateRealtimeView", (view) => {
+                setContent('#' + view.symbol + ' .klht', view.klht, view.klhtCss);
+                setContent('#' + view.symbol + ' .ght', view.ght, view.ghtCss);
+                setContent('#' + view.symbol + ' .bd2', view.bd2, view.bd2Css);
+                setContent('#' + view.symbol + ' .bd5', view.bd5, view.bd5Css);
+                setContent('#' + view.symbol + ' .bd10', view.bd10, view.bd10Css);
+                setContent('#' + view.symbol + ' .bd30', view.bd30, view.bd30Css, '60 phiên: ' + view.bd60);
+                setContent('#' + view.symbol + ' .lntn', view.lntn, view.lntnCss);
+                setContent('#' + view.symbol + ' .lnc', view.lnc, view.lncCss);
+                setContent('#' + view.symbol + ' .lnmg', view.lnmg, view.lnmgCss);
+                setContent('#' + view.symbol + ' .kntn', view.kntn, view.kntnCss);
+                setContent('#' + view.symbol + ' .knc', view.knc, view.kncCss);
+            });
 
-            $('#code').keypress(function (e) {
+            async function srStartListen() {
+                try {
+                    await srConnection.start();
+                    console.log("Realtime stock connected.");
+                } catch (err) {
+                    console.log(err);
+                    setTimeout(srStartListen, 5000);
+                }
+            };
+            srConnection.onclose(async () => { await srStartListen(); });
+            srStartListen();
+
+            function setContent(selecter, value, css, title) {
+                $(selecter).text(value);
+                $(selecter).prop('class', css + ' c-dtac');
+                if (title) {
+                    $(selecter).prop('title', title);
+                }
+                setTimeout(function() {
+                    $(selecter).removeClass('c-dtac');
+                }, 800);
+            }
+
+            $('#code').keypress(function(e) {
                 if (e.which == 13) {
                     LoadMarket();
                 }
             });
+            LoadMarket();
         });
 
         function LoadMarket() {
             var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            $('#user-invest-table-body').html('<tr><td colspan="29" class="text-center"><p class="fas fa-sync-alt fa-spin"></p></td></tr>');
-            $('#number-row').html('Mã');
+            $('#user-invest-table-body').html('<tr><td colspan="26" class="text-center"><p class="fas fa-sync-alt fa-spin"></p></td></tr>');
             var postData = JSON.stringify({
-                Principle: $('#principle').val(),
                 Ordinal: $('#ordinal').val(),
                 IndustryCode: $('#industry').val(),
                 Exchange: $('#exchange').val(),
-                Code: $('#code').val(),
+                Symbol: $('#code').val(),
                 Zone: $('#zone').val()
             });
             $.ajax({
@@ -177,10 +190,10 @@
                 cache: false,
                 data: postData,
                 url: "/home/marketlist",
-                success: function (html) {
+                success: function(html) {
                     if (html.length > 0) {
                         $('#user-invest-table-body').html(html);
-                        $('#number-row').prop('title', $('#user-invest-table-body').children().length);
+                        $('#number-row').html( $('#user-invest-table-body').children().length + '</br> Mã');
                         document.documentElement.scrollTop = document.body.scrollTop = scrollTop;
                     }
                     else {

@@ -35,17 +35,30 @@ builder.Services.AddOptions();
 builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
 builder.Services.Configure<ConnectionStrings>(builder.Configuration.GetSection("ConnectionStrings"));
 
-builder.Services.AddHttpClient("downloader", c =>
+builder.Services.AddHttpClient("ssidownloader", c =>
 {
-    c.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36 Edg/86.0.622.51");
+    c.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36 Edg/101.0.1210.53");
     c.DefaultRequestHeaders.Add("Referer", "https://iboard.ssi.com.vn/");
-}).ConfigurePrimaryHttpMessageHandler(() =>
+}).ConfigurePrimaryHttpMessageHandler(() => { return new SocketsHttpHandler() { UseCookies = false }; });
+builder.Services.AddHttpClient("vnddownloader", c =>
 {
-    return new SocketsHttpHandler()
-    {
-        UseCookies = false
-    };
-});
+    c.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36 Edg/101.0.1210.53");
+    c.DefaultRequestHeaders.Add("Referer", "https://dchart.vndirect.com.vn/");
+    c.DefaultRequestHeaders.Add("Origin", "https://dchart.vndirect.com.vn/");
+}).ConfigurePrimaryHttpMessageHandler(() => { return new SocketsHttpHandler() { UseCookies = false }; });
+builder.Services.AddHttpClient("fiindownloader", c =>
+{
+    c.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36 Edg/101.0.1210.53");
+    c.DefaultRequestHeaders.Add("Referer", "https://fiintrade.vn");
+    c.DefaultRequestHeaders.Add("Origin", "https://fiintrade.vn");
+    c.DefaultRequestHeaders.Add("Authorization", "Bearer");
+}).ConfigurePrimaryHttpMessageHandler(() => { return new SocketsHttpHandler() { UseCookies = false }; });
+builder.Services.AddHttpClient("vpsdownloader", c =>
+{
+    c.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36 Edg/101.0.1210.53");
+    c.DefaultRequestHeaders.Add("Referer", "https://chart.vps.com.vn");
+    c.DefaultRequestHeaders.Add("Origin", "https://chart.vps.com.vn");
+}).ConfigurePrimaryHttpMessageHandler(() => { return new SocketsHttpHandler() { UseCookies = false }; });
 
 builder.Services.AddHealthChecks()
     .AddCheck("self", () => HealthCheckResult.Healthy())

@@ -12,7 +12,7 @@
 }
 
 .table td, .table th {
-    padding: 5px;
+    padding: 2px 8px;
 }
 
 .seach-control {
@@ -160,4 +160,41 @@ label {
 .industry-edit .table td, .industry-edit .table th {
     padding: 2px 15px;
     line-height: 38px;
+}
+
+.t-r {
+    text-align: right;
+}
+
+.t-c {
+    text-align: center;
+}
+
+
+.t-w {
+    color: white;
+}
+
+.t-d {
+    color: #dc3545 !important
+}
+
+.t-s {
+    color: #28a745 !important
+}
+
+.t-wn {
+    color: #ffc107 !important
+}
+
+.t-i {
+    color: #3efbf2 !important
+}
+
+.market td {
+    transition: all 1s ease;
+}
+
+.c-dtac {
+    background-color: #dadada5a
 }

@@ -122,20 +122,28 @@ namespace Pl.Sas.Scheduler.Migrations.AnalyticsDb
                         .HasMaxLength(22)
                         .HasColumnType("nvarchar(22)");
 
-                    b.Property<float>("BuyPrice")
-                        .HasColumnType("real");
+                    b.Property<string>("AssetPosition")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
-                    b.Property<float>("Capital")
+                    b.Property<float>("BuyPrice")
                         .HasColumnType("real");
 
                     b.Property<DateTime>("CreatedTime")
                         .HasColumnType("datetime2");
+
+                    b.Property<float>("FixedCapital")
+                        .HasColumnType("real");
 
                     b.Property<bool>("IsBuy")
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsSell")
                         .HasColumnType("bit");
+
+                    b.Property<int>("LoseNumber")
+                        .HasColumnType("int");
 
                     b.Property<int>("Principle")
                         .HasColumnType("int");
@@ -159,6 +167,9 @@ namespace Pl.Sas.Scheduler.Migrations.AnalyticsDb
 
                     b.Property<DateTime>("UpdatedTime")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("WinNumber")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 

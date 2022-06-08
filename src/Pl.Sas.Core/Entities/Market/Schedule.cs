@@ -117,13 +117,13 @@ namespace Pl.Sas.Core.Entities
                 4 => baseTime.Date.AddDays(1).AddHours(1).AddMinutes(random.Next(0, 60)),//bổ sung thông tin tài chính của danh nghiệp bằng ssi api
                 5 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 30)),//lấy danh sách lịch sử giá cổ phiếu theo ssi api
                 6 => baseTime.Date.AddDays(1).AddHours(1).AddMinutes(random.Next(0, 60)),//lấy danh sách lịch sử sự kiện công ty theo ssi api
-                7 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(31, 60)),//lấy lịch sử khớp lệnh cổ phiếu
-                8 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 60)),//Bổ sung đánh giá cổ phiếu của fiin
-                9 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 60)),//Thu thập dữ liệu chart price
-                10 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 60)),//Lấy lãi suất ngân hàng lớn nhất
-                11 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 60)),//Thu thập khuyến nghị của các công ty chứng khoán
-                12 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 60)),//Thu thập đánh giá cổ phiếu của vndirect
-                13 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 60)),//Thu thập lại dữ liệu chart
+                7 => baseTime.Date.AddDays(1).AddHours(10).AddMinutes(random.Next(31, 120)),//lấy lịch sử giao dịch, khớp lệnh
+                8 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 120)),//Bổ sung đánh giá cổ phiếu của fiin
+                9 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 120)),//Thu thập dữ liệu chart price
+                10 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 120)),//Lấy lãi suất ngân hàng lớn nhất
+                11 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 120)),//Thu thập khuyến nghị của các công ty chứng khoán
+                12 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 120)),//Thu thập đánh giá cổ phiếu của vndirect
+                13 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 120)),//Thu thập lại dữ liệu chart
                 14 => RealtimeSchedule(baseTime),//Thu thập dự liệu realtime
 
                 200 => baseTime.Date.AddDays(1).AddHours(4).AddMinutes(10),//đánh giá giá trị của doanh nghiệp
@@ -140,7 +140,7 @@ namespace Pl.Sas.Core.Entities
                 211 => baseTime.Date.AddDays(1).AddHours(4).AddMinutes(17),//Phân tích đáng giá của vnd
                 212 => baseTime.Date.AddDays(300).AddHours(9).AddMinutes(0),//Tìm kiếm các chỉ báo kỹ thuật phù hợp cho chứng khoán
 
-                300 => baseTime.AddMinutes(120),//Xử lý hiển thị dữ liệu chứng khoán cho hiển thị.
+                300 => baseTime.AddMinutes(240),//Xử lý hiển thị dữ liệu chứng khoán cho hiển thị.
                 _ => baseTime.AddHours(1),
             };
         }
@@ -154,7 +154,7 @@ namespace Pl.Sas.Core.Entities
             //{
             //    return baseTime.AddSeconds(int.Parse(Options["SleepTime"]) - random.Next(-10, 10));
             //}
-            //return baseTime.Date.AddDays(1).AddHours(8).AddMinutes(random.Next(50, 60));
+            //return baseTime.Date.AddDays(1).AddHours(8).AddMinutes(random.Next(30, 60));
         }
     }
 }

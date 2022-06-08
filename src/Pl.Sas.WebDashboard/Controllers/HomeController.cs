@@ -72,9 +72,8 @@ namespace Pl.Sas.WebDashboard.Controllers
             var followSymbols = (await userFollowStocksTask).Select(q => q.Symbol).ToList();
             var model = new MarketListViewModel()
             {
-                StockViews = _stockViewService.GetMarketStocksView(marketSearchModel?.Principle ?? 1, marketSearchModel?.Exchange, marketSearchModel?.IndustryCode, marketSearchModel?.Symbol, marketSearchModel?.Ordinal, marketSearchModel?.Zone, followSymbols),
+                StockViews = _stockViewService.GetMarketStocksView(marketSearchModel?.Exchange, marketSearchModel?.IndustryCode, marketSearchModel?.Symbol, marketSearchModel?.Ordinal, marketSearchModel?.Zone, followSymbols),
                 UserFollowSymbols = followSymbols,
-                Principle = marketSearchModel?.Principle ?? 1,
                 BankInterestRate12 = (await bankInterestRate12Task)?.GetValue<float>() ?? 6.8f,
             };
             return PartialView(model);
@@ -107,7 +106,7 @@ namespace Pl.Sas.WebDashboard.Controllers
 
         public async Task<IActionResult> StockDetailsAsync(string symbol)
         {
-            var stockTask = _stockData.GetByCodeAsync(symbol);
+            var stockTask = _stockData.FindBySymbolAsync(symbol);
             var analyticsResultTask = _analyticsResultData.FindAsync(symbol);
             var allStockPricesTask = _stockPriceData.FindAllAsync(symbol);
             var companyTask = _companyData.GetByCodeAsync(symbol);
@@ -129,7 +128,7 @@ namespace Pl.Sas.WebDashboard.Controllers
                 Details = stock,
                 StockPrices = await allStockPricesTask,
                 AnalyticsResultInfo = analyticsResult,
-                CompanyInfo = await companyTask,
+                CompanyInfo = await companyTask
             };
 
             foreach (var tradingResult in await tradingResultsTask)
@@ -139,10 +138,13 @@ namespace Pl.Sas.WebDashboard.Controllers
                     model.TradingResults.Add(tradingResult.Principle, new()
                     {
                         TradingExplainNotes = tradingResult.TradingNotes is not null ? JsonSerializer.Deserialize<List<KeyValuePair<int, string>>>(_zipHelper.UnZipByte(tradingResult.TradingNotes)) : new List<KeyValuePair<int, string>>(),
-                        Capital = tradingResult.Capital,
+                        Capital = tradingResult.FixedCapital,
                         Profit = tradingResult.Profit,
                         ProfitPercent = tradingResult.ProfitPercent,
-                        TotalTax = tradingResult.TotalTax
+                        TotalTax = tradingResult.TotalTax,
+                        AssetPosition = tradingResult.AssetPosition,
+                        LoseNumber = tradingResult.LoseNumber,
+                        WinNumber = tradingResult.WinNumber,
                     });
                 }
             }
@@ -197,11 +199,11 @@ namespace Pl.Sas.WebDashboard.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> IndustrySaveAsync(string id, int rank)
+        public async Task<IActionResult> IndustrySaveAsync(string code, int rank)
         {
             var message = "Thay đổi không thành công.";
             var updateResult = false;
-            var industry = await _industryData.GetByIdAsync(id);
+            var industry = await _industryData.GetByCodeAsync(code);
             if (industry is not null)
             {
                 industry.Rank = rank;

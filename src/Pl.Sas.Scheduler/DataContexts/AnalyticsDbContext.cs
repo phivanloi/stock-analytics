@@ -23,16 +23,19 @@ namespace Pl.Sas.Scheduler.DataContexts
             });
 
             #endregion
+
             #region TradingResult
 
             modelBuilder.Entity<TradingResult>(b =>
             {
                 b.Property(c => c.Id).HasMaxLength(22).IsRequired();
                 b.Property(p => p.Symbol).HasMaxLength(16).IsRequired();
+                b.Property(p => p.AssetPosition).HasMaxLength(128).IsRequired();
                 b.HasIndex(p => new { p.Symbol, p.Principle });
             });
 
             #endregion
+
             #region KeyValue
             modelBuilder.Entity<KeyValue>(b =>
             {

@@ -24,6 +24,6 @@ namespace Pl.Sas.Core.Interfaces
         /// </summary>
         /// <param name="symbol">Mã chứng khoán</param>
         /// <returns></returns>
-        Task<List<TradingResult>> GetForViewAsync(string symbol);
+        Task<List<TradingResult>?> GetForViewAsync(string symbol);
     }
 }

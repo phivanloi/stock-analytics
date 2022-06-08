@@ -1,15 +1,4 @@
-﻿var connection = new signalR.HubConnectionBuilder().withUrl("/stockrealtime").build();
-connection.on("UpdateStockView", function () {
-    LoadMarket();
-});
-
-$(function () {
-    connection.start().then(function () {
-        console.log('Realtime stock connected.');
-    }).catch(function (err) {
-        return console.error(err.toString());
-    });
-
+﻿$(function () {
     $(document).on('click', '.s-c', function (e) {
         OpenModalDetails(e.target.innerText, e.target.attributes['title'].nodeValue, e.target.attributes['fo'].nodeValue);
     });

@@ -22,7 +22,7 @@ namespace Pl.Sas.UnitTests
 
             await analyticsService.MarketSentimentAnalyticsAsync(new()
             {
-                DataKey = "VNINDEX"
+                DataKey = "VNXALL"
             });
             Assert.True(true);
 
@@ -38,7 +38,7 @@ namespace Pl.Sas.UnitTests
             var hostedService = serviceProvider.GetService<IHostedService>() as LoggingQueuedHostedService ?? throw new Exception("Can't get LoggingQueuedHostedService");
             await hostedService.StartAsync(CancellationToken.None);
 
-            await analyticsService.TestTradingAnalyticsAsync("SMB");
+            await analyticsService.TestTradingAnalyticsAsync("VND");
             Assert.True(true);
 
             await hostedService.StopAsync(CancellationToken.None);

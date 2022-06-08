@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Pl.Sas.Core.Entities;
 using Pl.Sas.Core.Interfaces;
+using Pl.Sas.Core.Trading;
 using System.Diagnostics;
 using System.Text.Json;
 
@@ -13,62 +14,29 @@ namespace Pl.Sas.Core.Services
     public class RealtimeService
     {
         private readonly ILogger<RealtimeService> _logger;
-        private readonly IZipHelper _zipHelper;
         private readonly IWorkerQueueService _workerQueueService;
         private readonly IScheduleData _scheduleData;
-        private readonly ICompanyData _companyData;
-        private readonly IStockPriceData _stockPriceData;
-        private readonly IKeyValueData _keyValueData;
-        private readonly IFinancialIndicatorData _financialIndicatorData;
-        private readonly IFiinEvaluatedData _fiinEvaluatedData;
-        private readonly IVndStockScoreData _vndStockScoreData;
-        private readonly IFinancialGrowthData _financialGrowthData;
-        private readonly IAnalyticsResultData _analyticsResultData;
-        private readonly IStockData _stockData;
-        private readonly IStockRecommendationData _stockRecommendationData;
         private readonly IChartPriceData _chartPriceData;
-        private readonly ITradingResultData _tradingResultData;
-        private readonly IIndustryData _industryData;
-        private readonly ICorporateActionData _corporateActionData;
+        private readonly IAsyncCacheService _asyncCacheService;
+        private readonly IKeyValueData _keyValueData;
+        private readonly IStockData _stockData;
 
         public RealtimeService(
-            ICorporateActionData corporateActionData,
-            IIndustryData industryData,
-            ITradingResultData tradingResultData,
-            IChartPriceData chartPriceData,
-            IStockRecommendationData stockRecommendationData,
             IStockData stockData,
-            IAnalyticsResultData analyticsResultData,
-            IFinancialGrowthData financialGrowthData,
-            IVndStockScoreData vndStockScoreData,
-            IFiinEvaluatedData fiinEvaluatedData,
-            IFinancialIndicatorData financialIndicatorData,
             IKeyValueData keyValueData,
-            IStockPriceData stockPriceData,
-            ICompanyData companyData,
+            IAsyncCacheService asyncCacheService,
             IScheduleData scheduleData,
+            IChartPriceData chartPriceData,
             IWorkerQueueService workerQueueService,
-            IZipHelper zipHelper,
             ILogger<RealtimeService> logger)
         {
-            _corporateActionData = corporateActionData;
-            _industryData = industryData;
-            _tradingResultData = tradingResultData;
             _chartPriceData = chartPriceData;
-            _stockRecommendationData = stockRecommendationData;
-            _stockData = stockData;
-            _analyticsResultData = analyticsResultData;
-            _financialGrowthData = financialGrowthData;
-            _vndStockScoreData = vndStockScoreData;
-            _fiinEvaluatedData = fiinEvaluatedData;
-            _financialIndicatorData = financialIndicatorData;
-            _keyValueData = keyValueData;
-            _stockPriceData = stockPriceData;
-            _companyData = companyData;
-            _scheduleData = scheduleData;
             _logger = logger;
-            _zipHelper = zipHelper;
             _workerQueueService = workerQueueService;
+            _scheduleData = scheduleData;
+            _asyncCacheService = asyncCacheService;
+            _keyValueData = keyValueData;
+            _stockData = stockData;
         }
 
         public async Task HandleEventAsync(QueueMessage queueMessage)
@@ -83,7 +51,7 @@ namespace Pl.Sas.Core.Services
                     break;
 
                 case "TestTradingOnPriceChange":
-                    await TestTradingOnPriceChange(queueMessage.KeyValues["Symbol"], queueMessage.KeyValues["ChartPrices"]);
+                    await UpdateViewRealtimeOnPriceChange(queueMessage.KeyValues["Symbol"], queueMessage.KeyValues["ChartPrices"]);
                     break;
 
                 default:
@@ -101,7 +69,7 @@ namespace Pl.Sas.Core.Services
         /// <param name="symbol">Mã chứng khoán</param>
         /// <param name="chartPricesJsonString">Danh sách lịch sử giá cập nhập tự động</param>
         /// <returns></returns>
-        public virtual async Task TestTradingOnPriceChange(string symbol, string chartPricesJsonString)
+        public virtual async Task UpdateViewRealtimeOnPriceChange(string symbol, string chartPricesJsonString)
         {
             Guard.Against.NullOrEmpty(symbol, nameof(symbol));
             Guard.Against.NullOrEmpty(chartPricesJsonString, nameof(chartPricesJsonString));
@@ -111,30 +79,125 @@ namespace Pl.Sas.Core.Services
                 return;
             }
 
-            //var chartPrices = await _chartPriceData.CacheFindAllAsync(symbol, "D");
-            //if (chartPrices is null || chartPrices.Count <= 0)
-            //{
-            //    return;
-            //}
+            var stock = await _stockData.FindBySymbolAsync(symbol);
+            var chartPrices = await _chartPriceData.CacheFindAllAsync(symbol, "D");
+            if (chartPrices is null || chartPrices.Count <= 0 || stock is null)
+            {
+                return;
+            }
 
-            //foreach (var realtimeItem in chartPricesRealtime)
-            //{
-            //    var chartPrice = chartPrices.FirstOrDefault(q => q.TradingDate == realtimeItem.TradingDate);
-            //    if (chartPrice is null)
-            //    {
-            //        chartPrices.Add(realtimeItem);
-            //    }
-            //    else
-            //    {
-            //        chartPrice.TotalMatchVol = realtimeItem.TotalMatchVol;
-            //        chartPrice.ClosePrice = realtimeItem.ClosePrice;
-            //        chartPrice.LowestPrice = realtimeItem.LowestPrice;
-            //        chartPrice.HighestPrice = realtimeItem.HighestPrice;
-            //        chartPrice.OpenPrice = realtimeItem.OpenPrice;
-            //    }
-            //}
+            var bankInterestRate12 = await _keyValueData.CacheGetAsync(Constants.BankInterestRate12Key);
+            var cacheKey = $"{Constants.StockViewCachePrefix}-SM-{symbol}";
+            var stockViewTask = _asyncCacheService.GetByKeyAsync<StockView>(cacheKey);
 
+            foreach (var realtimeItem in chartPricesRealtime)
+            {
+                var chartPrice = chartPrices.FirstOrDefault(q => q.TradingDate == realtimeItem.TradingDate);
+                if (chartPrice is null)
+                {
+                    chartPrices.Add(realtimeItem);
+                }
+                else
+                {
+                    chartPrice.TotalMatchVol = realtimeItem.TotalMatchVol;
+                    chartPrice.ClosePrice = realtimeItem.ClosePrice;
+                    chartPrice.LowestPrice = realtimeItem.LowestPrice;
+                    chartPrice.HighestPrice = realtimeItem.HighestPrice;
+                    chartPrice.OpenPrice = realtimeItem.OpenPrice;
+                }
+            }
+            chartPrices = chartPrices.OrderBy(q => q.TradingDate).ToList();
+            var chartTrading = chartPrices.Where(q => q.TradingDate >= Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
+            
 
+            var stockView = await stockViewTask;
+            if (stockView is null)
+            {
+                _logger.LogWarning("UpdateViewRealtimeOnPriceChange {symbol} is null stockView from cache", symbol);
+                return;
+            }
+
+            var listTradingResult = new List<TradingResult>();
+            #region Experiment Trading
+            ExperimentTrading.LoadIndicatorSet(chartPrices);
+            var tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
+            var experCase = ExperimentTrading.Trading(chartTrading, tradingHistory, stock.Exchange, false);
+            listTradingResult.Add(new()
+            {
+                Symbol = symbol,
+                Principle = 0,
+                IsBuy = experCase.IsBuy,
+                IsSell = experCase.IsSell,
+                BuyPrice = experCase.BuyPrice,
+                SellPrice = experCase.SellPrice,
+                FixedCapital = experCase.FixedCapital,
+                Profit = experCase.Profit(chartTrading[^1].ClosePrice),
+                TotalTax = experCase.TotalTax,
+                TradingNotes = null,
+                AssetPosition = experCase.AssetPosition,
+                LoseNumber = experCase.LoseNumber,
+                WinNumber = experCase.WinNumber,
+            });
+            experCase = null;
+            ExperimentTrading.Dispose();
+            #endregion
+
+            #region Main Trading
+            MacdTrading.LoadIndicatorSet(chartPrices);
+            tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
+            var macdCase = MacdTrading.Trading(chartTrading, tradingHistory, stock.Exchange, false);
+            listTradingResult.Add(new()
+            {
+                Symbol = symbol,
+                Principle = 1,
+                IsBuy = macdCase.IsBuy,
+                IsSell = macdCase.IsSell,
+                BuyPrice = macdCase.BuyPrice,
+                SellPrice = macdCase.SellPrice,
+                FixedCapital = macdCase.FixedCapital,
+                Profit = macdCase.Profit(chartTrading[^1].ClosePrice),
+                TotalTax = macdCase.TotalTax,
+                TradingNotes = null,
+                AssetPosition = macdCase.AssetPosition,
+                LoseNumber = macdCase.LoseNumber,
+                WinNumber = macdCase.WinNumber,
+            });
+            macdCase = null;
+            MacdTrading.Dispose();
+            #endregion
+
+            #region Buy and wait
+            var startPrice = chartTrading[0].ClosePrice;
+            var endPrice = chartTrading[^1].ClosePrice;
+            listTradingResult.Add(new TradingResult()
+            {
+                Symbol = symbol,
+                Principle = 3,
+                IsBuy = false,
+                IsSell = false,
+                BuyPrice = chartPrices[^1].ClosePrice,
+                SellPrice = chartPrices[^1].ClosePrice,
+                FixedCapital = 100000000,
+                Profit = (100000000 / startPrice) * endPrice,
+                TotalTax = 0,
+                TradingNotes = null,
+                AssetPosition = "100% C",
+                LoseNumber = startPrice <= endPrice ? 1 : 0,
+                WinNumber = startPrice > endPrice ? 1 : 0,
+            });
+            #endregion
+
+            StockViewService.BindingPercentConvulsionToView(ref stockView, chartPrices);
+            StockViewService.BindingTradingResultToView(ref stockView, listTradingResult, bankInterestRate12?.GetValue<float>() ?? 6.8f);
+
+            var sendMessage = new QueueMessage("UpdateRealtimeView");
+            sendMessage.KeyValues.Add("Data", JsonSerializer.Serialize(stockView));
+            sendMessage.KeyValues.Add("Symbol", symbol);
+            _workerQueueService.BroadcastViewUpdatedTask(sendMessage);
+            listTradingResult = null;
+            chartPrices = null;
+            chartTrading = null;
+            stockView = null;
         }
 
         /// <summary>
@@ -149,11 +212,7 @@ namespace Pl.Sas.Core.Services
             var type14 = await _scheduleData.FindAsync(14, symbol);
             if (type14 != null)
             {
-                if (transactionCont > 100000)
-                {
-                    type14.AddOrUpdateOptions("SleepTime", "15");
-                }
-                else if (transactionCont > 50000)
+                if (transactionCont > 50000)
                 {
                     type14.AddOrUpdateOptions("SleepTime", "30");
                 }
@@ -163,17 +222,21 @@ namespace Pl.Sas.Core.Services
                 }
                 else if (transactionCont > 5000)
                 {
-                    type14.AddOrUpdateOptions("SleepTime", "120");
+                    type14.AddOrUpdateOptions("SleepTime", "100");
                 }
                 else if (transactionCont > 1000)
                 {
-                    type14.AddOrUpdateOptions("SleepTime", "300");
+                    type14.AddOrUpdateOptions("SleepTime", "140");
                 }
                 else if (transactionCont > 500)
                 {
-                    type14.AddOrUpdateOptions("SleepTime", "600");
+                    type14.AddOrUpdateOptions("SleepTime", "200");
                 }
                 else if (transactionCont > 100)
+                {
+                    type14.AddOrUpdateOptions("SleepTime", "360");
+                }
+                else if (transactionCont > 50)
                 {
                     type14.AddOrUpdateOptions("SleepTime", "1200");
                 }
@@ -181,7 +244,7 @@ namespace Pl.Sas.Core.Services
                 {
                     type14.AddOrUpdateOptions("SleepTime", "2400");
                 }
-                await _scheduleData.UpdateAsync(type14);
+                return await _scheduleData.UpdateAsync(type14);
             }
             return false;
         }

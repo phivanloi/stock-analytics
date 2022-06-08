@@ -38,7 +38,7 @@ namespace Pl.Sas.Worker
             while (!stoppingToken.IsCancellationRequested)
             {
                 _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-                await Task.Delay(100000, stoppingToken);
+                await Task.Delay(10000, stoppingToken);
             }
         }
 
@@ -49,11 +49,13 @@ namespace Pl.Sas.Worker
             _workerQueueService.SubscribeDownloadTask(async (message) =>
             {
                 await _downloadService.HandleEventAsync(message);
+                GC.Collect();
             });
 
             _workerQueueService.SubscribeAnalyticsTask(async (message) =>
             {
                 await _analyticsService.HandleEventAsync(message);
+                GC.Collect();
             });
 
             _workerQueueService.SubscribeBuildViewTask(async (message) =>
@@ -63,11 +65,13 @@ namespace Pl.Sas.Worker
                 {
                     _workerQueueService.BroadcastViewUpdatedTask(queueMessage);
                 }
+                GC.Collect();
             });
 
             _workerQueueService.SubscribeRealtimeTask(async (message) =>
             {
                 await _realtimeService.HandleEventAsync(message);
+                GC.Collect();
             });
 
             return base.StartAsync(cancellationToken);

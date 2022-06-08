@@ -73,19 +73,39 @@
         public float SellPrice { get; set; }
 
         /// <summary>
-        /// Trạng thái tài sản
+        /// vị thế tài sản
         /// </summary>
-        public string AssetStats
-        {
-            get
-            {
-                if (NumberStock <= 0)
-                {
-                    return "Tiền mặt";
-                }
-                return "Chứng khoán";
-            }
-        }
+        public string AssetPosition { get; set; } = "100% tiền";
+
+        /// <summary>
+        /// Giá thực hiện mua/bán
+        /// </summary>
+        public float ActionPrice { get; set; } = 0;
+
+        /// <summary>
+        /// Số ngày thay đổi trạng thái
+        /// </summary>
+        public int NumberChangeDay { get; set; } = 10;
+
+        /// <summary>
+        /// Số ngày giữ cổ phiếu
+        /// </summary>
+        public int NumberDayInStock { get; set; } = 0;
+
+        /// <summary>
+        /// Số ngày giữ tiền
+        /// </summary>
+        public int NumberDayInMoney { get; set; } = 0;
+
+        /// <summary>
+        /// Số lần khớp giá mong muốn
+        /// </summary>
+        public int NumberPriceNeed { get; set; } = 0;
+
+        /// <summary>
+        /// Số lần khớp giá với giá đóng cửa
+        /// </summary>
+        public int NumberPriceClose { get; set; } = 0;
         #endregion
 
         #region Note

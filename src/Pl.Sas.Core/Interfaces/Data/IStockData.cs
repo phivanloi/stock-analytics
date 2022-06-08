@@ -21,15 +21,16 @@ namespace Pl.Sas.Core.Interfaces
         /// <summary>
         /// Lấy ra toàn bộ mã chứng khoán trong hệ thống
         /// </summary>
+        /// <param name="type">Loại cổ phiếu</param>
         /// <returns>IEnumerable Stock</returns>
-        Task<IEnumerable<Stock>> FindAllAsync();
+        Task<IEnumerable<Stock>> FindAllAsync(string? type = "s");
 
         /// <summary>
         /// Lấy toán bộ thông tin cổ phiếu theo mã cổ phiếu
         /// </summary>
-        /// <param name="code">Mã cổ phiếu</param>
+        /// <param name="symbol">Mã cổ phiếu</param>
         /// <returns>Stock</returns>
-        Task<Stock> GetByCodeAsync(string code);
+        Task<Stock> FindBySymbolAsync(string symbol);
 
         /// <summary>
         /// xóa một cổ phiếu theo id

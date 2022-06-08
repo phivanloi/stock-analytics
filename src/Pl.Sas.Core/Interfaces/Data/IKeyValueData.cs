@@ -19,5 +19,12 @@ namespace Pl.Sas.Core.Interfaces
         /// <param name="key">Khóa giá trị</param>
         /// <returns>KeyValue</returns>
         Task<KeyValue> GetAsync(string key);
+
+        /// <summary>
+        /// Lấy giá trị trong cache
+        /// </summary>
+        /// <param name="key">Khóa giá trị</param>
+        /// <returns>KeyValue</returns>
+        Task<KeyValue> CacheGetAsync(string key);
     }
 }

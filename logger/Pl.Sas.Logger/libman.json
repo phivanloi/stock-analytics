@@ -13,7 +13,7 @@
     },
     {
       "provider": "unpkg",
-      "library": "moment@2.29.1",
+      "library": "moment@latest",
       "destination": "wwwroot/lib/moment/"
     }
   ]

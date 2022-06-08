@@ -101,5 +101,20 @@ namespace Pl.Sas.WebDashboard.Models
         /// Ghi chú diễn giải đầu tư
         /// </summary>
         public List<KeyValuePair<int, string>>? TradingExplainNotes { get; set; }
+
+        /// <summary>
+        /// Số lần thắng
+        /// </summary>
+        public int WinNumber { get; set; }
+
+        /// <summary>
+        /// Số lần thua
+        /// </summary>
+        public int LoseNumber { get; set; }
+
+        /// <summary>
+        /// vị thế tài sản
+        /// </summary>
+        public string AssetPosition { get; set; } = "100% tiền mặt";
     }
 }
