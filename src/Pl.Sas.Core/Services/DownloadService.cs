@@ -186,7 +186,7 @@ namespace Pl.Sas.Core.Services
                         {
                             chartPrices.Add(new()
                             {
-                                Symbol = schedule.DataKey,
+                                Symbol = symbol,
                                 TradingDate = tradingDate,
                                 ClosePrice = vndChartPrices.Close[i],
                                 OpenPrice = vndChartPrices.Open[i],
@@ -214,7 +214,7 @@ namespace Pl.Sas.Core.Services
                             {
                                 chartPrices.Add(new()
                                 {
-                                    Symbol = schedule.DataKey,
+                                    Symbol = symbol,
                                     TradingDate = tradingDate,
                                     ClosePrice = string.IsNullOrEmpty(ssiChartPrices.Close[i]) ? 0 : float.Parse(ssiChartPrices.Close[i]),
                                     OpenPrice = string.IsNullOrEmpty(ssiChartPrices.Open[i]) ? 0 : float.Parse(ssiChartPrices.Open[i]),
@@ -240,7 +240,7 @@ namespace Pl.Sas.Core.Services
                             {
                                 chartPrices.Add(new()
                                 {
-                                    Symbol = schedule.DataKey,
+                                    Symbol = symbol,
                                     TradingDate = tradingDate,
                                     ClosePrice = vpsChartPrices.Close[i],
                                     OpenPrice = vpsChartPrices.Open[i],
@@ -326,7 +326,7 @@ namespace Pl.Sas.Core.Services
                         {
                             chartPrices.Add(new()
                             {
-                                Symbol = schedule.DataKey,
+                                Symbol = symbol,
                                 TradingDate = tradingDate,
                                 ClosePrice = string.IsNullOrEmpty(block.Close[i]) ? 0 : float.Parse(block.Close[i]),
                                 OpenPrice = string.IsNullOrEmpty(block.Open[i]) ? 0 : float.Parse(block.Open[i]),
