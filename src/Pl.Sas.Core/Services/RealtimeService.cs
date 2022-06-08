@@ -108,7 +108,7 @@ namespace Pl.Sas.Core.Services
             }
             chartPrices = chartPrices.OrderBy(q => q.TradingDate).ToList();
             var chartTrading = chartPrices.Where(q => q.TradingDate >= Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
-            var tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
+            
 
             var stockView = await stockViewTask;
             if (stockView is null)
@@ -120,6 +120,7 @@ namespace Pl.Sas.Core.Services
             var listTradingResult = new List<TradingResult>();
             #region Experiment Trading
             ExperimentTrading.LoadIndicatorSet(chartPrices);
+            var tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
             var experCase = ExperimentTrading.Trading(chartTrading, tradingHistory, stock.Exchange, false);
             listTradingResult.Add(new()
             {
@@ -143,6 +144,7 @@ namespace Pl.Sas.Core.Services
 
             #region Main Trading
             MacdTrading.LoadIndicatorSet(chartPrices);
+            tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
             var macdCase = MacdTrading.Trading(chartTrading, tradingHistory, stock.Exchange, false);
             listTradingResult.Add(new()
             {

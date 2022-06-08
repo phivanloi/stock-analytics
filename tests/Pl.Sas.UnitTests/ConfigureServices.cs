@@ -121,6 +121,7 @@ namespace Pl.Sas.UnitTests
             services.AddScoped<DownloadService>();
             services.AddScoped<AnalyticsService>();
             services.AddScoped<StockViewService>();
+            services.AddScoped<RealtimeService>();
             return services;
         }
     }

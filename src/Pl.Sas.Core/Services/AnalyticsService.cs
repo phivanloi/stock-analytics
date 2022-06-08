@@ -527,7 +527,6 @@ namespace Pl.Sas.Core.Services
 
             chartPrices = chartPrices.OrderBy(q => q.TradingDate).ToList();
             var chartTrading = chartPrices.Where(q => q.TradingDate >= Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
-            var tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
             if (chartTrading.Count <= 0)
             {
                 _logger.LogWarning("TestTradingAnalyticsAsync => tradingHistories is null for {symbol}", symbol);
@@ -559,6 +558,7 @@ namespace Pl.Sas.Core.Services
 
             #region Macd Trading
             MacdTrading.LoadIndicatorSet(chartPrices);
+            var tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
             var macdCase = MacdTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
             var macdNote = $"Trading {Utilities.GetPrincipleName(1).ToLower()} {chartTrading.Count} phiên từ ngày {chartTrading[0].TradingDate:dd/MM/yyyy}, Lợi nhuận {macdCase.Profit(chartTrading[^1].ClosePrice):0,0} ({macdCase.ProfitPercent(chartTrading[^1].ClosePrice):0,0.00}%), thuế {macdCase.TotalTax:0,0}, xem chi tiết tại tab \"Lợi nhuận và đầu tư TN\".";
             var macdType = macdCase.FixedCapital < macdCase.Profit(chartTrading[^1].ClosePrice) ? 1 : macdCase.FixedCapital == macdCase.Profit(chartTrading[^1].ClosePrice) ? 0 : -1;
@@ -584,6 +584,7 @@ namespace Pl.Sas.Core.Services
 
             #region Experiment Trading
             ExperimentTrading.LoadIndicatorSet(chartPrices);
+            tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
             var experCase = ExperimentTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
             var experNote = $"Trading {Utilities.GetPrincipleName(0).ToLower()} {chartTrading.Count} phiên từ ngày {chartTrading[0].TradingDate:dd/MM/yyyy}, Lợi nhuận {experCase.Profit(chartTrading[^1].ClosePrice):0,0} ({experCase.ProfitPercent(chartTrading[^1].ClosePrice):0,0.00}%), thuế {experCase.TotalTax:0,0}, xem chi tiết tại tab \"Lợi nhuận và đầu tư TN\".";
             var experType = experCase.FixedCapital < experCase.Profit(chartTrading[^1].ClosePrice) ? 1 : experCase.FixedCapital == experCase.Profit(chartTrading[^1].ClosePrice) ? 0 : -1;
