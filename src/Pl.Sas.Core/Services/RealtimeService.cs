@@ -190,10 +190,13 @@ namespace Pl.Sas.Core.Services
             StockViewService.BindingPercentConvulsionToView(ref stockView, chartPrices);
             StockViewService.BindingTradingResultToView(ref stockView, listTradingResult, bankInterestRate12?.GetValue<float>() ?? 6.8f);
 
+            var setViewCacheKey = $"{Constants.StockViewCachePrefix}-SM-{symbol}";
+            var setCacheTask = _asyncCacheService.SetValueAsync(setViewCacheKey, stockView, Constants.DefaultCacheTime * 60 * 24 * 30);
             var sendMessage = new QueueMessage("UpdateRealtimeView");
             sendMessage.KeyValues.Add("Data", JsonSerializer.Serialize(stockView));
             sendMessage.KeyValues.Add("Symbol", symbol);
             _workerQueueService.BroadcastViewUpdatedTask(sendMessage);
+            await setCacheTask;
             listTradingResult = null;
             chartPrices = null;
             chartTrading = null;
