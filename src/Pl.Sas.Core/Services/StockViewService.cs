@@ -124,7 +124,14 @@ namespace Pl.Sas.Core.Services
             {
                 return;
             }
-            _stockViews.AddOrUpdate(symbol, stockView, (key, oldValue) => stockView);
+            if (_stockViews.ContainsKey(symbol))
+            {
+                _stockViews[symbol] = stockView;
+            }
+            else
+            {
+                _stockViews.TryAdd(symbol, stockView);
+            }
         }
 
         public virtual async Task<QueueMessage?> HandleStockViewEventAsync(QueueMessage queueMessage)
