@@ -28,7 +28,7 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 Console.OutputEncoding = Encoding.UTF8;
                 DateTime fromDate = new(2020, 1, 1);
                 DateTime toDate = new(2027, 1, 1);
-                var symbol = "VND";
+                var symbol = "DXG";
                 var stock = await _stockData.FindBySymbolAsync(symbol);
                 var chartPrices = (await _chartPriceData.FindAllAsync(symbol)).OrderBy(q => q.TradingDate).ToList();
                 var tradingCharts = chartPrices.Where(q => q.TradingDate >= fromDate && q.TradingDate <= toDate).OrderBy(q => q.TradingDate).ToList();
