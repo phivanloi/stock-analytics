@@ -77,7 +77,7 @@ namespace Pl.Sas.UnitTests
             {
                 Name = $"Tải dữ liệu chỉ số: VNINDEX",
                 Type = 9,
-                DataKey = "VNINDEX",
+                DataKey = "VNXALL",
                 ActiveTime = DateTime.Now,
                 OptionsJson = JsonSerializer.Serialize(new Dictionary<string, string>()
                 {

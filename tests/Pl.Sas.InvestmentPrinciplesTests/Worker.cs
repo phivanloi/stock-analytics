@@ -26,17 +26,17 @@ namespace Pl.Sas.InvestmentPrinciplesTests
             {
                 Console.Clear();
                 Console.OutputEncoding = Encoding.UTF8;
-                DateTime fromDate = new(2010, 1, 1);
+                DateTime fromDate = new(2020, 1, 1);
                 DateTime toDate = new(2027, 1, 1);
-                var symbol = "BCG";
+                var symbol = "VND";
                 var stock = await _stockData.FindBySymbolAsync(symbol);
                 var chartPrices = (await _chartPriceData.FindAllAsync(symbol)).OrderBy(q => q.TradingDate).ToList();
                 var tradingCharts = chartPrices.Where(q => q.TradingDate >= fromDate && q.TradingDate <= toDate).OrderBy(q => q.TradingDate).ToList();
                 var tradingHistory = chartPrices.Where(q => q.TradingDate < fromDate).OrderBy(q => q.TradingDate).ToList();
                 var startPrice = tradingCharts[0].ClosePrice;
                 var endPrice = tradingCharts[^1].ClosePrice;
-                ExperimentTrading.LoadIndicatorSet(chartPrices);
-                var tradingCase = ExperimentTrading.Trading(tradingCharts, tradingHistory, stock.Exchange);
+                MacdTrading.LoadIndicatorSet(chartPrices);
+                var tradingCase = MacdTrading.Trading(tradingCharts, tradingHistory, stock.Exchange);
                 var lastChartPrice = tradingCharts[^1];
                 Console.WriteLine($"Quá trình đầu tư ngắn hạn:");
                 Console.WriteLine($"Bắt đầu--------------------------------");
@@ -58,7 +58,7 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 chartPrices = null;
                 tradingCharts = null;
                 tradingCase = null;
-                ExperimentTrading.Dispose();
+                MacdTrading.Dispose();
             }
             catch (Exception ex)
             {

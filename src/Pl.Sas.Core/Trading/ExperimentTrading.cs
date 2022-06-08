@@ -26,6 +26,11 @@ namespace Pl.Sas.Core.Trading
                     continue;
                 }
 
+                tradingCase.IsBuy = false;
+                tradingCase.IsSell = false;
+                tradingCase.BuyPrice = CalculateOptimalBuyPrice(tradingHistory, day.OpenPrice);
+                tradingCase.SellPrice = CalculateOptimalSellPrice(tradingHistory, day.OpenPrice);
+
                 var isRealtime = day.TradingDate == lastTradingDate;
                 var timeTrading = GetTimeTrading(exchangeName, DateTime.Now);
 
@@ -34,7 +39,7 @@ namespace Pl.Sas.Core.Trading
                     tradingCase.IsBuy = BuyCondition(day.TradingDate) > 0;
                     if (tradingCase.IsBuy)
                     {
-                        tradingCase.BuyPrice = CalculateOptimalBuyPrice(tradingHistory, day.OpenPrice);
+                        tradingCase.ActionPrice = tradingCase.BuyPrice;
                         if (isRealtime && timeTrading != TimeTrading.DON)
                         {
                             if (timeTrading == TimeTrading.NST)
@@ -42,40 +47,39 @@ namespace Pl.Sas.Core.Trading
                                 tradingCase.AssetPosition = $"100% T";
                                 tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0}, Chưa đến giờ giao dịch.");
                             }
-                            else if (timeTrading == TimeTrading.ATC && tradingCase.BuyPrice <= day.LowestPrice)
+                            else if (timeTrading == TimeTrading.ATC && tradingCase.ActionPrice <= day.LowestPrice)
                             {
                                 tradingCase.AssetPosition = $"M: ATC";
                                 tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0}, Đặt lệnh mua ATC.");
                             }
-                            else if (timeTrading == TimeTrading.TMP && tradingCase.BuyPrice <= day.LowestPrice)
+                            else if (timeTrading == TimeTrading.TMP && tradingCase.ActionPrice <= day.LowestPrice)
                             {
                                 tradingCase.AssetPosition = $"M: MP";
                                 tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0}, Đặt lệnh mua MP.");
                             }
                             else
                             {
-                                tradingCase.AssetPosition = $"M: LO({tradingCase.BuyPrice:0,0.00})";
-                                tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0}, Đặt lệnh mua LO với giá {tradingCase.BuyPrice:0,0.00}.");
+                                tradingCase.AssetPosition = $"M: LO({tradingCase.ActionPrice:0,0.00})";
+                                tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0}, Đặt lệnh mua LO với giá {tradingCase.ActionPrice:0,0.00}.");
                             }
                         }
                         else
                         {
-                            if (tradingCase.BuyPrice <= day.LowestPrice)
+                            if (tradingCase.ActionPrice <= day.LowestPrice)
                             {
-                                tradingCase.BuyPrice = day.ClosePrice;
+                                tradingCase.ActionPrice = day.ClosePrice;
                                 tradingCase.NumberPriceClose++;
                             }
                             else
                             {
                                 tradingCase.NumberPriceNeed++;
                             }
-                            var (stockCount, excessCash, totalTax) = Buy(tradingCase.TradingMoney, tradingCase.BuyPrice * 1000, tradingCase.NumberChangeDay);
+                            var (stockCount, excessCash, totalTax) = Buy(tradingCase.TradingMoney, tradingCase.ActionPrice * 1000, tradingCase.NumberChangeDay);
                             tradingCase.TradingMoney = excessCash;
                             tradingCase.TotalTax += totalTax;
                             tradingCase.NumberStock += stockCount;
                             tradingCase.NumberChangeDay = 0;
-                            tradingCase.AssetPosition = $"M: {tradingCase.BuyPrice:0,0.00}";
-                            tradingCase.ActionPrice = tradingCase.BuyPrice;
+                            tradingCase.AssetPosition = $"M: {tradingCase.ActionPrice:0,0.00}";
                             tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0}, Mua {tradingCase.NumberStock:0,0} cổ giá {tradingCase.BuyPrice * 1000:0,0} thuế {totalTax:0,0}");
                         }
                     }
@@ -92,7 +96,8 @@ namespace Pl.Sas.Core.Trading
                         tradingCase.IsSell = SellCondition(day.TradingDate) > 0;
                         if (tradingCase.IsSell)
                         {
-                            tradingCase.SellPrice = CalculateOptimalSellPrice(tradingHistory, day.OpenPrice);
+                            var lastBuyPrice = tradingCase.ActionPrice;
+                            tradingCase.ActionPrice = tradingCase.SellPrice;
                             if (isRealtime && timeTrading != TimeTrading.DON)
                             {
                                 if (timeTrading == TimeTrading.NST)
@@ -100,42 +105,41 @@ namespace Pl.Sas.Core.Trading
                                     tradingCase.AssetPosition = $"100% C";
                                     tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0}, Chưa đến giờ giao dịch.");
                                 }
-                                else if (timeTrading == TimeTrading.ATC && tradingCase.SellPrice >= day.HighestPrice)
+                                else if (timeTrading == TimeTrading.ATC && tradingCase.ActionPrice >= day.HighestPrice)
                                 {
                                     tradingCase.AssetPosition = $"B: ATC";
                                     tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0}, Đặt lệnh mua ATC.");
                                 }
-                                else if (timeTrading == TimeTrading.TMP && tradingCase.SellPrice >= day.HighestPrice)
+                                else if (timeTrading == TimeTrading.TMP && tradingCase.ActionPrice >= day.HighestPrice)
                                 {
                                     tradingCase.AssetPosition = $"B: MP";
                                     tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0}, Đặt lệnh mua MP.");
                                 }
                                 else
                                 {
-                                    tradingCase.AssetPosition = $"B: LO({tradingCase.SellPrice:0,0.00})";
-                                    tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0}, Đặt lệnh mua LO với giá {tradingCase.SellPrice:0,0.00}.");
+                                    tradingCase.AssetPosition = $"B: LO({tradingCase.ActionPrice:0,0.00})";
+                                    tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0}, Đặt lệnh mua LO với giá {tradingCase.ActionPrice:0,0.00}.");
                                 }
                             }
                             else
                             {
-                                if (tradingCase.SellPrice >= day.HighestPrice)
+                                if (tradingCase.ActionPrice >= day.HighestPrice)
                                 {
-                                    tradingCase.SellPrice = day.ClosePrice;
+                                    tradingCase.ActionPrice = day.ClosePrice;
                                     tradingCase.NumberPriceClose++;
                                 }
                                 else
                                 {
                                     tradingCase.NumberPriceNeed++;
                                 }
-                                var (totalProfit, totalTax) = Sell(tradingCase.NumberStock, tradingCase.SellPrice * 1000);
+                                var (totalProfit, totalTax) = Sell(tradingCase.NumberStock, tradingCase.ActionPrice * 1000);
                                 tradingCase.TradingMoney = totalProfit;
                                 tradingCase.TotalTax += totalTax;
                                 var selNumberStock = tradingCase.NumberStock;
                                 tradingCase.NumberStock = 0;
                                 tradingCase.NumberChangeDay = 0;
                                 tradingCase.AssetPosition = $"B: {tradingCase.ActionPrice:0,0.00}";
-                                tradingCase.AddNote(tradingCase.SellPrice > tradingCase.ActionPrice ? 1 : -1, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0}, Bán {selNumberStock:0,0} cổ giá {tradingCase.SellPrice * 1000:0,0} ({tradingCase.SellPrice.GetPercent(tradingCase.ActionPrice):0,0.00}%) thuế {totalTax:0,0}");
-                                tradingCase.ActionPrice = tradingCase.SellPrice;
+                                tradingCase.AddNote(tradingCase.ActionPrice > lastBuyPrice ? 1 : -1, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0}, Bán {selNumberStock:0,0} cổ giá {tradingCase.ActionPrice * 1000:0,0} ({tradingCase.ActionPrice.GetPercent(lastBuyPrice):0,0.00}%) thuế {totalTax:0,0}");
                             }
                         }
                         else

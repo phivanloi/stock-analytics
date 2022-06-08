@@ -13,7 +13,7 @@ namespace Pl.Sas.Infrastructure
         {
             _connectionStrings = options.CurrentValue;
             _dbAsyncRetry = Policy.Handle<Exception>()
-            .WaitAndRetryAsync(5, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+            .WaitAndRetryAsync(10, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
         }
     }
 }
