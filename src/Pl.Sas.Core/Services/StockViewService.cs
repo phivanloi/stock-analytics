@@ -363,9 +363,13 @@ namespace Pl.Sas.Core.Services
                         stockView.LntnCss = $"lntn t-r {result.ProfitPercent.GetTextColorCss(bankInterestRate12)}";
                         stockView.Kntn = result.AssetPosition;
                         stockView.KntnCss = "kntn t-c";
-                        if (result.IsBuy || result.IsSell)
+                        if (result.IsBuy)
                         {
-                            stockView.KntnCss += " t-i";
+                            stockView.KntnCss += " t-m";
+                        }
+                        else if (result.IsSell)
+                        {
+                            stockView.KntnCss += " t-b";
                         }
                     }
                     else if (result.Principle == 1)
