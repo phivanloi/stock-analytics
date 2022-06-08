@@ -262,7 +262,6 @@ namespace Pl.Sas.Core.Services
                 var checkChartPrices = chartPrices.OrderByDescending(q => q.TradingDate).ToList();
                 var lastPercent = checkChartPrices[0].ClosePrice.GetPercent(checkChartPrices[^1].ClosePrice);
                 stockView.Ght = checkChartPrices[0].ClosePrice.ShowPrice(1);
-                stockView.GhtCss = "ght t-r " + lastPercent.GetTextColorCss();
 
                 stockView.KlhtValue = checkChartPrices[0].TotalMatchVol;
                 stockView.Klht = checkChartPrices[0].TotalMatchVol.ShowMoney(1);
@@ -285,12 +284,14 @@ namespace Pl.Sas.Core.Services
                     stockView.Bd2Value = currentPercent;
                     stockView.Bd2 = currentPercent.ShowPercent();
                     stockView.Bd2Css = "bd2 t-r " + currentPercent.GetTextColorCss();
+                    stockView.GhtCss = "ght t-r " + currentPercent.GetTextColorCss();
                 }
                 else
                 {
                     stockView.Bd2Value = lastPercent;
                     stockView.Bd2 = lastPercent.ShowPercent();
                     stockView.Bd2Css = "bd2 t-r " + lastPercent.GetTextColorCss();
+                    stockView.GhtCss = "ght t-r " + lastPercent.GetTextColorCss();
                 }
 
                 if (checkChartPrices.Count >= 5)
