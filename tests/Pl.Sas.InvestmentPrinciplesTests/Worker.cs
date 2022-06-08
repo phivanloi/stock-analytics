@@ -49,7 +49,7 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 Console.WriteLine($"kết quả trading {symbol} trong {chartTrading.Count} phiên có {tradingCase.NumberDayInStock} phiên giữ cổ phiếu, {tradingCase.NumberDayInMoney} phiên giữ tiền");
                 $"Số lần mua, bán thắng/thua {tradingCase.WinNumber}/{tradingCase.LoseNumber}. Số lần khớp giá tính toán/giá đóng cửa: {tradingCase.NumberPriceNeed}/{tradingCase.NumberPriceClose}".WriteConsole(tradingCase.FixedCapital <= tradingCase.Profit(chartTrading[^1].ClosePrice) ? ConsoleColor.Green : ConsoleColor.Red);
                 $"Lợi nhuận {tradingCase.Profit(chartTrading[^1].ClosePrice):0,0} ({tradingCase.ProfitPercent(chartTrading[^1].ClosePrice):0,0.00}%), thuế {tradingCase.TotalTax:0,0}".WriteConsole(tradingCase.FixedCapital <= tradingCase.Profit(chartTrading[^1].ClosePrice) ? ConsoleColor.Green : ConsoleColor.Red);
-                $"Trạng thái hôm nay: {tradingCase.AssetPosition}".WriteConsole();
+                $"Trạng thái hôm nay: {tradingCase.AssetPosition}, mua/bán {tradingCase.IsBuy}/{tradingCase.IsSell}".WriteConsole();
                 Console.WriteLine();
                 Console.WriteLine($"Với chỉ mua và nắm giữ: {symbol}");
                 $"Thực hiện mua và giữ {symbol} trong {chartTrading.Count} phiên: Giá đóng cửa đầu kỳ {chartTrading[0].TradingDate:dd-MM-yyyy}: {startPrice * 1000:0,0.00} giá đóng cửa cuối kỳ {chartTrading[^1].TradingDate:dd-MM-yyyy}: {endPrice * 1000:0,0.00} lợi nhuận {endPrice.GetPercent(startPrice):0.00}%.".WriteConsole(endPrice > startPrice ? ConsoleColor.Green : ConsoleColor.Red);
