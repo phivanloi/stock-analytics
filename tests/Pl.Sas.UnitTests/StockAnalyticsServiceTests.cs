@@ -38,7 +38,7 @@ namespace Pl.Sas.UnitTests
             var hostedService = serviceProvider.GetService<IHostedService>() as LoggingQueuedHostedService ?? throw new Exception("Can't get LoggingQueuedHostedService");
             await hostedService.StartAsync(CancellationToken.None);
 
-            await analyticsService.TestTradingAnalyticsAsync("DCM");
+            await analyticsService.TestTradingAnalyticsAsync("VND");
             Assert.True(true);
 
             await hostedService.StopAsync(CancellationToken.None);

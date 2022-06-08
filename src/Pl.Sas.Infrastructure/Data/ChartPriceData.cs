@@ -57,6 +57,8 @@ namespace Pl.Sas.Infrastructure.Data
             {
                 var checkDelete = await DeleteAsync(symbol, type);
                 await BulkInserAsync(chartPrices);
+                var cacheKey = $"{Constants.ChartPriceCachePrefix}-SM{symbol}-TP{type}";
+                await _asyncCacheService.RemoveAsync(cacheKey);
                 return checkDelete;
             }
             return false;

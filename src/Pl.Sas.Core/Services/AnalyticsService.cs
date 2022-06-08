@@ -518,13 +518,14 @@ namespace Pl.Sas.Core.Services
         {
             var checkingKey = $"{symbol}-Analytics-TestTrading";
             var stock = await _stockData.FindBySymbolAsync(symbol);
-            var chartPrices = (await _chartPriceData.FindAllAsync(symbol, "D")).OrderBy(q => q.TradingDate).ToList();
-            if (stock is null || chartPrices.Count <= 2)
+            var chartPrices = await _chartPriceData.CacheFindAllAsync(symbol, "D");
+            if (stock is null || chartPrices is null || chartPrices.Count <= 2)
             {
                 _logger.LogWarning("TestTradingAnalyticsAsync => stock is null or chartPrices is null for {symbol}", symbol);
                 return await _keyValueData.SetAsync(checkingKey, false);
             }
 
+            chartPrices = chartPrices.OrderBy(q => q.TradingDate).ToList();
             var chartTrading = chartPrices.Where(q => q.TradingDate >= Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
             var tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
             if (chartTrading.Count <= 0)
