@@ -122,17 +122,17 @@ namespace Pl.Sas.Core.Trading
                                 else if (timeTrading == TimeTrading.ATC && tradingCase.ActionPrice >= day.HighestPrice)
                                 {
                                     tradingCase.AssetPosition = $"B: ATC";
-                                    tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0}, Đặt lệnh mua ATC.");
+                                    tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0}, Đặt lệnh bán ATC.");
                                 }
                                 else if (timeTrading == TimeTrading.TMP && tradingCase.ActionPrice >= day.HighestPrice)
                                 {
                                     tradingCase.AssetPosition = $"B: MP";
-                                    tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0}, Đặt lệnh mua MP.");
+                                    tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0}, Đặt lệnh bán MP.");
                                 }
                                 else
                                 {
                                     tradingCase.AssetPosition = $"B: LO({tradingCase.ActionPrice:0,0.00})";
-                                    tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0}, Đặt lệnh mua LO với giá {tradingCase.ActionPrice:0,0.00}.");
+                                    tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0}, Đặt lệnh bán LO với giá {tradingCase.ActionPrice:0,0.00}.");
                                 }
                             }
                             else

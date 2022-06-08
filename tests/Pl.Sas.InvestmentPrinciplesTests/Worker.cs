@@ -28,7 +28,7 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 Console.OutputEncoding = Encoding.UTF8;
                 DateTime fromDate = new(2020, 1, 1);
                 DateTime toDate = new(2027, 1, 1);
-                var symbol = "VND";
+                var symbol = "FIT";
                 var stock = await _stockData.FindBySymbolAsync(symbol);
                 var chartPrices = await _chartPriceData.CacheFindAllAsync(symbol, "D") ?? throw new Exception("chartPrices is null");
                 chartPrices = chartPrices.OrderBy(q => q.TradingDate).ToList();
@@ -36,8 +36,8 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 var tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
                 var startPrice = chartTrading[0].ClosePrice;
                 var endPrice = chartTrading[^1].ClosePrice;
-                MacdTrading.LoadIndicatorSet(chartPrices);
-                var tradingCase = MacdTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
+                var trader = new ExperimentTrading(chartPrices);
+                var tradingCase = trader.Trading(chartTrading, tradingHistory, stock.Exchange);
                 Console.WriteLine($"Quá trình đầu tư ngắn hạn:");
                 Console.WriteLine($"Bắt đầu--------------------------------");
                 foreach (var note in tradingCase.ExplainNotes)
@@ -55,10 +55,6 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 $"Thực hiện mua và giữ {symbol} trong {chartTrading.Count} phiên: Giá đóng cửa đầu kỳ {chartTrading[0].TradingDate:dd-MM-yyyy}: {startPrice * 1000:0,0.00} giá đóng cửa cuối kỳ {chartTrading[^1].TradingDate:dd-MM-yyyy}: {endPrice * 1000:0,0.00} lợi nhuận {endPrice.GetPercent(startPrice):0.00}%.".WriteConsole(endPrice > startPrice ? ConsoleColor.Green : ConsoleColor.Red);
                 $"Trạng thái hôm nay: 100% C".WriteConsole();
                 Console.WriteLine();
-                chartPrices = null;
-                chartTrading = null;
-                tradingCase = null;
-                MacdTrading.Dispose();
             }
             catch (Exception ex)
             {
