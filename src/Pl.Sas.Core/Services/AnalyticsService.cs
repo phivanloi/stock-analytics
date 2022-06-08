@@ -557,9 +557,9 @@ namespace Pl.Sas.Core.Services
             #endregion
 
             #region Macd Trading
-            MacdTrading.LoadIndicatorSet(chartPrices);
+            var macdTrading = new MacdTrading(chartPrices);
             var tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
-            var macdCase = MacdTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
+            var macdCase = macdTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
             var macdNote = $"Trading {Utilities.GetPrincipleName(1).ToLower()} {chartTrading.Count} phiên từ ngày {chartTrading[0].TradingDate:dd/MM/yyyy}, Lợi nhuận {macdCase.Profit(chartTrading[^1].ClosePrice):0,0} ({macdCase.ProfitPercent(chartTrading[^1].ClosePrice):0,0.00}%), thuế {macdCase.TotalTax:0,0}, xem chi tiết tại tab \"Lợi nhuận và đầu tư TN\".";
             var macdType = macdCase.FixedCapital < macdCase.Profit(chartTrading[^1].ClosePrice) ? 1 : macdCase.FixedCapital == macdCase.Profit(chartTrading[^1].ClosePrice) ? 0 : -1;
             var macdResult = new TradingResult()
@@ -579,13 +579,12 @@ namespace Pl.Sas.Core.Services
                 TradingNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(macdCase.ExplainNotes)),
             };
             await _tradingResultData.SaveTestTradingResultAsync(macdResult);
-            MacdTrading.Dispose();
             #endregion
 
             #region Experiment Trading
-            ExperimentTrading.LoadIndicatorSet(chartPrices);
+            var experimentTrading = new ExperimentTrading(chartPrices);
             tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
-            var experCase = ExperimentTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
+            var experCase = experimentTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
             var experNote = $"Trading {Utilities.GetPrincipleName(0).ToLower()} {chartTrading.Count} phiên từ ngày {chartTrading[0].TradingDate:dd/MM/yyyy}, Lợi nhuận {experCase.Profit(chartTrading[^1].ClosePrice):0,0} ({experCase.ProfitPercent(chartTrading[^1].ClosePrice):0,0.00}%), thuế {experCase.TotalTax:0,0}, xem chi tiết tại tab \"Lợi nhuận và đầu tư TN\".";
             var experType = experCase.FixedCapital < experCase.Profit(chartTrading[^1].ClosePrice) ? 1 : experCase.FixedCapital == experCase.Profit(chartTrading[^1].ClosePrice) ? 0 : -1;
             var experResult = new TradingResult()
@@ -605,15 +604,7 @@ namespace Pl.Sas.Core.Services
                 TradingNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(experCase.ExplainNotes)),
             };
             await _tradingResultData.SaveTestTradingResultAsync(experResult);
-            ExperimentTrading.Dispose();
             #endregion
-
-            buyAndWaitResult = null;
-            macdResult = null;
-            experResult = null;
-            chartPrices = null;
-            chartTrading = null;
-            stock = null;
             return await _keyValueData.SetAsync(checkingKey, true);
         }
 

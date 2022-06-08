@@ -119,9 +119,9 @@ namespace Pl.Sas.Core.Services
 
             var listTradingResult = new List<TradingResult>();
             #region Experiment Trading
-            ExperimentTrading.LoadIndicatorSet(chartPrices);
+            var experimentTrading = new ExperimentTrading(chartPrices);
             var tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
-            var experCase = ExperimentTrading.Trading(chartTrading, tradingHistory, stock.Exchange, false);
+            var experCase = experimentTrading.Trading(chartTrading, tradingHistory, stock.Exchange, false);
             listTradingResult.Add(new()
             {
                 Symbol = symbol,
@@ -138,13 +138,12 @@ namespace Pl.Sas.Core.Services
                 LoseNumber = experCase.LoseNumber,
                 WinNumber = experCase.WinNumber,
             });
-            ExperimentTrading.Dispose();
             #endregion
 
             #region Main Trading
-            MacdTrading.LoadIndicatorSet(chartPrices);
+            var macdTrading = new MacdTrading(chartPrices);
             tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
-            var macdCase = MacdTrading.Trading(chartTrading, tradingHistory, stock.Exchange, false);
+            var macdCase = macdTrading.Trading(chartTrading, tradingHistory, stock.Exchange, false);
             listTradingResult.Add(new()
             {
                 Symbol = symbol,
@@ -161,7 +160,6 @@ namespace Pl.Sas.Core.Services
                 LoseNumber = macdCase.LoseNumber,
                 WinNumber = macdCase.WinNumber,
             });
-            MacdTrading.Dispose();
             #endregion
 
             #region Buy and wait
