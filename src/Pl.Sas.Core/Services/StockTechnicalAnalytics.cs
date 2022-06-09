@@ -1,9 +1,57 @@
 ﻿using Pl.Sas.Core.Entities;
+using Skender.Stock.Indicators;
 
 namespace Pl.Sas.Core.Services
 {
-    public static class StockAnalyticsService
+    public static class StockTechnicalAnalytics
     {
+        /// <summary>
+        /// Phân tích su thế tăng trưởng của thị giá theo đường ema
+        /// </summary>
+        /// <param name="notes">Danh sách ghi chú</param>
+        /// <param name="quotes">Danh sách lịch sử giá sắp xếp ngày giao dịch tăng dần</param>
+        /// <returns></returns>
+        public static int StochRsiAnalytics(List<AnalyticsNote> notes, List<Quote> quotes)
+        {
+            if (quotes.Count <= 17)
+            {
+                return notes.Add($"Chưa đủ dữ liệu đê phân tích stoch rsi 14.", -1, -1, null);
+            }
+
+            var type = 0;
+            var score = 0;
+            var note = string.Empty;
+
+            var rsiResults = quotes.GetStochRsi(14, 14, 3, 3);
+            var topThree = rsiResults.OrderByDescending(q => q.Date).Take(3).ToList();
+
+            if (topThree[0].StochRsi > topThree[0].Signal)
+            {
+                score++;
+                type++;
+                note += "Stoch Rsi 14 đang trên đường tiếng hiệu.";
+            }
+            else
+            {
+                score--;
+                type--;
+            }
+
+            if (topThree[0].StochRsi.HasValue && topThree[1].StochRsi.HasValue && topThree[2].StochRsi.HasValue)
+            {
+                if (topThree[0].StochRsi > 20 && topThree[1].StochRsi < 20 && topThree[2].StochRsi < topThree[1].StochRsi)
+                {
+                    stockView.Rsi14Css = "rsi14 t-r t-s";
+                }
+                if (topThree[0].StochRsi < 80 && topThree[1].StochRsi > 80 && topThree[2].StochRsi > topThree[1].StochRsi)
+                {
+                    stockView.Rsi14Css = "rsi14 t-r t-d";
+                }
+            }
+
+            return notes.Add(note, score, type, null);
+        }
+
         /// <summary>
         /// Phân tích su thế của giá cổ phiếu
         /// </summary>

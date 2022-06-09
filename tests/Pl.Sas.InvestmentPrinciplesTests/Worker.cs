@@ -36,8 +36,8 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 var tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
                 var startPrice = chartTrading[0].ClosePrice;
                 var endPrice = chartTrading[^1].ClosePrice;
-                var trader = new ExperimentTrading(chartPrices);
-                var tradingCase = trader.Trading(chartTrading, tradingHistory, stock.Exchange);
+                var trader = new SarTrading(chartPrices);
+                var tradingCase = trader.Trading(chartTrading, tradingHistory);
                 Console.WriteLine($"Quá trình đầu tư ngắn hạn:");
                 Console.WriteLine($"Bắt đầu--------------------------------");
                 foreach (var note in tradingCase.ExplainNotes)

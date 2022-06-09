@@ -306,16 +306,16 @@ namespace Pl.Sas.Core.Services
             if (chartPrices.Count > 17)
             {
                 var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
-                var rsiResults = quotes.GetRsi(14);
+                var rsiResults = quotes.GetStochRsi(14, 14, 3, 3);
                 var topThree = rsiResults.OrderByDescending(q => q.Date).Take(3).ToList();
-                stockView.Rsi14 = topThree[0].Value?.ToString("00.00") ?? "";
-                if (topThree[0].Value.HasValue && topThree[1].Value.HasValue && topThree[2].Value.HasValue)
+                stockView.Rsi14 = topThree[0].StochRsi?.ToString("00.00") ?? "";
+                if (topThree[0].StochRsi.HasValue && topThree[1].StochRsi.HasValue && topThree[2].StochRsi.HasValue)
                 {
-                    if (topThree[0].Value > 20 && topThree[1].Value < 20 && topThree[2].Value < topThree[1].Value)
+                    if (topThree[0].StochRsi > 20 && topThree[1].StochRsi < 20 && topThree[2].StochRsi < topThree[1].StochRsi)
                     {
                         stockView.Rsi14Css = "rsi14 t-r t-s";
                     }
-                    if (topThree[0].Value < 80 && topThree[1].Value > 80 && topThree[2].Value > topThree[1].Value)
+                    if (topThree[0].StochRsi < 80 && topThree[1].StochRsi > 80 && topThree[2].StochRsi > topThree[1].StochRsi)
                     {
                         stockView.Rsi14Css = "rsi14 t-r t-d";
                     }

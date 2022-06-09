@@ -89,7 +89,7 @@ namespace Pl.Sas.Core.Services
 
                     case 201:
                         _logger.LogInformation("Run stock price analytics for {DataKey}.", schedule.DataKey);
-                        await StockPriceAnalyticsAsync(schedule.DataKey ?? "");
+                        await StockPriceTechnicalAnalyticsAsync(schedule.DataKey ?? "");
                         break;
 
                     case 202:
@@ -315,11 +315,11 @@ namespace Pl.Sas.Core.Services
         }
 
         /// <summary>
-        /// Phân tích tăng trưởng của thị giá, phân tích kỹ thuật
+        /// Phân tích các chỉ báo, yếu tố kỹ thuật
         /// </summary>
-        /// <param name="symbol">Mã cổ phiêu</param>
-        /// <returns></returns>
-        public virtual async Task<bool> StockPriceAnalyticsAsync(string symbol)
+        /// <param name="symbol">mã chứng khoán</param>
+        /// <returns>bool</returns>
+        public virtual async Task<bool> StockPriceTechnicalAnalyticsAsync(string symbol)
         {
             Guard.Against.NullOrEmpty(symbol, nameof(symbol));
             var checkingKey = $"{symbol}-Analytics-StockPrice";
@@ -336,16 +336,16 @@ namespace Pl.Sas.Core.Services
             var exchangeFluctuationsRate = BaseTrading.GetExchangeFluctuationsRate(stock.Exchange);
             var fiinEvaluate = await _fiinEvaluatedData.FindAsync(symbol);
 
-            score += StockAnalyticsService.LastTradingAnalytics(stockNotes, stockPrices, exchangeFluctuationsRate);
+            score += StockTechnicalAnalytics.LastTradingAnalytics(stockNotes, stockPrices, exchangeFluctuationsRate);
             //score += StockAnalyticsService.StochasticTrend(stockNotes, indicatorSet);
             //score += StockAnalyticsService.EmaTrend(stockNotes, indicatorSet, tradingHistories[0]);
             //score += StockAnalyticsService.PriceTrend(stockNotes, tradingHistories);
-            score += StockAnalyticsService.MatchVolCheck(stockNotes, stockPrices.Take(5).ToList());
+            score += StockTechnicalAnalytics.MatchVolCheck(stockNotes, stockPrices.Take(5).ToList());
             //score += StockAnalyticsService.MatchVolCheck(stockNotes, stockPrices.Take(30).ToList());
             //score += StockAnalyticsService.MatchVolTrend(stockNotes, stockPrices);
-            score += StockAnalyticsService.ForeignPurchasingPowerTrend(stockNotes, stockPrices.Take(5).ToList());
+            score += StockTechnicalAnalytics.ForeignPurchasingPowerTrend(stockNotes, stockPrices.Take(5).ToList());
             //score += StockAnalyticsService.TraderTrend(stockNotes, stockPrices);
-            score += StockAnalyticsService.FiinCheck(stockNotes, fiinEvaluate);
+            score += StockTechnicalAnalytics.FiinCheck(stockNotes, fiinEvaluate);
 
             var saveZipData = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(stockNotes));
             var check = await _analyticsResultData.SaveStockScoreAsync(symbol, score, saveZipData);
