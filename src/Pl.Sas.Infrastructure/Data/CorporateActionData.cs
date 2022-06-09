@@ -86,29 +86,37 @@ namespace Pl.Sas.Infrastructure.Data
 
             var dataTableTemp = corporateActions.ToDataTable();
             using SqlConnection connection = new(_connectionStrings.MarketConnection);
-            connection.Open();
-            using var tran = connection.BeginTransaction();
-            try
+            await _dbAsyncRetry.ExecuteAsync(async () =>
             {
-                using (var sqlBulkCopy = new SqlBulkCopy(connection, SqlBulkCopyOptions.Default, tran))
+                connection.Open();
+                using var tran = connection.BeginTransaction();
+                try
                 {
-                    foreach (DataColumn column in dataTableTemp.Columns)
+                    using (var sqlBulkCopy = new SqlBulkCopy(connection, SqlBulkCopyOptions.Default, tran))
                     {
-                        sqlBulkCopy.ColumnMappings.Add(new SqlBulkCopyColumnMapping(column.ColumnName, column.ColumnName));
-                    }
+                        foreach (DataColumn column in dataTableTemp.Columns)
+                        {
+                            sqlBulkCopy.ColumnMappings.Add(new SqlBulkCopyColumnMapping(column.ColumnName, column.ColumnName));
+                        }
 
-                    sqlBulkCopy.BulkCopyTimeout = 300;
-                    sqlBulkCopy.DestinationTableName = "CorporateActions";
-                    await sqlBulkCopy.WriteToServerAsync(dataTableTemp);
+                        sqlBulkCopy.BulkCopyTimeout = 300;
+                        sqlBulkCopy.DestinationTableName = "CorporateActions";
+                        await sqlBulkCopy.WriteToServerAsync(dataTableTemp);
+                    }
+                    tran.Commit();
                 }
-                tran.Commit();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "BulkInserAsync error");
-                tran.Rollback();
-                throw;
-            }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "BulkInserAsync error");
+                    tran.Rollback();
+                    throw;
+                }
+                finally
+                {
+                    connection.Close();
+                    connection.Dispose();
+                }
+            });
         }
 
         public virtual async Task<bool> DeleteAsync(string id)

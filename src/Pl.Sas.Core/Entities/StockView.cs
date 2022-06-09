@@ -137,84 +137,84 @@
 
         #region Cột chỉ số beta
         public string Beta { get; set; } = null!;
-        public string BetaCss { get; set; } = null!;
+        public string BetaCss { get; set; } = "beta t-r";
         #endregion
 
         #region Cột Sức mạnh giá rsi 14
         public string Rsi14 { get; set; } = null!;
-        public string Rsi14Css { get; set; } = null!;
+        public string Rsi14Css { get; set; } = "rsi14 t-r";
         #endregion
 
         #region Cột giá hỗ trợ
         public string Nght { get; set; } = null!;
-        public string NghtCss { get; set; } = null!;
+        public string NghtCss { get; set; } = "nght t-r";
         #endregion
 
         #region Cột giá kháng cự
         public string Ngkc { get; set; } = null!;
-        public string NgkcCss { get; set; } = null!;
+        public string NgkcCss { get; set; } = "ngkc t-r";
         #endregion
 
         #region Cột khối lượng hiện tại
         public float KlhtValue { get; set; }
         public string Klht { get; set; } = null!;
-        public string KlhtCss { get; set; } = null!;
+        public string KlhtCss { get; set; } = "klht t-r";
         #endregion
 
         #region Cột giá hiện tại
         public string Ght { get; set; } = null!;
-        public string GhtCss { get; set; } = null!;
+        public string GhtCss { get; set; } = "ght t-r";
         #endregion
 
         #region Cột % biến động giá 2 phiên tăng giảm so với phiên trước
         public float Bd2Value { get; set; }
         public string Bd2 { get; set; } = null!;
-        public string Bd2Css { get; set; } = null!;
+        public string Bd2Css { get; set; } = "bd2 t-r";
         #endregion
 
         #region Cột % biến động giá 5 phiên
         public string Bd5 { get; set; } = null!;
-        public string Bd5Css { get; set; } = null!;
+        public string Bd5Css { get; set; } = "bd5 t-r";
         #endregion
 
         #region Cột % biến động giá 10 phiên
         public string Bd10 { get; set; } = null!;
-        public string Bd10Css { get; set; } = null!;
+        public string Bd10Css { get; set; } = "bd10 t-r";
         #endregion
 
         #region Cột % biến động giá 30 phiên
         public string Bd30 { get; set; } = null!;
-        public string Bd30Css { get; set; } = null!;
+        public string Bd30Css { get; set; } = "bd30 t-r";
         #endregion
 
         #region Cột % biến động giá 60 phiên
         public string Bd60 { get; set; } = null!;
-        public string Bd60Css { get; set; } = null!;
+        public string Bd60Css { get; set; } = "bd60 t-r";
         #endregion
 
         #region Cột % Lợi nhận phương pháp thử nghiệm
         public string Lntn { get; set; } = null!;
-        public string LntnCss { get; set; } = null!;
+        public string LntnCss { get; set; } = "lntn t-r";
         #endregion
 
         #region Cột % Lợi nhận phương pháp chính
         public string Lnc { get; set; } = null!;
-        public string LncCss { get; set; } = null!;
+        public string LncCss { get; set; } = "lnc t-r";
         #endregion
 
         #region Cột % Lợi nhận mua và giữ
         public string Lnmg { get; set; } = null!;
-        public string LnmgCss { get; set; } = null!;
+        public string LnmgCss { get; set; } = "lnmg t-r";
         #endregion
 
         #region Cột Khuyến nghị theo phương pháp thử nghiệm
         public string Kntn { get; set; } = null!;
-        public string KntnCss { get; set; } = null!;
+        public string KntnCss { get; set; } = "kntn t-c";
         #endregion
 
         #region Cột Khuyến nghị theo phương pháp chính
         public string Knc { get; set; } = null!;
-        public string KncCss { get; set; } = null!;
+        public string KncCss { get; set; } = "knc t-c";
         #endregion
     }
 }
