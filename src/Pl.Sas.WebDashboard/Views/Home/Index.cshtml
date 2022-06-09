@@ -83,7 +83,7 @@
                 <td rowspan="2" title="Tên doanh nghiệp - lĩnh vực hoạt động" id="number-row">Mã</td>
                 <td colspan="10" title="Điểm đánh giá doanh nghiệp và các chỉ số tài chính hiện tại của doanh nghiệp">Doanh nghiệp</td>
                 <td colspan="2" title="Phân tích các yếu tố vĩ mô tác động vào cổ phiếu">Dòng tiền</td>
-                <td colspan="8" title="Điểm đánh giá tăng trưởng thị giá và phân tích kỹ thuật">Kỹ thuật</td>
+                <td colspan="11" title="Điểm đánh giá tăng trưởng thị giá và phân tích kỹ thuật">Kỹ thuật</td>
                 <td colspan="5" title="Kết quả các phương pháp khi cho đầu tư từ @Pl.Sas.Core.Constants.StartTime.ToString("dd/MM/yyyy") và đánh giá mua/bán">Khuyến nghị</td>
             </tr>
             <tr class="t-c t-w">
@@ -103,12 +103,15 @@
 
                 <td title="Tổng điểm đánh giá tăng trưởng giá">TH</td>
                 <td title="Chỉ số beta">Beta</td>
+                <td title="Chỉ số rsi 14 phiên">Rsi</td>
+                <td title="Giá kháng cự">GKC</td>
+                <td title="Giá hỗ trợ">GHT</td>
                 <td title="Khối lượng khớp lệnh phiên trước và % so với bình quân 3,5,10 phiên trước">KL khớp</td>
-                <td title="Giá đóng của phiên giao mới nhất">Giá ĐC</td>
-                <td title="% biến động giá trong 1 phiên">1P</td>
-                <td title="% biến động giá trong 5 phiên">5P</td>
-                <td title="% biến động giá trong 10 phiên">10P</td>
-                <td title="% biến động giá trong 30 phiên">30P</td>
+                <td title="Giá đóng của phiên giao mới nhất">Giá</td>
+                <td title="% biến động giá trong 1 phiên">%+-</td>
+                <td title="% biến động giá trong 5 phiên">%5P</td>
+                <td title="% biến động giá trong 10 phiên">%10P</td>
+                <td title="% biến động giá trong 30 phiên">%30P</td>
 
                 <td title="% Lợi nhuận của phương pháp thử nghiệm">TN</td>
                 <td title="% Lợi nhuận của phương pháp chính">CH</td>
@@ -141,6 +144,9 @@
                 setContent('#' + view.symbol + ' .lnmg', view.lnmg, view.lnmgCss);
                 setContent('#' + view.symbol + ' .kntn', view.kntn, view.kntnCss);
                 setContent('#' + view.symbol + ' .knc', view.knc, view.kncCss);
+                setContent('#' + view.symbol + ' .rsi14', view.rsi14, view.rsi14Css);
+                setContent('#' + view.symbol + ' .nght', view.nght, view.nghtCss);
+                setContent('#' + view.symbol + ' .ngkc', view.ngkc, view.ngkcCss);
             });
 
             async function srStartListen() {
@@ -176,7 +182,7 @@
 
         function LoadMarket() {
             var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            $('#user-invest-table-body').html('<tr><td colspan="26" class="text-center"><p class="fas fa-sync-alt fa-spin"></p></td></tr>');
+            $('#user-invest-table-body').html('<tr><td colspan="29" class="text-center"><p class="fas fa-sync-alt fa-spin"></p></td></tr>');
             var postData = JSON.stringify({
                 Ordinal: $('#ordinal').val(),
                 IndustryCode: $('#industry').val(),

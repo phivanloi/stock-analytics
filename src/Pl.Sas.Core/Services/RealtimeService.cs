@@ -108,7 +108,6 @@ namespace Pl.Sas.Core.Services
             }
             chartPrices = chartPrices.OrderBy(q => q.TradingDate).ToList();
             var chartTrading = chartPrices.Where(q => q.TradingDate >= Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
-            
 
             var stockView = await stockViewTask;
             if (stockView is null)

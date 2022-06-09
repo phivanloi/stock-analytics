@@ -129,15 +129,7 @@ namespace Pl.Sas.Core.Trading
 
         private static void LoadIndicatorSet(List<ChartPrice> chartPrices)
         {
-            var quotes = chartPrices.Select(q => new Quote()
-            {
-                Close = (decimal)q.ClosePrice,
-                Open = (decimal)q.OpenPrice,
-                High = (decimal)q.HighestPrice,
-                Low = (decimal)q.LowestPrice,
-                Volume = (decimal)q.TotalMatchVol,
-                Date = q.TradingDate
-            }).OrderBy(q => q.Date).ToList();
+            var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
             _parabolicSar = quotes.GetParabolicSar(0.02M).ToList();
         }
 
