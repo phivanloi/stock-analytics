@@ -237,8 +237,8 @@ namespace Pl.Sas.Core.Services
                     zigZagPercentChange = 15;
                 }
                 var zigZagResults = quotes.GetZigZag(EndType.HighLow, zigZagPercentChange);
-                var zigZagResultH = zigZagResults.LastOrDefault(q => q.PointType == "H" && ((decimal)chartPrices[^1].ClosePrice < (q.ZigZag + (q.ZigZag * 0.01m))));
-                var zigZagResultL = zigZagResults.LastOrDefault(q => q.PointType == "L" && ((decimal)chartPrices[^1].ClosePrice > (q.ZigZag - (q.ZigZag * 0.01m))));
+                var zigZagResultH = zigZagResults.LastOrDefault(q => q.PointType == "H" && ((decimal)chartPrices[^1].ClosePrice < (q.ZigZag - (q.ZigZag * 0.01m))));
+                var zigZagResultL = zigZagResults.LastOrDefault(q => q.PointType == "L" && ((decimal)chartPrices[^1].ClosePrice > (q.ZigZag + (q.ZigZag * 0.01m))));
                 if (zigZagResultH is not null && zigZagResultH.ZigZag.HasValue)
                 {
                     stockView.Ngkc = zigZagResultH.ZigZag.Value.ToString("00.00");
