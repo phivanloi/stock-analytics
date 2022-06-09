@@ -46,9 +46,9 @@ namespace Pl.Sas.UnitTests
             var hostedService = serviceProvider.GetService<IHostedService>() as LoggingQueuedHostedService ?? throw new Exception("Can't get LoggingQueuedHostedService");
             await hostedService.StartAsync(CancellationToken.None);
 
-            var chartPrices = await chartPriceData.FindAllAsync("VND");
+            var chartPrices = await chartPriceData.FindAllAsync("HPG", "D");
             var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
-            var zigZagResults = quotes.GetZigZag(EndType.HighLow, Math.Ceiling((decimal)(1.7f * 10 / 2)) + 2);
+            var zigZagResults = quotes.GetZigZag(EndType.HighLow, 6);
             foreach (var zigZag in zigZagResults)
             {
                 _output.WriteLine($"{zigZag.Date:yyyy:MM:dd}, Z:{zigZag.ZigZag:00.00}, PT:{zigZag.PointType ?? " "}, RH:{zigZag.RetraceHigh:00.00}, RL:{zigZag.RetraceLow:00.00}");
@@ -112,7 +112,7 @@ namespace Pl.Sas.UnitTests
             var hostedService = serviceProvider.GetService<IHostedService>() as LoggingQueuedHostedService ?? throw new Exception("Can't get LoggingQueuedHostedService");
             await hostedService.StartAsync(CancellationToken.None);
 
-            var chartPrices = await chartPriceData.FindAllAsync("SSI");
+            var chartPrices = await chartPriceData.FindAllAsync("HPG");
             var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
             var dojiResults = quotes.GetMarubozu(95);
             foreach (var doji in dojiResults)

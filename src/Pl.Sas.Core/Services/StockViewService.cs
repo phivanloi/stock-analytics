@@ -225,6 +225,7 @@ namespace Pl.Sas.Core.Services
             if (chartPrices is not null && chartPrices.Count > 0)
             {
                 #region Hỗ trợ và kháng cự
+                chartPrices = chartPrices.OrderBy(q => q.TradingDate).ToList();
                 var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
                 var zigZagPercentChange = Math.Ceiling((decimal)(company.Beta * 10 / 2)) + 2;
                 if (zigZagPercentChange < 5)
@@ -236,8 +237,8 @@ namespace Pl.Sas.Core.Services
                     zigZagPercentChange = 15;
                 }
                 var zigZagResults = quotes.GetZigZag(EndType.HighLow, zigZagPercentChange);
-                var zigZagResultH = zigZagResults.LastOrDefault(q => q.PointType == "H" && q.ZigZag.HasValue && ((decimal)chartPrices[^1].ClosePrice < (q.ZigZag + (q.ZigZag * 0.01m))));
-                var zigZagResultL = zigZagResults.LastOrDefault(q => q.PointType == "L" && q.ZigZag.HasValue && ((decimal)chartPrices[^1].ClosePrice > (q.ZigZag - (q.ZigZag * 0.01m))));
+                var zigZagResultH = zigZagResults.LastOrDefault(q => q.PointType == "H" && ((decimal)chartPrices[^1].ClosePrice < (q.ZigZag + (q.ZigZag * 0.01m))));
+                var zigZagResultL = zigZagResults.LastOrDefault(q => q.PointType == "L" && ((decimal)chartPrices[^1].ClosePrice > (q.ZigZag - (q.ZigZag * 0.01m))));
                 if (zigZagResultH is not null && zigZagResultH.ZigZag.HasValue)
                 {
                     stockView.Ngkc = zigZagResultH.ZigZag.Value.ToString("00.00");
@@ -416,6 +417,10 @@ namespace Pl.Sas.Core.Services
                         {
                             stockView.KntnCss = "kntn t-c t-b";
                         }
+                        else
+                        {
+                            stockView.KntnCss = "kntn t-c";
+                        }
                     }
                     else if (result.Principle == 1)
                     {
@@ -429,6 +434,10 @@ namespace Pl.Sas.Core.Services
                         else if (result.IsSell)
                         {
                             stockView.KncCss = "knc t-c t-b";
+                        }
+                        else
+                        {
+                            stockView.KncCss = "kntn t-c";
                         }
                     }
                     else if (result.Principle == 3)
