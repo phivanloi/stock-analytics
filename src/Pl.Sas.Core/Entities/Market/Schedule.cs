@@ -158,11 +158,14 @@ namespace Pl.Sas.Core.Entities
         private DateTime RealtimeSchedule(DateTime baseTime)
         {
             var random = new Random();
-            if (DateTime.Now.Hour > 8 && DateTime.Now.Hour < 16 && DateTime.Now.DayOfWeek != DayOfWeek.Sunday && DateTime.Now.DayOfWeek != DayOfWeek.Saturday)
+            if (DateTime.Now.Hour > 16)
+            {
+                return baseTime.Date.AddDays(1).AddHours(8).AddMinutes(random.Next(30, 60));
+            }
+            else
             {
                 return baseTime.AddSeconds(int.Parse(Options["SleepTime"]) - random.Next(-3, 3));
             }
-            return baseTime.Date.AddDays(1).AddHours(8).AddMinutes(random.Next(30, 60));
         }
     }
 }
