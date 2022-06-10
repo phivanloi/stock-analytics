@@ -143,14 +143,15 @@ namespace Pl.Sas.Infrastructure.RabbitmqMessageQueue
             var consumer = new EventingBasicConsumer(_subscribeRealtimeChannel);
             consumer.Received += async (model, ea) =>
             {
+                var message = JsonSerializer.Deserialize<QueueMessage>(_zipHelper.UnZipByte(ea.Body.ToArray()));
                 try
                 {
-                    var message = JsonSerializer.Deserialize<QueueMessage>(_zipHelper.UnZipByte(ea.Body.ToArray()));
                     Guard.Against.Null(message, nameof(message));
                     await func(message);
                 }
                 catch (Exception ex)
                 {
+                    _logger.LogError(new Exception(JsonSerializer.Serialize(message)), $"SubscribeRealtimeTask error data");
                     _logger.LogError(ex, $"Run SubscribeRealtimeTask error");
                 }
                 finally

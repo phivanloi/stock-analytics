@@ -13,7 +13,7 @@ namespace Pl.Sas.Core.Services
         /// <returns>double, int</returns>
         public static (double? StochRsi, int Score) StochRsiAnalytics(List<AnalyticsNote> notes, List<Quote> quotes)
         {
-            if (quotes.Count <= 17)
+            if (quotes is null || quotes.Count <= 17)
             {
                 return (null, notes.Add($"Chưa đủ dữ liệu đê phân tích stoch rsi 14.", -1, -1, null));
             }
@@ -23,8 +23,12 @@ namespace Pl.Sas.Core.Services
             var note = string.Empty;
 
             var rsiResults = quotes.GetStochRsi(14, 14, 3, 3);
-            var topThree = rsiResults.OrderByDescending(q => q.Date).Take(3).ToList();
+            if (rsiResults is null || rsiResults.Count() < 0)
+            {
+                return (null, notes.Add($"Chưa đủ dữ liệu đê phân tích stoch rsi 14.", -1, -1, null));
+            }
 
+            var topThree = rsiResults.OrderByDescending(q => q.Date).Take(3).ToList();
             if (topThree[0].StochRsi > topThree[0].Signal)
             {
                 score++;
