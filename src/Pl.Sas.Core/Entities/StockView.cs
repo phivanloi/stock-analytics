@@ -140,7 +140,12 @@
         public string BetaCss { get; set; } = "beta t-r";
         #endregion
 
-        #region Cột Sức mạnh giá rsi 14
+        #region Cột sức mạnh của trend dax
+        public string Rsi14 { get; set; } = null!;
+        public string Rsi14Css { get; set; } = "rsi14 t-r";
+        #endregion
+
+        #region Cột Sức mạnh giá stoch rsi 14
         public string Rsi14 { get; set; } = null!;
         public string Rsi14Css { get; set; } = "rsi14 t-r";
         #endregion

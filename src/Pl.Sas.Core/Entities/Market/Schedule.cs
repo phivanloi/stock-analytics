@@ -160,7 +160,7 @@ namespace Pl.Sas.Core.Entities
             var random = new Random();
             if (DateTime.Now.Hour > 16)
             {
-                return baseTime.Date.AddDays(1).AddHours(8).AddMinutes(random.Next(30, 60));
+                return baseTime.Date.AddDays(1).AddHours(8).AddMinutes(random.Next(30, 60)).AddSeconds(int.Parse(Options["SleepTime"]) - random.Next(-3, 3));
             }
             else
             {
