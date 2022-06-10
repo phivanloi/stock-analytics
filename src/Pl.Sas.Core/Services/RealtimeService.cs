@@ -206,11 +206,11 @@ namespace Pl.Sas.Core.Services
             var type14 = await _scheduleData.FindAsync(14, symbol);
             if (type14 != null)
             {
-                if (transactionCont > 50000)
+                if (transactionCont > 10000)
                 {
                     type14.AddOrUpdateOptions("SleepTime", "30");
                 }
-                else if (transactionCont > 10000)
+                else if (transactionCont > 8000)
                 {
                     type14.AddOrUpdateOptions("SleepTime", "60");
                 }
@@ -218,25 +218,25 @@ namespace Pl.Sas.Core.Services
                 {
                     type14.AddOrUpdateOptions("SleepTime", "100");
                 }
-                else if (transactionCont > 1000)
+                else if (transactionCont > 3000)
                 {
                     type14.AddOrUpdateOptions("SleepTime", "140");
                 }
-                else if (transactionCont > 500)
+                else if (transactionCont > 1000)
                 {
                     type14.AddOrUpdateOptions("SleepTime", "200");
                 }
-                else if (transactionCont > 100)
+                else if (transactionCont > 500)
                 {
                     type14.AddOrUpdateOptions("SleepTime", "360");
                 }
-                else if (transactionCont > 50)
+                else if (transactionCont > 100)
                 {
-                    type14.AddOrUpdateOptions("SleepTime", "1200");
+                    type14.AddOrUpdateOptions("SleepTime", "600");
                 }
                 else
                 {
-                    type14.AddOrUpdateOptions("SleepTime", "2400");
+                    type14.AddOrUpdateOptions("SleepTime", "1200");
                 }
                 return await _scheduleData.UpdateAsync(type14);
             }

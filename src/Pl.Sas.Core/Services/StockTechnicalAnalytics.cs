@@ -1,78 +1,96 @@
 ﻿using Pl.Sas.Core.Entities;
+using Skender.Stock.Indicators;
 
 namespace Pl.Sas.Core.Services
 {
-    public static class StockAnalyticsService
+    public static class StockTechnicalAnalytics
     {
         /// <summary>
-        /// Phân tích su thế của giá cổ phiếu
+        /// Phân tích su thế tăng trưởng của thị giá theo đường ema
         /// </summary>
-        /// <param name="notes">Ghi chú</param>
-        /// <param name="stockPrices">Danh sách lịch sử giao dịch, sắp sếp theo phiên diao dịch gần nhất lên đầu</param>
-        /// <param name="exchangeFluctuationsRate">Tỉ lệ tăng giảm tối đa của sàn mà chứng khoán liêm yết</param>
-        /// <returns>int</returns>
-        public static int LastTradingAnalytics(List<AnalyticsNote> notes, List<StockPrice> stockPrices, float exchangeFluctuationsRate)
+        /// <param name="notes">Danh sách ghi chú</param>
+        /// <param name="quotes">Danh sách lịch sử giá sắp xếp ngày giao dịch tăng dần</param>
+        /// <returns>double, int</returns>
+        public static (double? StochRsi, int Score) StochRsiAnalytics(List<AnalyticsNote> notes, List<Quote> quotes)
         {
-            if (stockPrices.Count < 2)
+            if (quotes.Count <= 17)
             {
-                return notes.Add($"Chưa có đủ lịch sử giá để phân tích.", -5, -1, null);
+                return (null, notes.Add($"Chưa đủ dữ liệu đê phân tích stoch rsi 14.", -1, -1, null));
             }
 
             var type = 0;
             var score = 0;
             var note = string.Empty;
 
-            var priceChange = stockPrices[0].ClosePrice.GetPercent(stockPrices[1].ClosePrice);
-            if (priceChange == 0)// Giá không có biến động
+            var rsiResults = quotes.GetStochRsi(14, 14, 3, 3);
+            var topThree = rsiResults.OrderByDescending(q => q.Date).Take(3).ToList();
+
+            if (topThree[0].StochRsi > topThree[0].Signal)
             {
-                note += $"Giá không thay đổi,";
+                score++;
+                type++;
+                note += "Stoch Rsi 14 đang trên đường tiếng hiệu.";
             }
-            else if (Math.Abs(priceChange) > (exchangeFluctuationsRate - (exchangeFluctuationsRate * 0.15f)))//Mức biến động giá lớn
+            else
+            {
+                score--;
+                type--;
+                note += "Stoch Rsi 14 đang dưới đường tiếng hiệu.";
+            }
+
+            if (topThree[0].StochRsi.HasValue && topThree[1].StochRsi.HasValue && topThree[2].StochRsi.HasValue)
+            {
+                if (topThree[0].StochRsi > 20 && topThree[1].StochRsi < 20 && topThree[2].StochRsi < topThree[1].StochRsi)
+                {
+                    score++;
+                    type++;
+                    note += " Đang đi lên từ quá bán mạnh.";
+                }
+                if (topThree[0].StochRsi < 80 && topThree[1].StochRsi > 80 && topThree[2].StochRsi > topThree[1].StochRsi)
+                {
+                    score--;
+                    type--;
+                    note += " Đang đi xuống từ quá mua mạnh.";
+                }
+            }
+
+            return (topThree[0].StochRsi, notes.Add(note, score, type, null));
+        }
+
+        /// <summary>
+        /// Phân tích su thế của giá cổ phiếu
+        /// </summary>
+        /// <param name="notes">Ghi chú</param>
+        /// <param name="chartPrices">Danh sách lịch sử giao dịch, sắp sếp theo phiên diao dịch gần nhất lên đầu</param>
+        /// <param name="exchangeFluctuationsRate">Tỉ lệ tăng giảm tối đa của sàn mà chứng khoán liêm yết</param>
+        /// <returns>int</returns>
+        public static int LastTradingAnalytics(List<AnalyticsNote> notes, List<ChartPrice> chartPrices, float exchangeFluctuationsRate)
+        {
+            if (chartPrices.Count < 2)
+            {
+                return notes.Add($"Chưa có đủ lịch sử giá để phân tích biến động giá phiên cuối.", -5, -1, null);
+            }
+
+            var type = 0;
+            var score = 0;
+            var note = string.Empty;
+
+            var priceChange = chartPrices[0].ClosePrice.GetPercent(chartPrices[1].ClosePrice);
+            if (Math.Abs(priceChange) > (exchangeFluctuationsRate - (exchangeFluctuationsRate * 0.15f)))//Mức biến động giá lớn
             {
                 if (priceChange < 0)
                 {
                     note += $"Phiên cuối, giá có mức biển động giảm lớn({priceChange:0.0}%),";
-                    type = -3;
-                    score -= 3;
+                    type = -1;
+                    score -= 1;
                 }
                 else
                 {
                     note += $"Phiên cuối, giá có mức biển động tăng lớn({priceChange:0.0}%),";
-                    score += 3;
-                    type = 3;
-                }
-            }
-            else if (Math.Abs(priceChange) > (exchangeFluctuationsRate - (exchangeFluctuationsRate * 0.5f)))//Mức biến động giá khá lớn
-            {
-                if (priceChange < 0)
-                {
-                    note += $"Giá có mức biển động giảm khá lớn({priceChange:0.0}%) trong phiên cuối cùng,";
-                    type = -2;
-                    score -= 2;
-                }
-                else
-                {
-                    note += $"Giá có mức biển động tăng khá lớn({priceChange:0.0}%) trong phiên cuối cùng,";
-                    score += 2;
-                    type = 2;
-                }
-            }
-            else
-            {
-                if (priceChange < 0)
-                {
-                    note += $"Giá có mức biển động giảm bình thường({priceChange:0.0}%) trong phiên cuối cùng,";
-                    score -= 1;
-                    type--;
-                }
-                else
-                {
-                    note += $"Giá có mức biển động tăng bình thường({priceChange:0.0}%) trong phiên cuối cùng,";
                     score += 1;
-                    type++;
+                    type = 1;
                 }
             }
-
 
             return notes.Add(note, score, type, null);
         }

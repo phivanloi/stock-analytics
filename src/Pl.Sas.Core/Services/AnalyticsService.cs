@@ -89,7 +89,7 @@ namespace Pl.Sas.Core.Services
 
                     case 201:
                         _logger.LogInformation("Run stock price analytics for {DataKey}.", schedule.DataKey);
-                        await StockPriceAnalyticsAsync(schedule.DataKey ?? "");
+                        await StockPriceTechnicalAnalyticsAsync(schedule.DataKey ?? "");
                         break;
 
                     case 202:
@@ -315,37 +315,39 @@ namespace Pl.Sas.Core.Services
         }
 
         /// <summary>
-        /// Phân tích tăng trưởng của thị giá, phân tích kỹ thuật
+        /// Phân tích các chỉ báo, yếu tố kỹ thuật
         /// </summary>
-        /// <param name="symbol">Mã cổ phiêu</param>
-        /// <returns></returns>
-        public virtual async Task<bool> StockPriceAnalyticsAsync(string symbol)
+        /// <param name="symbol">mã chứng khoán</param>
+        /// <returns>bool</returns>
+        public virtual async Task<bool> StockPriceTechnicalAnalyticsAsync(string symbol)
         {
             Guard.Against.NullOrEmpty(symbol, nameof(symbol));
             var checkingKey = $"{symbol}-Analytics-StockPrice";
-            var stockPrices = await _stockPriceData.FindAllForTradingAsync(symbol, 50);
-            var stock = await _stockData.FindBySymbolAsync(symbol);
-            if (stock is null || stockPrices.Count <= 0)
+            var chartPrices = await _chartPriceData.CacheFindAllAsync(symbol, "D");
+            if (chartPrices is null || chartPrices.Count <= 0)
             {
-                _logger.LogWarning("StockPriceAnalyticsAsync can't find last stock price with symbol: {symbol}", symbol);
+                var stockPrices = await _stockPriceData.FindAllForTradingAsync(symbol);
+                if (stockPrices is not null && stockPrices.Count > 0)
+                {
+                    chartPrices = stockPrices.Select(q => q.ToChartPrice()).ToList();
+                }
+            }
+            var stock = await _stockData.FindBySymbolAsync(symbol);
+            if (stock is null || chartPrices is null || chartPrices.Count <= 0)
+            {
+                _logger.LogWarning("StockPriceTechnicalAnalyticsAsync can't find last stock price, chart price and stock with symbol: {symbol}", symbol);
                 return await _keyValueData.SetAsync(checkingKey, false);
             }
+            var fiinEvaluate = await _fiinEvaluatedData.FindAsync(symbol);
+            var exchangeFluctuationsRate = BaseTrading.GetExchangeFluctuationsRate(stock.Exchange);
+            var quotes = chartPrices.Select(q => q.ToQuote()).ToList();
 
             var score = 0;
             var stockNotes = new List<AnalyticsNote>();
-            var exchangeFluctuationsRate = BaseTrading.GetExchangeFluctuationsRate(stock.Exchange);
-            var fiinEvaluate = await _fiinEvaluatedData.FindAsync(symbol);
+            var (_, StochRsiScore) = StockTechnicalAnalytics.StochRsiAnalytics(stockNotes, quotes);
 
-            score += StockAnalyticsService.LastTradingAnalytics(stockNotes, stockPrices, exchangeFluctuationsRate);
-            //score += StockAnalyticsService.StochasticTrend(stockNotes, indicatorSet);
-            //score += StockAnalyticsService.EmaTrend(stockNotes, indicatorSet, tradingHistories[0]);
-            //score += StockAnalyticsService.PriceTrend(stockNotes, tradingHistories);
-            score += StockAnalyticsService.MatchVolCheck(stockNotes, stockPrices.Take(5).ToList());
-            //score += StockAnalyticsService.MatchVolCheck(stockNotes, stockPrices.Take(30).ToList());
-            //score += StockAnalyticsService.MatchVolTrend(stockNotes, stockPrices);
-            score += StockAnalyticsService.ForeignPurchasingPowerTrend(stockNotes, stockPrices.Take(5).ToList());
-            //score += StockAnalyticsService.TraderTrend(stockNotes, stockPrices);
-            score += StockAnalyticsService.FiinCheck(stockNotes, fiinEvaluate);
+            score += StochRsiScore;
+            score += StockTechnicalAnalytics.FiinCheck(stockNotes, fiinEvaluate);
 
             var saveZipData = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(stockNotes));
             var check = await _analyticsResultData.SaveStockScoreAsync(symbol, score, saveZipData);
