@@ -79,6 +79,11 @@ namespace Pl.Sas.Core.Services
                 return;
             }
 
+            if (chartPricesRealtime.Last().TradingDate < DateTime.Now.Date.AddDays(-10))
+            {
+                return;
+            }
+
             var stock = await _stockData.FindBySymbolAsync(symbol);
             var chartPrices = await _chartPriceData.CacheFindAllAsync(symbol, "D");
             if (chartPrices is null || chartPrices.Count <= 0 || stock is null)

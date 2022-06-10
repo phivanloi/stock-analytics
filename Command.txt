@@ -130,3 +130,9 @@
 	   FROM Stocks where [Type] = 's'
 	)
 	DELETE FROM CTE WHERE RN > 1
+
+
+- định giá thị trường
+	https://fiin-market.ssi.com.vn/MarketInDepth/GetValuationSeriesV2?language=vi&Code=VNINDEX&TimeRange=AllTime&FromDate=&ToDate=
+- các thị trường khác
+	https://fiin-market.ssi.com.vn/MarketInDepth/GetProspectV2?language=vi&ComGroupCode=VNINDEX
