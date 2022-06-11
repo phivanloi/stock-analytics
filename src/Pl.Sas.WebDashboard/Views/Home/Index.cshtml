@@ -148,6 +148,16 @@
                 setContent('#' + view.symbol + ' .nght', view.nght, view.nghtCss);
                 setContent('#' + view.symbol + ' .ngkc', view.ngkc, view.ngkcCss);
             });
+            srConnection.on("UpdateIndexView", (indexview) => {
+                setContent('.klht', indexview.dji, indexview.djiCss);
+                setContent('.klht', indexview.nasdaq, indexview.nasdaqCss);
+                setContent('.klht', indexview.dax, indexview.daxCss);
+                setContent('.klht', indexview.shanghai, indexview.shanghaiCss);
+                setContent('.klht', indexview.hangseng, indexview.hangsengCss);
+                setContent('.klht', indexview.vnindex, indexview.vnindexCss);
+                setContent('.klht', indexview.vnindexPe);
+                setContent('.klht', indexview.vnindexPb);
+            });
 
             async function srStartListen() {
                 try {
