@@ -125,9 +125,9 @@ namespace Pl.Sas.Core.Entities
                 10 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 60)),//Lấy lãi suất ngân hàng lớn nhất
                 11 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 60)),//Thu thập khuyến nghị của các công ty chứng khoán
                 12 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 60)),//Thu thập đánh giá cổ phiếu của vndirect
-                13 => baseTime.AddHours(random.Next(2, 3)),//Thu thập thông tin các chỉ số quốc tế
+                13 => baseTime.AddMinutes(random.Next(5, 10)),//Thu thập thông tin các chỉ số quốc tế
                 14 => RealtimeSchedule(baseTime),//Thu thập dự liệu realtime
-                15 => baseTime.AddHours(random.Next(2, 3)),//Thu thập thông tin định giá các chỉ số trong nước
+                15 => baseTime.AddMinutes(random.Next(5, 10)),//Thu thập thông tin định giá các chỉ số trong nước
 
                 200 => baseTime.Date.AddDays(1).AddHours(4).AddMinutes(random.Next(0, 60)),//đánh giá giá trị của doanh nghiệp
                 201 => baseTime.Date.AddDays(1).AddHours(4).AddMinutes(random.Next(0, 60)),//phân tích kỹ thuật
