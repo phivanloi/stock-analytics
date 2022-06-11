@@ -210,7 +210,6 @@ namespace Pl.Sas.Core.Services
             }
         }
 
-
         /// <summary>
         /// download dữ liệu chart price realtime
         /// </summary>
