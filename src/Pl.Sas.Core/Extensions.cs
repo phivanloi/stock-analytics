@@ -237,7 +237,11 @@ namespace Pl.Sas.Core
         /// <returns>ChartPrice</returns>
         public static ChartPrice ToChartPrice(this StockPrice stockPrice)
         {
-            var changePercent = (stockPrice.ClosePrice - stockPrice.ClosePriceAdjusted) / stockPrice.ClosePrice;
+            var changePercent = 0f;
+            if (stockPrice.ClosePrice != 0)
+            {
+                changePercent = (stockPrice.ClosePrice - stockPrice.ClosePriceAdjusted) / stockPrice.ClosePrice;
+            }
             return new()
             {
                 Symbol = stockPrice.Symbol,

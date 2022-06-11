@@ -22,43 +22,50 @@ namespace Pl.Sas.Core.Services
             var score = 0;
             var note = string.Empty;
 
-            var rsiResults = quotes.GetStochRsi(14, 14, 3, 3);
-            if (rsiResults is null || rsiResults.Count() < 0)
+            try
             {
-                return (null, notes.Add($"Chưa đủ dữ liệu đê phân tích stoch rsi 14.", -1, -1, null));
-            }
+                var rsiResults = quotes.GetStochRsi(14, 14, 3, 3);
+                if (rsiResults is null || rsiResults.Count() < 0)
+                {
+                    return (null, notes.Add($"Chưa đủ dữ liệu đê phân tích stoch rsi 14.", -1, -1, null));
+                }
 
-            var topThree = rsiResults.OrderByDescending(q => q.Date).Take(3).ToList();
-            if (topThree[0].StochRsi > topThree[0].Signal)
-            {
-                score++;
-                type++;
-                note += "Stoch Rsi 14 đang trên đường tiếng hiệu.";
-            }
-            else
-            {
-                score--;
-                type--;
-                note += "Stoch Rsi 14 đang dưới đường tiếng hiệu.";
-            }
-
-            if (topThree[0].StochRsi.HasValue && topThree[1].StochRsi.HasValue && topThree[2].StochRsi.HasValue)
-            {
-                if (topThree[0].StochRsi > 20 && topThree[1].StochRsi < 20 && topThree[2].StochRsi < topThree[1].StochRsi)
+                var topThree = rsiResults.OrderByDescending(q => q.Date).Take(3).ToList();
+                if (topThree[0].StochRsi > topThree[0].Signal)
                 {
                     score++;
                     type++;
-                    note += " Đang đi lên từ quá bán mạnh.";
+                    note += "Stoch Rsi 14 đang trên đường tiếng hiệu.";
                 }
-                if (topThree[0].StochRsi < 80 && topThree[1].StochRsi > 80 && topThree[2].StochRsi > topThree[1].StochRsi)
+                else
                 {
                     score--;
                     type--;
-                    note += " Đang đi xuống từ quá mua mạnh.";
+                    note += "Stoch Rsi 14 đang dưới đường tiếng hiệu.";
                 }
-            }
 
-            return (topThree[0].StochRsi, notes.Add(note, score, type, null));
+                if (topThree[0].StochRsi.HasValue && topThree[1].StochRsi.HasValue && topThree[2].StochRsi.HasValue)
+                {
+                    if (topThree[0].StochRsi > 20 && topThree[1].StochRsi < 20 && topThree[2].StochRsi < topThree[1].StochRsi)
+                    {
+                        score++;
+                        type++;
+                        note += " Đang đi lên từ quá bán mạnh.";
+                    }
+                    if (topThree[0].StochRsi < 80 && topThree[1].StochRsi > 80 && topThree[2].StochRsi > topThree[1].StochRsi)
+                    {
+                        score--;
+                        type--;
+                        note += " Đang đi xuống từ quá mua mạnh.";
+                    }
+                }
+
+                return (topThree[0].StochRsi, notes.Add(note, score, type, null));
+            }
+            catch//Đang có một lỗi khi lấy chỉ báo rsi lên tạm thời try lại
+            {
+                return (null, notes.Add($"Số liệu stoch rsi bị lỗi.", -1, -1, null));
+            }
         }
 
         /// <summary>

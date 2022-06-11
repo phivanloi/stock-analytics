@@ -136,8 +136,14 @@ namespace Pl.Sas.Core.Services
                         case 12:
                             await UpdateVndStockScoreAsync(schedule);
                             break;
+                        case 13:
+                            await UpdateWorldIndexAsync();
+                            break;
                         case 14:
                             await UpdateChartPricesRealtimeAsync(schedule);
+                            break;
+                        case 15:
+                            await UpdateIndexValuationAsync(schedule);
                             break;
                         default:
                             _logger.LogWarning("Worker process schedule id {Id}, type {Type} don't match any function", schedule.Id, schedule.Type);
@@ -160,6 +166,47 @@ namespace Pl.Sas.Core.Services
             else
             {
                 _logger.LogWarning("Worker HandleEventAsync null scheduler Id: {Id}.", queueMessage.Id);
+            }
+        }
+
+        /// <summary>
+        /// Tải các chỉ số thế giới
+        /// </summary>
+        /// <returns></returns>
+        public virtual async Task UpdateWorldIndexAsync()
+        {
+            var woldIndexs = await _downloadData.DownloadMarketInDepthAsync();
+
+            if (woldIndexs is not null && woldIndexs.Count > 0)
+            {
+                _workerQueueService.PublishRealtimeTask(new("UpdateWorldIndex")
+                {
+                    KeyValues = new Dictionary<string, string>()
+                    {
+                        {"WorldIndexs", JsonSerializer.Serialize(woldIndexs) }
+                    }
+                });
+            }
+        }
+
+        /// <summary>
+        /// Tải định giá thị trường
+        /// </summary>
+        /// <returns></returns>
+        public virtual async Task UpdateIndexValuationAsync(Schedule schedule)
+        {
+            var indexs = schedule.Options["Indexs"];
+            var indexValuations = await _downloadData.DownloadFiinValuationAsync(indexs);
+
+            if (indexValuations is not null && indexValuations.Count > 0)
+            {
+                _workerQueueService.PublishRealtimeTask(new("IndexValuationChange")
+                {
+                    KeyValues = new Dictionary<string, string>()
+                    {
+                        {"IndexValuation", JsonSerializer.Serialize(indexValuations) }
+                    }
+                });
             }
         }
 
@@ -266,7 +313,6 @@ namespace Pl.Sas.Core.Services
                         {"ChartPrices", JsonSerializer.Serialize(chartPrices) }
                     }
                 });
-                chartPrices = null;
             }
         }
 

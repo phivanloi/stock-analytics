@@ -45,6 +45,21 @@ namespace Pl.Sas.UnitTests
         }
 
         [Fact]
+        public async Task StockPriceTechnicalAnalyticsTestAsync()
+        {
+            var services = ConfigureServices.GetConfigureServices();
+            var serviceProvider = services.BuildServiceProvider();
+            var analyticsService = serviceProvider.GetService<AnalyticsService>() ?? throw new Exception("Can't get WorkerService");
+            var hostedService = serviceProvider.GetService<IHostedService>() as LoggingQueuedHostedService ?? throw new Exception("Can't get LoggingQueuedHostedService");
+            await hostedService.StartAsync(CancellationToken.None);
+
+            await analyticsService.StockPriceTechnicalAnalyticsAsync("BCB");
+            Assert.True(true);
+
+            await hostedService.StopAsync(CancellationToken.None);
+        }
+
+        [Fact]
         public async Task CompanyValueAnalyticsTestAsync()
         {
             var services = ConfigureServices.GetConfigureServices();

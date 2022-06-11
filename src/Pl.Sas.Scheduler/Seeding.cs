@@ -22,7 +22,18 @@ namespace Pl.Sas.Scheduler
                     {
                         Type = 10,
                         Name = "Lấy lãi suất ngân hàng cao nhất.",
-                        OptionsJson = JsonSerializer.Serialize(new Dictionary<string, string>() { { "Length", $"3,6,12,24" } })
+                        OptionsJson = JsonSerializer.Serialize(new Dictionary<string, string>() { { "Length", "3,6,12,24" } })
+                    },
+                    new Schedule()
+                    {
+                        Type = 13,
+                        Name = "Lấy trạng thái các thị trường quốc tế."
+                    },
+                    new Schedule()
+                    {
+                        Type = 15,
+                        Name = "Lấy định giá thị trường việt.",
+                        OptionsJson = JsonSerializer.Serialize(new Dictionary<string, string>() { { "Indexs", "VNINDEX,VN30,HNX30" } })
                     },
 
                     new Schedule()

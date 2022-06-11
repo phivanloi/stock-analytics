@@ -83,6 +83,14 @@ namespace Pl.Sas.WebDashboard
                         }
                         break;
 
+                    case "UpdateIndexView":
+                        var indexView = JsonSerializer.Deserialize<IndexView>(message.KeyValues["Data"]);
+                        if (indexView is not null)
+                        {
+                            await _stockRealtimeHub.Clients.All.SendAsync("UpdateIndexView", indexView, cancellationToken);
+                        }
+                        break;
+
                     default:
                         _logger.LogWarning("ViewMessage id {Id}, don't match any function", message.Id);
                         break;
