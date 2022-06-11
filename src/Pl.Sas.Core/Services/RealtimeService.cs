@@ -270,7 +270,7 @@ namespace Pl.Sas.Core.Services
             var indexDepth = marketDepths.FirstOrDefault(q => q.WorldIndexCode == "DJI");
             if (indexDepth is not null)
             {
-                indexView.Dji = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00}, {indexDepth.PercentIndexChange:0.00}%)";
+                indexView.Dji = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00}, {indexDepth.PercentIndexChange * 100:0.00}%)";
                 indexView.DjiCss = "dji t-s";
                 if (indexDepth.IndexChange == 0)
                 {
@@ -285,7 +285,7 @@ namespace Pl.Sas.Core.Services
             indexDepth = marketDepths.FirstOrDefault(q => q.WorldIndexCode == "NASDAQ");
             if (indexDepth is not null)
             {
-                indexView.Nasdaq = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00}, {indexDepth.PercentIndexChange:0.00}%)";
+                indexView.Nasdaq = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00}, {indexDepth.PercentIndexChange * 100:0.00}%)";
                 indexView.NasdaqCss = "nasdaq t-s";
                 if (indexDepth.IndexChange == 0)
                 {
@@ -300,7 +300,7 @@ namespace Pl.Sas.Core.Services
             indexDepth = marketDepths.FirstOrDefault(q => q.WorldIndexCode == "DAX");
             if (indexDepth is not null)
             {
-                indexView.Dax = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00}, {indexDepth.PercentIndexChange:0.00}%)";
+                indexView.Dax = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00}, {indexDepth.PercentIndexChange * 100:0.00}%)";
                 indexView.DaxCss = "dax t-s";
                 if (indexDepth.IndexChange == 0)
                 {
@@ -315,7 +315,7 @@ namespace Pl.Sas.Core.Services
             indexDepth = marketDepths.FirstOrDefault(q => q.WorldIndexCode == "HANGSENG");
             if (indexDepth is not null)
             {
-                indexView.Hangseng = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00}, {indexDepth.PercentIndexChange:0.00}%)";
+                indexView.Hangseng = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00}, {indexDepth.PercentIndexChange * 100:0.00}%)";
                 indexView.HangsengCss = "hangseng t-s";
                 if (indexDepth.IndexChange == 0)
                 {
@@ -330,7 +330,7 @@ namespace Pl.Sas.Core.Services
             indexDepth = marketDepths.FirstOrDefault(q => q.WorldIndexCode == "SHANGHAI");
             if (indexDepth is not null)
             {
-                indexView.Shanghai = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00}, {indexDepth.PercentIndexChange:0.00}%)";
+                indexView.Shanghai = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00}, {indexDepth.PercentIndexChange * 100:0.00}%)";
                 indexView.ShanghaiCss = "shanghai t-s";
                 if (indexDepth.IndexChange == 0)
                 {
@@ -345,7 +345,7 @@ namespace Pl.Sas.Core.Services
             indexDepth = marketDepths.FirstOrDefault(q => q.WorldIndexCode == "VNINDEX");
             if (indexDepth is not null)
             {
-                indexView.Vnindex = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00}, {indexDepth.PercentIndexChange:0.00}%)";
+                indexView.Vnindex = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00}, {indexDepth.PercentIndexChange * 100:0.00}%)";
                 indexView.VnindexCss = "vnindex t-s";
                 if (indexDepth.IndexChange == 0)
                 {
@@ -357,7 +357,7 @@ namespace Pl.Sas.Core.Services
                 }
             }
 
-            var setCacheTask = _asyncCacheService.GetByKeyAsync<IndexView>(setViewCacheKey);
+            var setCacheTask = _asyncCacheService.SetValueAsync(setViewCacheKey, indexView, Constants.DefaultCacheTime * 60 * 24);
             var sendMessage = new QueueMessage("UpdateIndexView");
             sendMessage.KeyValues.Add("Data", JsonSerializer.Serialize(indexView));
             _workerQueueService.BroadcastViewUpdatedTask(sendMessage);
@@ -391,7 +391,7 @@ namespace Pl.Sas.Core.Services
                 indexView.VnindexPb = $"{vnindexValuation.R25:0,0.00}";
             }
 
-            var setCacheTask = _asyncCacheService.GetByKeyAsync<IndexView>(setViewCacheKey);
+            var setCacheTask = _asyncCacheService.SetValueAsync(setViewCacheKey, indexView, Constants.DefaultCacheTime * 60 * 24);
             var sendMessage = new QueueMessage("UpdateIndexView");
             sendMessage.KeyValues.Add("Data", JsonSerializer.Serialize(indexView));
             _workerQueueService.BroadcastViewUpdatedTask(sendMessage);

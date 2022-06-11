@@ -30,8 +30,26 @@
                 </li>
                 @if (indexView is not null)
                 {
-                    <li class="nav-item d-none d-sm-inline-block">
-                        DJDJ: <span class="@indexView.DjiCss">@indexView.Dji</span>
+                    <li class="nav-item d-none d-sm-inline-block index-item">
+                        Dow: <span class="@indexView.DjiCss">@indexView.Dji</span>
+                    </li>
+                    <li class="nav-item d-none d-sm-inline-block index-item">
+                        Nasdaq: <span class="@indexView.NasdaqCss">@indexView.Nasdaq</span>
+                    </li>
+                    <li class="nav-item d-none d-sm-inline-block index-item">
+                        Dax: <span class="@indexView.DaxCss">@indexView.Dax</span>
+                    </li>
+                    <li class="nav-item d-none d-sm-inline-block index-item">
+                        Hangseng: <span class="@indexView.HangsengCss">@indexView.Hangseng</span>
+                    </li>
+                     <li class="nav-item d-none d-sm-inline-block index-item">
+                        Vnindex: <span class="@indexView.VnindexCss">@indexView.Vnindex</span>
+                    </li>
+                    <li class="nav-item d-none d-sm-inline-block index-item">
+                        Vnindex P/E: <span>@indexView.VnindexPe</span>
+                    </li>
+                    <li class="nav-item d-none d-sm-inline-block index-item">
+                        Vnindex P/B: <span>@indexView.VnindexPb</span>
                     </li>
                 }
             </ul>
