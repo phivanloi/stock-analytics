@@ -214,3 +214,10 @@ label {
 .t-gs {
     color: #00c9ff !important
 }
+
+.index-item {
+    line-height: 37px;
+    color: #fff;
+    border-left: 1px solid #626262;
+    padding: 0 10px;
+}

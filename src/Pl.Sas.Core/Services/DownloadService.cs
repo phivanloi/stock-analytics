@@ -699,7 +699,7 @@ namespace Pl.Sas.Core.Services
             var symbol = schedule.DataKey ?? throw new Exception($"Schedule Null DataKey, di: {schedule.Id}, type: {schedule.Type}");
             var checkingKey = $"{symbol}-Download-FinancialIndicator";
             var ssiFinancialIndicators = await _downloadData.DownloadFinancialIndicatorAsync(symbol);
-            if (ssiFinancialIndicators is null || ssiFinancialIndicators.Data.FinancialIndicator.DataList.Length < 0)
+            if (ssiFinancialIndicators is null || ssiFinancialIndicators.Data is null || ssiFinancialIndicators.Data.FinancialIndicator is null || ssiFinancialIndicators.Data.FinancialIndicator.DataList is null || ssiFinancialIndicators.Data.FinancialIndicator.DataList.Length < 0)
             {
                 _logger.LogWarning("UpdateFinancialIndicatorAsync => ssiFinancialIndicators null info for code: {Symbol}", symbol);
                 return await _keyValueData.SetAsync(checkingKey, false);
@@ -874,7 +874,7 @@ namespace Pl.Sas.Core.Services
             var symbol = schedule.DataKey ?? throw new Exception($"Schedule Null DataKey, di: {schedule.Id}, type: {schedule.Type}");
             var checkingKey = $"{symbol}-Download-LeadershipInfo";
             var ssiLeadership = await _downloadData.DownloadLeadershipAsync(symbol);
-            if (ssiLeadership is null || ssiLeadership.Data.Leaderships.Datas.Length < 0)
+            if (ssiLeadership is null || ssiLeadership.Data is null || ssiLeadership.Data.Leaderships is null || ssiLeadership.Data.Leaderships.Datas is null || ssiLeadership.Data.Leaderships.Datas.Length < 0)
             {
                 _logger.LogWarning("UpdateLeadershipInfoAsync => ssiLeadership null info for code: {symbol}", symbol);
                 return await _keyValueData.SetAsync(checkingKey, false);
