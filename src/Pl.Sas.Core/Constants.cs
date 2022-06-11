@@ -58,6 +58,11 @@
         public const string StockViewCachePrefix = "GASVCK";
 
         /// <summary>
+        /// Khóa cache cho IndexView
+        /// </summary>
+        public const string IndexViewCachePrefix = "INDVCPF";
+
+        /// <summary>
         /// Khóa cache cho AnalyticsResult
         /// </summary>
         public const string AnalyticsResultCachePrefix = "ANRCPF";

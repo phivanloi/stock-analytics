@@ -1,11 +1,14 @@
 ﻿@using Pl.Sas.Core
 @inject Microsoft.Extensions.Options.IOptions<AppSettings> appSettingsOptions
 @inject Pl.Sas.Core.Interfaces.IUserData userData
+@inject Pl.Sas.Core.Interfaces.IAsyncCacheService asyncCacheService
 @{
     var userId = Context.GetUserId();
     var appSettings = appSettingsOptions.Value;
     var userInfo = await userData.CacheGetUserInfoAsync(userId);
     var activeMenuId = ViewData["ActiveMenu"] ?? "";
+    var cacheKey = $"{Constants.IndexViewCachePrefix}-ALL";
+    var indexView = await asyncCacheService.GetByKeyAsync<Pl.Sas.Core.Entities.IndexView>(cacheKey);
 }
 <!DOCTYPE html>
 <html lang="vi">
@@ -25,6 +28,12 @@
                 <li class="nav-item">
                     <a class="nav-link" data-widget="pushmenu" role="button"><i class="fas fa-bars"></i></a>
                 </li>
+                @if (indexView is not null)
+                {
+                    <li class="nav-item d-none d-sm-inline-block">
+                        DJDJ: <span class="@indexView.DjiCss">@indexView.Dji</span>
+                    </li>
+                }
             </ul>
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
@@ -130,7 +139,6 @@
                         </button>
                     </div>
                     <div class="modal-body embed-responsive embed-responsive-16by9" id="stock-details-body">
-
                     </div>
                     <div class="modal-footer" style="margin-top:10px">
                         <input type="hidden" value="" id="follow-symbol" />

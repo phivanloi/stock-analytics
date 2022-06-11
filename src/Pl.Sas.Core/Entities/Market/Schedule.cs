@@ -77,7 +77,9 @@ namespace Pl.Sas.Core.Entities
         /// <para>10 Bổ sung lãi xuất ngân hàng cao nhất</para>
         /// <para>11 Thu thập khuyến nghị của các công ty chứng khoán.</para>
         /// <para>12 Thu thập đánh giá cổ phiếu của vndirect.</para>
+        /// <para>13 Thu thập thông tin các chỉ số quốc tế</para>
         /// <para>14 Cập nhập dữ liệu chart realtime.</para>
+        /// <para>15 Thu thập thông tin định giá các chỉ số trong nước</para>
         ///
         /// <para>200 Đánh giá giá trị của doanh nghiệp</para>
         /// <para>201 Phân tích kỹ thuật</para>
@@ -123,8 +125,9 @@ namespace Pl.Sas.Core.Entities
                 10 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 60)),//Lấy lãi suất ngân hàng lớn nhất
                 11 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 60)),//Thu thập khuyến nghị của các công ty chứng khoán
                 12 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 60)),//Thu thập đánh giá cổ phiếu của vndirect
-                13 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 60)),//Thu thập lại dữ liệu chart
+                13 => baseTime.AddHours(random.Next(2, 3)),//Thu thập thông tin các chỉ số quốc tế
                 14 => RealtimeSchedule(baseTime),//Thu thập dự liệu realtime
+                15 => baseTime.AddHours(random.Next(2, 3)),//Thu thập thông tin định giá các chỉ số trong nước
 
                 200 => baseTime.Date.AddDays(1).AddHours(4).AddMinutes(random.Next(0, 60)),//đánh giá giá trị của doanh nghiệp
                 201 => baseTime.Date.AddDays(1).AddHours(4).AddMinutes(random.Next(0, 60)),//phân tích kỹ thuật

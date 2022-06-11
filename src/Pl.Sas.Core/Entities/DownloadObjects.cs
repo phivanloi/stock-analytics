@@ -809,4 +809,91 @@ namespace Pl.Sas.Core.Entities.DownloadObjects
     }
 
     #endregion
+
+    #region Fiin market depth
+    public class MarketDepth
+    {
+        [JsonPropertyName("worldIndexCode")]
+        public string WorldIndexCode { get; set; } = null!;
+
+        [JsonPropertyName("indexValue")]
+        public float IndexValue { get; set; }
+
+        [JsonPropertyName("indexChange")]
+        public float IndexChange { get; set; }
+
+        [JsonPropertyName("percentIndexChange")]
+        public float PercentIndexChange { get; set; }
+
+        [JsonPropertyName("tradingDate")]
+        public DateTime TradingDate { get; set; }
+    }
+
+    public class VnMarketDepth
+    {
+        [JsonPropertyName("vnIndex")]
+        public VnIndexValue VnIndex { get; set; } = new();
+
+        [JsonPropertyName("vn30")]
+        public VnIndexValue Vn30 { get; set; } = new();
+
+        [JsonPropertyName("hnxIndex")]
+        public VnIndexValue HnxIndex { get; set; } = new();
+
+        [JsonPropertyName("hnx30")]
+        public VnIndexValue Hnx30 { get; set; } = new();
+    }
+
+    public class VnIndexValue
+    {
+        [JsonPropertyName("closeIndex")]
+        public float CloseIndex { get; set; }
+
+        [JsonPropertyName("indexChange")]
+        public float IndexChange { get; set; }
+
+        [JsonPropertyName("indexValue")]
+        public float IndexValue { get; set; }
+
+        [JsonPropertyName("percentIndexChange")]
+        public float PercentIndexChange { get; set; }
+
+        [JsonPropertyName("tradingDate")]
+        public DateTime TradingDate { get; set; }
+    }
+    #endregion
+
+    #region Fiin valuation
+
+    public class FinIndexValuation
+    {
+        [JsonPropertyName("code")]
+        public string Symbol { get; set; } = null!;
+
+        [JsonPropertyName("tradingDate")]
+        public DateTime TradingDate { get; set; }
+
+        [JsonPropertyName("value")]
+        public float IndexValue { get; set; }
+
+        /// <summary>
+        /// P/e
+        /// </summary>
+        [JsonPropertyName("r21")]
+        public float R21 { get; set; }
+
+        /// <summary>
+        /// P/b
+        /// </summary>
+        [JsonPropertyName("r25")]
+        public float R25 { get; set; }
+
+        [JsonPropertyName("r26")]
+        public float R26 { get; set; }
+
+        [JsonPropertyName("r27")]
+        public float R27 { get; set; }
+    }
+
+    #endregion
 }
