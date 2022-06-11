@@ -271,14 +271,14 @@ namespace Pl.Sas.Core.Services
             if (indexDepth is not null)
             {
                 indexView.Dji = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00}, {indexDepth.PercentIndexChange:0.00}%)";
-                indexView.DjiCss = "t-s";
+                indexView.DjiCss = "dji t-s";
                 if (indexDepth.IndexChange == 0)
                 {
-                    indexView.DjiCss = "t-wn";
+                    indexView.DjiCss = "dji t-wn";
                 }
                 else if (indexDepth.IndexChange < 0)
                 {
-                    indexView.DjiCss = "t-d";
+                    indexView.DjiCss = "dji t-d";
                 }
             }
 
@@ -286,14 +286,14 @@ namespace Pl.Sas.Core.Services
             if (indexDepth is not null)
             {
                 indexView.Nasdaq = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00}, {indexDepth.PercentIndexChange:0.00}%)";
-                indexView.NasdaqCss = "t-s";
+                indexView.NasdaqCss = "nasdaq t-s";
                 if (indexDepth.IndexChange == 0)
                 {
-                    indexView.NasdaqCss = "t-wn";
+                    indexView.NasdaqCss = "nasdaq t-wn";
                 }
                 else if (indexDepth.IndexChange < 0)
                 {
-                    indexView.NasdaqCss = "t-d";
+                    indexView.NasdaqCss = "nasdaq t-d";
                 }
             }
 
@@ -301,14 +301,14 @@ namespace Pl.Sas.Core.Services
             if (indexDepth is not null)
             {
                 indexView.Dax = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00}, {indexDepth.PercentIndexChange:0.00}%)";
-                indexView.DaxCss = "t-s";
+                indexView.DaxCss = "dax t-s";
                 if (indexDepth.IndexChange == 0)
                 {
-                    indexView.DaxCss = "t-wn";
+                    indexView.DaxCss = "dax t-wn";
                 }
                 else if (indexDepth.IndexChange < 0)
                 {
-                    indexView.DaxCss = "t-d";
+                    indexView.DaxCss = "dax t-d";
                 }
             }
 
@@ -316,14 +316,14 @@ namespace Pl.Sas.Core.Services
             if (indexDepth is not null)
             {
                 indexView.Hangseng = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00}, {indexDepth.PercentIndexChange:0.00}%)";
-                indexView.HangsengCss = "t-s";
+                indexView.HangsengCss = "hangseng t-s";
                 if (indexDepth.IndexChange == 0)
                 {
-                    indexView.HangsengCss = "t-wn";
+                    indexView.HangsengCss = "hangseng t-wn";
                 }
                 else if (indexDepth.IndexChange < 0)
                 {
-                    indexView.HangsengCss = "t-d";
+                    indexView.HangsengCss = "hangseng t-d";
                 }
             }
 
@@ -331,14 +331,14 @@ namespace Pl.Sas.Core.Services
             if (indexDepth is not null)
             {
                 indexView.Shanghai = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00}, {indexDepth.PercentIndexChange:0.00}%)";
-                indexView.ShanghaiCss = "t-s";
+                indexView.ShanghaiCss = "shanghai t-s";
                 if (indexDepth.IndexChange == 0)
                 {
-                    indexView.ShanghaiCss = "t-wn";
+                    indexView.ShanghaiCss = "shanghai t-wn";
                 }
                 else if (indexDepth.IndexChange < 0)
                 {
-                    indexView.ShanghaiCss = "t-d";
+                    indexView.ShanghaiCss = "shanghai t-d";
                 }
             }
 
@@ -346,14 +346,14 @@ namespace Pl.Sas.Core.Services
             if (indexDepth is not null)
             {
                 indexView.Vnindex = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00}, {indexDepth.PercentIndexChange:0.00}%)";
-                indexView.VnindexCss = "t-s";
+                indexView.VnindexCss = "vnindex t-s";
                 if (indexDepth.IndexChange == 0)
                 {
-                    indexView.VnindexCss = "t-wn";
+                    indexView.VnindexCss = "vnindex t-wn";
                 }
                 else if (indexDepth.IndexChange < 0)
                 {
-                    indexView.VnindexCss = "t-d";
+                    indexView.VnindexCss = "vnindex t-d";
                 }
             }
 
