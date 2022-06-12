@@ -157,6 +157,8 @@
                 setContent('.vnindex', indexview.vnindex, indexview.vnindexCss);
                 setContent('.vnindexPe', indexview.vnindexPe);
                 setContent('.vnindexPb', indexview.vnindexPb);
+                setContent('.kcvnindex', indexview.kcVnindex);
+                setContent('.htvnindex', indexview.htVnindex);
             });
 
             async function srStartListen() {
@@ -181,7 +183,7 @@
                     }
                     setTimeout(function() {
                         $(selecter).removeClass('c-dtac');
-                    }, 600);
+                    }, 800);
                 }
             }
 

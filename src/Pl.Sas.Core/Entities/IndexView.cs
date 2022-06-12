@@ -32,6 +32,14 @@
         public string VnindexCss { get; set; } = null!;
         #endregion
 
+        #region Kháng cự của vnindex
+        public string KcVnindex { get; set; } = null!;
+        #endregion
+
+        #region Hỗ trợ của vnindex
+        public string HtVnindex { get; set; } = null!;
+        #endregion
+
         #region Chỉ số VNINDEXPe
         public string VnindexPe { get; set; } = null!;
         #endregion
