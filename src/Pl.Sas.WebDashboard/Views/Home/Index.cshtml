@@ -149,14 +149,14 @@
                 setContent('#' + view.symbol + ' .ngkc', view.ngkc, view.ngkcCss);
             });
             srConnection.on("UpdateIndexView", (indexview) => {
-                setContent('.klht', indexview.dji, indexview.djiCss);
-                setContent('.klht', indexview.nasdaq, indexview.nasdaqCss);
-                setContent('.klht', indexview.dax, indexview.daxCss);
-                setContent('.klht', indexview.shanghai, indexview.shanghaiCss);
-                setContent('.klht', indexview.hangseng, indexview.hangsengCss);
-                setContent('.klht', indexview.vnindex, indexview.vnindexCss);
-                setContent('.klht', indexview.vnindexPe);
-                setContent('.klht', indexview.vnindexPb);
+                setContent('.dji', indexview.dji, indexview.djiCss);
+                setContent('.nasdaq', indexview.nasdaq, indexview.nasdaqCss);
+                setContent('.dax', indexview.dax, indexview.daxCss);
+                setContent('.shanghai', indexview.shanghai, indexview.shanghaiCss);
+                setContent('.hangseng', indexview.hangseng, indexview.hangsengCss);
+                setContent('.vnindex', indexview.vnindex, indexview.vnindexCss);
+                setContent('.vnindexPe', indexview.vnindexPe);
+                setContent('.vnindexPb', indexview.vnindexPb);
             });
 
             async function srStartListen() {
@@ -172,14 +172,17 @@
             srStartListen();
 
             function setContent(selecter, value, css, title) {
-                $(selecter).text(value);
-                $(selecter).prop('class', css + ' c-dtac');
-                if (title) {
-                    $(selecter).prop('title', title);
+                var currentText = $(selecter).text();
+                if (currentText != value) {
+                    $(selecter).text(value);
+                    $(selecter).prop('class', css + ' c-dtac');
+                    if (title) {
+                        $(selecter).prop('title', title);
+                    }
+                    setTimeout(function() {
+                        $(selecter).removeClass('c-dtac');
+                    }, 600);
                 }
-                setTimeout(function() {
-                    $(selecter).removeClass('c-dtac');
-                }, 800);
             }
 
             $('#code').keypress(function(e) {
@@ -209,7 +212,7 @@
                 success: function(html) {
                     if (html.length > 0) {
                         $('#user-invest-table-body').html(html);
-                        $('#number-row').html( $('#user-invest-table-body').children().length + '</br> Mã');
+                        $('#number-row').html($('#user-invest-table-body').children().length + '</br> Mã');
                         document.documentElement.scrollTop = document.body.scrollTop = scrollTop;
                     }
                     else {
