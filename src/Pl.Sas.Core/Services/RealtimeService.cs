@@ -56,7 +56,7 @@ namespace Pl.Sas.Core.Services
                     await UpdateWorldIndexChange(queueMessage.KeyValues["WorldIndexs"]);
                     break;
                 case "IndexValuationChange":
-                    await UpdateWorldIndexChange(queueMessage.KeyValues["IndexValuation"]);
+                    await UpdateValuationIndexChange(queueMessage.KeyValues["IndexValuation"]);
                     break;
                 default:
                     _logger.LogWarning("Realtime task id {Id} don't match any function", queueMessage.Id);
