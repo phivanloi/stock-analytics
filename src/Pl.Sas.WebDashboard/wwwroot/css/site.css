@@ -193,7 +193,6 @@ label {
 
 .market td {
     transition: background-color 1s ease;
-    transition: color 1s ease;
 }
 
 .c-dtac {
