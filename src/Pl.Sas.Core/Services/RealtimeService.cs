@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Pl.Sas.Core.Entities;
 using Pl.Sas.Core.Interfaces;
 using Pl.Sas.Core.Trading;
+using Skender.Stock.Indicators;
 using System.Diagnostics;
 using System.Text.Json;
 
@@ -270,7 +271,7 @@ namespace Pl.Sas.Core.Services
             var indexDepth = marketDepths.FirstOrDefault(q => q.WorldIndexCode == "DJI");
             if (indexDepth is not null)
             {
-                indexView.Dji = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00}, {indexDepth.PercentIndexChange * 100:0.00}%)";
+                indexView.Dji = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00})";
                 indexView.DjiCss = "dji t-s";
                 if (indexDepth.IndexChange == 0)
                 {
@@ -285,7 +286,7 @@ namespace Pl.Sas.Core.Services
             indexDepth = marketDepths.FirstOrDefault(q => q.WorldIndexCode == "NASDAQ");
             if (indexDepth is not null)
             {
-                indexView.Nasdaq = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00}, {indexDepth.PercentIndexChange * 100:0.00}%)";
+                indexView.Nasdaq = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00})";
                 indexView.NasdaqCss = "nasdaq t-s";
                 if (indexDepth.IndexChange == 0)
                 {
@@ -300,7 +301,7 @@ namespace Pl.Sas.Core.Services
             indexDepth = marketDepths.FirstOrDefault(q => q.WorldIndexCode == "DAX");
             if (indexDepth is not null)
             {
-                indexView.Dax = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00}, {indexDepth.PercentIndexChange * 100:0.00}%)";
+                indexView.Dax = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00})";
                 indexView.DaxCss = "dax t-s";
                 if (indexDepth.IndexChange == 0)
                 {
@@ -315,7 +316,7 @@ namespace Pl.Sas.Core.Services
             indexDepth = marketDepths.FirstOrDefault(q => q.WorldIndexCode == "HANGSENG");
             if (indexDepth is not null)
             {
-                indexView.Hangseng = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00}, {indexDepth.PercentIndexChange * 100:0.00}%)";
+                indexView.Hangseng = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00})";
                 indexView.HangsengCss = "hangseng t-s";
                 if (indexDepth.IndexChange == 0)
                 {
@@ -330,7 +331,7 @@ namespace Pl.Sas.Core.Services
             indexDepth = marketDepths.FirstOrDefault(q => q.WorldIndexCode == "SHANGHAI");
             if (indexDepth is not null)
             {
-                indexView.Shanghai = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00}, {indexDepth.PercentIndexChange * 100:0.00}%)";
+                indexView.Shanghai = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00})";
                 indexView.ShanghaiCss = "shanghai t-s";
                 if (indexDepth.IndexChange == 0)
                 {
@@ -345,7 +346,7 @@ namespace Pl.Sas.Core.Services
             indexDepth = marketDepths.FirstOrDefault(q => q.WorldIndexCode == "VNINDEX");
             if (indexDepth is not null)
             {
-                indexView.Vnindex = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00}, {indexDepth.PercentIndexChange * 100:0.00}%)";
+                indexView.Vnindex = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00})";
                 indexView.VnindexCss = "vnindex t-s";
                 if (indexDepth.IndexChange == 0)
                 {
@@ -382,6 +383,25 @@ namespace Pl.Sas.Core.Services
             if (indexView == null)
             {
                 indexView = new IndexView();
+            }
+
+            var chartPrices = await _chartPriceData.CacheFindAllAsync("VNINDEX", "D");
+            if (chartPrices is not null)
+            {
+                chartPrices = chartPrices.OrderBy(q => q.TradingDate).ToList();
+                var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
+                var zigZagResults = quotes.GetZigZag(EndType.HighLow, 5);
+                var zigZagResultH = zigZagResults.LastOrDefault(q => q.PointType == "H" && ((decimal)chartPrices[^1].ClosePrice < (q.ZigZag - (q.ZigZag * 0.01m))));
+                var zigZagResultL = zigZagResults.LastOrDefault(q => q.PointType == "L" && ((decimal)chartPrices[^1].ClosePrice > (q.ZigZag + (q.ZigZag * 0.01m))));
+                if (zigZagResultH is not null && zigZagResultH.ZigZag.HasValue)
+                {
+                    indexView.KcVnindex = zigZagResultH.ZigZag.Value.ToString("00.00");
+                }
+
+                if (zigZagResultL is not null && zigZagResultL.ZigZag.HasValue)
+                {
+                    indexView.HtVnindex = zigZagResultL.ZigZag.Value.ToString("00.00");
+                }
             }
 
             var vnindexValuation = indexValuation["VNINDEX"].OrderByDescending(q => q.TradingDate).FirstOrDefault();
