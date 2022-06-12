@@ -26,18 +26,18 @@ namespace Pl.Sas.InvestmentPrinciplesTests
             {
                 Console.Clear();
                 Console.OutputEncoding = Encoding.UTF8;
-                DateTime fromDate = new(2020, 1, 1);
-                DateTime toDate = new(2027, 1, 1);
-                var symbol = "VND";
+                DateTime fromDate = new(2010, 1, 1);
+                DateTime toDate = new(2060, 1, 1);
+                var symbol = "ITA";
                 var stock = await _stockData.FindBySymbolAsync(symbol);
                 var chartPrices = await _chartPriceData.CacheFindAllAsync(symbol, "D") ?? throw new Exception("chartPrices is null");
                 chartPrices = chartPrices.OrderBy(q => q.TradingDate).ToList();
-                var chartTrading = chartPrices.Where(q => q.TradingDate >= Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
-                var tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
+                var chartTrading = chartPrices.Where(q => q.TradingDate >= fromDate && q.TradingDate < toDate).OrderBy(q => q.TradingDate).ToList();
+                var tradingHistory = chartPrices.Where(q => q.TradingDate < fromDate).OrderBy(q => q.TradingDate).ToList();
                 var startPrice = chartTrading[0].ClosePrice;
                 var endPrice = chartTrading[^1].ClosePrice;
-                var trader = new SarTrading(chartPrices);
-                var tradingCase = trader.Trading(chartTrading, tradingHistory);
+                var trader = new ExperimentTrading(chartPrices);
+                var tradingCase = trader.Trading(chartTrading, tradingHistory, stock.Exchange);
                 Console.WriteLine($"Quá trình đầu tư ngắn hạn:");
                 Console.WriteLine($"Bắt đầu--------------------------------");
                 foreach (var note in tradingCase.ExplainNotes)

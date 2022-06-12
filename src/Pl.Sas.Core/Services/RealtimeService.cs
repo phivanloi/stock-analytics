@@ -145,7 +145,7 @@ namespace Pl.Sas.Core.Services
             #endregion
 
             #region Main Trading
-            var macdTrading = new MacdTrading(chartPrices);
+            var macdTrading = new MainTrading(chartPrices);
             tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
             var macdCase = macdTrading.Trading(chartTrading, tradingHistory, stock.Exchange, false);
             listTradingResult.Add(new()

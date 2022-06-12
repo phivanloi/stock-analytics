@@ -8,13 +8,13 @@ namespace Pl.Sas.Core.Trading
     /// </summary>
     public class ExperimentTrading : BaseTrading
     {
-        private List<MacdResult> _macd_12_26_9 = new();
+        private List<MacdResult> _macd_9_20_3 = new();
         private TradingCase tradingCase = new();
 
         public ExperimentTrading(List<ChartPrice> chartPrices)
         {
             var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
-            _macd_12_26_9 = quotes.GetMacd(12, 26, 9, CandlePart.Close).ToList();
+            _macd_9_20_3 = quotes.GetMacd(9, 20, 3, CandlePart.Close).ToList();
         }
 
         public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName, bool isNoteTrading = true)
@@ -173,13 +173,13 @@ namespace Pl.Sas.Core.Trading
                 tradingHistory.Add(day);
             }
 
-            _macd_12_26_9 = new List<MacdResult>();
+            _macd_9_20_3 = new List<MacdResult>();
             return tradingCase;
         }
 
         public int BuyCondition(DateTime tradingDate)
         {
-            var macd = _macd_12_26_9.Find(tradingDate);
+            var macd = _macd_9_20_3.Find(tradingDate);
             if (macd is null || macd.Macd is null)
             {
                 return 0;
@@ -190,7 +190,7 @@ namespace Pl.Sas.Core.Trading
                 return 100;
             }
 
-            var topThree = _macd_12_26_9.Where(q => q.Date <= tradingDate).OrderByDescending(q => q.Date).Take(3).ToList();
+            var topThree = _macd_9_20_3.Where(q => q.Date <= tradingDate).OrderByDescending(q => q.Date).Take(3).ToList();
             if (topThree.Count != 3 || topThree[0].Histogram is null || topThree[1].Histogram is null || topThree[2].Histogram is null)
             {
                 return 0;
@@ -210,7 +210,7 @@ namespace Pl.Sas.Core.Trading
 
         public int SellCondition(DateTime tradingDate)
         {
-            var macd = _macd_12_26_9.Find(tradingDate);
+            var macd = _macd_9_20_3.Find(tradingDate);
             if (macd is null || macd.Macd is null)
             {
                 return 0;
@@ -221,7 +221,7 @@ namespace Pl.Sas.Core.Trading
                 return 100;
             }
 
-            var topThree = _macd_12_26_9.Where(q => q.Date <= tradingDate).OrderByDescending(q => q.Date).Take(3).ToList();
+            var topThree = _macd_9_20_3.Where(q => q.Date <= tradingDate).OrderByDescending(q => q.Date).Take(3).ToList();
             if (topThree.Count != 3 || topThree[0].Histogram is null || topThree[1].Histogram is null || topThree[2].Histogram is null)
             {
                 return 0;
