@@ -26,7 +26,7 @@ namespace Pl.Sas.InvestmentPrinciplesTests
             {
                 Console.Clear();
                 Console.OutputEncoding = Encoding.UTF8;
-                DateTime fromDate = new(2018, 1, 1);
+                DateTime fromDate = new(2020, 1, 1);
                 DateTime toDate = new(2040, 1, 1);
                 var symbol = "VND";
                 var stock = await _stockData.FindBySymbolAsync(symbol);
@@ -36,7 +36,7 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 var tradingHistory = chartPrices.Where(q => q.TradingDate < fromDate).OrderBy(q => q.TradingDate).ToList();
                 var startPrice = chartTrading[0].ClosePrice;
                 var endPrice = chartTrading[^1].ClosePrice;
-                var trader = new MainTrading(chartPrices);
+                var trader = new ExperimentTrading(chartPrices);
                 var tradingCase = trader.Trading(chartTrading, tradingHistory, stock.Exchange);
                 Console.WriteLine($"Quá trình đầu tư ngắn hạn:");
                 Console.WriteLine($"Bắt đầu--------------------------------");
