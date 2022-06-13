@@ -264,6 +264,7 @@ namespace Pl.Sas.Infrastructure
                         IndexChange = vnRealtime.IndexChange,
                         PercentIndexChange = vnRealtime.PercentIndexChange,
                         TradingDate = vnRealtime.TradingDate,
+                        TotalValue = vnRealtime.TotalDealValue + vnRealtime.TotalMatchValue
                     });
                 }
                 var vnMarketDepth = jsonDocument.RootElement.GetProperty("items")[0].GetProperty("heatMap").GetProperty("heatmaps")[0].GetProperty("vnMarket").Deserialize<VnMarketDepth>();
