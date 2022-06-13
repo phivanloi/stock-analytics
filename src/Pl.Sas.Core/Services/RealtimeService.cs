@@ -423,7 +423,7 @@ namespace Pl.Sas.Core.Services
             {
                 indexView.Vnindex = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00})";
                 indexView.VnindexCss = "vnindex t-s";
-                indexView.VnindexValue = $"{indexDepth.TotalValue / 1000000000:0,0.00}T";
+                indexView.VnindexValue = $"{indexDepth.TotalValue / 100000000000:0,0.00}T";
                 if (indexDepth.IndexChange == 0)
                 {
                     indexView.VnindexCss = "vnindex t-wn";
