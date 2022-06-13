@@ -185,27 +185,28 @@ namespace Pl.Sas.Core.Trading
                 return 0;
             }
 
-            if (macd.Macd > macd.Signal)
-            {
-                return 100;
-            }
-
             var topThree = _macd_9_20_3.Where(q => q.Date <= tradingDate).OrderByDescending(q => q.Date).Take(3).ToList();
             if (topThree.Count != 3 || topThree[0].Histogram is null || topThree[1].Histogram is null || topThree[2].Histogram is null)
             {
                 return 0;
             }
 
-            if (topThree[0].Histogram > topThree[1].Histogram && topThree[1].Histogram > topThree[2].Histogram)
+            if (macd.Macd > macd.Signal)
             {
-                var avgValue = ((topThree[0].Histogram - topThree[1].Histogram) + (topThree[1].Histogram - topThree[2].Histogram)) / 2;
-                if (avgValue > -topThree[0].Histogram)
-                {
-                    return 100;
-                }
+                return 100;
             }
-
-            return 0;
+            else
+            {
+                if (topThree[0].Histogram > topThree[1].Histogram && topThree[1].Histogram > topThree[2].Histogram)
+                {
+                    var avgValue = ((topThree[0].Histogram - topThree[1].Histogram) + (topThree[1].Histogram - topThree[2].Histogram)) / 2;
+                    if (avgValue > -(topThree[0].Histogram))
+                    {
+                        return 100;
+                    }
+                }
+                return 0;
+            }
         }
 
         public int SellCondition(DateTime tradingDate)
@@ -216,27 +217,29 @@ namespace Pl.Sas.Core.Trading
                 return 0;
             }
 
-            if (macd.Macd < macd.Signal)
-            {
-                return 100;
-            }
-
             var topThree = _macd_9_20_3.Where(q => q.Date <= tradingDate).OrderByDescending(q => q.Date).Take(3).ToList();
             if (topThree.Count != 3 || topThree[0].Histogram is null || topThree[1].Histogram is null || topThree[2].Histogram is null)
             {
                 return 0;
             }
 
-            if (topThree[0].Histogram < topThree[1].Histogram && topThree[1].Histogram < topThree[2].Histogram)
-            {
-                var avgValue = ((topThree[0].Histogram - topThree[1].Histogram) + (topThree[1].Histogram - topThree[2].Histogram)) / 2;
-                if (-avgValue > topThree[0].Histogram)
-                {
-                    return 100;
-                }
-            }
 
-            return 0;
+            if (macd.Macd < macd.Signal)
+            {
+                return 100;
+            }
+            else
+            {
+                if (topThree[0].Histogram < topThree[1].Histogram && topThree[1].Histogram < topThree[2].Histogram)
+                {
+                    var avgValue = ((topThree[0].Histogram - topThree[1].Histogram) + (topThree[1].Histogram - topThree[2].Histogram)) / 2;
+                    if (-avgValue > (topThree[0].Histogram))
+                    {
+                        return 100;
+                    }
+                }
+                return 0;
+            }
         }
 
         public static float CalculateOptimalBuyPrice(List<ChartPrice> chartPrices, float rootPrice)

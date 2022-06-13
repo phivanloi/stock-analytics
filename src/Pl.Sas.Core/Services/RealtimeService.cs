@@ -298,6 +298,51 @@ namespace Pl.Sas.Core.Services
                 }
             }
 
+            indexDepth = marketDepths.FirstOrDefault(q => q.WorldIndexCode == "SP500");
+            if (indexDepth is not null)
+            {
+                indexView.Sp500 = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00})";
+                indexView.Sp500Css = "sp500 t-s";
+                if (indexDepth.IndexChange == 0)
+                {
+                    indexView.Sp500Css = "sp500 t-wn";
+                }
+                else if (indexDepth.IndexChange < 0)
+                {
+                    indexView.Sp500Css = "sp500 t-d";
+                }
+            }
+
+            indexDepth = marketDepths.FirstOrDefault(q => q.WorldIndexCode == "FTSE100");
+            if (indexDepth is not null)
+            {
+                indexView.Ftse100 = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00})";
+                indexView.Ftse100Css = "ftse100 t-s";
+                if (indexDepth.IndexChange == 0)
+                {
+                    indexView.Ftse100Css = "ftse100 t-wn";
+                }
+                else if (indexDepth.IndexChange < 0)
+                {
+                    indexView.Ftse100Css = "ftse100 t-d";
+                }
+            }
+
+            indexDepth = marketDepths.FirstOrDefault(q => q.WorldIndexCode == "CAC40");
+            if (indexDepth is not null)
+            {
+                indexView.Cac40 = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00})";
+                indexView.Cac40Css = "cac40 t-s";
+                if (indexDepth.IndexChange == 0)
+                {
+                    indexView.Cac40Css = "cac40 t-wn";
+                }
+                else if (indexDepth.IndexChange < 0)
+                {
+                    indexView.Cac40Css = "cac40 t-d";
+                }
+            }
+
             indexDepth = marketDepths.FirstOrDefault(q => q.WorldIndexCode == "DAX");
             if (indexDepth is not null)
             {
@@ -310,6 +355,36 @@ namespace Pl.Sas.Core.Services
                 else if (indexDepth.IndexChange < 0)
                 {
                     indexView.DaxCss = "dax t-d";
+                }
+            }
+
+            indexDepth = marketDepths.FirstOrDefault(q => q.WorldIndexCode == "KOSPI");
+            if (indexDepth is not null)
+            {
+                indexView.Kospi = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00})";
+                indexView.KospiCss = "kospi t-s";
+                if (indexDepth.IndexChange == 0)
+                {
+                    indexView.KospiCss = "kospi t-wn";
+                }
+                else if (indexDepth.IndexChange < 0)
+                {
+                    indexView.KospiCss = "kospi t-d";
+                }
+            }
+
+            indexDepth = marketDepths.FirstOrDefault(q => q.WorldIndexCode == "N225");
+            if (indexDepth is not null)
+            {
+                indexView.N225 = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00})";
+                indexView.N225Css = "n225 t-s";
+                if (indexDepth.IndexChange == 0)
+                {
+                    indexView.N225Css = "n225 t-wn";
+                }
+                else if (indexDepth.IndexChange < 0)
+                {
+                    indexView.N225Css = "n225 t-d";
                 }
             }
 
@@ -343,7 +418,7 @@ namespace Pl.Sas.Core.Services
                 }
             }
 
-            indexDepth = marketDepths.FirstOrDefault(q => q.WorldIndexCode == "VNINDEX");
+            indexDepth = marketDepths.FirstOrDefault(q => q.WorldIndexCode == "VNINDEXREALTIME");
             if (indexDepth is not null)
             {
                 indexView.Vnindex = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00})";

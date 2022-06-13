@@ -861,6 +861,28 @@ namespace Pl.Sas.Core.Entities.DownloadObjects
         [JsonPropertyName("tradingDate")]
         public DateTime TradingDate { get; set; }
     }
+
+    public class VnIndexRealtime
+    {
+        [JsonPropertyName("indexValue")]
+        public float IndexValue { get; set; }
+
+        [JsonPropertyName("tradingDate")]
+        public DateTime TradingDate { get; set; }
+
+        [JsonPropertyName("indexChange")]
+        public float IndexChange { get; set; }
+
+        [JsonPropertyName("percentIndexChange")]
+        public float PercentIndexChange { get; set; }
+
+        [JsonPropertyName("referenceIndex")]
+        public float ReferenceIndex { get; set; }
+
+        [JsonPropertyName("totalValue")]
+        public float TotalValue { get; set; }
+    }
+
     #endregion
 
     #region Fiin valuation

@@ -254,6 +254,18 @@ namespace Pl.Sas.Infrastructure
             if (!string.IsNullOrEmpty(jsonString))
             {
                 var jsonDocument = JsonDocument.Parse(jsonString);
+                var vnRealtime = jsonDocument.RootElement.GetProperty("items")[0].GetProperty("series").Deserialize<VnIndexRealtime>();
+                if (vnRealtime is not null)
+                {
+                    result.Add(new MarketDepth()
+                    {
+                        WorldIndexCode = "VNINDEXREALTIME",
+                        IndexValue = vnRealtime.IndexValue,
+                        IndexChange = vnRealtime.IndexChange,
+                        PercentIndexChange = vnRealtime.PercentIndexChange,
+                        TradingDate = vnRealtime.TradingDate,
+                    });
+                }
                 var vnMarketDepth = jsonDocument.RootElement.GetProperty("items")[0].GetProperty("heatMap").GetProperty("heatmaps")[0].GetProperty("vnMarket").Deserialize<VnMarketDepth>();
                 if (vnMarketDepth is not null)
                 {
