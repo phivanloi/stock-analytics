@@ -28,7 +28,7 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 Console.OutputEncoding = Encoding.UTF8;
                 DateTime fromDate = new(2020, 1, 1);
                 DateTime toDate = new(2040, 1, 1);
-                var symbol = "VND";
+                var symbol = "HQC";
                 var stock = await _stockData.FindBySymbolAsync(symbol);
                 var chartPrices = await _chartPriceData.CacheFindAllAsync(symbol, "D") ?? throw new Exception("chartPrices is null");
                 chartPrices = chartPrices.OrderBy(q => q.TradingDate).ToList();

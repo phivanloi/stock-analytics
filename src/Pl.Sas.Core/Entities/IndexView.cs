@@ -12,9 +12,34 @@
         public string NasdaqCss { get; set; } = null!;
         #endregion
 
+        #region Chỉ số SP500
+        public string Sp500 { get; set; } = null!;
+        public string Sp500Css { get; set; } = null!;
+        #endregion
+
+        #region Chỉ số FTSE100
+        public string Ftse100 { get; set; } = null!;
+        public string Ftse100Css { get; set; } = null!;
+        #endregion
+
+        #region Chỉ số CAC40
+        public string Cac40 { get; set; } = null!;
+        public string Cac40Css { get; set; } = null!;
+        #endregion
+
         #region Chỉ số DAX
         public string Dax { get; set; } = null!;
         public string DaxCss { get; set; } = null!;
+        #endregion
+
+        #region Chỉ số KOSPI
+        public string Kospi { get; set; } = null!;
+        public string KospiCss { get; set; } = null!;
+        #endregion
+
+        #region Chỉ số N225
+        public string N225 { get; set; } = null!;
+        public string N225Css { get; set; } = null!;
         #endregion
 
         #region Chỉ số SHANGHAI
