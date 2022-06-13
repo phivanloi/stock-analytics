@@ -57,7 +57,7 @@ namespace Pl.Sas.Scheduler
                         catch (Exception ex)
                         {
                             _logger.LogError(ex, "Scheduler ExecuteAsync error in scheduler Id: {Id}", schedule.Id);
-                            await Task.Delay(1000 * 3, stoppingToken);
+                            await Task.Delay(1000 * 1, stoppingToken);
                         }
                     }
                     if (schedules.Count == 1)
