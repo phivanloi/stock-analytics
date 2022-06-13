@@ -825,6 +825,8 @@ namespace Pl.Sas.Core.Entities.DownloadObjects
         [JsonPropertyName("percentIndexChange")]
         public float PercentIndexChange { get; set; }
 
+        public float TotalValue { get; set; } = 0;
+
         [JsonPropertyName("tradingDate")]
         public DateTime TradingDate { get; set; }
     }
@@ -881,6 +883,12 @@ namespace Pl.Sas.Core.Entities.DownloadObjects
 
         [JsonPropertyName("totalValue")]
         public float TotalValue { get; set; }
+
+        [JsonPropertyName("totalDealValue")]
+        public float TotalDealValue { get; set; }
+
+        [JsonPropertyName("totalMatchValue")]
+        public float TotalMatchValue { get; set; }
     }
 
     #endregion

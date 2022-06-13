@@ -57,6 +57,10 @@
         public string VnindexCss { get; set; } = null!;
         #endregion
 
+        #region Chỉ số VNINDEX Value
+        public string VnindexValue { get; set; } = null!;
+        #endregion
+
         #region Kháng cự của vnindex
         public string KcVnindex { get; set; } = null!;
         #endregion
