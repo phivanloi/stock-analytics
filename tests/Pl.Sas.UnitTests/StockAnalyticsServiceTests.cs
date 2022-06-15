@@ -88,5 +88,20 @@ namespace Pl.Sas.UnitTests
 
             await hostedService.StopAsync(CancellationToken.None);
         }
+
+        [Fact]
+        public async Task FiinAnalyticsTestAsync()
+        {
+            var services = ConfigureServices.GetConfigureServices();
+            var serviceProvider = services.BuildServiceProvider();
+            var analyticsService = serviceProvider.GetService<AnalyticsService>() ?? throw new Exception("Can't get WorkerService");
+            var hostedService = serviceProvider.GetService<IHostedService>() as LoggingQueuedHostedService ?? throw new Exception("Can't get LoggingQueuedHostedService");
+            await hostedService.StartAsync(CancellationToken.None);
+
+            await analyticsService.FiinAnalyticsAsync("BSR");
+            Assert.True(true);
+
+            await hostedService.StopAsync(CancellationToken.None);
+        }
     }
 }

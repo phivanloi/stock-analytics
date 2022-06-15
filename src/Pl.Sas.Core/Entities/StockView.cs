@@ -161,6 +161,10 @@
         public string KlhtCss { get; set; } = "klht t-r";
         #endregion
 
+        #region Cột khối lượng phiên trước
+        public float KlptValue { get; set; }
+        #endregion
+
         #region Cột giá hiện tại
         public string Ght { get; set; } = null!;
         public string GhtCss { get; set; } = "ght t-r";
