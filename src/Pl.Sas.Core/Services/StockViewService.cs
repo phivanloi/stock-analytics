@@ -216,7 +216,7 @@ namespace Pl.Sas.Core.Services
                     if (topTwoYear is not null && topTwoYear.Count > 1)
                     {
                         stockView.YearlyRevenueGrowthPercent = topTwoYear[0].Revenue.GetPercent(topTwoYear[1].Revenue);
-                        stockView.YearlyRevenueGrowthPercent = topTwoYear[0].Profit.GetPercent(topTwoYear[1].Profit);
+                        stockView.YearlyProfitGrowthPercent = topTwoYear[0].Profit.GetPercent(topTwoYear[1].Profit);
                     }
                 }
                 financialIndicators = null;
