@@ -119,7 +119,11 @@ namespace Pl.Sas.Core.Trading
             {
                 var hour = time.Hour;
                 var minute = time.Minute;
-                if (hour < 9 || hour >= 15)
+                if (hour < 9)
+                {
+                    return TimeTrading.NST;
+                }
+                if (hour >= 15)
                 {
                     return TimeTrading.DON;
                 }
