@@ -125,7 +125,7 @@ namespace Pl.Sas.Core.Services
             #region Experiment Trading
             var experimentTrading = new ExperimentTrading(chartPrices);
             var tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
-            var experCase = experimentTrading.Trading(chartTrading, tradingHistory, stock.Exchange, false);
+            var experCase = experimentTrading.Trading(chartTrading, tradingHistory);
             listTradingResult.Add(new()
             {
                 Symbol = symbol,
@@ -147,7 +147,7 @@ namespace Pl.Sas.Core.Services
             #region Main Trading
             var macdTrading = new MainTrading(chartPrices);
             tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
-            var macdCase = macdTrading.Trading(chartTrading, tradingHistory, stock.Exchange, false);
+            var macdCase = macdTrading.Trading(chartTrading, tradingHistory);
             listTradingResult.Add(new()
             {
                 Symbol = symbol,
