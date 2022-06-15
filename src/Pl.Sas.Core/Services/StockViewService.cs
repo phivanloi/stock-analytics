@@ -88,6 +88,10 @@ namespace Pl.Sas.Core.Services
             {
                 switch (zone)
                 {
+                    case "all":
+                        query = query.Where(q => q.KlptValue > 50000);
+                        break;
+
                     case "me":
                         if (followSymbols?.Count > 0)
                         {
@@ -193,7 +197,7 @@ namespace Pl.Sas.Core.Services
                 stockView.CompanyValueScore = analyticsResults.CompanyValueScore;
                 stockView.CompanyGrowthScore = analyticsResults.CompanyGrowthScore;
                 stockView.StockScore = analyticsResults.StockScore;
-                stockView.FiinScore = analyticsResults.MarketScore;
+                stockView.FiinScore = analyticsResults.FiinScore;
                 stockView.VndScore = analyticsResults.VndScore;
                 stockView.TargetPrice = analyticsResults.TargetPrice;
             }
@@ -212,7 +216,7 @@ namespace Pl.Sas.Core.Services
                     if (topTwoYear is not null && topTwoYear.Count > 1)
                     {
                         stockView.YearlyRevenueGrowthPercent = topTwoYear[0].Revenue.GetPercent(topTwoYear[1].Revenue);
-                        stockView.YearlyRevenueGrowthPercent = topTwoYear[0].Profit.GetPercent(topTwoYear[1].Profit);
+                        stockView.YearlyProfitGrowthPercent = topTwoYear[0].Profit.GetPercent(topTwoYear[1].Profit);
                     }
                 }
                 financialIndicators = null;
@@ -321,6 +325,7 @@ namespace Pl.Sas.Core.Services
             if (checkChartPrices.Count >= 2)
             {
                 currentPercent = checkChartPrices[0].ClosePrice.GetPercent(checkChartPrices[1].ClosePrice);
+                stockView.KlptValue = checkChartPrices[1].TotalMatchVol;
                 stockView.Bd2Value = currentPercent;
                 stockView.Bd2 = currentPercent.ShowPercent();
                 stockView.Bd2Css = "bd2 t-r " + currentPercent.GetTextColorCss();
