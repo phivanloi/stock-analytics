@@ -561,7 +561,7 @@ namespace Pl.Sas.Core.Services
             #region Main Trading
             var macdTrading = new MainTrading(chartPrices);
             var tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
-            var macdCase = macdTrading.Trading(chartTrading, tradingHistory);
+            var macdCase = macdTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
             var macdNote = $"Trading {Utilities.GetPrincipleName(1).ToLower()} {chartTrading.Count} phiên từ ngày {chartTrading[0].TradingDate:dd/MM/yyyy}, Lợi nhuận {macdCase.Profit(chartTrading[^1].ClosePrice):0,0} ({macdCase.ProfitPercent(chartTrading[^1].ClosePrice):0,0.00}%), thuế {macdCase.TotalTax:0,0}, xem chi tiết tại tab \"Lợi nhuận và đầu tư TN\".";
             var macdType = macdCase.FixedCapital < macdCase.Profit(chartTrading[^1].ClosePrice) ? 1 : macdCase.FixedCapital == macdCase.Profit(chartTrading[^1].ClosePrice) ? 0 : -1;
             var macdResult = new TradingResult()
@@ -586,7 +586,7 @@ namespace Pl.Sas.Core.Services
             #region Experiment Trading
             var experimentTrading = new ExperimentTrading(chartPrices);
             tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
-            var experCase = experimentTrading.Trading(chartTrading, tradingHistory);
+            var experCase = experimentTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
             var experNote = $"Trading {Utilities.GetPrincipleName(0).ToLower()} {chartTrading.Count} phiên từ ngày {chartTrading[0].TradingDate:dd/MM/yyyy}, Lợi nhuận {experCase.Profit(chartTrading[^1].ClosePrice):0,0} ({experCase.ProfitPercent(chartTrading[^1].ClosePrice):0,0.00}%), thuế {experCase.TotalTax:0,0}, xem chi tiết tại tab \"Lợi nhuận và đầu tư TN\".";
             var experType = experCase.FixedCapital < experCase.Profit(chartTrading[^1].ClosePrice) ? 1 : experCase.FixedCapital == experCase.Profit(chartTrading[^1].ClosePrice) ? 0 : -1;
             var experResult = new TradingResult()
