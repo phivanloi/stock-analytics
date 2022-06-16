@@ -437,7 +437,7 @@ namespace Pl.Sas.Core.Services
                         }
                         else
                         {
-                            stockView.KncCss = "kntn t-c";
+                            stockView.KncCss = "knc t-c";
                         }
                     }
                     else if (result.Principle == 3)
