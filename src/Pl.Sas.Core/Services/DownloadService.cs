@@ -633,7 +633,7 @@ namespace Pl.Sas.Core.Services
             var checkingKey = $"{symbol}-Download-CorporateAction";
             var size = int.Parse(schedule.Options["StockPricesCrawlSize"]);
             var stockPriceHistory = await _downloadData.DownloadStockPricesAsync(symbol, size);
-            if (stockPriceHistory is null || stockPriceHistory.Data.StockPrice.DataList.Length <= 0)
+            if (stockPriceHistory is null || stockPriceHistory.Data.StockPrice is null || stockPriceHistory.Data.StockPrice.DataList.Length <= 0)
             {
                 _logger.LogWarning("UpdateStockPriceHistoryAsync => stockPriceHistory null info for code: {symbol}", symbol);
                 return await _keyValueData.SetAsync(checkingKey, false);
