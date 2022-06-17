@@ -133,11 +133,11 @@ namespace Pl.Sas.Core.Entities
                 201 => baseTime.Date.AddDays(1).AddHours(4).AddMinutes(random.Next(0, 60)),//phân tích kỹ thuật
                 202 => baseTime.Date.AddDays(1).AddHours(4).AddMinutes(random.Next(0, 60)),//Thực hiện trading thử nghiệm
                 203 => baseTime.Date.AddDays(1).AddHours(3).AddMinutes(random.Next(0, 60)),//Tính toán giá dự phóng của cổ phiếu của các công ty chứng khoán
-                204 => baseTime.Date.AddDays(1).AddHours(3).AddMinutes(random.Next(0, 60)),//Đánh giá su thế ngành chú ý làm trước khi phân tích đánh giá vĩ mô.
+                204 => baseTime.Date.AddDays(1).AddHours(3).AddMinutes(random.Next(0, 30)),//Đánh giá su thế ngành chú ý làm trước khi phân tích đánh giá vĩ mô.
                 205 => baseTime.Date.AddDays(1).AddMinutes(random.Next(0, 60)),//Sử lý ngày giao dịch không hưởng quyền thì update lại lịch sử giá cổ phiếu
 
                 207 => baseTime.Date.AddDays(1).AddHours(3).AddMinutes(random.Next(0, 60)),//Đánh giá tâm lý thị trường, chú ý đầy là phân tích để lấy dữ liệu đầu vào lên cần được chạy sớm
-                208 => baseTime.Date.AddDays(1).AddHours(3).AddMinutes(random.Next(0, 60)),//Phân tích các yếu tố vĩ mô tác động đến giá cổ phiếu
+                208 => baseTime.Date.AddDays(1).AddHours(3).AddMinutes(random.Next(30, 60)),//Phân tích các yếu tố vĩ mô tác động đến giá cổ phiếu
                 209 => baseTime.Date.AddDays(1).AddHours(4).AddMinutes(random.Next(0, 60)),//Phân tích tăng trưởng doanh nghiệp
                 210 => baseTime.Date.AddDays(1).AddHours(4).AddMinutes(random.Next(0, 60)),//Phân tích đánh giá của fiintrading
                 211 => baseTime.Date.AddDays(1).AddHours(4).AddMinutes(random.Next(0, 60)),//Phân tích đáng giá của vnd

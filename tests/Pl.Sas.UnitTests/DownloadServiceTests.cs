@@ -45,6 +45,27 @@ namespace Pl.Sas.UnitTests
         }
 
         [Fact]
+        public async Task UpdateStockPriceHistoryTestAsync()
+        {
+            var services = ConfigureServices.GetConfigureServices();
+            var serviceProvider = services.BuildServiceProvider();
+            var workerService = serviceProvider.GetService<DownloadService>() ?? throw new Exception("Can't get WorkerService");
+            var hostedService = serviceProvider.GetService<IHostedService>() as LoggingQueuedHostedService ?? throw new Exception("Can't get LoggingQueuedHostedService");
+            await hostedService.StartAsync(CancellationToken.None);
+
+            await workerService.UpdateStockPriceHistoryAsync(new Schedule()
+            {
+                Type = 5,
+                Name = "Bổ sung lịch sử giá cổ phiếu theo mã: CMI",
+                DataKey = "VSG",
+                OptionsJson = JsonSerializer.Serialize(new Dictionary<string, string>() { { "StockPricesCrawlSize", "10" } })
+            });
+            Assert.True(1 == 1);
+
+            await hostedService.StopAsync(CancellationToken.None);
+        }
+
+        [Fact]
         public async Task UpdateBankInterestRateTestAsync()
         {
             var services = ConfigureServices.GetConfigureServices();
@@ -117,7 +138,7 @@ namespace Pl.Sas.UnitTests
             {
                 Name = $"Tải dữ liệu chỉ số: VNINDEX",
                 Type = 9,
-                DataKey = "VNXALL",
+                DataKey = "PVX",
                 ActiveTime = DateTime.Now,
                 OptionsJson = JsonSerializer.Serialize(new Dictionary<string, string>()
                 {

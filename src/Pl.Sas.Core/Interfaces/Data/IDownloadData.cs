@@ -135,5 +135,14 @@ namespace Pl.Sas.Core.Interfaces
         /// <param name="indexs">Danh sách chỉ số</param>
         /// <returns>Dictionary<string, List<FinIndexValuation>></returns>
         Task<Dictionary<string, List<FinIndexValuation>>> DownloadFiinValuationAsync(string indexs = "VNINDEX,VN30,HNX30");
+
+        /// <summary>
+        /// Tải dữ liệu chart từ vnd
+        /// </summary>
+        /// <param name="symbol">Mã chỉ số</param>
+        /// <param name="configTime">Cấu hình thời gian bắt đầu lấy</param>
+        /// <param name="type">Loại chart</param>
+        /// <returns></returns>
+        Task<List<VndChartPrice>> DownloadVndChartPricesAsync(string symbol, long configTime, string type = "D");
     }
 }
