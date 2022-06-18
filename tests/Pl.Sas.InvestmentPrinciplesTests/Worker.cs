@@ -10,7 +10,9 @@ namespace Pl.Sas.InvestmentPrinciplesTests
         private readonly ILogger<Worker> _logger;
         private readonly IChartPriceData _chartPriceData;
         private readonly IStockData _stockData;
+        private readonly ICompanyData _companyData;
         public Worker(
+            ICompanyData companyData,
             IStockData stockData,
             IChartPriceData chartPriceData,
             ILogger<Worker> logger)
@@ -18,6 +20,7 @@ namespace Pl.Sas.InvestmentPrinciplesTests
             _logger = logger;
             _chartPriceData = chartPriceData;
             _stockData = stockData;
+            _companyData = companyData;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -30,13 +33,14 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 DateTime toDate = new(2050, 1, 1);
                 var symbol = "SSI";
                 var stock = await _stockData.FindBySymbolAsync(symbol);
+                var company = await _companyData.FindBySymbolAsync(symbol);
                 var chartPrices = await _chartPriceData.CacheFindAllAsync(symbol, "D") ?? throw new Exception("chartPrices is null");
                 chartPrices = chartPrices.OrderBy(q => q.TradingDate).ToList();
                 var chartTrading = chartPrices.Where(q => q.TradingDate >= fromDate && q.TradingDate < toDate).OrderBy(q => q.TradingDate).ToList();
                 var tradingHistory = chartPrices.Where(q => q.TradingDate < fromDate).OrderBy(q => q.TradingDate).ToList();
                 var startPrice = chartTrading[0].ClosePrice;
                 var endPrice = chartTrading[^1].ClosePrice;
-                var trader = new ExperimentTrading(chartPrices);
+                var trader = new ExperimentTradingBk(chartPrices, company.Beta);
                 var tradingCase = trader.Trading(chartTrading, tradingHistory, stock.Exchange);
                 Console.Clear();
                 foreach (var note in tradingCase.ExplainNotes)

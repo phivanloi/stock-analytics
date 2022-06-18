@@ -167,7 +167,7 @@ namespace Pl.Sas.Core.Services
             Guard.Against.NullOrEmpty(symbol, nameof(symbol));
 
             var checkingKey = $"{symbol}-Analytics-CompanyValue";
-            var company = await _companyData.FindABySymbolAsync(symbol);
+            var company = await _companyData.FindBySymbolAsync(symbol);
             var stockPrice = await _stockPriceData.GetLastAsync(symbol);
             if (company is null || stockPrice is null)
             {
@@ -265,7 +265,7 @@ namespace Pl.Sas.Core.Services
             Guard.Against.NullOrEmpty(symbol, nameof(symbol));
 
             var checkingKey = $"{symbol}-Analytics-CompanyGrowth";
-            var company = await _companyData.FindABySymbolAsync(symbol);
+            var company = await _companyData.FindBySymbolAsync(symbol);
             var stockPrice = await _stockPriceData.GetLastAsync(symbol);
             if (company is null || stockPrice is null)
             {
@@ -424,7 +424,7 @@ namespace Pl.Sas.Core.Services
             var notes = new List<AnalyticsNote>();
             var checkingKey = $"{symbol}-Analytics-VndScore";
             var vndScores = await _vndStockScoreData.FindAllAsync(symbol);
-            var company = await _companyData.FindABySymbolAsync(symbol);
+            var company = await _companyData.FindBySymbolAsync(symbol);
             var stockPrice = await _stockPriceData.GetLastAsync(symbol);
             if (vndScores is null || stockPrice is null)
             {
@@ -768,7 +768,7 @@ namespace Pl.Sas.Core.Services
         public virtual async Task<bool> MacroeconomicsAnalyticsAsync(string symbol)
         {
             var stockPrice = await _stockPriceData.GetLastAsync(symbol);
-            var company = await _companyData.FindABySymbolAsync(symbol);
+            var company = await _companyData.FindBySymbolAsync(symbol);
             var checkingKey = $"{symbol}-Analytics-Macroeconomics";
             if (stockPrice is null || company is null)
             {
