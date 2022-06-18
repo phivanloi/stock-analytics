@@ -947,7 +947,7 @@ namespace Pl.Sas.Core.Services
             }
 
             var isUpdate = true;
-            var company = await _companyData.FindABySymbolAsync(schedule.DataKey);
+            var company = await _companyData.FindBySymbolAsync(schedule.DataKey);
             if (company is null)
             {
                 company = new Company() { Symbol = symbol };

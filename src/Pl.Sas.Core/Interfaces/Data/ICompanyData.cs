@@ -51,7 +51,7 @@ namespace Pl.Sas.Core.Interfaces
         /// </summary>
         /// <param name="symbol">Mã cô rphieeus</param>
         /// <returns>Company</returns>
-        Task<Company> FindABySymbolAsync(string symbol);
+        Task<Company> FindBySymbolAsync(string symbol);
 
         /// <summary>
         /// Lấy toàn bộ công ty trong hệ thống để phân tích
