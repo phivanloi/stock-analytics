@@ -11,7 +11,7 @@ namespace Pl.Sas.Core.Trading
         public MacdTrading(List<ChartPrice> chartPrices)
         {
             var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
-            _macd_12_26_9 = quotes.GetMacd(12, 26, 9, CandlePart.Close).ToList();
+            _macd_12_26_9 = quotes.Use(CandlePart.Close).GetMacd(12, 26, 9).ToList();
         }
 
         public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName, bool isNoteTrading = true)
