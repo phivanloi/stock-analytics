@@ -356,7 +356,7 @@ namespace Pl.Sas.Core.Services
                 }
                 else
                 {
-                    stockView.KlhtCss = "klht t-r" + currentPercent.GetTextColorCss();
+                    stockView.KlhtCss = "klht t-r " + currentPercent.GetTextColorCss();
                 }
             }
             else
