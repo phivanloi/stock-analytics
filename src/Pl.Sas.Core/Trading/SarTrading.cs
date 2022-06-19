@@ -11,7 +11,7 @@ namespace Pl.Sas.Core.Trading
         public SarTrading(List<ChartPrice> chartPrices)
         {
             var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
-            _parabolicSar = quotes.GetParabolicSar(0.02M).ToList();
+            _parabolicSar = quotes.GetParabolicSar(0.02).ToList();
         }
 
         public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, bool isNoteTrading = true)

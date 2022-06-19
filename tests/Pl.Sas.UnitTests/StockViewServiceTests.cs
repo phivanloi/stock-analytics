@@ -73,7 +73,7 @@ namespace Pl.Sas.UnitTests
             var rsiResults = quotes.GetRsi(14);
             foreach (var rsi in rsiResults)
             {
-                _output.WriteLine($"{rsi.Date:yyyy:MM:dd}, Z:{rsi.Value:00.00}");
+                _output.WriteLine($"{rsi.Date:yyyy:MM:dd}, Z:{rsi.Rsi:00.00}");
             }
 
             Assert.True(true);
