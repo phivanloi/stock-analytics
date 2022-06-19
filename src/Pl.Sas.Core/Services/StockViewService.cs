@@ -486,11 +486,11 @@ namespace Pl.Sas.Core.Services
             if (industry is not null)
             {
                 stockView.Icf = industry.AutoRank.ToString("0,0");
-                if (score > 10)
+                if (industry.AutoRank > 10)
                 {
                     stockView.IcfCss = "scf t-r t-s";
                 }
-                if (score < -10)
+                if (industry.AutoRank < -10)
                 {
                     stockView.IcfCss = "scf t-r t-d";
                 }
