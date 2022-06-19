@@ -343,7 +343,7 @@ namespace Pl.Sas.Core.Services
                     .Take(30)
                     .Average(q => q.TotalMatchVol);
 
-                if (checkChartPrices[0].TotalMatchVol > avg30MatchVol)
+                if (checkChartPrices[0].TotalMatchVol > (avg30MatchVol + avg30MatchVol * 0.1))
                 {
                     if (currentPercent > 0)
                     {
