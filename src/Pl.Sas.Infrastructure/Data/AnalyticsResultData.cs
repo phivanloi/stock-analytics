@@ -25,7 +25,7 @@ namespace Pl.Sas.Infrastructure.Data
             return await connection.QueryFirstOrDefaultAsync<AnalyticsResult>(query, new { symbol });
         }
 
-        public virtual async Task<bool> SaveMacroeconomicsScoreAsync(string symbol, int marketScore, byte[] marketNotes)
+        public virtual async Task<bool> SaveMarketScoreAsync(string symbol, int marketScore, byte[] marketNotes)
         {
             var query = @"  UPDATE
                                 AnalyticsResults

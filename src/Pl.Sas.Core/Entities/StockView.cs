@@ -24,19 +24,6 @@
         public string Exchange { get; set; } = null!;
         #endregion
 
-        #region Macroeconomic
-        /// <summary>
-        /// Điểm đánh giá trạng thái kinh tế vĩ mô với thị trường chứng khoán, dưới đây liệt kê các vấn đề tác động.
-        /// <para>- Trạng thái thị trường</para>
-        /// <para>- Dòng tiền theo ngành</para>
-        /// </summary>
-        public int MacroeconomicsScore { get; set; }
-
-        /// <summary>
-        /// Điểm dòng tiền theo ngành
-        /// </summary>
-        public int IndustryRank { get; set; }
-        #endregion
 
         #region Company Value
         /// <summary>
@@ -129,7 +116,24 @@
         /// Tổng hợp điểm đánh giá, 
         /// tạm thời là tổng của MacroeconomicsScore * 1, CompanyValueScore * 1, CompanyGrowthScore * 1, StockScore * 1. Tưởng lai có thể thay đổi các biến số để đánh trọng số cao hơn cho các score
         /// </summary>
-        public int TotalScore => MacroeconomicsScore + CompanyValueScore + CompanyGrowthScore + StockScore;
+        public int TotalScore => MaketScore + CompanyValueScore + CompanyGrowthScore + StockScore;
+
+        #region Cột điểm số dòng tiền
+        /// <summary>
+        /// Đánh giá điểm số dòng tiền
+        /// </summary>
+        public int MaketScore { get; set; }
+        #endregion
+
+        #region Cột dòng tiền theo ngành
+        public string Icf { get; set; } = null!;
+        public string IcfCss { get; set; } = "icf t-r";
+        #endregion
+
+        #region Cột dòng tiền của cổ phiếu
+        public string Scf { get; set; } = null!;
+        public string ScfCss { get; set; } = "scf t-r";
+        #endregion
 
         #region Cột điểm số kỹ thuật
         public int StockScore { get; set; }

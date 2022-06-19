@@ -119,7 +119,7 @@ namespace Pl.Sas.Core.Services
 
                     case 208:
                         _logger.LogInformation("Run macroeconomics analytics => {DataKey}.", schedule.DataKey);
-                        await MacroeconomicsAnalyticsAsync(schedule.DataKey ?? "");
+                        await MarketAnalyticsAsync(schedule.DataKey ?? "");
                         break;
 
                     case 209:
@@ -644,10 +644,8 @@ namespace Pl.Sas.Core.Services
         {
             var industries = await _industryData.FindAllAsync();
             var oneChange = new List<float>();
-            var threeChange = new List<float>();
             var fiveChange = new List<float>();
             var tenChange = new List<float>();
-            var twentyChange = new List<float>();
             var thirtyChange = new List<float>();
             foreach (var industry in industries)
             {
@@ -655,55 +653,44 @@ namespace Pl.Sas.Core.Services
                 foreach (var stock in stocks)
                 {
                     var stockPrices = await _stockPriceData.GetForIndustryTrendAnalyticsAsync(stock.Symbol, 35);
-                    if (stockPrices is null || stockPrices.Count <= 0)
+                    var chartPrices = await _chartPriceData.CacheFindAllAsync(stock.Symbol);
+                    if ((chartPrices is null || chartPrices.Count <= 0) && stockPrices is not null && stockPrices.Count > 0)
+                    {
+                        chartPrices = stockPrices.Select(q => q.ToChartPrice()).ToList();
+                    }
+                    if (chartPrices is null || chartPrices.Count <= 0)
                     {
                         continue;
                     }
-                    if (stockPrices[0].TotalMatchVal > 10000000000)
+                    if (chartPrices[0].TotalMatchVol > 10000)
                     {
-                        if (stockPrices.Count > 2)
+                        if (chartPrices.Count > 2)
                         {
-                            oneChange.Add(stockPrices[0].ClosePriceAdjusted.GetPercent(stockPrices[1].ClosePriceAdjusted));
+                            oneChange.Add(chartPrices[0].ClosePrice.GetPercent(chartPrices[1].ClosePrice));
                         }
                         else
                         {
                             oneChange.Add(0);
                         }
-                        if (stockPrices.Count > 3)
+                        if (chartPrices.Count > 5)
                         {
-                            threeChange.Add(stockPrices[0].ClosePriceAdjusted.GetPercent(stockPrices[2].ClosePriceAdjusted));
-                        }
-                        else
-                        {
-                            threeChange.Add(0);
-                        }
-                        if (stockPrices.Count > 5)
-                        {
-                            fiveChange.Add(stockPrices[0].ClosePriceAdjusted.GetPercent(stockPrices[4].ClosePriceAdjusted));
+                            fiveChange.Add(chartPrices[0].ClosePrice.GetPercent(chartPrices[4].ClosePrice));
                         }
                         else
                         {
                             fiveChange.Add(0);
                         }
-                        if (stockPrices.Count > 10)
+                        if (chartPrices.Count > 10)
                         {
-                            tenChange.Add(stockPrices[0].ClosePriceAdjusted.GetPercent(stockPrices[9].ClosePriceAdjusted));
+                            tenChange.Add(chartPrices[0].ClosePrice.GetPercent(chartPrices[9].ClosePrice));
                         }
                         else
                         {
                             tenChange.Add(0);
                         }
-                        if (stockPrices.Count > 20)
+                        if (chartPrices.Count > 30)
                         {
-                            twentyChange.Add(stockPrices[0].ClosePriceAdjusted.GetPercent(stockPrices[19].ClosePriceAdjusted));
-                        }
-                        else
-                        {
-                            twentyChange.Add(0);
-                        }
-                        if (stockPrices.Count > 30)
-                        {
-                            thirtyChange.Add(stockPrices[0].ClosePriceAdjusted.GetPercent(stockPrices[29].ClosePriceAdjusted));
+                            thirtyChange.Add(chartPrices[0].ClosePrice.GetPercent(chartPrices[29].ClosePrice));
                         }
                         else
                         {
@@ -715,21 +702,13 @@ namespace Pl.Sas.Core.Services
                 if (oneChange.Count > 1)
                 {
                     score += oneChange.Count > 0 ? (int)oneChange.Average() * 10 : 0;
-                    score += threeChange.Count > 0 ? (int)threeChange.Average() * 6 : 0;
                     score += fiveChange.Count > 0 ? (int)fiveChange.Average() * 5 : 0;
                     score += tenChange.Count > 0 ? (int)tenChange.Average() : 3;
-                    score += twentyChange.Count > 0 ? (int)(twentyChange.Average() * 2) : 0;
                     score += thirtyChange.Count > 0 ? (int)(thirtyChange.Average() * 1) : 0;
                 }
 
                 industry.AutoRank = score;
                 await _industryData.UpdateAsync(industry);
-                oneChange.Clear();
-                threeChange.Clear();
-                fiveChange.Clear();
-                tenChange.Clear();
-                twentyChange.Clear();
-                thirtyChange.Clear();
             }
             _workerQueueService.BroadcastUpdateMemoryTask(new QueueMessage("Industries"));
         }
@@ -765,7 +744,7 @@ namespace Pl.Sas.Core.Services
         /// <param name="workerMessageQueueService">message queue service</param>
         /// <param name="schedule">Thông tin lịch làm việc</param>
         /// <returns></returns>
-        public virtual async Task<bool> MacroeconomicsAnalyticsAsync(string symbol)
+        public virtual async Task<bool> MarketAnalyticsAsync(string symbol)
         {
             var stockPrice = await _stockPriceData.GetLastAsync(symbol);
             var company = await _companyData.FindBySymbolAsync(symbol);
@@ -785,7 +764,7 @@ namespace Pl.Sas.Core.Services
             score += MarketAnalyticsService.IndustryTrend(analyticsNotes, industry);
 
             var saveZipData = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(analyticsNotes));
-            var check = await _analyticsResultData.SaveMacroeconomicsScoreAsync(symbol, score, saveZipData);
+            var check = await _analyticsResultData.SaveMarketScoreAsync(symbol, score, saveZipData);
             return await _keyValueData.SetAsync(checkingKey, check);
         }
     }

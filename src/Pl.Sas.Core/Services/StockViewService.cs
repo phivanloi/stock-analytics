@@ -89,7 +89,10 @@ namespace Pl.Sas.Core.Services
                 switch (zone)
                 {
                     case "all":
-                        query = query.Where(q => q.KlptValue > 50000);
+                        if (string.IsNullOrEmpty(symbol))
+                        {
+                            query = query.Where(q => q.KlptValue > 10000);
+                        }
                         break;
 
                     case "me":
@@ -112,7 +115,7 @@ namespace Pl.Sas.Core.Services
             {
                 return ordinal switch
                 {
-                    "idt" => query.OrderByDescending(q => q.IndustryRank).ThenByDescending(q => q.TotalScore).ToList(),
+                    "idt" => query.OrderByDescending(q => q.MaketScore).ThenByDescending(q => q.TotalScore).ToList(),
                     "ddgdn" => query.OrderByDescending(q => q.TotalScore).ToList(),
                     "mcdesc" => query.OrderByDescending(q => q.MarketCap).ToList(),
                     _ => query.OrderByDescending(q => q.KlhtValue).ToList(),
@@ -183,9 +186,7 @@ namespace Pl.Sas.Core.Services
                 IndustryCode = company.SubsectorCode,
                 Description = $"{company.Exchange} - {company.CompanyName} - {company.Supersector} - {company.Sector}",
                 Exchange = company.Exchange.ToUpper().Trim(),
-                Beta = company.Beta.ShowPercent(),
                 MarketCap = company.MarketCap,
-                IndustryRank = MarketAnalyticsService.IndustryTrend(new(), industry),
             };
 
             stockView.Beta = company.Beta.ShowPercent();
@@ -193,11 +194,14 @@ namespace Pl.Sas.Core.Services
 
             if (analyticsResults is not null)
             {
-                stockView.MacroeconomicsScore = analyticsResults.MarketScore;
+                stockView.MaketScore = analyticsResults.MarketScore;
                 stockView.CompanyValueScore = analyticsResults.CompanyValueScore;
                 stockView.CompanyGrowthScore = analyticsResults.CompanyGrowthScore;
                 stockView.StockScore = analyticsResults.StockScore;
-                stockView.FiinScore = analyticsResults.FiinScore;
+                if (analyticsResults.FiinScore > -1000)
+                {
+                    stockView.FiinScore = analyticsResults.FiinScore;
+                }
                 stockView.VndScore = analyticsResults.VndScore;
                 stockView.TargetPrice = analyticsResults.TargetPrice;
             }
@@ -226,8 +230,11 @@ namespace Pl.Sas.Core.Services
             {
                 chartPrices = stockPrices.Select(q => q.ToChartPrice()).ToList();
             }
+
             if (chartPrices is not null && chartPrices.Count > 0)
             {
+                BindingCashFlows(ref stockView, chartPrices, industry);
+
                 #region Hỗ trợ và kháng cự
                 chartPrices = chartPrices.OrderBy(q => q.TradingDate).ToList();
                 var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
@@ -338,7 +345,18 @@ namespace Pl.Sas.Core.Services
 
                 if (checkChartPrices[0].TotalMatchVol > avg30MatchVol)
                 {
-                    stockView.KlhtCss = "klht t-r " + currentPercent.GetTextColorCss();
+                    if (currentPercent > 0)
+                    {
+                        stockView.KlhtCss = "klht t-r t-gt";
+                    }
+                    else
+                    {
+                        stockView.KlhtCss = "klht t-r t-gs";
+                    }
+                }
+                else
+                {
+                    stockView.KlhtCss = "klht t-r" + currentPercent.GetTextColorCss();
                 }
             }
             else
@@ -445,6 +463,36 @@ namespace Pl.Sas.Core.Services
                         stockView.Lnmg = result.ProfitPercent.ShowPercent();
                         stockView.LnmgCss = $"lnmg t-r {result.ProfitPercent.GetTextColorCss(bankInterestRate12)}";
                     }
+                }
+            }
+        }
+
+        public static void BindingCashFlows(ref StockView stockView, List<ChartPrice> chartPrices, Industry? industry)
+        {
+            var score = StockTechnicalAnalytics.PriceTrend(new(), chartPrices);
+            if (score > -1000)
+            {
+                stockView.Scf = score.ToString("0,0");
+                if (score > 10)
+                {
+                    stockView.ScfCss = "scf t-r t-s";
+                }
+                if (score < -10)
+                {
+                    stockView.ScfCss = "scf t-r t-d";
+                }
+            }
+
+            if (industry is not null)
+            {
+                stockView.Icf = industry.AutoRank.ToString("0,0");
+                if (score > 10)
+                {
+                    stockView.IcfCss = "scf t-r t-s";
+                }
+                if (score < -10)
+                {
+                    stockView.IcfCss = "scf t-r t-d";
                 }
             }
         }
