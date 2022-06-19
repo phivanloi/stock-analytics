@@ -158,7 +158,7 @@ namespace Pl.Sas.Core.Services
 
             var type = 0;
             var score = 0;
-            var note = $"Cổ phiếu thuộc ngành \"{industry.Code}\" có đánh giá cố định {industry.Rank}, đánh giá tự động {industry.AutoRank}.";
+            var note = $"Cổ phiếu thuộc ngành \"{industry.Name}({industry.Code})\" có đánh giá cố định {industry.Rank}, đánh giá tự động {industry.AutoRank}.";
             if (industry.AutoRank > 100)
             {
                 type++;

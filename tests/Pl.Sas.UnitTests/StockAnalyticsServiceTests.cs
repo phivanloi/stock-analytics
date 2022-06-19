@@ -22,7 +22,7 @@ namespace Pl.Sas.UnitTests
 
             await analyticsService.MarketSentimentAnalyticsAsync(new()
             {
-                DataKey = "VNXALL"
+                DataKey = "VNINDEX"
             });
             Assert.True(true);
 

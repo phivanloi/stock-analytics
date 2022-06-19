@@ -19,9 +19,15 @@ namespace Pl.Sas.Infrastructure.Data
         public virtual async Task<T> SetAsync<T>(string key, T value)
         {
             var stringValue = JsonSerializer.Serialize(value);
-            var query = "UPDATE KeyValues SET Value = @stringValue WHERE [Key] = @key";
+            var query = @"  IF NOT EXISTS (SELECT * FROM KeyValues WHERE [Key] = @key)
+                                INSERT INTO KeyValues(Id ,[Key], [Value], [CreatedTime], [UpdatedTime])
+                                VALUES(@Id ,@key, @stringValue, GETDATE(), GETDATE())
+                            ELSE
+                                UPDATE KeyValues
+                                SET [Value] = @stringValue, [UpdatedTime] = GETDATE()
+                                WHERE [Key] = @key";
             using SqlConnection connection = new(_connectionStrings.AnalyticsConnection);
-            await connection.QueryAsync<KeyValue>(query, new { key, stringValue });
+            await connection.QueryAsync<KeyValue>(query, new { key, stringValue, Id = Utilities.GenerateShortGuid() });
             var cacheKey = $"{Constants.KeyValueCachePrefix}-{key.ToUpper()}";
             _memoryCacheService.Remove(cacheKey);
             return value;
