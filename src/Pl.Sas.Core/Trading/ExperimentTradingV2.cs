@@ -8,15 +8,20 @@ namespace Pl.Sas.Core.Trading
     /// </summary>
     public class ExperimentTradingV2 : BaseTrading
     {
-        private List<MacdResult> _macd_9_20_3 = new();
-        private List<TemaResult> _tema80 = new();
+        private List<MacdResult> _macd_12_26_9 = new();
+        private List<MacdResult> _indexMacd_12_26_9 = new();
+        private List<TemaResult> _indexTema12 = new();
+        private List<TemaResult> _indexTema100 = new();
         private TradingCase tradingCase = new();
 
-        public ExperimentTradingV2(List<ChartPrice> chartPrices)
+        public ExperimentTradingV2(List<ChartPrice> chartPrices, List<ChartPrice> indexChartPrices)
         {
             var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
-            _macd_9_20_3 = quotes.Use(CandlePart.Close).GetMacd(9, 20, 3).ToList();
-            _tema80 = quotes.GetTema(80).ToList();
+            var indexQuotes = indexChartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
+            _macd_12_26_9 = quotes.Use(CandlePart.Close).GetMacd(12, 26, 9).ToList();
+            _indexMacd_12_26_9 = indexQuotes.Use(CandlePart.Close).GetMacd(12, 26, 9).ToList();
+            _indexTema12 = indexQuotes.Use(CandlePart.Close).GetTema(200).ToList();
+            _indexTema100 = indexQuotes.Use(CandlePart.Close).GetTema(200).ToList();
         }
 
         public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName, bool isNoteTrading = true)
@@ -133,28 +138,51 @@ namespace Pl.Sas.Core.Trading
                 tradingHistory.Add(day);
             }
 
-            _macd_9_20_3 = new List<MacdResult>();
+            _macd_12_26_9 = new List<MacdResult>();
             return tradingCase;
         }
 
         public int BuyCondition(DateTime tradingDate)
         {
-            var macd = _macd_9_20_3.Find(tradingDate);
+            var macd = _macd_12_26_9.Find(tradingDate);
             if (macd is null || macd.Macd is null)
             {
                 return 0;
             }
 
-            var tema80 = _tema80.Find(tradingDate);
-            if (tema80 is null || tema80.Tema is null)
+            //var indexMacd = _indexMacd_12_26_9.Find(tradingDate);
+            //if (indexMacd is null || indexMacd.Macd is null)
+            //{
+            //    return 0;
+            //}
+
+            //if (indexMacd.Macd < indexMacd.Signal)
+            //{
+            //    return 0;
+            //}
+
+            var tema12 = _indexTema12.Find(tradingDate);
+            var tema100 = _indexTema100.Find(tradingDate);
+            if (tema12 is null || tema12.Tema is null || tema100 is null || tema100.Tema is null)
             {
                 return 0;
             }
 
-            if (macd.FastEma < tema80.Tema)
+            if (tema12.Tema < tema100.Tema)
             {
                 return 0;
             }
+
+            //var tema80 = _tema200.Find(tradingDate);
+            //if (tema80 is null || tema80.Tema is null)
+            //{
+            //    return 0;
+            //}
+
+            //if (macd.FastEma < tema80.Tema)
+            //{
+            //    return 0;
+            //}
 
             if (macd.Macd < macd.Signal)
             {
@@ -181,7 +209,7 @@ namespace Pl.Sas.Core.Trading
 
         public int SellCondition(DateTime tradingDate)
         {
-            var macd = _macd_9_20_3.Find(tradingDate);
+            var macd = _macd_12_26_9.Find(tradingDate);
             if (macd is null || macd.Macd is null)
             {
                 return 0;
