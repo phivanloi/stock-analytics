@@ -220,7 +220,7 @@ label {
     font-size: 15px;
 }
 
-@media (max-width: 1200px) {
+@media (min-width: 992px) {
     .table td, .table th {
         padding: 2px 5px;
         font-size: 14px;
