@@ -245,5 +245,99 @@ namespace Pl.Sas.Infrastructure
             }
             return result;
         }
+
+        public virtual async Task<List<MarketDepth>> DownloadMarketInDepthAsync()
+        {
+            var result = new List<MarketDepth>();
+            var requestUrl = $"https://fiin-market.ssi.com.vn/MarketInDepth/GetProspectV2?language=vi&ComGroupCode=VNINDEX";
+            var jsonString = await _ssiHttpClient.GetJsonAsync(requestUrl);
+            if (!string.IsNullOrEmpty(jsonString))
+            {
+                var jsonDocument = JsonDocument.Parse(jsonString);
+                var vnRealtime = jsonDocument.RootElement.GetProperty("items")[0].GetProperty("series").Deserialize<VnIndexRealtime>();
+                if (vnRealtime is not null)
+                {
+                    result.Add(new MarketDepth()
+                    {
+                        WorldIndexCode = "VNINDEXREALTIME",
+                        IndexValue = vnRealtime.IndexValue,
+                        IndexChange = vnRealtime.IndexChange,
+                        PercentIndexChange = vnRealtime.PercentIndexChange,
+                        TradingDate = vnRealtime.TradingDate,
+                        TotalValue = vnRealtime.TotalDealValue + vnRealtime.TotalMatchValue
+                    });
+                }
+                var vnMarketDepth = jsonDocument.RootElement.GetProperty("items")[0].GetProperty("heatMap").GetProperty("heatmaps")[0].GetProperty("vnMarket").Deserialize<VnMarketDepth>();
+                if (vnMarketDepth is not null)
+                {
+                    result.Add(new MarketDepth()
+                    {
+                        WorldIndexCode = "VNINDEX",
+                        IndexValue = vnMarketDepth.VnIndex.IndexValue,
+                        IndexChange = vnMarketDepth.VnIndex.IndexChange,
+                        PercentIndexChange = vnMarketDepth.VnIndex.PercentIndexChange,
+                        TradingDate = vnMarketDepth.VnIndex.TradingDate,
+                    });
+                    result.Add(new MarketDepth()
+                    {
+                        WorldIndexCode = "VN30",
+                        IndexValue = vnMarketDepth.Vn30.IndexValue,
+                        IndexChange = vnMarketDepth.Vn30.IndexChange,
+                        PercentIndexChange = vnMarketDepth.Vn30.PercentIndexChange,
+                        TradingDate = vnMarketDepth.Vn30.TradingDate,
+                    });
+                    result.Add(new MarketDepth()
+                    {
+                        WorldIndexCode = "HNXINDEX",
+                        IndexValue = vnMarketDepth.HnxIndex.IndexValue,
+                        IndexChange = vnMarketDepth.HnxIndex.IndexChange,
+                        PercentIndexChange = vnMarketDepth.HnxIndex.PercentIndexChange,
+                        TradingDate = vnMarketDepth.HnxIndex.TradingDate,
+                    });
+                    result.Add(new MarketDepth()
+                    {
+                        WorldIndexCode = "HNX30",
+                        IndexValue = vnMarketDepth.Hnx30.IndexValue,
+                        IndexChange = vnMarketDepth.Hnx30.IndexChange,
+                        PercentIndexChange = vnMarketDepth.Hnx30.PercentIndexChange,
+                        TradingDate = vnMarketDepth.Hnx30.TradingDate,
+                    });
+                }
+                var marketDepths = jsonDocument.RootElement.GetProperty("items")[0].GetProperty("heatMap").GetProperty("heatmaps")[0].GetProperty("usMarket").Deserialize<List<MarketDepth>>();
+                if (marketDepths is not null)
+                {
+                    result.AddRange(marketDepths);
+                }
+                marketDepths = jsonDocument.RootElement.GetProperty("items")[0].GetProperty("heatMap").GetProperty("heatmaps")[0].GetProperty("europMarket").Deserialize<List<MarketDepth>>();
+                if (marketDepths is not null)
+                {
+                    result.AddRange(marketDepths);
+                }
+                marketDepths = jsonDocument.RootElement.GetProperty("items")[0].GetProperty("heatMap").GetProperty("heatmaps")[0].GetProperty("asianMarket").Deserialize<List<MarketDepth>>();
+                if (marketDepths is not null)
+                {
+                    result.AddRange(marketDepths);
+                }
+            }
+            return result;
+        }
+
+        public virtual async Task<Dictionary<string, List<FinIndexValuation>>> DownloadFiinValuationAsync(string indexs = "VNINDEX,VN30,HNX30")
+        {
+            var result = new Dictionary<string, List<FinIndexValuation>>();
+            foreach (var index in indexs.Split(',', StringSplitOptions.RemoveEmptyEntries))
+            {
+                var requestUrl = $"https://fiin-market.ssi.com.vn/MarketInDepth/GetValuationSeriesV2?language=vi&Code={index}&TimeRange=ThreeMonths&FromDate=&ToDate=";
+                var jsonString = await _ssiHttpClient.GetJsonAsync(requestUrl);
+                if (!string.IsNullOrEmpty(jsonString))
+                {
+                    var jsonDocument = JsonDocument.Parse(jsonString);
+                    var indexValuations = jsonDocument.RootElement.GetProperty("items").Deserialize<List<FinIndexValuation>>();
+                    result.Add(index, indexValuations ?? new List<FinIndexValuation>());
+                }
+                await Task.Delay(500);
+            }
+            return result;
+        }
     }
 }

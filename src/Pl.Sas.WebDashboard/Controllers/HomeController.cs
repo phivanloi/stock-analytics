@@ -109,7 +109,7 @@ namespace Pl.Sas.WebDashboard.Controllers
             var stockTask = _stockData.FindBySymbolAsync(symbol);
             var analyticsResultTask = _analyticsResultData.FindAsync(symbol);
             var allStockPricesTask = _stockPriceData.FindAllAsync(symbol);
-            var companyTask = _companyData.GetByCodeAsync(symbol);
+            var companyTask = _companyData.FindBySymbolAsync(symbol);
             var tradingResultsTask = _tradingResultData.FindAllAsync(symbol);
             var stock = await stockTask;
             if (stock is null)

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Pl.Sas.Core.Entities;
 using Pl.Sas.Core.Interfaces;
 using Pl.Sas.Core.Trading;
+using Skender.Stock.Indicators;
 using System.Diagnostics;
 using System.Text.Json;
 
@@ -49,11 +50,15 @@ namespace Pl.Sas.Core.Services
                 case "SetupRealtimeSleepTimeByTransactionCount":
                     await UpdateSleepTimeForRealtimeTaskAsync(queueMessage.KeyValues["Symbol"], long.Parse(queueMessage.KeyValues["TransactionCount"]));
                     break;
-
                 case "TestTradingOnPriceChange":
                     await UpdateViewRealtimeOnPriceChange(queueMessage.KeyValues["Symbol"], queueMessage.KeyValues["ChartPrices"]);
                     break;
-
+                case "UpdateWorldIndex":
+                    await UpdateWorldIndexChange(queueMessage.KeyValues["WorldIndexs"]);
+                    break;
+                case "IndexValuationChange":
+                    await UpdateValuationIndexChange(queueMessage.KeyValues["IndexValuation"]);
+                    break;
                 default:
                     _logger.LogWarning("Realtime task id {Id} don't match any function", queueMessage.Id);
                     break;
@@ -108,7 +113,6 @@ namespace Pl.Sas.Core.Services
             }
             chartPrices = chartPrices.OrderBy(q => q.TradingDate).ToList();
             var chartTrading = chartPrices.Where(q => q.TradingDate >= Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
-            
 
             var stockView = await stockViewTask;
             if (stockView is null)
@@ -119,9 +123,9 @@ namespace Pl.Sas.Core.Services
 
             var listTradingResult = new List<TradingResult>();
             #region Experiment Trading
-            ExperimentTrading.LoadIndicatorSet(chartPrices);
+            var experimentTrading = new ExperimentTrading(chartPrices);
             var tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
-            var experCase = ExperimentTrading.Trading(chartTrading, tradingHistory, stock.Exchange, false);
+            var experCase = experimentTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
             listTradingResult.Add(new()
             {
                 Symbol = symbol,
@@ -138,14 +142,12 @@ namespace Pl.Sas.Core.Services
                 LoseNumber = experCase.LoseNumber,
                 WinNumber = experCase.WinNumber,
             });
-            experCase = null;
-            ExperimentTrading.Dispose();
             #endregion
 
             #region Main Trading
-            MacdTrading.LoadIndicatorSet(chartPrices);
+            var macdTrading = new MainTrading(chartPrices);
             tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
-            var macdCase = MacdTrading.Trading(chartTrading, tradingHistory, stock.Exchange, false);
+            var macdCase = macdTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
             listTradingResult.Add(new()
             {
                 Symbol = symbol,
@@ -162,8 +164,6 @@ namespace Pl.Sas.Core.Services
                 LoseNumber = macdCase.LoseNumber,
                 WinNumber = macdCase.WinNumber,
             });
-            macdCase = null;
-            MacdTrading.Dispose();
             #endregion
 
             #region Buy and wait
@@ -190,14 +190,13 @@ namespace Pl.Sas.Core.Services
             StockViewService.BindingPercentConvulsionToView(ref stockView, chartPrices);
             StockViewService.BindingTradingResultToView(ref stockView, listTradingResult, bankInterestRate12?.GetValue<float>() ?? 6.8f);
 
+            var setViewCacheKey = $"{Constants.StockViewCachePrefix}-SM-{symbol}";
+            var setCacheTask = _asyncCacheService.SetValueAsync(setViewCacheKey, stockView, Constants.DefaultCacheTime * 60 * 24 * 30);
             var sendMessage = new QueueMessage("UpdateRealtimeView");
             sendMessage.KeyValues.Add("Data", JsonSerializer.Serialize(stockView));
             sendMessage.KeyValues.Add("Symbol", symbol);
             _workerQueueService.BroadcastViewUpdatedTask(sendMessage);
-            listTradingResult = null;
-            chartPrices = null;
-            chartTrading = null;
-            stockView = null;
+            await setCacheTask;
         }
 
         /// <summary>
@@ -212,11 +211,11 @@ namespace Pl.Sas.Core.Services
             var type14 = await _scheduleData.FindAsync(14, symbol);
             if (type14 != null)
             {
-                if (transactionCont > 50000)
+                if (transactionCont > 10000)
                 {
                     type14.AddOrUpdateOptions("SleepTime", "30");
                 }
-                else if (transactionCont > 10000)
+                else if (transactionCont > 8000)
                 {
                     type14.AddOrUpdateOptions("SleepTime", "60");
                 }
@@ -224,29 +223,275 @@ namespace Pl.Sas.Core.Services
                 {
                     type14.AddOrUpdateOptions("SleepTime", "100");
                 }
-                else if (transactionCont > 1000)
+                else if (transactionCont > 3000)
                 {
                     type14.AddOrUpdateOptions("SleepTime", "140");
                 }
-                else if (transactionCont > 500)
+                else if (transactionCont > 1000)
                 {
                     type14.AddOrUpdateOptions("SleepTime", "200");
                 }
-                else if (transactionCont > 100)
+                else if (transactionCont > 500)
                 {
                     type14.AddOrUpdateOptions("SleepTime", "360");
                 }
-                else if (transactionCont > 50)
+                else if (transactionCont > 100)
                 {
-                    type14.AddOrUpdateOptions("SleepTime", "1200");
+                    type14.AddOrUpdateOptions("SleepTime", "600");
                 }
                 else
                 {
-                    type14.AddOrUpdateOptions("SleepTime", "2400");
+                    type14.AddOrUpdateOptions("SleepTime", "1200");
                 }
                 return await _scheduleData.UpdateAsync(type14);
             }
             return false;
+        }
+
+        /// <summary>
+        /// Hàm xử lý update khi thay đổi chỉ số quốc tế
+        /// </summary>
+        /// <param name="worldIndexsJsonData">Danh sách lịch sử giá cập nhập tự động</param>
+        public virtual async Task UpdateWorldIndexChange(string worldIndexsJsonData)
+        {
+            Guard.Against.NullOrEmpty(worldIndexsJsonData, nameof(worldIndexsJsonData));
+            var marketDepths = JsonSerializer.Deserialize<List<Entities.DownloadObjects.MarketDepth>>(worldIndexsJsonData);
+            if (marketDepths is null || marketDepths.Count <= 0)
+            {
+                return;
+            }
+
+            var setViewCacheKey = $"{Constants.IndexViewCachePrefix}-ALL";
+            var indexView = await _asyncCacheService.GetByKeyAsync<IndexView>(setViewCacheKey);
+            if (indexView == null)
+            {
+                indexView = new IndexView();
+            }
+
+            var indexDepth = marketDepths.FirstOrDefault(q => q.WorldIndexCode == "DJI");
+            if (indexDepth is not null)
+            {
+                indexView.Dji = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00})";
+                indexView.DjiCss = "dji t-s";
+                if (indexDepth.IndexChange == 0)
+                {
+                    indexView.DjiCss = "dji t-wn";
+                }
+                else if (indexDepth.IndexChange < 0)
+                {
+                    indexView.DjiCss = "dji t-d";
+                }
+            }
+
+            indexDepth = marketDepths.FirstOrDefault(q => q.WorldIndexCode == "NASDAQ");
+            if (indexDepth is not null)
+            {
+                indexView.Nasdaq = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00})";
+                indexView.NasdaqCss = "nasdaq t-s";
+                if (indexDepth.IndexChange == 0)
+                {
+                    indexView.NasdaqCss = "nasdaq t-wn";
+                }
+                else if (indexDepth.IndexChange < 0)
+                {
+                    indexView.NasdaqCss = "nasdaq t-d";
+                }
+            }
+
+            indexDepth = marketDepths.FirstOrDefault(q => q.WorldIndexCode == "SP500");
+            if (indexDepth is not null)
+            {
+                indexView.Sp500 = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00})";
+                indexView.Sp500Css = "sp500 t-s";
+                if (indexDepth.IndexChange == 0)
+                {
+                    indexView.Sp500Css = "sp500 t-wn";
+                }
+                else if (indexDepth.IndexChange < 0)
+                {
+                    indexView.Sp500Css = "sp500 t-d";
+                }
+            }
+
+            indexDepth = marketDepths.FirstOrDefault(q => q.WorldIndexCode == "FTSE100");
+            if (indexDepth is not null)
+            {
+                indexView.Ftse100 = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00})";
+                indexView.Ftse100Css = "ftse100 t-s";
+                if (indexDepth.IndexChange == 0)
+                {
+                    indexView.Ftse100Css = "ftse100 t-wn";
+                }
+                else if (indexDepth.IndexChange < 0)
+                {
+                    indexView.Ftse100Css = "ftse100 t-d";
+                }
+            }
+
+            indexDepth = marketDepths.FirstOrDefault(q => q.WorldIndexCode == "CAC40");
+            if (indexDepth is not null)
+            {
+                indexView.Cac40 = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00})";
+                indexView.Cac40Css = "cac40 t-s";
+                if (indexDepth.IndexChange == 0)
+                {
+                    indexView.Cac40Css = "cac40 t-wn";
+                }
+                else if (indexDepth.IndexChange < 0)
+                {
+                    indexView.Cac40Css = "cac40 t-d";
+                }
+            }
+
+            indexDepth = marketDepths.FirstOrDefault(q => q.WorldIndexCode == "DAX");
+            if (indexDepth is not null)
+            {
+                indexView.Dax = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00})";
+                indexView.DaxCss = "dax t-s";
+                if (indexDepth.IndexChange == 0)
+                {
+                    indexView.DaxCss = "dax t-wn";
+                }
+                else if (indexDepth.IndexChange < 0)
+                {
+                    indexView.DaxCss = "dax t-d";
+                }
+            }
+
+            indexDepth = marketDepths.FirstOrDefault(q => q.WorldIndexCode == "KOSPI");
+            if (indexDepth is not null)
+            {
+                indexView.Kospi = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00})";
+                indexView.KospiCss = "kospi t-s";
+                if (indexDepth.IndexChange == 0)
+                {
+                    indexView.KospiCss = "kospi t-wn";
+                }
+                else if (indexDepth.IndexChange < 0)
+                {
+                    indexView.KospiCss = "kospi t-d";
+                }
+            }
+
+            indexDepth = marketDepths.FirstOrDefault(q => q.WorldIndexCode == "N225");
+            if (indexDepth is not null)
+            {
+                indexView.N225 = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00})";
+                indexView.N225Css = "n225 t-s";
+                if (indexDepth.IndexChange == 0)
+                {
+                    indexView.N225Css = "n225 t-wn";
+                }
+                else if (indexDepth.IndexChange < 0)
+                {
+                    indexView.N225Css = "n225 t-d";
+                }
+            }
+
+            indexDepth = marketDepths.FirstOrDefault(q => q.WorldIndexCode == "HANGSENG");
+            if (indexDepth is not null)
+            {
+                indexView.Hangseng = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00})";
+                indexView.HangsengCss = "hangseng t-s";
+                if (indexDepth.IndexChange == 0)
+                {
+                    indexView.HangsengCss = "hangseng t-wn";
+                }
+                else if (indexDepth.IndexChange < 0)
+                {
+                    indexView.HangsengCss = "hangseng t-d";
+                }
+            }
+
+            indexDepth = marketDepths.FirstOrDefault(q => q.WorldIndexCode == "SHANGHAI");
+            if (indexDepth is not null)
+            {
+                indexView.Shanghai = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00})";
+                indexView.ShanghaiCss = "shanghai t-s";
+                if (indexDepth.IndexChange == 0)
+                {
+                    indexView.ShanghaiCss = "shanghai t-wn";
+                }
+                else if (indexDepth.IndexChange < 0)
+                {
+                    indexView.ShanghaiCss = "shanghai t-d";
+                }
+            }
+
+            indexDepth = marketDepths.FirstOrDefault(q => q.WorldIndexCode == "VNINDEXREALTIME");
+            if (indexDepth is not null)
+            {
+                indexView.Vnindex = $"{indexDepth.IndexValue:0,0.00} ({indexDepth.IndexChange:0,0.00})";
+                indexView.VnindexCss = "vnindex t-s";
+                indexView.VnindexValue = $"{indexDepth.TotalValue / 1000000000000:0,0.00}kT";
+                if (indexDepth.IndexChange == 0)
+                {
+                    indexView.VnindexCss = "vnindex t-wn";
+                }
+                else if (indexDepth.IndexChange < 0)
+                {
+                    indexView.VnindexCss = "vnindex t-d";
+                }
+            }
+
+            var setCacheTask = _asyncCacheService.SetValueAsync(setViewCacheKey, indexView, Constants.DefaultCacheTime * 60 * 24);
+            var sendMessage = new QueueMessage("UpdateIndexView");
+            sendMessage.KeyValues.Add("Data", JsonSerializer.Serialize(indexView));
+            _workerQueueService.BroadcastViewUpdatedTask(sendMessage);
+            await setCacheTask;
+        }
+
+        /// <summary>
+        /// Hàm xử lý khi thay đổi định giá
+        /// </summary>
+        /// <param name="valuationIndexsJsonData">Danh sách các định giá thị trường</param>
+        public virtual async Task UpdateValuationIndexChange(string valuationIndexsJsonData)
+        {
+            Guard.Against.NullOrEmpty(valuationIndexsJsonData, nameof(valuationIndexsJsonData));
+            var indexValuation = JsonSerializer.Deserialize<Dictionary<string, List<Entities.DownloadObjects.FinIndexValuation>>>(valuationIndexsJsonData);
+            if (indexValuation is null || indexValuation.Count <= 0 || !indexValuation.ContainsKey("VNINDEX"))
+            {
+                return;
+            }
+
+            var setViewCacheKey = $"{Constants.IndexViewCachePrefix}-ALL";
+            var indexView = await _asyncCacheService.GetByKeyAsync<IndexView>(setViewCacheKey);
+            if (indexView == null)
+            {
+                indexView = new IndexView();
+            }
+
+            var chartPrices = await _chartPriceData.CacheFindAllAsync("VNINDEX", "D");
+            if (chartPrices is not null)
+            {
+                chartPrices = chartPrices.OrderBy(q => q.TradingDate).ToList();
+                var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
+                var zigZagResults = quotes.GetZigZag(EndType.HighLow, 5);
+                var zigZagResultH = zigZagResults.LastOrDefault(q => q.PointType == "H" && ((decimal)chartPrices[^1].ClosePrice < (q.ZigZag - (q.ZigZag * 0.01m))));
+                var zigZagResultL = zigZagResults.LastOrDefault(q => q.PointType == "L" && ((decimal)chartPrices[^1].ClosePrice > (q.ZigZag + (q.ZigZag * 0.01m))));
+                if (zigZagResultH is not null && zigZagResultH.ZigZag.HasValue)
+                {
+                    indexView.KcVnindex = zigZagResultH.ZigZag.Value.ToString("00.00");
+                }
+
+                if (zigZagResultL is not null && zigZagResultL.ZigZag.HasValue)
+                {
+                    indexView.HtVnindex = zigZagResultL.ZigZag.Value.ToString("00.00");
+                }
+            }
+
+            var vnindexValuation = indexValuation["VNINDEX"].OrderByDescending(q => q.TradingDate).FirstOrDefault();
+            if (vnindexValuation is not null)
+            {
+                indexView.VnindexPe = $"{vnindexValuation.R21:0,0.00}";
+                indexView.VnindexPb = $"{vnindexValuation.R25:0,0.00}";
+            }
+
+            var setCacheTask = _asyncCacheService.SetValueAsync(setViewCacheKey, indexView, Constants.DefaultCacheTime * 60 * 24);
+            var sendMessage = new QueueMessage("UpdateIndexView");
+            sendMessage.KeyValues.Add("Data", JsonSerializer.Serialize(indexView));
+            _workerQueueService.BroadcastViewUpdatedTask(sendMessage);
+            await setCacheTask;
         }
     }
 }

@@ -136,8 +136,14 @@ namespace Pl.Sas.Core.Services
                         case 12:
                             await UpdateVndStockScoreAsync(schedule);
                             break;
+                        case 13:
+                            await UpdateWorldIndexAsync();
+                            break;
                         case 14:
                             await UpdateChartPricesRealtimeAsync(schedule);
+                            break;
+                        case 15:
+                            await UpdateIndexValuationAsync(schedule);
                             break;
                         default:
                             _logger.LogWarning("Worker process schedule id {Id}, type {Type} don't match any function", schedule.Id, schedule.Type);
@@ -160,6 +166,47 @@ namespace Pl.Sas.Core.Services
             else
             {
                 _logger.LogWarning("Worker HandleEventAsync null scheduler Id: {Id}.", queueMessage.Id);
+            }
+        }
+
+        /// <summary>
+        /// Tải các chỉ số thế giới
+        /// </summary>
+        /// <returns></returns>
+        public virtual async Task UpdateWorldIndexAsync()
+        {
+            var woldIndexs = await _downloadData.DownloadMarketInDepthAsync();
+
+            if (woldIndexs is not null && woldIndexs.Count > 0)
+            {
+                _workerQueueService.PublishRealtimeTask(new("UpdateWorldIndex")
+                {
+                    KeyValues = new Dictionary<string, string>()
+                    {
+                        {"WorldIndexs", JsonSerializer.Serialize(woldIndexs) }
+                    }
+                });
+            }
+        }
+
+        /// <summary>
+        /// Tải định giá thị trường
+        /// </summary>
+        /// <returns></returns>
+        public virtual async Task UpdateIndexValuationAsync(Schedule schedule)
+        {
+            var indexs = schedule.Options["Indexs"];
+            var indexValuations = await _downloadData.DownloadFiinValuationAsync(indexs);
+
+            if (indexValuations is not null && indexValuations.Count > 0)
+            {
+                _workerQueueService.PublishRealtimeTask(new("IndexValuationChange")
+                {
+                    KeyValues = new Dictionary<string, string>()
+                    {
+                        {"IndexValuation", JsonSerializer.Serialize(indexValuations) }
+                    }
+                });
             }
         }
 
@@ -266,7 +313,6 @@ namespace Pl.Sas.Core.Services
                         {"ChartPrices", JsonSerializer.Serialize(chartPrices) }
                     }
                 });
-                chartPrices = null;
             }
         }
 
@@ -587,7 +633,7 @@ namespace Pl.Sas.Core.Services
             var checkingKey = $"{symbol}-Download-CorporateAction";
             var size = int.Parse(schedule.Options["StockPricesCrawlSize"]);
             var stockPriceHistory = await _downloadData.DownloadStockPricesAsync(symbol, size);
-            if (stockPriceHistory is null || stockPriceHistory.Data.StockPrice.DataList.Length <= 0)
+            if (stockPriceHistory is null || stockPriceHistory.Data.StockPrice is null || stockPriceHistory.Data.StockPrice.DataList.Length <= 0)
             {
                 _logger.LogWarning("UpdateStockPriceHistoryAsync => stockPriceHistory null info for code: {symbol}", symbol);
                 return await _keyValueData.SetAsync(checkingKey, false);
@@ -653,7 +699,7 @@ namespace Pl.Sas.Core.Services
             var symbol = schedule.DataKey ?? throw new Exception($"Schedule Null DataKey, di: {schedule.Id}, type: {schedule.Type}");
             var checkingKey = $"{symbol}-Download-FinancialIndicator";
             var ssiFinancialIndicators = await _downloadData.DownloadFinancialIndicatorAsync(symbol);
-            if (ssiFinancialIndicators is null || ssiFinancialIndicators.Data.FinancialIndicator.DataList.Length < 0)
+            if (ssiFinancialIndicators is null || ssiFinancialIndicators.Data is null || ssiFinancialIndicators.Data.FinancialIndicator is null || ssiFinancialIndicators.Data.FinancialIndicator.DataList is null || ssiFinancialIndicators.Data.FinancialIndicator.DataList.Length < 0)
             {
                 _logger.LogWarning("UpdateFinancialIndicatorAsync => ssiFinancialIndicators null info for code: {Symbol}", symbol);
                 return await _keyValueData.SetAsync(checkingKey, false);
@@ -828,7 +874,7 @@ namespace Pl.Sas.Core.Services
             var symbol = schedule.DataKey ?? throw new Exception($"Schedule Null DataKey, di: {schedule.Id}, type: {schedule.Type}");
             var checkingKey = $"{symbol}-Download-LeadershipInfo";
             var ssiLeadership = await _downloadData.DownloadLeadershipAsync(symbol);
-            if (ssiLeadership is null || ssiLeadership.Data.Leaderships.Datas.Length < 0)
+            if (ssiLeadership is null || ssiLeadership.Data is null || ssiLeadership.Data.Leaderships is null || ssiLeadership.Data.Leaderships.Datas is null || ssiLeadership.Data.Leaderships.Datas.Length < 0)
             {
                 _logger.LogWarning("UpdateLeadershipInfoAsync => ssiLeadership null info for code: {symbol}", symbol);
                 return await _keyValueData.SetAsync(checkingKey, false);
@@ -901,7 +947,7 @@ namespace Pl.Sas.Core.Services
             }
 
             var isUpdate = true;
-            var company = await _companyData.GetByCodeAsync(schedule.DataKey);
+            var company = await _companyData.FindBySymbolAsync(schedule.DataKey);
             if (company is null)
             {
                 company = new Company() { Symbol = symbol };

@@ -80,9 +80,6 @@ label {
     color: #1d1d1d;
     background-color: #a3a3a3;
 }
-/*#stock-details-body{
-    min-height:600px;
-}*/
 .modal-header {
     border-bottom: 1px solid #9e9e9e
 }
@@ -192,9 +189,44 @@ label {
 }
 
 .market td {
-    transition: all 1s ease;
+    transition: background-color 1s ease;
 }
 
 .c-dtac {
     background-color: #dadada5a
+}
+
+.t-b {
+    color: #55fe2e !important
+}
+
+.t-m {
+    color: #feb12e !important
+}
+
+.t-gt {
+    color: #f23aff !important
+}
+
+.t-gs {
+    color: #00c9ff !important
+}
+
+.index-item {
+    line-height: 20px;
+    color: #fff;
+    border-left: 1px solid #626262;
+    padding: 0 10px;
+    font-size: 15px;
+}
+
+@media (max-width: 1200px) {
+    .table td, .table th {
+        padding: 2px 5px;
+        font-size: 14px;
+    }
+
+    .index-item {
+        font-size: 13px;
+    }
 }

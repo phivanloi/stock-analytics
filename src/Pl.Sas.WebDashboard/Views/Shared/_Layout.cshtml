@@ -1,11 +1,14 @@
 ﻿@using Pl.Sas.Core
 @inject Microsoft.Extensions.Options.IOptions<AppSettings> appSettingsOptions
 @inject Pl.Sas.Core.Interfaces.IUserData userData
+@inject Pl.Sas.Core.Interfaces.IAsyncCacheService asyncCacheService
 @{
     var userId = Context.GetUserId();
     var appSettings = appSettingsOptions.Value;
     var userInfo = await userData.CacheGetUserInfoAsync(userId);
     var activeMenuId = ViewData["ActiveMenu"] ?? "";
+    var cacheKey = $"{Constants.IndexViewCachePrefix}-ALL";
+    var indexView = await asyncCacheService.GetByKeyAsync<Pl.Sas.Core.Entities.IndexView>(cacheKey);
 }
 <!DOCTYPE html>
 <html lang="vi">
@@ -25,6 +28,41 @@
                 <li class="nav-item">
                     <a class="nav-link" data-widget="pushmenu" role="button"><i class="fas fa-bars"></i></a>
                 </li>
+                @if (indexView is not null)
+                {
+                    <li class="nav-item d-none d-sm-inline-block index-item">
+                        Dow Jones: <span class="@indexView.DjiCss">@indexView.Dji</span><br>
+                        Nasdaq: <span class="@indexView.NasdaqCss">@indexView.Nasdaq</span>
+                    </li>
+                    <li class="nav-item d-none d-sm-inline-block index-item">
+                        Sp500: <span class="@indexView.Sp500Css">@indexView.Sp500</span><br>
+                        Ftse100: <span class="@indexView.Ftse100Css">@indexView.Ftse100</span>
+                    </li>
+                    <li class="nav-item d-none d-sm-inline-block index-item">
+                        Dax: <span class="@indexView.DaxCss">@indexView.Dax</span><br>
+                        Cac40: <span class="@indexView.Cac40Css">@indexView.Cac40</span>
+                    </li>
+                    <li class="nav-item d-none d-sm-inline-block index-item">
+                        Kospi: <span class="@indexView.KospiCss">@indexView.Kospi</span><br>
+                        N225: <span class="@indexView.N225Css">@indexView.N225</span>
+                    </li>
+                    <li class="nav-item d-none d-sm-inline-block index-item">
+                        Hangseng: <span class="@indexView.HangsengCss">@indexView.Hangseng</span><br>
+                        Shanghai: <span class="@indexView.ShanghaiCss">@indexView.Shanghai</span>
+                    </li>
+                    <li class="nav-item d-none d-sm-inline-block index-item">
+                        Vnindex: <span class="@indexView.VnindexCss">@indexView.Vnindex</span><br>
+                        Vnindex Gt: <span class="vnindexValue">@indexView.VnindexValue</span>
+                    </li>
+                    <li class="nav-item d-none d-sm-inline-block index-item">
+                        Vnindex Kc: <span class="kcvnindex t-d">@indexView.KcVnindex</span><br>
+                        Vnindex Ht: <span class="htvnindex t-s">@indexView.HtVnindex</span>
+                    </li>
+                    <li class="nav-item d-none d-sm-inline-block index-item">
+                        Vnindex P/E: <span class="vnindexPe">@indexView.VnindexPe</span><br>
+                        Vnindex P/B: <span class="vnindexPb">@indexView.VnindexPb</span>
+                    </li>
+                }
             </ul>
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
@@ -130,7 +168,6 @@
                         </button>
                     </div>
                     <div class="modal-body embed-responsive embed-responsive-16by9" id="stock-details-body">
-
                     </div>
                     <div class="modal-footer" style="margin-top:10px">
                         <input type="hidden" value="" id="follow-symbol" />

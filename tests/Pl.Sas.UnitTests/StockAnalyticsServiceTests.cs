@@ -22,7 +22,7 @@ namespace Pl.Sas.UnitTests
 
             await analyticsService.MarketSentimentAnalyticsAsync(new()
             {
-                DataKey = "VNXALL"
+                DataKey = "VNINDEX"
             });
             Assert.True(true);
 
@@ -38,7 +38,22 @@ namespace Pl.Sas.UnitTests
             var hostedService = serviceProvider.GetService<IHostedService>() as LoggingQueuedHostedService ?? throw new Exception("Can't get LoggingQueuedHostedService");
             await hostedService.StartAsync(CancellationToken.None);
 
-            await analyticsService.TestTradingAnalyticsAsync("VND");
+            await analyticsService.TestTradingAnalyticsAsync("FIT");
+            Assert.True(true);
+
+            await hostedService.StopAsync(CancellationToken.None);
+        }
+
+        [Fact]
+        public async Task StockPriceTechnicalAnalyticsTestAsync()
+        {
+            var services = ConfigureServices.GetConfigureServices();
+            var serviceProvider = services.BuildServiceProvider();
+            var analyticsService = serviceProvider.GetService<AnalyticsService>() ?? throw new Exception("Can't get WorkerService");
+            var hostedService = serviceProvider.GetService<IHostedService>() as LoggingQueuedHostedService ?? throw new Exception("Can't get LoggingQueuedHostedService");
+            await hostedService.StartAsync(CancellationToken.None);
+
+            await analyticsService.StockPriceTechnicalAnalyticsAsync("BCB");
             Assert.True(true);
 
             await hostedService.StopAsync(CancellationToken.None);
@@ -69,6 +84,21 @@ namespace Pl.Sas.UnitTests
             await hostedService.StartAsync(CancellationToken.None);
 
             await analyticsService.CompanyGrowthAnalyticsAsync("VIC");
+            Assert.True(true);
+
+            await hostedService.StopAsync(CancellationToken.None);
+        }
+
+        [Fact]
+        public async Task FiinAnalyticsTestAsync()
+        {
+            var services = ConfigureServices.GetConfigureServices();
+            var serviceProvider = services.BuildServiceProvider();
+            var analyticsService = serviceProvider.GetService<AnalyticsService>() ?? throw new Exception("Can't get WorkerService");
+            var hostedService = serviceProvider.GetService<IHostedService>() as LoggingQueuedHostedService ?? throw new Exception("Can't get LoggingQueuedHostedService");
+            await hostedService.StartAsync(CancellationToken.None);
+
+            await analyticsService.FiinAnalyticsAsync("BSR");
             Assert.True(true);
 
             await hostedService.StopAsync(CancellationToken.None);

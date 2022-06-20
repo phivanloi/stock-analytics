@@ -1,78 +1,171 @@
 ﻿using Pl.Sas.Core.Entities;
+using Skender.Stock.Indicators;
 
 namespace Pl.Sas.Core.Services
 {
-    public static class StockAnalyticsService
+    public static class StockTechnicalAnalytics
     {
         /// <summary>
-        /// Phân tích su thế của giá cổ phiếu
+        /// Phân tích quá mua, quá bán s rsi 14
         /// </summary>
-        /// <param name="notes">Ghi chú</param>
-        /// <param name="stockPrices">Danh sách lịch sử giao dịch, sắp sếp theo phiên diao dịch gần nhất lên đầu</param>
-        /// <param name="exchangeFluctuationsRate">Tỉ lệ tăng giảm tối đa của sàn mà chứng khoán liêm yết</param>
-        /// <returns>int</returns>
-        public static int LastTradingAnalytics(List<AnalyticsNote> notes, List<StockPrice> stockPrices, float exchangeFluctuationsRate)
+        /// <param name="notes">Danh sách ghi chú</param>
+        /// <param name="quotes">Danh sách lịch sử giá sắp xếp ngày giao dịch tăng dần</param>
+        /// <returns>double, int</returns>
+        public static (double? StochRsi, int Score) StochRsiAnalytics(List<AnalyticsNote> notes, List<Quote> quotes)
         {
-            if (stockPrices.Count < 2)
+            if (quotes is null || quotes.Count <= 17)
             {
-                return notes.Add($"Chưa có đủ lịch sử giá để phân tích.", -5, -1, null);
+                return (null, notes.Add($"Chưa đủ dữ liệu đê phân tích stoch rsi 14.", -1, -1, null));
             }
 
             var type = 0;
             var score = 0;
             var note = string.Empty;
 
-            var priceChange = stockPrices[0].ClosePrice.GetPercent(stockPrices[1].ClosePrice);
-            if (priceChange == 0)// Giá không có biến động
+            try
             {
-                note += $"Giá không thay đổi,";
+                var rsiResults = quotes.GetStochRsi(14, 14, 3, 3);
+                if (rsiResults is null || rsiResults.Count() < 0)
+                {
+                    return (null, notes.Add($"Chưa đủ dữ liệu đê phân tích stoch rsi 14.", -1, -1, null));
+                }
+
+                var topThree = rsiResults.OrderByDescending(q => q.Date).Take(3).ToList();
+                if (topThree[0].StochRsi > topThree[0].Signal)
+                {
+                    score++;
+                    type++;
+                    note += "Stoch Rsi 14 đang trên đường tiếng hiệu.";
+                }
+                else
+                {
+                    score--;
+                    type--;
+                    note += "Stoch Rsi 14 đang dưới đường tiếng hiệu.";
+                }
+
+                if (topThree[0].StochRsi.HasValue && topThree[1].StochRsi.HasValue && topThree[2].StochRsi.HasValue)
+                {
+                    if (topThree[0].StochRsi > 20 && topThree[1].StochRsi < 20 && topThree[2].StochRsi < topThree[1].StochRsi)
+                    {
+                        score++;
+                        type++;
+                        note += " Đang đi lên từ quá bán mạnh.";
+                    }
+                    if (topThree[0].StochRsi < 80 && topThree[1].StochRsi > 80 && topThree[2].StochRsi > topThree[1].StochRsi)
+                    {
+                        score--;
+                        type--;
+                        note += " Đang đi xuống từ quá mua mạnh.";
+                    }
+                }
+
+                return (topThree[0].StochRsi, notes.Add(note, score, type, null));
             }
-            else if (Math.Abs(priceChange) > (exchangeFluctuationsRate - (exchangeFluctuationsRate * 0.15f)))//Mức biến động giá lớn
+            catch//Đang có một lỗi khi lấy chỉ báo rsi lên tạm thời try lại
+            {
+                return (null, notes.Add($"Số liệu stoch rsi bị lỗi.", -1, -1, null));
+            }
+        }
+
+        /// <summary>
+        /// Phân tích dòng tiền của cổ phiếu
+        /// </summary>
+        /// <param name="notes">Ghi chú</param>
+        /// <param name="chartPrices">Lịch sửa giá của cổ phiếu</param>
+        /// <returns>int</returns>
+        public static int PriceTrend(List<AnalyticsNote> notes, List<ChartPrice> chartPrices)
+        {
+            if (chartPrices.Count < 2)
+            {
+                return notes.Add($"Chưa có đủ lịch sử giá để phân tích dòng tiên cho cổ phiếu.", -1000, -2, null);
+            }
+
+            var checkChartPrices = chartPrices.OrderByDescending(q => q.TradingDate).ToList();
+            if (checkChartPrices[0].TotalMatchVol < 10000)
+            {
+                return notes.Add($"Cổ phiếu có thanh khoản thấp hơn 10000 cổ/1 phiên thì bỏ qua", -1000, -2, null);
+            }
+            var type = 0;
+            var score = 0f;
+
+            if (checkChartPrices.Count > 2)
+            {
+                score += checkChartPrices[0].ClosePrice.GetPercent(checkChartPrices[1].ClosePrice) * 5;
+            }
+
+            if (checkChartPrices.Count > 5)
+            {
+                score += checkChartPrices[0].ClosePrice.GetPercent(checkChartPrices[4].ClosePrice) * 3;
+            }
+
+            if (checkChartPrices.Count > 10)
+            {
+                score += checkChartPrices[0].ClosePrice.GetPercent(checkChartPrices[9].ClosePrice) * 2;
+            }
+
+            if (checkChartPrices.Count > 30)
+            {
+                score += checkChartPrices[0].ClosePrice.GetPercent(checkChartPrices[29].ClosePrice) * 1;
+            }
+
+            if (score > 10)
+            {
+                type = 1;
+            }
+
+            if (score > 50)
+            {
+                type = 2;
+            }
+
+            if (score < -10)
+            {
+                type = -1;
+            }
+
+            if (score < -50)
+            {
+                type = -2;
+            }
+
+            return notes.Add($"Biến động giá trong các khoảng thời gian 1,5,10,30 phiên {score:0,0.00} trọng số 5,3,2,1 tương ứng.", (int)score, type, null);
+        }
+
+        /// <summary>
+        /// Phân tích su thế của giá cổ phiếu
+        /// </summary>
+        /// <param name="notes">Ghi chú</param>
+        /// <param name="chartPrices">Danh sách lịch sử giao dịch, sắp sếp theo phiên diao dịch gần nhất lên đầu</param>
+        /// <param name="exchangeFluctuationsRate">Tỉ lệ tăng giảm tối đa của sàn mà chứng khoán liêm yết</param>
+        /// <returns>int</returns>
+        public static int LastTradingAnalytics(List<AnalyticsNote> notes, List<ChartPrice> chartPrices, float exchangeFluctuationsRate)
+        {
+            if (chartPrices.Count < 2)
+            {
+                return notes.Add($"Chưa có đủ lịch sử giá để phân tích biến động giá phiên cuối.", -5, -1, null);
+            }
+
+            var type = 0;
+            var score = 0;
+            var note = string.Empty;
+
+            var priceChange = chartPrices[0].ClosePrice.GetPercent(chartPrices[1].ClosePrice);
+            if (Math.Abs(priceChange) > (exchangeFluctuationsRate - (exchangeFluctuationsRate * 0.15f)))//Mức biến động giá lớn
             {
                 if (priceChange < 0)
                 {
                     note += $"Phiên cuối, giá có mức biển động giảm lớn({priceChange:0.0}%),";
-                    type = -3;
-                    score -= 3;
+                    type = -1;
+                    score -= 1;
                 }
                 else
                 {
                     note += $"Phiên cuối, giá có mức biển động tăng lớn({priceChange:0.0}%),";
-                    score += 3;
-                    type = 3;
-                }
-            }
-            else if (Math.Abs(priceChange) > (exchangeFluctuationsRate - (exchangeFluctuationsRate * 0.5f)))//Mức biến động giá khá lớn
-            {
-                if (priceChange < 0)
-                {
-                    note += $"Giá có mức biển động giảm khá lớn({priceChange:0.0}%) trong phiên cuối cùng,";
-                    type = -2;
-                    score -= 2;
-                }
-                else
-                {
-                    note += $"Giá có mức biển động tăng khá lớn({priceChange:0.0}%) trong phiên cuối cùng,";
-                    score += 2;
-                    type = 2;
-                }
-            }
-            else
-            {
-                if (priceChange < 0)
-                {
-                    note += $"Giá có mức biển động giảm bình thường({priceChange:0.0}%) trong phiên cuối cùng,";
-                    score -= 1;
-                    type--;
-                }
-                else
-                {
-                    note += $"Giá có mức biển động tăng bình thường({priceChange:0.0}%) trong phiên cuối cùng,";
                     score += 1;
-                    type++;
+                    type = 1;
                 }
             }
-
 
             return notes.Add(note, score, type, null);
         }
@@ -201,107 +294,6 @@ namespace Pl.Sas.Core.Services
                 else
                 {
                     score--;
-                }
-            }
-
-            return notes.Add(note, score, type, null);
-        }
-
-        /// <summary>
-        /// Phân tích su thế của giá cổ phiếu
-        /// </summary>
-        /// <param name="notes">Ghi chú</param>
-        /// <param name="stockPrices">Lịch sửa giá của cổ phiếu</param>
-        /// <returns>int</returns>
-        public static int PriceTrend(List<AnalyticsNote> notes, List<StockPrice> stockPrices)
-        {
-            if (stockPrices.Count < 1)
-            {
-                return notes.Add($"Chưa có đủ lịch sử giá để phân tích.", -1, -1, null);
-            }
-
-            var type = 0;
-            var score = 0;
-            var (equalCount, increaseCount, reductionCount, fistEqualCount, fistGrowCount, fistDropCount, percents) = stockPrices.GetFluctuationsTopDown(q => q.ClosePrice);
-
-            var avgPercent = percents.Average();
-            var note = $"Tăng trưởng giá trung bình {stockPrices.Count} phiên {avgPercent:0,0}%";
-            if (fistEqualCount > 0)
-            {
-                note += $", duy trì trong {fistEqualCount} phiên đến hiện tại.";
-            }
-            if (fistGrowCount > 0)
-            {
-                score += fistGrowCount;
-                note += $", tăng trong {fistGrowCount} phiên đến hiện tại.";
-                type++;
-            }
-            if (fistDropCount > 0)
-            {
-                score -= fistDropCount;
-                note += $", giảm trong {fistDropCount} phiên đến hiện tại.";
-                type--;
-            }
-
-            note += $" Tổng biến động:";
-            if (equalCount > 0)
-            {
-                note += $" duy trì {equalCount} phiên. ";
-            }
-            if (increaseCount > 0)
-            {
-                note += $" tăng {increaseCount} phiên. ";
-            }
-            if (reductionCount > 0)
-            {
-                note += $" giảm {reductionCount} phiên. ";
-            }
-
-            if (stockPrices.Count > 5)
-            {
-                if (stockPrices[0].ClosePrice > stockPrices[5].ClosePrice)
-                {
-                    note += $"Biến động giá 5 phiên tăng {stockPrices[0].ClosePrice.GetPercent(stockPrices[5].ClosePrice):0,0}%.";
-                }
-                else
-                {
-                    note += $"Biến động giá 5 phiên giảm {stockPrices[0].ClosePrice.GetPercent(stockPrices[5].ClosePrice):0,0}%.";
-                }
-            }
-
-            if (stockPrices.Count > 10)
-            {
-                if (stockPrices[0].ClosePrice > stockPrices[10].ClosePrice)
-                {
-                    note += $"Biến động giá 10 phiên tăng {stockPrices[0].ClosePrice.GetPercent(stockPrices[10].ClosePrice):0,0}%.";
-                }
-                else
-                {
-                    note += $"Biến động giá 10 phiên giảm {stockPrices[0].ClosePrice.GetPercent(stockPrices[10].ClosePrice):0,0}%.";
-                }
-            }
-
-            if (stockPrices.Count > 20)
-            {
-                if (stockPrices[0].ClosePrice > stockPrices[20].ClosePrice)
-                {
-                    note += $"Biến động giá 20 phiên tăng {stockPrices[0].ClosePrice.GetPercent(stockPrices[20].ClosePrice):0,0}%.";
-                }
-                else
-                {
-                    note += $"Biến động giá 20 phiên giảm {stockPrices[0].ClosePrice.GetPercent(stockPrices[20].ClosePrice):0,0}%.";
-                }
-            }
-
-            if (stockPrices.Count > 50)
-            {
-                if (stockPrices[0].ClosePrice > stockPrices[50].ClosePrice)
-                {
-                    note += $"Biến động giá 50 phiên tăng {stockPrices[0].ClosePrice.GetPercent(stockPrices[50].ClosePrice):0,0}%.";
-                }
-                else
-                {
-                    note += $"Biến động giá 50 phiên giảm {stockPrices[0].ClosePrice.GetPercent(stockPrices[50].ClosePrice):0,0}%.";
                 }
             }
 

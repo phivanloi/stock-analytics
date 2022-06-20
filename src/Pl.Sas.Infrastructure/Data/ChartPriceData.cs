@@ -48,7 +48,7 @@ namespace Pl.Sas.Infrastructure.Data
             }
 
             using SqlConnection connection = new(_connectionStrings.MarketConnection);
-            return (await connection.QueryAsync<ChartPrice>(query, new { type, symbol, fromDate, toDate })).AsList();
+            return (await connection.QueryAsync<ChartPrice>($"{query} ORDER BY TradingDate DESC", new { type, symbol, fromDate, toDate })).AsList();
         }
 
         public virtual async Task<bool> ResetChartPriceAsync(List<ChartPrice> chartPrices, string symbol, string type = "D")

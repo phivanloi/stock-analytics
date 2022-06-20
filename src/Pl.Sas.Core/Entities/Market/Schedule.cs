@@ -77,7 +77,9 @@ namespace Pl.Sas.Core.Entities
         /// <para>10 Bổ sung lãi xuất ngân hàng cao nhất</para>
         /// <para>11 Thu thập khuyến nghị của các công ty chứng khoán.</para>
         /// <para>12 Thu thập đánh giá cổ phiếu của vndirect.</para>
+        /// <para>13 Thu thập thông tin các chỉ số quốc tế</para>
         /// <para>14 Cập nhập dữ liệu chart realtime.</para>
+        /// <para>15 Thu thập thông tin định giá các chỉ số trong nước</para>
         ///
         /// <para>200 Đánh giá giá trị của doanh nghiệp</para>
         /// <para>201 Phân tích kỹ thuật</para>
@@ -118,43 +120,55 @@ namespace Pl.Sas.Core.Entities
                 5 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 30)),//lấy danh sách lịch sử giá cổ phiếu theo ssi api
                 6 => baseTime.Date.AddDays(1).AddHours(1).AddMinutes(random.Next(0, 60)),//lấy danh sách lịch sử sự kiện công ty theo ssi api
                 7 => baseTime.Date.AddDays(1).AddHours(10).AddMinutes(random.Next(31, 120)),//lấy lịch sử giao dịch, khớp lệnh
-                8 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 120)),//Bổ sung đánh giá cổ phiếu của fiin
-                9 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 120)),//Thu thập dữ liệu chart price
-                10 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 120)),//Lấy lãi suất ngân hàng lớn nhất
-                11 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 120)),//Thu thập khuyến nghị của các công ty chứng khoán
-                12 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 120)),//Thu thập đánh giá cổ phiếu của vndirect
-                13 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 120)),//Thu thập lại dữ liệu chart
+                8 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 60)),//Bổ sung đánh giá cổ phiếu của fiin
+                9 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 60)),//Thu thập dữ liệu chart price
+                10 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 60)),//Lấy lãi suất ngân hàng lớn nhất
+                11 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 60)),//Thu thập khuyến nghị của các công ty chứng khoán
+                12 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 60)),//Thu thập đánh giá cổ phiếu của vndirect
+                13 => baseTime.AddMinutes(random.Next(5, 10)),//Thu thập thông tin các chỉ số quốc tế
                 14 => RealtimeSchedule(baseTime),//Thu thập dự liệu realtime
+                15 => baseTime.AddMinutes(random.Next(5, 10)),//Thu thập thông tin định giá các chỉ số trong nước
 
-                200 => baseTime.Date.AddDays(1).AddHours(4).AddMinutes(10),//đánh giá giá trị của doanh nghiệp
-                201 => baseTime.Date.AddDays(1).AddHours(4).AddMinutes(20),//phân tích kỹ thuật
-                202 => baseTime.Date.AddDays(1).AddHours(4).AddMinutes(20),//Thực hiện trading thử nghiệm
-                203 => baseTime.Date.AddDays(1).AddHours(3).AddMinutes(40),//Tính toán giá dự phóng của cổ phiếu của các công ty chứng khoán
-                204 => baseTime.Date.AddDays(1).AddHours(3).AddMinutes(1),//Đánh giá su thế ngành chú ý làm trước khi phân tích đánh giá vĩ mô.
-                205 => baseTime.Date.AddDays(1).AddHours(1).AddMinutes(10),//Sử lý ngày giao dịch không hưởng quyền thì update lại lịch sử giá cổ phiếu
+                200 => baseTime.Date.AddDays(1).AddHours(4).AddMinutes(random.Next(0, 60)),//đánh giá giá trị của doanh nghiệp
+                201 => baseTime.Date.AddDays(1).AddHours(4).AddMinutes(random.Next(0, 60)),//phân tích kỹ thuật
+                202 => baseTime.Date.AddDays(1).AddHours(4).AddMinutes(random.Next(0, 60)),//Thực hiện trading thử nghiệm
+                203 => baseTime.Date.AddDays(1).AddHours(3).AddMinutes(random.Next(0, 60)),//Tính toán giá dự phóng của cổ phiếu của các công ty chứng khoán
+                204 => baseTime.Date.AddDays(1).AddHours(3).AddMinutes(random.Next(0, 30)),//Đánh giá su thế ngành chú ý làm trước khi phân tích đánh giá vĩ mô.
+                205 => baseTime.Date.AddDays(1).AddMinutes(random.Next(0, 60)),//Sử lý ngày giao dịch không hưởng quyền thì update lại lịch sử giá cổ phiếu
 
-                207 => baseTime.Date.AddDays(1).AddHours(4).AddMinutes(0),//Đánh giá tâm lý thị trường, chú ý đầy là phân tích để lấy dữ liệu đầu vào lên cần được chạy sớm
-                208 => baseTime.Date.AddDays(1).AddHours(4).AddMinutes(0),//Phân tích các yếu tố vĩ mô tác động đến giá cổ phiếu
-                209 => baseTime.Date.AddDays(1).AddHours(4).AddMinutes(15),//Phân tích tăng trưởng doanh nghiệp
-                210 => baseTime.Date.AddDays(1).AddHours(4).AddMinutes(16),//Phân tích đánh giá của fiintrading
-                211 => baseTime.Date.AddDays(1).AddHours(4).AddMinutes(17),//Phân tích đáng giá của vnd
-                212 => baseTime.Date.AddDays(300).AddHours(9).AddMinutes(0),//Tìm kiếm các chỉ báo kỹ thuật phù hợp cho chứng khoán
+                207 => baseTime.Date.AddDays(1).AddHours(3).AddMinutes(random.Next(0, 60)),//Đánh giá tâm lý thị trường, chú ý đầy là phân tích để lấy dữ liệu đầu vào lên cần được chạy sớm
+                208 => baseTime.Date.AddDays(1).AddHours(3).AddMinutes(random.Next(30, 60)),//Phân tích các yếu tố vĩ mô tác động đến giá cổ phiếu
+                209 => baseTime.Date.AddDays(1).AddHours(4).AddMinutes(random.Next(0, 60)),//Phân tích tăng trưởng doanh nghiệp
+                210 => baseTime.Date.AddDays(1).AddHours(4).AddMinutes(random.Next(0, 60)),//Phân tích đánh giá của fiintrading
+                211 => baseTime.Date.AddDays(1).AddHours(4).AddMinutes(random.Next(0, 60)),//Phân tích đáng giá của vnd
+                212 => baseTime.Date.AddDays(300).AddHours(5).AddMinutes(random.Next(0, 60)),//Tìm kiếm các chỉ báo kỹ thuật phù hợp cho chứng khoán
 
-                300 => baseTime.AddMinutes(240),//Xử lý hiển thị dữ liệu chứng khoán cho hiển thị.
+                300 => ViewSchedule(baseTime),//Xử lý hiển thị dữ liệu chứng khoán cho hiển thị.
                 _ => baseTime.AddHours(1),
             };
+        }
+
+        private static DateTime ViewSchedule(DateTime baseTime)
+        {
+            var random = new Random();
+            if (DateTime.Now.Hour > 5 && DateTime.Now.Hour < 6)
+            {
+                return baseTime.AddMinutes(random.Next(31, 35));
+            }
+            return baseTime.Date.AddDays(1).AddHours(5).AddMinutes(random.Next(1, 5));
         }
 
         private DateTime RealtimeSchedule(DateTime baseTime)
         {
             var random = new Random();
-            return baseTime.AddSeconds(int.Parse(Options["SleepTime"]) - random.Next(-10, 10));
-
-            //if (DateTime.Now.Hour > 9 && DateTime.Now.Hour < 15 && DateTime.Now.DayOfWeek != DayOfWeek.Sunday && DateTime.Now.DayOfWeek != DayOfWeek.Saturday)
-            //{
-            //    return baseTime.AddSeconds(int.Parse(Options["SleepTime"]) - random.Next(-10, 10));
-            //}
-            //return baseTime.Date.AddDays(1).AddHours(8).AddMinutes(random.Next(30, 60));
+            if (DateTime.Now.Hour > 16)
+            {
+                return baseTime.Date.AddDays(1).AddHours(8).AddMinutes(random.Next(30, 60)).AddSeconds(int.Parse(Options["SleepTime"]) - random.Next(-3, 3));
+            }
+            else
+            {
+                return baseTime.AddSeconds(int.Parse(Options["SleepTime"]) - random.Next(-3, 3));
+            }
         }
     }
 }

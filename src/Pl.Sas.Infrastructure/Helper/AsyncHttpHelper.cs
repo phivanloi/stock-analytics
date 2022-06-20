@@ -28,6 +28,20 @@ namespace Pl.Sas.Infrastructure.Helper
             return default;
         }
 
+        public static async Task<string> GetJsonAsync(this HttpClient httpClient, string url)
+        {
+            Guard.Against.NullOrEmpty(url, nameof(url));
+            var httpResponseMessage = await _httpAsyncRetry.ExecuteAsync(async () =>
+            {
+                return await httpClient.GetAsync(url);
+            });
+            if (httpResponseMessage.IsSuccessStatusCode)
+            {
+                return await httpResponseMessage.Content.ReadAsStringAsync();
+            }
+            return null!;
+        }
+
         public static async Task<T?> PostJsonAsync<T>(this HttpClient httpClient, string url, StringContent stringContent)
         {
             Guard.Against.NullOrEmpty(url, nameof(url));

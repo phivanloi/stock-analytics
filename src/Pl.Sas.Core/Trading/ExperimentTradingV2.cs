@@ -6,15 +6,17 @@ namespace Pl.Sas.Core.Trading
     /// <summary>
     /// Trading thử nghiệm
     /// </summary>
-    public class ExperimentTrading : BaseTrading
+    public class ExperimentTradingV2 : BaseTrading
     {
         private List<MacdResult> _macd_9_20_3 = new();
+        private List<TemaResult> _tema80 = new();
         private TradingCase tradingCase = new();
 
-        public ExperimentTrading(List<ChartPrice> chartPrices)
+        public ExperimentTradingV2(List<ChartPrice> chartPrices)
         {
             var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
             _macd_9_20_3 = quotes.Use(CandlePart.Close).GetMacd(9, 20, 3).ToList();
+            _tema80 = quotes.GetTema(80).ToList();
         }
 
         public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName, bool isNoteTrading = true)
@@ -38,7 +40,7 @@ namespace Pl.Sas.Core.Trading
 
                 if (tradingCase.NumberStock <= 0)
                 {
-                    tradingCase.IsBuy = BuyCondition(day.TradingDate) > 0;
+                    tradingCase.IsBuy = BuyCondition(tradingHistory.Last().TradingDate) > 0;
                     if (tradingCase.IsBuy)
                     {
                         tradingCase.ActionPrice = tradingCase.BuyPrice;
@@ -76,7 +78,7 @@ namespace Pl.Sas.Core.Trading
                 {
                     if (tradingCase.NumberChangeDay > 2)
                     {
-                        tradingCase.IsSell = SellCondition(day.TradingDate) > 0;
+                        tradingCase.IsSell = SellCondition(tradingHistory.Last().TradingDate) > 0;
                         if (tradingCase.IsSell)
                         {
                             var lastBuyPrice = tradingCase.ActionPrice;
@@ -143,27 +145,38 @@ namespace Pl.Sas.Core.Trading
                 return 0;
             }
 
-            if (macd.Macd > macd.Signal)
-            {
-                return 100;
-            }
-
-            var topThree = _macd_9_20_3.Where(q => q.Date <= tradingDate).OrderByDescending(q => q.Date).Take(3).ToList();
-            if (topThree.Count != 3 || topThree[0].Histogram is null || topThree[1].Histogram is null || topThree[2].Histogram is null)
+            var tema80 = _tema80.Find(tradingDate);
+            if (tema80 is null || tema80.Tema is null)
             {
                 return 0;
             }
 
-            if (topThree[0].Histogram > topThree[1].Histogram && topThree[1].Histogram > topThree[2].Histogram)
+            if (macd.FastEma < tema80.Tema)
             {
-                var avgValue = ((topThree[0].Histogram - topThree[1].Histogram) + (topThree[1].Histogram - topThree[2].Histogram)) / 2;
-                if (avgValue > -topThree[0].Histogram)
-                {
-                    return 100;
-                }
+                return 0;
             }
 
-            return 0;
+            if (macd.Macd < macd.Signal)
+            {
+                return 0;
+            }
+
+            //var topThree = _macd_9_20_3.Where(q => q.Date <= tradingDate).OrderByDescending(q => q.Date).Take(3).ToList();
+            //if (topThree.Count != 3 || topThree[0].Histogram is null || topThree[1].Histogram is null || topThree[2].Histogram is null)
+            //{
+            //    return 0;
+            //}
+
+            //if (topThree[0].Histogram > topThree[1].Histogram && topThree[1].Histogram > topThree[2].Histogram)
+            //{
+            //    var avgValue = ((topThree[0].Histogram - topThree[1].Histogram) + (topThree[1].Histogram - topThree[2].Histogram)) / 2;
+            //    if (avgValue > -topThree[0].Histogram)
+            //    {
+            //        return 100;
+            //    }
+            //}
+
+            return 100;
         }
 
         public int SellCondition(DateTime tradingDate)
@@ -179,20 +192,20 @@ namespace Pl.Sas.Core.Trading
                 return 100;
             }
 
-            var topThree = _macd_9_20_3.Where(q => q.Date <= tradingDate).OrderByDescending(q => q.Date).Take(3).ToList();
-            if (topThree.Count != 3 || topThree[0].Histogram is null || topThree[1].Histogram is null || topThree[2].Histogram is null)
-            {
-                return 0;
-            }
+            //var topThree = _macd_9_20_3.Where(q => q.Date <= tradingDate).OrderByDescending(q => q.Date).Take(3).ToList();
+            //if (topThree.Count != 3 || topThree[0].Histogram is null || topThree[1].Histogram is null || topThree[2].Histogram is null)
+            //{
+            //    return 0;
+            //}
 
-            if (topThree[0].Histogram < topThree[1].Histogram && topThree[1].Histogram < topThree[2].Histogram)
-            {
-                var avgValue = ((topThree[0].Histogram - topThree[1].Histogram) + (topThree[1].Histogram - topThree[2].Histogram)) / 2;
-                if (-avgValue > topThree[0].Histogram)
-                {
-                    return 100;
-                }
-            }
+            //if (topThree[0].Histogram < topThree[1].Histogram && topThree[1].Histogram < topThree[2].Histogram)
+            //{
+            //    var avgValue = ((topThree[0].Histogram - topThree[1].Histogram) + (topThree[1].Histogram - topThree[2].Histogram)) / 2;
+            //    if (-avgValue > topThree[0].Histogram)
+            //    {
+            //        return 100;
+            //    }
+            //}
 
             return 0;
         }

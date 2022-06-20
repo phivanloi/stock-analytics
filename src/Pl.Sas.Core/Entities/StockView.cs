@@ -1,7 +1,4 @@
-﻿using System.Text.Json;
-using Pl.Sas.Core;
-
-namespace Pl.Sas.Core.Entities
+﻿namespace Pl.Sas.Core.Entities
 {
     public class StockView
     {
@@ -27,19 +24,6 @@ namespace Pl.Sas.Core.Entities
         public string Exchange { get; set; } = null!;
         #endregion
 
-        #region Macroeconomic
-        /// <summary>
-        /// Điểm đánh giá trạng thái kinh tế vĩ mô với thị trường chứng khoán, dưới đây liệt kê các vấn đề tác động.
-        /// <para>- Trạng thái thị trường</para>
-        /// <para>- Dòng tiền theo ngành</para>
-        /// </summary>
-        public int MacroeconomicsScore { get; set; }
-
-        /// <summary>
-        /// Điểm dòng tiền theo ngành
-        /// </summary>
-        public int IndustryRank { get; set; }
-        #endregion
 
         #region Company Value
         /// <summary>
@@ -109,15 +93,6 @@ namespace Pl.Sas.Core.Entities
         public float YearlyProfitGrowthPercent { get; set; }
         #endregion
 
-        #region Price score
-
-        /// <summary>
-        /// Điểm đánh giá giao dịch
-        /// </summary>
-        public int StockScore { get; set; }
-
-        #endregion
-
         #region Recommendation
 
         /// <summary>
@@ -141,72 +116,113 @@ namespace Pl.Sas.Core.Entities
         /// Tổng hợp điểm đánh giá, 
         /// tạm thời là tổng của MacroeconomicsScore * 1, CompanyValueScore * 1, CompanyGrowthScore * 1, StockScore * 1. Tưởng lai có thể thay đổi các biến số để đánh trọng số cao hơn cho các score
         /// </summary>
-        public int TotalScore => MacroeconomicsScore + CompanyValueScore + CompanyGrowthScore + StockScore;
+        public int TotalScore => MaketScore + CompanyValueScore + CompanyGrowthScore + StockScore;
+
+        #region Cột điểm số dòng tiền
+        /// <summary>
+        /// Đánh giá điểm số dòng tiền
+        /// </summary>
+        public int MaketScore { get; set; }
+        #endregion
+
+        #region Cột dòng tiền theo ngành
+        public string Icf { get; set; } = null!;
+        public string IcfCss { get; set; } = "icf t-r";
+        #endregion
+
+        #region Cột dòng tiền của cổ phiếu
+        public string Scf { get; set; } = null!;
+        public string ScfCss { get; set; } = "scf t-r";
+        #endregion
+
+        #region Cột điểm số kỹ thuật
+        public int StockScore { get; set; }
+        #endregion
 
         #region Cột chỉ số beta
         public string Beta { get; set; } = null!;
+        public string BetaCss { get; set; } = "beta t-r";
+        #endregion
+
+        #region Cột Sức mạnh giá stoch rsi 14
+        public string Rsi14 { get; set; } = null!;
+        public string Rsi14Css { get; set; } = "rsi14 t-r";
+        #endregion
+
+        #region Cột giá hỗ trợ
+        public string Nght { get; set; } = null!;
+        public string NghtCss { get; set; } = "nght t-r";
+        #endregion
+
+        #region Cột giá kháng cự
+        public string Ngkc { get; set; } = null!;
+        public string NgkcCss { get; set; } = "ngkc t-r";
         #endregion
 
         #region Cột khối lượng hiện tại
         public float KlhtValue { get; set; }
         public string Klht { get; set; } = null!;
-        public string KlhtCss { get; set; } = null!;
+        public string KlhtCss { get; set; } = "klht t-r";
+        #endregion
+
+        #region Cột khối lượng phiên trước
+        public float KlptValue { get; set; }
         #endregion
 
         #region Cột giá hiện tại
         public string Ght { get; set; } = null!;
-        public string GhtCss { get; set; } = null!;
+        public string GhtCss { get; set; } = "ght t-r";
         #endregion
 
         #region Cột % biến động giá 2 phiên tăng giảm so với phiên trước
         public float Bd2Value { get; set; }
         public string Bd2 { get; set; } = null!;
-        public string Bd2Css { get; set; } = null!;
+        public string Bd2Css { get; set; } = "bd2 t-r";
         #endregion
 
         #region Cột % biến động giá 5 phiên
         public string Bd5 { get; set; } = null!;
-        public string Bd5Css { get; set; } = null!;
+        public string Bd5Css { get; set; } = "bd5 t-r";
         #endregion
 
         #region Cột % biến động giá 10 phiên
         public string Bd10 { get; set; } = null!;
-        public string Bd10Css { get; set; } = null!;
+        public string Bd10Css { get; set; } = "bd10 t-r";
         #endregion
 
         #region Cột % biến động giá 30 phiên
         public string Bd30 { get; set; } = null!;
-        public string Bd30Css { get; set; } = null!;
+        public string Bd30Css { get; set; } = "bd30 t-r";
         #endregion
 
         #region Cột % biến động giá 60 phiên
         public string Bd60 { get; set; } = null!;
-        public string Bd60Css { get; set; } = null!;
+        public string Bd60Css { get; set; } = "bd60 t-r";
         #endregion
 
         #region Cột % Lợi nhận phương pháp thử nghiệm
         public string Lntn { get; set; } = null!;
-        public string LntnCss { get; set; } = null!;
+        public string LntnCss { get; set; } = "lntn t-r";
         #endregion
 
         #region Cột % Lợi nhận phương pháp chính
         public string Lnc { get; set; } = null!;
-        public string LncCss { get; set; } = null!;
+        public string LncCss { get; set; } = "lnc t-r";
         #endregion
 
         #region Cột % Lợi nhận mua và giữ
         public string Lnmg { get; set; } = null!;
-        public string LnmgCss { get; set; } = null!;
+        public string LnmgCss { get; set; } = "lnmg t-r";
         #endregion
 
         #region Cột Khuyến nghị theo phương pháp thử nghiệm
         public string Kntn { get; set; } = null!;
-        public string KntnCss { get; set; } = null!;
+        public string KntnCss { get; set; } = "kntn t-c";
         #endregion
 
         #region Cột Khuyến nghị theo phương pháp chính
         public string Knc { get; set; } = null!;
-        public string KncCss { get; set; } = null!;
+        public string KncCss { get; set; } = "knc t-c";
         #endregion
     }
 }

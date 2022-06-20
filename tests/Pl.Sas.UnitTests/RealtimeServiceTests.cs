@@ -26,7 +26,7 @@ namespace Pl.Sas.UnitTests
             var hostedService = serviceProvider.GetService<IHostedService>() as LoggingQueuedHostedService ?? throw new Exception("Can't get LoggingQueuedHostedService");
             await hostedService.StartAsync(CancellationToken.None);
 
-            var symbol = "VND";
+            var symbol = "PVX";
             var chartPrices = new List<ChartPrice>();
             var random = new Random();
             if (random.Next(0, 3000) > 2000)
@@ -114,6 +114,40 @@ namespace Pl.Sas.UnitTests
             await realtimeService.UpdateViewRealtimeOnPriceChange(symbol, System.Text.Json.JsonSerializer.Serialize(chartPrices));
 
             Assert.True(true);
+
+            await hostedService.StopAsync(CancellationToken.None);
+        }
+
+        [Fact]
+        public async Task UpdateWorldIndexTestAsync()
+        {
+            var services = ConfigureServices.GetConfigureServices();
+            var serviceProvider = services.BuildServiceProvider();
+            var downloadData = serviceProvider.GetService<IDownloadData>() ?? throw new Exception("Can't get IDownloadData");
+            var realtimeService = serviceProvider.GetService<RealtimeService>() ?? throw new Exception("Can't get RealtimeService");
+            var hostedService = serviceProvider.GetService<IHostedService>() as LoggingQueuedHostedService ?? throw new Exception("Can't get LoggingQueuedHostedService");
+            await hostedService.StartAsync(CancellationToken.None);
+
+            var marketDepths = await downloadData.DownloadMarketInDepthAsync();
+            await realtimeService.UpdateWorldIndexChange(System.Text.Json.JsonSerializer.Serialize(marketDepths));
+            Assert.True(1 == 1);
+
+            await hostedService.StopAsync(CancellationToken.None);
+        }
+
+        [Fact]
+        public async Task UpdateIndexValuationTestAsync()
+        {
+            var services = ConfigureServices.GetConfigureServices();
+            var serviceProvider = services.BuildServiceProvider();
+            var downloadData = serviceProvider.GetService<IDownloadData>() ?? throw new Exception("Can't get IDownloadData");
+            var realtimeService = serviceProvider.GetService<RealtimeService>() ?? throw new Exception("Can't get RealtimeService");
+            var hostedService = serviceProvider.GetService<IHostedService>() as LoggingQueuedHostedService ?? throw new Exception("Can't get LoggingQueuedHostedService");
+            await hostedService.StartAsync(CancellationToken.None);
+
+            var indexValuation = await downloadData.DownloadFiinValuationAsync();
+            await realtimeService.UpdateValuationIndexChange(System.Text.Json.JsonSerializer.Serialize(indexValuation));
+            Assert.True(1 == 1);
 
             await hostedService.StopAsync(CancellationToken.None);
         }

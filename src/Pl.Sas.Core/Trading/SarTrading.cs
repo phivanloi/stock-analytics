@@ -5,15 +5,19 @@ namespace Pl.Sas.Core.Trading
 {
     public class SarTrading : BaseTrading
     {
-        private static List<ParabolicSarResult> _parabolicSar = new();
-        private static TradingCase tradingCase = new();
+        private List<ParabolicSarResult> _parabolicSar = new();
+        private TradingCase tradingCase = new();
 
-        public static TradingCase Trading(List<ChartPrice> chartPrices, bool isNoteTrading = true)
+        public SarTrading(List<ChartPrice> chartPrices)
+        {
+            var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
+            _parabolicSar = quotes.GetParabolicSar(0.02).ToList();
+        }
+
+        public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, bool isNoteTrading = true)
         {
             tradingCase.IsNote = isNoteTrading;
-            LoadIndicatorSet(chartPrices);
             var numberChangeDay = 10;
-            var tradingHistory = new List<ChartPrice>();
             float? lastBuyPrice = null;
             ChartPrice? previousChart = null;
 
@@ -30,9 +34,9 @@ namespace Pl.Sas.Core.Trading
                 tradingCase.IsBuy = false;
                 tradingCase.IsSell = false;
 
-                var buyPercent = tradingHistory.OrderByDescending(q => q.TradingDate).Take(10).Select(q => Math.Abs(q.OpenPrice.GetPercent(q.HighestPrice))).Average() / 100;
+                var buyPercent = tradingHistory.OrderByDescending(q => q.TradingDate).Take(10).Select(q => Math.Abs(q.OpenPrice.GetPercent(q.HighestPrice))).Average() / 1000;
                 tradingCase.BuyPrice = day.OpenPrice - (float)(day.OpenPrice * buyPercent);
-                var sellPercent = chartPrices.OrderByDescending(q => q.TradingDate).Take(3).Select(q => Math.Abs(q.OpenPrice.GetPercent(q.LowestPrice))).Average() / 100;
+                var sellPercent = chartPrices.OrderByDescending(q => q.TradingDate).Take(3).Select(q => Math.Abs(q.OpenPrice.GetPercent(q.LowestPrice))).Average() / 1000;
                 tradingCase.SellPrice = day.OpenPrice + (float)(day.OpenPrice * sellPercent);
 
                 if (lastBuyPrice is null)
@@ -95,7 +99,7 @@ namespace Pl.Sas.Core.Trading
             return tradingCase;
         }
 
-        public static int BuyCondition(DateTime tradingDate)
+        public int BuyCondition(DateTime tradingDate)
         {
             var sar = _parabolicSar.Find(tradingDate);
             if (sar is null || sar.Sar is null)
@@ -111,7 +115,7 @@ namespace Pl.Sas.Core.Trading
             return 0;
         }
 
-        public static int SellCondition(DateTime tradingDate)
+        public int SellCondition(DateTime tradingDate)
         {
             var sar = _parabolicSar.Find(tradingDate);
             if (sar is null || sar.Sar is null)
@@ -125,26 +129,6 @@ namespace Pl.Sas.Core.Trading
             }
 
             return 0;
-        }
-
-        private static void LoadIndicatorSet(List<ChartPrice> chartPrices)
-        {
-            var quotes = chartPrices.Select(q => new Quote()
-            {
-                Close = (decimal)q.ClosePrice,
-                Open = (decimal)q.OpenPrice,
-                High = (decimal)q.HighestPrice,
-                Low = (decimal)q.LowestPrice,
-                Volume = (decimal)q.TotalMatchVol,
-                Date = q.TradingDate
-            }).OrderBy(q => q.Date).ToList();
-            _parabolicSar = quotes.GetParabolicSar(0.02M).ToList();
-        }
-
-        public static void Dispose()
-        {
-            _parabolicSar = new();
-            tradingCase = new();
         }
     }
 }

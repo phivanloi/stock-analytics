@@ -10,7 +10,7 @@
         /// <summary>
         /// Điểm đánh giá tâm lý thị trường, dòng tiền
         /// </summary>
-        public int MarketScore { get; set; } = -100;
+        public int MarketScore { get; set; } = -1000;
 
         /// <summary>
         /// Ghi chú đánh giá thị trường là danh sách <see cref="AnalyticsNote"/>
@@ -20,7 +20,7 @@
         /// <summary>
         /// Điểm đánh giá giá trị của doanh nghiệp
         /// </summary>
-        public int CompanyValueScore { get; set; } = -100;
+        public int CompanyValueScore { get; set; } = -1000;
 
         /// <summary>
         /// Ghi chú đánh giá giá trị của doanh nghiệp <see cref="AnalyticsNote"/>
@@ -30,7 +30,7 @@
         /// <summary>
         /// Điểm đánh giá tăng trưởng doanh nghiệp
         /// </summary>
-        public int CompanyGrowthScore { get; set; } = -100;
+        public int CompanyGrowthScore { get; set; } = -1000;
 
         /// <summary>
         /// Ghi chú đánh giá tăng trưởng của doanh nghiệp <see cref="AnalyticsNote"/>
@@ -40,7 +40,7 @@
         /// <summary>
         /// Điểm đánh giá kỹ thuật
         /// </summary>
-        public int StockScore { get; set; } = -100;
+        public int StockScore { get; set; } = -1000;
 
         /// <summary>
         /// Ghi chú đánh giá giao dịch của chứng khoán <see cref="AnalyticsNote"/>
@@ -50,7 +50,7 @@
         /// <summary>
         /// Điểm đánh giá của fiin
         /// </summary>
-        public int FiinScore { get; set; } = -100;
+        public int FiinScore { get; set; } = -1000;
 
         /// <summary>
         /// Nội dung đánh giá của fiin <see cref="AnalyticsNote"/>
@@ -60,7 +60,7 @@
         /// <summary>
         /// Điểm đánh giá của vnd
         /// </summary>
-        public int VndScore { get; set; } = -100;
+        public int VndScore { get; set; } = -1000;
 
         /// <summary>
         /// Nội dung đánh giá của vnd <see cref="AnalyticsNote"/>

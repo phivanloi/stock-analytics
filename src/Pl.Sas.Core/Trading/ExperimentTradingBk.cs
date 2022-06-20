@@ -6,15 +6,18 @@ namespace Pl.Sas.Core.Trading
     /// <summary>
     /// Trading thử nghiệm
     /// </summary>
-    public class ExperimentTrading : BaseTrading
+    public class ExperimentTradingBk : BaseTrading
     {
         private List<MacdResult> _macd_9_20_3 = new();
+        private List<ZigZagResult> _zigZag = new();
         private TradingCase tradingCase = new();
 
-        public ExperimentTrading(List<ChartPrice> chartPrices)
+        public ExperimentTradingBk(List<ChartPrice> chartPrices, float beta)
         {
             var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
             _macd_9_20_3 = quotes.Use(CandlePart.Close).GetMacd(9, 20, 3).ToList();
+            var zigZagPercentChange = Math.Ceiling((decimal)(beta * 10 / 2)) + 2;
+            _zigZag = quotes.GetZigZag(EndType.HighLow, zigZagPercentChange).ToList();
         }
 
         public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName, bool isNoteTrading = true)
@@ -38,7 +41,7 @@ namespace Pl.Sas.Core.Trading
 
                 if (tradingCase.NumberStock <= 0)
                 {
-                    tradingCase.IsBuy = BuyCondition(day.TradingDate) > 0;
+                    tradingCase.IsBuy = BuyCondition(tradingHistory[^1].TradingDate, tradingHistory[^1].ClosePrice) > 0;
                     if (tradingCase.IsBuy)
                     {
                         tradingCase.ActionPrice = tradingCase.BuyPrice;
@@ -76,7 +79,7 @@ namespace Pl.Sas.Core.Trading
                 {
                     if (tradingCase.NumberChangeDay > 2)
                     {
-                        tradingCase.IsSell = SellCondition(day.TradingDate) > 0;
+                        tradingCase.IsSell = SellCondition(tradingHistory[^1].TradingDate) > 0;
                         if (tradingCase.IsSell)
                         {
                             var lastBuyPrice = tradingCase.ActionPrice;
@@ -135,8 +138,21 @@ namespace Pl.Sas.Core.Trading
             return tradingCase;
         }
 
-        public int BuyCondition(DateTime tradingDate)
+        public int BuyCondition(DateTime tradingDate, float lastClosePrice)
         {
+            var zigZagResultH = _zigZag.LastOrDefault(q => q.Date <= tradingDate && q.PointType == "H" && ((decimal)lastClosePrice < (q.ZigZag - (q.ZigZag * 0.01m))));
+            var zigZagResultL = _zigZag.LastOrDefault(q => q.Date <= tradingDate && q.PointType == "L" && ((decimal)lastClosePrice > (q.ZigZag + (q.ZigZag * 0.01m))));
+
+            if (zigZagResultH is not null && zigZagResultH.ZigZag is not null && zigZagResultL is not null && zigZagResultL.ZigZag is not null)
+            {
+                var percentDown = ((float)zigZagResultL.ZigZag.Value).GetPercent(lastClosePrice);
+                var percetUp = lastClosePrice.GetPercent((float)zigZagResultH.ZigZag.Value);
+                if (percetUp < percentDown * 2)
+                {
+                    return 0;
+                }
+            }
+
             var macd = _macd_9_20_3.Find(tradingDate);
             if (macd is null || macd.Macd is null)
             {

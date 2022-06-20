@@ -119,7 +119,11 @@ namespace Pl.Sas.Core.Trading
             {
                 var hour = time.Hour;
                 var minute = time.Minute;
-                if (hour < 9 || hour >= 15)
+                if (hour < 9)
+                {
+                    return TimeTrading.NST;
+                }
+                if (hour >= 15)
                 {
                     return TimeTrading.DON;
                 }
@@ -198,12 +202,12 @@ namespace Pl.Sas.Core.Trading
     /// </summary>
     public enum TimeTrading
     {
-        ATO, //At the Opening
-        CTA, //Continuous auction
-        ATC, //At the Close
-        PUT, //Put through
-        TMP, //Time to MP
-        DON, //Done
-        NST, //Not start trading
+        ATO, //At the Opening => giao dịch lúc mở cửa
+        CTA, //Continuous auction => trong phiên giao dịch
+        ATC, //At the Close => giao dịch lúc đóng cửa
+        PUT, //Put through => Khớp lệnh thỏa thuận
+        TMP, //Time to MP => thời gian khớp lệnh mp vì sàn upcom không có khớp lệnh đóng cửa
+        DON, //Done => kết thúc phiên giao dịch
+        NST, //Not start trading => chưa bắt đầu giao dịch
     }
 }

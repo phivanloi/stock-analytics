@@ -25,7 +25,7 @@ namespace Pl.Sas.Core.Interfaces
         /// <param name="marketScore">Điểm đánh giá</param>
         /// <param name="marketNotes">Ghi chú đánh giá</param>
         /// <returns>bool</returns>
-        Task<bool> SaveMacroeconomicsScoreAsync(string symbol, int marketScore, byte[] marketNotes);
+        Task<bool> SaveMarketScoreAsync(string symbol, int marketScore, byte[] marketNotes);
 
         /// <summary>
         /// Ghi lại kết quả đánh giá giá trị doanh nghiệp
