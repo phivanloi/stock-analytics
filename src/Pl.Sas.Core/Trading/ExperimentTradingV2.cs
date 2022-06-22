@@ -8,20 +8,18 @@ namespace Pl.Sas.Core.Trading
     /// </summary>
     public class ExperimentTradingV2 : BaseTrading
     {
-        private List<MacdResult> _macd_12_26_9 = new();
-        private List<MacdResult> _indexMacd_12_26_9 = new();
-        private List<TemaResult> _indexTema12 = new();
-        private List<TemaResult> _indexTema100 = new();
+        private List<SmaResult> _sma_9 = new();
+        private List<SmaResult> _sma_1 = new();
+        private List<SmaResult> _sma_50 = new();
         private TradingCase tradingCase = new();
 
         public ExperimentTradingV2(List<ChartPrice> chartPrices, List<ChartPrice> indexChartPrices)
         {
             var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
             var indexQuotes = indexChartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
-            _macd_12_26_9 = quotes.Use(CandlePart.Close).GetMacd(12, 26, 9).ToList();
-            _indexMacd_12_26_9 = indexQuotes.Use(CandlePart.Close).GetMacd(12, 26, 9).ToList();
-            _indexTema12 = indexQuotes.Use(CandlePart.Close).GetTema(200).ToList();
-            _indexTema100 = indexQuotes.Use(CandlePart.Close).GetTema(200).ToList();
+            _sma_9 = quotes.Use(CandlePart.Close).GetSma(10).ToList();
+            _sma_1 = quotes.Use(CandlePart.Close).GetSma(1).ToList();
+            _sma_50 = quotes.Use(CandlePart.Close).GetSma(50).ToList();
         }
 
         public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName, bool isNoteTrading = true)
@@ -45,7 +43,7 @@ namespace Pl.Sas.Core.Trading
 
                 if (tradingCase.NumberStock <= 0)
                 {
-                    tradingCase.IsBuy = BuyCondition(tradingHistory.Last().TradingDate) > 0;
+                    tradingCase.IsBuy = BuyCondition(day.TradingDate) > 0;
                     if (tradingCase.IsBuy)
                     {
                         tradingCase.ActionPrice = tradingCase.BuyPrice;
@@ -83,7 +81,7 @@ namespace Pl.Sas.Core.Trading
                 {
                     if (tradingCase.NumberChangeDay > 2)
                     {
-                        tradingCase.IsSell = SellCondition(tradingHistory.Last().TradingDate) > 0;
+                        tradingCase.IsSell = SellCondition(day.TradingDate) > 0;
                         if (tradingCase.IsSell)
                         {
                             var lastBuyPrice = tradingCase.ActionPrice;
@@ -138,104 +136,64 @@ namespace Pl.Sas.Core.Trading
                 tradingHistory.Add(day);
             }
 
-            _macd_12_26_9 = new List<MacdResult>();
+            _sma_9 = new();
+            _sma_1 = new();
             return tradingCase;
         }
 
         public int BuyCondition(DateTime tradingDate)
         {
-            var macd = _macd_12_26_9.Find(tradingDate);
-            if (macd is null || macd.Macd is null)
+            var sma9 = _sma_9.Find(tradingDate);
+            if (sma9 is null || sma9.Sma is null)
             {
                 return 0;
             }
 
-            //var indexMacd = _indexMacd_12_26_9.Find(tradingDate);
-            //if (indexMacd is null || indexMacd.Macd is null)
-            //{
-            //    return 0;
-            //}
-
-            //if (indexMacd.Macd < indexMacd.Signal)
-            //{
-            //    return 0;
-            //}
-
-            var tema12 = _indexTema12.Find(tradingDate);
-            var tema100 = _indexTema100.Find(tradingDate);
-            if (tema12 is null || tema12.Tema is null || tema100 is null || tema100.Tema is null)
+            var sma1 = _sma_1.Find(tradingDate);
+            if (sma1 is null || sma1.Sma is null)
             {
                 return 0;
             }
 
-            if (tema12.Tema < tema100.Tema)
+            var sma50 = _sma_50.Find(tradingDate);
+            if (sma50 is null || sma50.Sma is null)
             {
                 return 0;
             }
 
-            //var tema80 = _tema200.Find(tradingDate);
-            //if (tema80 is null || tema80.Tema is null)
-            //{
-            //    return 0;
-            //}
-
-            //if (macd.FastEma < tema80.Tema)
-            //{
-            //    return 0;
-            //}
-
-            if (macd.Macd < macd.Signal)
+            if (sma1.Sma < sma50.Sma)
             {
                 return 0;
             }
 
-            //var topThree = _macd_9_20_3.Where(q => q.Date <= tradingDate).OrderByDescending(q => q.Date).Take(3).ToList();
-            //if (topThree.Count != 3 || topThree[0].Histogram is null || topThree[1].Histogram is null || topThree[2].Histogram is null)
-            //{
-            //    return 0;
-            //}
-
-            //if (topThree[0].Histogram > topThree[1].Histogram && topThree[1].Histogram > topThree[2].Histogram)
-            //{
-            //    var avgValue = ((topThree[0].Histogram - topThree[1].Histogram) + (topThree[1].Histogram - topThree[2].Histogram)) / 2;
-            //    if (avgValue > -topThree[0].Histogram)
-            //    {
-            //        return 100;
-            //    }
-            //}
+            if (sma1.Sma < sma9.Sma)
+            {
+                return 0;
+            }
 
             return 100;
         }
 
         public int SellCondition(DateTime tradingDate)
         {
-            var macd = _macd_12_26_9.Find(tradingDate);
-            if (macd is null || macd.Macd is null)
+            var sma9 = _sma_9.Find(tradingDate);
+            if (sma9 is null || sma9.Sma is null)
             {
                 return 0;
             }
 
-            if (macd.Macd < macd.Signal)
+            var sma1 = _sma_1.Find(tradingDate);
+            if (sma1 is null || sma1.Sma is null)
             {
-                return 100;
+                return 0;
             }
 
-            //var topThree = _macd_9_20_3.Where(q => q.Date <= tradingDate).OrderByDescending(q => q.Date).Take(3).ToList();
-            //if (topThree.Count != 3 || topThree[0].Histogram is null || topThree[1].Histogram is null || topThree[2].Histogram is null)
-            //{
-            //    return 0;
-            //}
+            if (sma1.Sma > sma9.Sma)
+            {
+                return 0;
+            }
 
-            //if (topThree[0].Histogram < topThree[1].Histogram && topThree[1].Histogram < topThree[2].Histogram)
-            //{
-            //    var avgValue = ((topThree[0].Histogram - topThree[1].Histogram) + (topThree[1].Histogram - topThree[2].Histogram)) / 2;
-            //    if (-avgValue > topThree[0].Histogram)
-            //    {
-            //        return 100;
-            //    }
-            //}
-
-            return 0;
+            return 100;
         }
 
         public static float CalculateOptimalBuyPrice(List<ChartPrice> chartPrices, float rootPrice)
