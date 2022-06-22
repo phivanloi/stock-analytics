@@ -31,7 +31,7 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 Console.OutputEncoding = Encoding.UTF8;
                 DateTime fromDate = new(2010, 1, 1);
                 DateTime toDate = new(2050, 1, 1);
-                var symbol = "VND";
+                var symbol = "DCM";
                 var stock = await _stockData.FindBySymbolAsync(symbol);
                 var company = await _companyData.FindBySymbolAsync(symbol);
                 var chartPrices = await _chartPriceData.CacheFindAllAsync(symbol, "D") ?? throw new Exception("chartPrices is null");
@@ -41,7 +41,7 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 var tradingHistory = chartPrices.Where(q => q.TradingDate < fromDate).OrderBy(q => q.TradingDate).ToList();
                 var startPrice = chartTrading[0].ClosePrice;
                 var endPrice = chartTrading[^1].ClosePrice;
-
+                Console.Clear();
                 Console.Clear();
                 var trader = new ExperimentTradingV2(chartPrices, indexChartPrices);
                 var tradingCase = trader.Trading(chartTrading, tradingHistory, stock.Exchange);
