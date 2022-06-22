@@ -41,9 +41,10 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 var tradingHistory = chartPrices.Where(q => q.TradingDate < fromDate).OrderBy(q => q.TradingDate).ToList();
                 var startPrice = chartTrading[0].ClosePrice;
                 var endPrice = chartTrading[^1].ClosePrice;
+
+                Console.Clear();
                 var trader = new ExperimentTradingV2(chartPrices, indexChartPrices);
                 var tradingCase = trader.Trading(chartTrading, tradingHistory, stock.Exchange);
-                Console.Clear();
                 foreach (var note in tradingCase.ExplainNotes)
                 {
                     note.Value.WriteConsole(note.Key > 0 ? ConsoleColor.Green : note.Key < 0 ? ConsoleColor.Red : ConsoleColor.White);
