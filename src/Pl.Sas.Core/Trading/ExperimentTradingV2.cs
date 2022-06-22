@@ -8,15 +8,20 @@ namespace Pl.Sas.Core.Trading
     /// </summary>
     public class ExperimentTradingV2 : BaseTrading
     {
-        private List<MacdResult> _macd_9_20_3 = new();
-        private List<TemaResult> _tema80 = new();
+        private readonly List<SmaResult> _sma_10;
+        private readonly List<SmaResult> _sma_6;
+        private readonly List<SmaResult> _sma_36;
+        private readonly List<MacdResult> _macd_12_26_9;
         private TradingCase tradingCase = new();
 
-        public ExperimentTradingV2(List<ChartPrice> chartPrices)
+        public ExperimentTradingV2(List<ChartPrice> chartPrices, List<ChartPrice> indexChartPrices)
         {
             var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
-            _macd_9_20_3 = quotes.Use(CandlePart.Close).GetMacd(9, 20, 3).ToList();
-            _tema80 = quotes.GetTema(80).ToList();
+            var indexQuotes = indexChartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
+            _sma_10 = quotes.Use(CandlePart.Close).GetSma(10).ToList();
+            _sma_6 = quotes.Use(CandlePart.Close).GetSma(6).ToList();
+            _sma_36 = quotes.Use(CandlePart.Close).GetSma(36).ToList();
+            _macd_12_26_9 = quotes.Use(CandlePart.Close).GetMacd(12, 26, 9).ToList();
         }
 
         public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName, bool isNoteTrading = true)
@@ -40,7 +45,7 @@ namespace Pl.Sas.Core.Trading
 
                 if (tradingCase.NumberStock <= 0)
                 {
-                    tradingCase.IsBuy = BuyCondition(tradingHistory.Last().TradingDate) > 0;
+                    tradingCase.IsBuy = BuyCondition(tradingHistory.Last().TradingDate, tradingHistory.Last().ClosePrice) > 0;
                     if (tradingCase.IsBuy)
                     {
                         tradingCase.ActionPrice = tradingCase.BuyPrice;
@@ -66,12 +71,12 @@ namespace Pl.Sas.Core.Trading
                         {
                             tradingCase.AssetPosition = $"M:({tradingCase.BuyPrice:0,0.00})";
                         }
-                        tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, O:{day.OpenPrice:0,0.00}, O:{day.OpenPrice:0,0.00}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0} |-> Mua {tradingCase.NumberStock:0,0} cổ giá {tradingCase.ActionPrice:0,0.00} thuế {totalTax:0,0}");
+                        tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, O:{day.OpenPrice:0,0.00}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, M:{tradingCase.BuyPrice:0,0.00}, B:{tradingCase.SellPrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0} |-> Mua {tradingCase.NumberStock:0,0} cổ giá {tradingCase.ActionPrice:0,0.00} thuế {totalTax:0,0}");
                     }
                     else
                     {
                         tradingCase.AssetPosition = "100% T";
-                        tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, O:{day.OpenPrice:0,0.00}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0}|-> Không giao dịch.");
+                        tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, O:{day.OpenPrice:0,0.00}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, M:{tradingCase.BuyPrice:0,0.00}, B:{tradingCase.SellPrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0}|-> Không giao dịch.");
                     }
                 }
                 else
@@ -106,18 +111,18 @@ namespace Pl.Sas.Core.Trading
                             {
                                 tradingCase.AssetPosition = $"B:({tradingCase.SellPrice:0,0.00})";
                             }
-                            tradingCase.AddNote(tradingCase.ActionPrice > lastBuyPrice ? 1 : -1, $"{day.TradingDate:yy/MM/dd}, O:{day.OpenPrice:0,0.00}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0} |-> Bán {selNumberStock:0,0} cổ giá {tradingCase.ActionPrice:0,0.00} ({tradingCase.ActionPrice.GetPercent(lastBuyPrice):0,0.00}%) thuế {totalTax:0,0}");
+                            tradingCase.AddNote(tradingCase.ActionPrice > lastBuyPrice ? 1 : -1, $"{day.TradingDate:yy/MM/dd}, O:{day.OpenPrice:0,0.00}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, M:{tradingCase.BuyPrice:0,0.00}, B:{tradingCase.SellPrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0} |-> Bán {selNumberStock:0,0} cổ giá {tradingCase.ActionPrice:0,0.00} ({tradingCase.ActionPrice.GetPercent(lastBuyPrice):0,0.00}%) thuế {totalTax:0,0}");
                         }
                         else
                         {
                             tradingCase.AssetPosition = "100% C";
-                            tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, O:{day.OpenPrice:0,0.00}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0} |-> Không giao dịch");
+                            tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, O:{day.OpenPrice:0,0.00}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, M:{tradingCase.BuyPrice:0,0.00}, B:{tradingCase.SellPrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0} |-> Không giao dịch");
                         }
                     }
                     else
                     {
                         tradingCase.AssetPosition = "100% C";
-                        tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, O:{day.OpenPrice:0,0.00}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0} |-> Không giao dịch do mới mua {tradingCase.NumberChangeDay} ngày");
+                        tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, O:{day.OpenPrice:0,0.00}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, M:{tradingCase.BuyPrice:0,0.00}, B:{tradingCase.SellPrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0} |-> Không giao dịch do mới mua {tradingCase.NumberChangeDay} ngày");
                     }
                 }
 
@@ -133,25 +138,41 @@ namespace Pl.Sas.Core.Trading
                 tradingHistory.Add(day);
             }
 
-            _macd_9_20_3 = new List<MacdResult>();
             return tradingCase;
         }
 
-        public int BuyCondition(DateTime tradingDate)
+        public int BuyCondition(DateTime tradingDate, float lastClosePrice)
         {
-            var macd = _macd_9_20_3.Find(tradingDate);
+            var sma36 = _sma_36.Find(tradingDate);
+            if (sma36 is null || sma36.Sma is null)
+            {
+                return 0;
+            }
+
+            if (lastClosePrice < sma36.Sma)
+            {
+                return 0;
+            }
+
+            var sma10 = _sma_10.Find(tradingDate);
+            if (sma10 is null || sma10.Sma is null)
+            {
+                return 0;
+            }
+
+            var sma6 = _sma_6.Find(tradingDate);
+            if (sma6 is null || sma6.Sma is null)
+            {
+                return 0;
+            }
+
+            if (sma6.Sma < sma10.Sma)
+            {
+                return 0;
+            }
+
+            var macd = _macd_12_26_9.Find(tradingDate);
             if (macd is null || macd.Macd is null)
-            {
-                return 0;
-            }
-
-            var tema80 = _tema80.Find(tradingDate);
-            if (tema80 is null || tema80.Tema is null)
-            {
-                return 0;
-            }
-
-            if (macd.FastEma < tema80.Tema)
             {
                 return 0;
             }
@@ -160,67 +181,54 @@ namespace Pl.Sas.Core.Trading
             {
                 return 0;
             }
-
-            //var topThree = _macd_9_20_3.Where(q => q.Date <= tradingDate).OrderByDescending(q => q.Date).Take(3).ToList();
-            //if (topThree.Count != 3 || topThree[0].Histogram is null || topThree[1].Histogram is null || topThree[2].Histogram is null)
-            //{
-            //    return 0;
-            //}
-
-            //if (topThree[0].Histogram > topThree[1].Histogram && topThree[1].Histogram > topThree[2].Histogram)
-            //{
-            //    var avgValue = ((topThree[0].Histogram - topThree[1].Histogram) + (topThree[1].Histogram - topThree[2].Histogram)) / 2;
-            //    if (avgValue > -topThree[0].Histogram)
-            //    {
-            //        return 100;
-            //    }
-            //}
 
             return 100;
         }
 
         public int SellCondition(DateTime tradingDate)
         {
-            var macd = _macd_9_20_3.Find(tradingDate);
+            var sma10 = _sma_10.Find(tradingDate);
+            if (sma10 is null || sma10.Sma is null)
+            {
+                return 0;
+            }
+
+            var sma6 = _sma_6.Find(tradingDate);
+            if (sma6 is null || sma6.Sma is null)
+            {
+                return 0;
+            }
+
+            if (sma6.Sma > sma10.Sma)
+            {
+                return 0;
+            }
+
+            var macd = _macd_12_26_9.Find(tradingDate);
             if (macd is null || macd.Macd is null)
             {
                 return 0;
             }
 
-            if (macd.Macd < macd.Signal)
+            if (macd.Macd > macd.Signal)
             {
-                return 100;
+                return 0;
             }
 
-            //var topThree = _macd_9_20_3.Where(q => q.Date <= tradingDate).OrderByDescending(q => q.Date).Take(3).ToList();
-            //if (topThree.Count != 3 || topThree[0].Histogram is null || topThree[1].Histogram is null || topThree[2].Histogram is null)
-            //{
-            //    return 0;
-            //}
-
-            //if (topThree[0].Histogram < topThree[1].Histogram && topThree[1].Histogram < topThree[2].Histogram)
-            //{
-            //    var avgValue = ((topThree[0].Histogram - topThree[1].Histogram) + (topThree[1].Histogram - topThree[2].Histogram)) / 2;
-            //    if (-avgValue > topThree[0].Histogram)
-            //    {
-            //        return 100;
-            //    }
-            //}
-
-            return 0;
+            return 100;
         }
 
         public static float CalculateOptimalBuyPrice(List<ChartPrice> chartPrices, float rootPrice)
         {
             var percent = chartPrices.OrderByDescending(q => q.TradingDate).Take(10).Select(q => q.HighestPrice.GetPercent(q.OpenPrice)).Average() / 100;
-            var buyPrice = rootPrice - (rootPrice * (percent / 10));
+            var buyPrice = rootPrice - (rootPrice * (percent * 5));
             return (float)Math.Round((decimal)buyPrice, 2);
         }
 
         public static float CalculateOptimalSellPrice(List<ChartPrice> chartPrices, float rootPrice)
         {
             var percent = chartPrices.OrderByDescending(q => q.TradingDate).Take(10).Select(q => q.OpenPrice.GetPercent(q.LowestPrice)).Average() / 100;
-            var buyPrice = rootPrice + (rootPrice * (percent / 10));
+            var buyPrice = rootPrice + (rootPrice * (percent * 5));
             return (float)Math.Round((decimal)buyPrice, 2);
         }
     }

@@ -29,26 +29,28 @@ namespace Pl.Sas.InvestmentPrinciplesTests
             {
                 Console.Clear();
                 Console.OutputEncoding = Encoding.UTF8;
-                DateTime fromDate = new(2010, 1, 1);
+                DateTime fromDate = new(2020, 1, 1);
                 DateTime toDate = new(2050, 1, 1);
-                var symbol = "VND";
+                var symbol = "PVD";
                 var stock = await _stockData.FindBySymbolAsync(symbol);
                 var company = await _companyData.FindBySymbolAsync(symbol);
                 var chartPrices = await _chartPriceData.CacheFindAllAsync(symbol, "D") ?? throw new Exception("chartPrices is null");
+                var indexChartPrices = await _chartPriceData.CacheFindAllAsync("VNINDEX", "D") ?? throw new Exception("indexChartPrices is null");
                 chartPrices = chartPrices.OrderBy(q => q.TradingDate).ToList();
                 var chartTrading = chartPrices.Where(q => q.TradingDate >= fromDate && q.TradingDate < toDate).OrderBy(q => q.TradingDate).ToList();
                 var tradingHistory = chartPrices.Where(q => q.TradingDate < fromDate).OrderBy(q => q.TradingDate).ToList();
                 var startPrice = chartTrading[0].ClosePrice;
                 var endPrice = chartTrading[^1].ClosePrice;
-                var trader = new MainTrading(chartPrices);
-                var tradingCase = trader.Trading(chartTrading, tradingHistory, stock.Exchange);
                 Console.Clear();
+                Console.Clear();
+                var trader = new ExperimentTradingV2(chartPrices, indexChartPrices);
+                var tradingCase = trader.Trading(chartTrading, tradingHistory, stock.Exchange);
                 foreach (var note in tradingCase.ExplainNotes)
                 {
                     note.Value.WriteConsole(note.Key > 0 ? ConsoleColor.Green : note.Key < 0 ? ConsoleColor.Red : ConsoleColor.White);
                 }
                 Console.WriteLine();
-                Console.WriteLine($"kết quả {nameof(MainTrading)} {symbol} trong {chartTrading.Count} phiên có {tradingCase.NumberDayInStock} phiên giữ cổ phiếu, {tradingCase.NumberDayInMoney} phiên giữ tiền");
+                Console.WriteLine($"kết quả {nameof(ExperimentTradingV2)} {symbol} trong {chartTrading.Count} phiên có {tradingCase.NumberDayInStock} phiên giữ cổ phiếu, {tradingCase.NumberDayInMoney} phiên giữ tiền");
                 $"Số lần mua, bán thắng/thua {tradingCase.WinNumber}/{tradingCase.LoseNumber}. Số lần khớp giá tính toán/giá đóng cửa: {tradingCase.NumberPriceNeed}/{tradingCase.NumberPriceClose}".WriteConsole(tradingCase.FixedCapital <= tradingCase.Profit(chartTrading[^1].ClosePrice) ? ConsoleColor.Green : ConsoleColor.Red);
                 $"Lợi nhuận {tradingCase.Profit(chartTrading[^1].ClosePrice):0,0} ({tradingCase.ProfitPercent(chartTrading[^1].ClosePrice):0,0.00}%), thuế {tradingCase.TotalTax:0,0}".WriteConsole(tradingCase.FixedCapital <= tradingCase.Profit(chartTrading[^1].ClosePrice) ? ConsoleColor.Green : ConsoleColor.Red);
                 $"Trạng thái hôm nay: {tradingCase.AssetPosition}, mua/bán {tradingCase.IsBuy}/{tradingCase.IsSell}".WriteConsole();
