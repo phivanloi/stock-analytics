@@ -10,7 +10,7 @@ namespace Pl.Sas.Core.Trading
     {
         private readonly List<SmaResult> _sma_10;
         private readonly List<SmaResult> _sma_6;
-        private readonly List<SmaResult> _sma_50;
+        private readonly List<SmaResult> _sma_36;
         private readonly List<MacdResult> _macd_12_26_9;
         private TradingCase tradingCase = new();
 
@@ -20,7 +20,7 @@ namespace Pl.Sas.Core.Trading
             var indexQuotes = indexChartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
             _sma_10 = quotes.Use(CandlePart.Close).GetSma(10).ToList();
             _sma_6 = quotes.Use(CandlePart.Close).GetSma(6).ToList();
-            _sma_50 = quotes.Use(CandlePart.Close).GetSma(50).ToList();
+            _sma_36 = quotes.Use(CandlePart.Close).GetSma(36).ToList();
             _macd_12_26_9 = quotes.Use(CandlePart.Close).GetMacd(12, 26, 9).ToList();
         }
 
@@ -143,13 +143,13 @@ namespace Pl.Sas.Core.Trading
 
         public int BuyCondition(DateTime tradingDate, float lastClosePrice)
         {
-            var sma50 = _sma_50.Find(tradingDate);
-            if (sma50 is null || sma50.Sma is null)
+            var sma36 = _sma_36.Find(tradingDate);
+            if (sma36 is null || sma36.Sma is null)
             {
                 return 0;
             }
 
-            if (lastClosePrice < sma50.Sma)
+            if (lastClosePrice < sma36.Sma)
             {
                 return 0;
             }
