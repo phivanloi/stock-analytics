@@ -195,6 +195,24 @@ namespace Pl.Sas.Core.Trading
                 return TimeTrading.CTA;
             }
         }
+
+        /// <summary>
+        /// Hàm tính lãi suất ngân hàng
+        /// </summary>
+        /// <param name="totalMoney">Tổng số tiền gửi</param>
+        /// <param name="numberYear">Số năm gửi</param>
+        /// <param name="interestRrate">lãi suất gửi tiết kiệm</param>
+        /// <returns>float</returns>
+        public static float BankProfit(float totalMoney, int numberYear = 5, float interestRrate = 6.8f)
+        {
+            var balanceMoney = totalMoney;
+            for (int i = 0; i < numberYear; i++)
+            {
+                var subTotal = (balanceMoney / 100) * interestRrate;
+                balanceMoney += subTotal;
+            }
+            return balanceMoney;
+        }
     }
 
     /// <summary>
