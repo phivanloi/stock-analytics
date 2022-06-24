@@ -47,7 +47,7 @@ namespace Pl.Sas.Core.Trading
 
                 if (tradingCase.NumberStock <= 0)
                 {
-                    tradingCase.IsBuy = BuyCondition(tradingHistory.Last().TradingDate, tradingHistory.Last().ClosePrice) > 0 && tradingCase.ContinueBuy;
+                    tradingCase.IsBuy = BuyCondition(day.TradingDate, tradingHistory.Last().ClosePrice) > 0 && tradingCase.ContinueBuy;
                     if (tradingCase.IsBuy)
                     {
                         tradingCase.ActionPrice = tradingCase.BuyPrice;
@@ -86,7 +86,7 @@ namespace Pl.Sas.Core.Trading
                 {
                     if (tradingCase.NumberChangeDay > 2)
                     {
-                        tradingCase.IsSell = SellCondition(tradingHistory.Last().TradingDate, tradingHistory.Last().ClosePrice) > 0;
+                        tradingCase.IsSell = SellCondition(day.TradingDate, tradingHistory.Last().ClosePrice) > 0;
                         if (tradingCase.IsSell)
                         {
                             var lastBuyPrice = tradingCase.ActionPrice;
