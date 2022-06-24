@@ -90,7 +90,7 @@ namespace Pl.Sas.UnitTests
             var hostedService = serviceProvider.GetService<IHostedService>() as LoggingQueuedHostedService ?? throw new Exception("Can't get LoggingQueuedHostedService");
             await hostedService.StartAsync(CancellationToken.None);
 
-            var chartPrices = await chartPriceData.FindAllAsync("BSR");
+            var chartPrices = await chartPriceData.FindAllAsync("DCM");
             var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
             var dojiResults = quotes.GetDoji(0.1);
             foreach (var doji in dojiResults)
@@ -112,7 +112,7 @@ namespace Pl.Sas.UnitTests
             var hostedService = serviceProvider.GetService<IHostedService>() as LoggingQueuedHostedService ?? throw new Exception("Can't get LoggingQueuedHostedService");
             await hostedService.StartAsync(CancellationToken.None);
 
-            var chartPrices = await chartPriceData.FindAllAsync("HPG");
+            var chartPrices = await chartPriceData.FindAllAsync("DCM");
             var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
             var dojiResults = quotes.GetMarubozu(95);
             foreach (var doji in dojiResults)
