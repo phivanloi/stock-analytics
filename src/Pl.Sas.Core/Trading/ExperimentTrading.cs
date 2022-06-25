@@ -25,7 +25,8 @@ namespace Pl.Sas.Core.Trading
 
         public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName, bool isNoteTrading = true)
         {
-            tradingCase = new() { IsNote = isNoteTrading };
+            tradingCase = new() { IsNote = isNoteTrading, StopLossPercent = -7 };
+
             foreach (var day in chartPrices)
             {
                 if (tradingHistory.Count <= 0)
@@ -36,6 +37,8 @@ namespace Pl.Sas.Core.Trading
                     continue;
                 }
 
+                RebuildStatus(tradingHistory.Last());
+
                 tradingCase.IsBuy = false;
                 tradingCase.IsSell = false;
                 tradingCase.BuyPrice = CalculateOptimalBuyPrice(tradingHistory, day.OpenPrice);
@@ -44,7 +47,7 @@ namespace Pl.Sas.Core.Trading
 
                 if (tradingCase.NumberStock <= 0)
                 {
-                    tradingCase.IsBuy = BuyCondition(day.TradingDate, day.ClosePrice) > 0;
+                    tradingCase.IsBuy = BuyCondition(tradingHistory.Last().TradingDate, tradingHistory.Last().ClosePrice) > 0 && tradingCase.ContinueBuy;
                     if (tradingCase.IsBuy)
                     {
                         tradingCase.ActionPrice = tradingCase.BuyPrice;
@@ -62,6 +65,7 @@ namespace Pl.Sas.Core.Trading
                         tradingCase.TotalTax += totalTax;
                         tradingCase.NumberStock += stockCount;
                         tradingCase.NumberChangeDay = 0;
+                        tradingCase.MaxPriceOnBuy = day.ClosePrice;
                         if (timeTrading == TimeTrading.NST || DateTime.Now.Date != day.TradingDate)
                         {
                             tradingCase.AssetPosition = "100% C";
@@ -82,7 +86,7 @@ namespace Pl.Sas.Core.Trading
                 {
                     if (tradingCase.NumberChangeDay > 2)
                     {
-                        tradingCase.IsSell = SellCondition(day.TradingDate) > 0;
+                        tradingCase.IsSell = SellCondition(tradingHistory.Last().TradingDate, tradingHistory.Last().ClosePrice) > 0;
                         if (tradingCase.IsSell)
                         {
                             var lastBuyPrice = tradingCase.ActionPrice;
@@ -140,6 +144,32 @@ namespace Pl.Sas.Core.Trading
             return tradingCase;
         }
 
+        public void RebuildStatus(ChartPrice chartPrice)
+        {
+            if (tradingCase.MaxPriceOnBuy < chartPrice.ClosePrice)
+            {
+                tradingCase.MaxPriceOnBuy = chartPrice.ClosePrice;//Đặt lại giá cao nhất đã đạt được
+            }
+
+            var sma10 = _sma_10.Find(chartPrice.TradingDate);
+            if (sma10 is null || sma10.Sma is null)
+            {
+                return;
+            }
+
+            var sma6 = _sma_6.Find(chartPrice.TradingDate);
+            if (sma6 is null || sma6.Sma is null)
+            {
+                return;
+            }
+
+            if (sma6.Sma < sma10.Sma && !tradingCase.ContinueBuy)
+            {
+                tradingCase.AddNote(0, $"{chartPrice.TradingDate:yy/MM/dd}: Cho phép lệnh mua được hoạt động do đường ma6 đã cắt xuống đường ma10.");
+                tradingCase.ContinueBuy = true;
+            }
+        }
+
         public int BuyCondition(DateTime tradingDate, float lastClosePrice)
         {
             var sma36 = _sma_36.Find(tradingDate);
@@ -184,8 +214,15 @@ namespace Pl.Sas.Core.Trading
             return 100;
         }
 
-        public int SellCondition(DateTime tradingDate)
+        public int SellCondition(DateTime tradingDate, float lastClosePrice)
         {
+            if (lastClosePrice.GetPercent(tradingCase.ActionPrice) < tradingCase.StopLossPercent)//Kiểm tra trạng thái bán chặn lỗ
+            {
+                tradingCase.AddNote(-1, $"{tradingDate:yy/MM/dd}: Kích hoạt lệnh bán chặn lỗ, giá mua {tradingCase.ActionPrice:0.0,00} giá kích hoạt {lastClosePrice:0.0,00}({lastClosePrice.GetPercent(tradingCase.ActionPrice)}0.0,00)");
+                tradingCase.ContinueBuy = false;
+                return 100;
+            }
+
             var sma10 = _sma_10.Find(tradingDate);
             if (sma10 is null || sma10.Sma is null)
             {
@@ -220,14 +257,14 @@ namespace Pl.Sas.Core.Trading
         public static float CalculateOptimalBuyPrice(List<ChartPrice> chartPrices, float rootPrice)
         {
             var percent = chartPrices.OrderByDescending(q => q.TradingDate).Take(10).Select(q => q.HighestPrice.GetPercent(q.OpenPrice)).Average() / 100;
-            var buyPrice = rootPrice - (rootPrice * (percent * 5));
+            var buyPrice = rootPrice - (rootPrice * (percent * 10));
             return (float)Math.Round((decimal)buyPrice, 2);
         }
 
         public static float CalculateOptimalSellPrice(List<ChartPrice> chartPrices, float rootPrice)
         {
             var percent = chartPrices.OrderByDescending(q => q.TradingDate).Take(10).Select(q => q.OpenPrice.GetPercent(q.LowestPrice)).Average() / 100;
-            var buyPrice = rootPrice + (rootPrice * (percent * 5));
+            var buyPrice = rootPrice + (rootPrice * (percent * 10));
             return (float)Math.Round((decimal)buyPrice, 2);
         }
     }

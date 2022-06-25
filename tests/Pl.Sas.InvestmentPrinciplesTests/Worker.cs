@@ -29,9 +29,9 @@ namespace Pl.Sas.InvestmentPrinciplesTests
             {
                 Console.Clear();
                 Console.OutputEncoding = Encoding.UTF8;
-                DateTime fromDate = new(2012, 1, 1);
+                DateTime fromDate = new(2018, 1, 1);
                 DateTime toDate = new(2050, 1, 1);
-                var symbol = "HSG";
+                var symbol = "VND";
                 var stock = await _stockData.FindBySymbolAsync(symbol);
                 var company = await _companyData.FindBySymbolAsync(symbol);
                 var chartPrices = await _chartPriceData.CacheFindAllAsync(symbol, "D") ?? throw new Exception("chartPrices is null");

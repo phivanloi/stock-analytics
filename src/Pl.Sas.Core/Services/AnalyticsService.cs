@@ -584,7 +584,7 @@ namespace Pl.Sas.Core.Services
             #endregion
 
             #region Experiment Trading
-            var experimentTrading = new ExperimentTradingV2(chartPrices);
+            var experimentTrading = new ExperimentTrading(chartPrices);
             tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
             var experCase = experimentTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
             var experNote = $"Trading {Utilities.GetPrincipleName(0).ToLower()} {chartTrading.Count} phiên từ ngày {chartTrading[0].TradingDate:dd/MM/yyyy}, Lợi nhuận {experCase.Profit(chartTrading[^1].ClosePrice):0,0} ({experCase.ProfitPercent(chartTrading[^1].ClosePrice):0,0.00}%), thuế {experCase.TotalTax:0,0}, xem chi tiết tại tab \"Lợi nhuận và đầu tư TN\".";
