@@ -11,7 +11,6 @@ namespace Pl.Sas.Core.Trading
         private readonly List<SmaResult> _sma_10;
         private readonly List<SmaResult> _sma_6;
         private readonly List<SmaResult> _sma_36;
-        private readonly List<MacdResult> _macd_12_26_9;
         private TradingCase tradingCase = new();
 
         public ExperimentTradingV2(List<ChartPrice> chartPrices)
@@ -20,7 +19,6 @@ namespace Pl.Sas.Core.Trading
             _sma_10 = quotes.Use(CandlePart.Close).GetSma(10).ToList();
             _sma_6 = quotes.Use(CandlePart.Close).GetSma(6).ToList();
             _sma_36 = quotes.Use(CandlePart.Close).GetSma(36).ToList();
-            _macd_12_26_9 = quotes.Use(CandlePart.Close).GetMacd(12, 26, 9).ToList();
         }
 
         public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName, bool isNoteTrading = true)
@@ -200,17 +198,6 @@ namespace Pl.Sas.Core.Trading
                 return 0;
             }
 
-            var macd = _macd_12_26_9.Find(tradingDate);
-            if (macd is null || macd.Macd is null)
-            {
-                return 0;
-            }
-
-            if (macd.Macd < macd.Signal)
-            {
-                return 0;
-            }
-
             return 100;
         }
 
@@ -236,17 +223,6 @@ namespace Pl.Sas.Core.Trading
             }
 
             if (sma6.Sma > sma10.Sma)
-            {
-                return 0;
-            }
-
-            var macd = _macd_12_26_9.Find(tradingDate);
-            if (macd is null || macd.Macd is null)
-            {
-                return 0;
-            }
-
-            if (macd.Macd > macd.Signal)
             {
                 return 0;
             }
