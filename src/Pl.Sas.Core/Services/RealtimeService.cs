@@ -123,7 +123,7 @@ namespace Pl.Sas.Core.Services
 
             var listTradingResult = new List<TradingResult>();
             #region Experiment Trading
-            var experimentTrading = new ExperimentTradingV2(chartPrices);
+            var experimentTrading = new ExperimentTrading(chartPrices);
             var tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
             var experCase = experimentTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
             listTradingResult.Add(new()
