@@ -23,7 +23,7 @@ namespace Pl.Sas.Core.Trading
 
         public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName, bool isNoteTrading = true)
         {
-            tradingCase = new() { IsNote = isNoteTrading, StopLossPercent = -7 };
+            tradingCase = new() { IsNote = isNoteTrading, StopLossPercent = -70 };
 
             foreach (var day in chartPrices)
             {
