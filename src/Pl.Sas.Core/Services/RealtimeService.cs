@@ -86,7 +86,8 @@ namespace Pl.Sas.Core.Services
 
             var stock = await _stockData.FindBySymbolAsync(symbol);
             var chartPrices = await _chartPriceData.CacheFindAllAsync(symbol, "D");
-            if (chartPrices is null || chartPrices.Count <= 0 || stock is null)
+            var indexChartPrices = await _chartPriceData.CacheFindAllAsync("VNINDEX", "D");
+            if (indexChartPrices is null || chartPrices is null || chartPrices.Count <= 0 || stock is null)
             {
                 return;
             }
@@ -123,7 +124,7 @@ namespace Pl.Sas.Core.Services
 
             var listTradingResult = new List<TradingResult>();
             #region Experiment Trading
-            var experimentTrading = new ExperimentTrading(chartPrices);
+            var experimentTrading = new ExperimentTrading(chartPrices, indexChartPrices);
             var tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
             var experCase = experimentTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
             listTradingResult.Add(new()

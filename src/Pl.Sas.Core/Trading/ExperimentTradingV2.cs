@@ -11,14 +11,19 @@ namespace Pl.Sas.Core.Trading
         private readonly List<SmaResult> _sma_10;
         private readonly List<SmaResult> _sma_6;
         private readonly List<SmaResult> _sma_36;
+        private readonly List<SmaResult> _indexSma50;
+        private readonly List<SmaResult> _indexSma1;
         private TradingCase tradingCase = new();
 
-        public ExperimentTradingV2(List<ChartPrice> chartPrices)
+        public ExperimentTradingV2(List<ChartPrice> chartPrices, List<ChartPrice> indexChartPrices)
         {
             var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
+            var indexQuotes = indexChartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
             _sma_10 = quotes.Use(CandlePart.Close).GetSma(10).ToList();
             _sma_6 = quotes.Use(CandlePart.Close).GetSma(6).ToList();
             _sma_36 = quotes.Use(CandlePart.Close).GetSma(36).ToList();
+            _indexSma50 = indexQuotes.Use(CandlePart.Close).GetSma(50).ToList();
+            _indexSma1 = indexQuotes.Use(CandlePart.Close).GetSma(1).ToList();
         }
 
         public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName, bool isNoteTrading = true)
@@ -112,7 +117,7 @@ namespace Pl.Sas.Core.Trading
                             {
                                 tradingCase.AssetPosition = $"B:({tradingCase.SellPrice:0,0.00})";
                             }
-                            tradingCase.AddNote(tradingCase.ActionPrice > lastBuyPrice ? 1 : -1, $"{day.TradingDate:yy/MM/dd}, O:{day.OpenPrice:0,0.00}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, M:{tradingCase.BuyPrice:0,0.00}, B:{tradingCase.SellPrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0} |-> Bán {selNumberStock:0,0} cổ giá {tradingCase.ActionPrice:0,0.00} ({tradingCase.ActionPrice.GetPercent(lastBuyPrice):0,0.00}%) thuế {totalTax:0,0}");
+                            tradingCase.AddNote(tradingCase.ActionPrice > lastBuyPrice ? 1 : -1, $"{day.TradingDate:yy/MM/dd}, O:{day.OpenPrice:0,0.00}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, M:{tradingCase.BuyPrice:0,0.00}, B:{tradingCase.SellPrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0} |-> Bán {selNumberStock:0,0} cổ giá {tradingCase.ActionPrice:0,0.00} ({tradingCase.ActionPrice.GetPercent(lastBuyPrice):0,0.00}%), Max: ({tradingCase.MaxPriceOnBuy:0,0.00}) thuế {totalTax:0,0}");
                         }
                         else
                         {
@@ -170,6 +175,23 @@ namespace Pl.Sas.Core.Trading
 
         public int BuyCondition(DateTime tradingDate, float lastClosePrice)
         {
+            var indexSma50 = _indexSma50.Find(tradingDate);
+            if (indexSma50 is null || indexSma50.Sma is null)
+            {
+                return 0;
+            }
+
+            var indexSma1 = _indexSma1.Find(tradingDate);
+            if (indexSma1 is null || indexSma1.Sma is null)
+            {
+                return 0;
+            }
+
+            if (indexSma1.Sma < indexSma50.Sma)
+            {
+                return 0;
+            }
+
             var sma36 = _sma_36.Find(tradingDate);
             if (sma36 is null || sma36.Sma is null)
             {
