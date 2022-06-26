@@ -14,8 +14,10 @@ namespace Pl.Sas.Worker
         private readonly AnalyticsService _analyticsService;
         private readonly StockViewService _stockViewService;
         private readonly RealtimeService _realtimeService;
+        private readonly IMemoryUpdateService _memoryUpdateService;
 
         public Worker(
+            IMemoryUpdateService memoryUpdateService,
             RealtimeService realtimeService,
             StockViewService stockViewService,
             AnalyticsService analyticsService,
@@ -31,6 +33,7 @@ namespace Pl.Sas.Worker
             _analyticsService = analyticsService;
             _stockViewService = stockViewService;
             _realtimeService = realtimeService;
+            _memoryUpdateService = memoryUpdateService;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -45,6 +48,12 @@ namespace Pl.Sas.Worker
         public override Task StartAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Worker {version} starting at: {time}", _appSettings.AppVersion, DateTimeOffset.Now);
+
+            _workerQueueService.SubscribeUpdateMemoryTask((message) =>
+            {
+                _memoryUpdateService.HandleUpdate(message);
+                GC.Collect();
+            });
 
             _workerQueueService.SubscribeDownloadTask(async (message) =>
             {
