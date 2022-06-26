@@ -31,7 +31,7 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 Console.OutputEncoding = Encoding.UTF8;
                 DateTime fromDate = new(2018, 1, 1);
                 DateTime toDate = new(2050, 1, 1);
-                var symbol = "SSI";
+                var symbol = "DXG";
                 var stock = await _stockData.FindBySymbolAsync(symbol);
                 var company = await _companyData.FindBySymbolAsync(symbol);
                 var chartPrices = await _chartPriceData.CacheFindAllAsync(symbol, "D") ?? throw new Exception("chartPrices is null");
@@ -43,7 +43,7 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 var endPrice = chartTrading[^1].ClosePrice;
                 Console.Clear();
                 Console.Clear();
-                var trader = new ExperimentTradingV2(chartPrices);
+                var trader = new ExperimentTradingV2(chartPrices, indexChartPrices);
                 var tradingCase = trader.Trading(chartTrading, tradingHistory, stock.Exchange);
                 foreach (var note in tradingCase.ExplainNotes)
                 {
