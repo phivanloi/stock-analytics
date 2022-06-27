@@ -205,7 +205,7 @@ namespace Pl.Sas.Core.Trading
         {
             if (lastClosePrice.GetPercent(tradingCase.ActionPrice) < tradingCase.StopLossPercent)//Kiểm tra trạng thái bán chặn lỗ
             {
-                tradingCase.AddNote(-1, $"{tradingDate:yy/MM/dd}: Kích hoạt lệnh bán chặn lỗ, giá mua {tradingCase.ActionPrice:0.0,00} giá kích hoạt {lastClosePrice:0.0,00}({lastClosePrice.GetPercent(tradingCase.ActionPrice)}0.0,00)");
+                tradingCase.AddNote(-1, $"{tradingDate:yy/MM/dd}: Kích hoạt lệnh bán chặn lỗ, giá mua {tradingCase.ActionPrice:0.0,00} giá kích hoạt {lastClosePrice:0.0,00}({lastClosePrice.GetPercent(tradingCase.ActionPrice):0.0,00})");
                 tradingCase.ContinueBuy = false;
                 return 100;
             }

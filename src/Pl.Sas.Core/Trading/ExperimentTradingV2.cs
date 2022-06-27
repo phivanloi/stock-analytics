@@ -13,6 +13,7 @@ namespace Pl.Sas.Core.Trading
         private readonly List<SmaResult> _sma_36;
         private readonly List<SmaResult> _indexSma50;
         private readonly List<SmaResult> _indexSma1;
+        private List<ZigZagResult> _zigZag = new();
         private TradingCase tradingCase = new();
 
         public ExperimentTradingV2(List<ChartPrice> chartPrices, List<ChartPrice> indexChartPrices)
@@ -24,6 +25,7 @@ namespace Pl.Sas.Core.Trading
             _sma_36 = quotes.Use(CandlePart.Close).GetSma(36).ToList();
             _indexSma50 = indexQuotes.Use(CandlePart.Close).GetSma(50).ToList();
             _indexSma1 = indexQuotes.Use(CandlePart.Close).GetSma(1).ToList();
+            _zigZag = quotes.GetZigZag(EndType.HighLow, 10).ToList();
         }
 
         public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName, bool isNoteTrading = true)
@@ -215,6 +217,17 @@ namespace Pl.Sas.Core.Trading
                 return 0;
             }
 
+            var zigZagResultH = _zigZag.LastOrDefault(q => q.Date <= tradingDate && q.PointType == "H" && ((decimal)lastClosePrice < (q.ZigZag - (q.ZigZag * 0.01m))));
+            var zigZagResultL = _zigZag.LastOrDefault(q => q.Date <= tradingDate && q.PointType == "L" && ((decimal)lastClosePrice > (q.ZigZag + (q.ZigZag * 0.01m))));
+            if (zigZagResultH is not null && zigZagResultH.ZigZag is not null && zigZagResultL is not null && zigZagResultL.ZigZag is not null)
+            {
+                if ((float)zigZagResultH.ZigZag.Value - lastClosePrice < (lastClosePrice - (float)zigZagResultL.ZigZag.Value) * 0.1)
+                {
+                    tradingCase.AddNote(-1, $"{tradingDate:yy/MM/dd}: Tỉ lệ lãi không phù hợp, H: {zigZagResultH.ZigZag.Value:0.0,00}, C: {lastClosePrice:0.0,00}, L: {zigZagResultL.ZigZag.Value:0.0,00}");
+                    return 0;
+                }
+            }
+
             if (sma6.Sma < sma10.Sma)
             {
                 return 0;
@@ -225,9 +238,9 @@ namespace Pl.Sas.Core.Trading
 
         public int SellCondition(DateTime tradingDate, float lastClosePrice)
         {
-            if (lastClosePrice.GetPercent(tradingCase.ActionPrice) < tradingCase.StopLossPercent)//Kiểm tra trạng thái bán chặn lỗ
+            if (lastClosePrice.GetPercent(tradingCase.ActionPrice) <= tradingCase.StopLossPercent)//Kiểm tra trạng thái bán chặn lỗ
             {
-                tradingCase.AddNote(-1, $"{tradingDate:yy/MM/dd}: Kích hoạt lệnh bán chặn lỗ, giá mua {tradingCase.ActionPrice:0.0,00} giá kích hoạt {lastClosePrice:0.0,00}({lastClosePrice.GetPercent(tradingCase.ActionPrice)}0.0,00)");
+                tradingCase.AddNote(-1, $"{tradingDate:yy/MM/dd}: Kích hoạt lệnh bán chặn lỗ, giá mua {tradingCase.ActionPrice:0.0,00} giá kích hoạt {lastClosePrice:0.0,00}({lastClosePrice.GetPercent(tradingCase.ActionPrice):0.0,00})");
                 tradingCase.ContinueBuy = false;
                 return 100;
             }

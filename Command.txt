@@ -1,4 +1,6 @@
-﻿- Cài đặt và update dotnet ef tool
+﻿Server info: 103.139.103.63		root/Esvn@12344
+
+- Cài đặt và update dotnet ef tool
 	dotnet tool install --global dotnet-ef 
 	or  
 	dotnet tool update --global dotnet-ef

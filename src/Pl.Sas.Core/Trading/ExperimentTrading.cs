@@ -28,7 +28,7 @@ namespace Pl.Sas.Core.Trading
 
         public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName, bool isNoteTrading = true)
         {
-            tradingCase = new() { IsNote = isNoteTrading, StopLossPercent = -7 };
+            tradingCase = new() { IsNote = isNoteTrading, StopLossPercent = -7f };
 
             foreach (var day in chartPrices)
             {
@@ -225,9 +225,9 @@ namespace Pl.Sas.Core.Trading
 
         public int SellCondition(DateTime tradingDate, float lastClosePrice)
         {
-            if (lastClosePrice.GetPercent(tradingCase.ActionPrice) < tradingCase.StopLossPercent)//Kiểm tra trạng thái bán chặn lỗ
+            if (lastClosePrice.GetPercent(tradingCase.ActionPrice) <= tradingCase.StopLossPercent)//Kiểm tra trạng thái bán chặn lỗ
             {
-                tradingCase.AddNote(-1, $"{tradingDate:yy/MM/dd}: Kích hoạt lệnh bán chặn lỗ, giá mua {tradingCase.ActionPrice:0.0,00} giá kích hoạt {lastClosePrice:0.0,00}({lastClosePrice.GetPercent(tradingCase.ActionPrice)}0.0,00)");
+                tradingCase.AddNote(-1, $"{tradingDate:yy/MM/dd}: Kích hoạt lệnh bán chặn lỗ, giá mua {tradingCase.ActionPrice:0.0,00} giá kích hoạt {lastClosePrice:0.0,00}({lastClosePrice.GetPercent(tradingCase.ActionPrice):0.0,00})");
                 tradingCase.ContinueBuy = false;
                 return 100;
             }
