@@ -69,7 +69,7 @@
 	firewall-cmd --zone=public --add-port=3408/tcp --permanent
 	firewall-cmd --zone=public --add-port=3409/tcp --permanent
 	firewall-cmd --zone=public --add-port=3410/tcp --permanent
-	firewall-cmd --zone=public --add-port=3411/tcp --permanent
+	firewall-cmd --zone=public --add-port=3411/tcp --permanent 
 	firewall-cmd --zone=public --add-port=3412/tcp --permanent
 	firewall-cmd --zone=public --add-port=3413/tcp --permanent
 	firewall-cmd --reload
