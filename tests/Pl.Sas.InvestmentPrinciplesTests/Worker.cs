@@ -29,8 +29,8 @@ namespace Pl.Sas.InvestmentPrinciplesTests
             {
                 Console.Clear();
                 Console.OutputEncoding = Encoding.UTF8;
-                DateTime fromDate = new(2018, 4, 1);
-                DateTime toDate = new(2020, 1, 1);
+                DateTime fromDate = new(2010, 1, 1);
+                DateTime toDate = new(2050, 1, 1);
                 var symbol = "HPG";
                 var stock = await _stockData.FindBySymbolAsync(symbol);
                 var company = await _companyData.FindBySymbolAsync(symbol);
