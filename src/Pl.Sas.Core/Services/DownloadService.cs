@@ -394,6 +394,7 @@ namespace Pl.Sas.Core.Services
 
             var check = await _chartPriceData.ResetChartPriceAsync(chartPrices, symbol, schedule.Options["ChartType"]);
             await _asyncCacheService.RemoveByPrefixAsync(Constants.ChartPriceCachePrefix);
+            _workerQueueService.BroadcastUpdateMemoryTask(new("ChartPrices"));
             return await _keyValueData.SetAsync(checkingKey, check);
         }
 

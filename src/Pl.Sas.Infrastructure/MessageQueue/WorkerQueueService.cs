@@ -17,6 +17,7 @@ namespace Pl.Sas.Infrastructure.RabbitmqMessageQueue
         private readonly IConnection _connection;
         private readonly ILogger<WorkerQueueService> _logger;
 
+        private readonly IModel _subscribeUpdateMemoryChannel;
         private readonly IModel _subscribeDownloadChannel;
         private readonly IModel _subscribeAnalyticsChannel;
         private readonly IModel _subscribeBuildViewChannel;
@@ -41,6 +42,9 @@ namespace Pl.Sas.Infrastructure.RabbitmqMessageQueue
             };
             _connection = _connectionFactory.CreateConnection();
 
+            _subscribeUpdateMemoryChannel = _connection.CreateModel();
+            _subscribeUpdateMemoryChannel.ExchangeDeclare(exchange: MessageQueueConstants.UpdateMemoryExchangeName, type: ExchangeType.Fanout);
+
             _subscribeDownloadChannel = _connection.CreateModel();
             _subscribeDownloadChannel.QueueDeclare(queue: MessageQueueConstants.DownloadQueueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
 
@@ -63,6 +67,31 @@ namespace Pl.Sas.Infrastructure.RabbitmqMessageQueue
             _realtimeWorkerChannel.QueueDeclare(queue: MessageQueueConstants.RealtimeQueueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
             _publishRealtimeProperties = _realtimeWorkerChannel.CreateBasicProperties();
             _publishRealtimeProperties.Persistent = true;
+        }
+
+        public virtual void SubscribeUpdateMemoryTask(Action<QueueMessage> func)
+        {
+            var queueName = _subscribeUpdateMemoryChannel.QueueDeclare().QueueName;
+            _subscribeUpdateMemoryChannel.QueueBind(queue: queueName, exchange: MessageQueueConstants.UpdateMemoryExchangeName, routingKey: "");
+            var consumer = new EventingBasicConsumer(_subscribeUpdateMemoryChannel);
+            consumer.Received += (model, ea) =>
+            {
+                try
+                {
+                    var message = JsonSerializer.Deserialize<QueueMessage>(_zipHelper.UnZipByte(ea.Body.ToArray()));
+                    Guard.Against.Null(message, nameof(message));
+                    func(message);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Run SubscribeUpdateMemoryTask error");
+                }
+                finally
+                {
+                    _subscribeUpdateMemoryChannel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
+                }
+            };
+            _subscribeUpdateMemoryChannel.BasicConsume(queue: queueName, autoAck: false, consumer: consumer);
         }
 
         public virtual void SubscribeDownloadTask(Func<QueueMessage, Task> func)
