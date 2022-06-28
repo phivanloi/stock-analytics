@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Hosting;
 using Pl.Sas.Core;
 using Pl.Sas.Core.Interfaces;
-using Pl.Sas.Core.Services;
 using Pl.Sas.Infrastructure.Loging;
 using Skender.Stock.Indicators;
 using System;
@@ -69,7 +68,6 @@ namespace Pl.Sas.UnitTests
 
             await hostedService.StopAsync(CancellationToken.None);
         }
-
 
         [Fact]
         public async Task ZigZagTestAsync()

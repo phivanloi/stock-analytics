@@ -1,12 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Pl.Sas.Core;
-using Pl.Sas.Core.Interfaces;
 using Pl.Sas.Core.Services;
 using Pl.Sas.Infrastructure.Loging;
-using Skender.Stock.Indicators;
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;

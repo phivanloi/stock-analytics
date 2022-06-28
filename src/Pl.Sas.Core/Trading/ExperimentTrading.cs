@@ -3,9 +3,6 @@ using Skender.Stock.Indicators;
 
 namespace Pl.Sas.Core.Trading
 {
-    /// <summary>
-    /// Trading thử nghiệm
-    /// </summary>
     public class ExperimentTrading : BaseTrading
     {
         private readonly List<SmaResult> _sma_10;
