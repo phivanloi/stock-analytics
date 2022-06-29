@@ -119,7 +119,7 @@ namespace Pl.Sas.Core.Entities
                 4 => baseTime.Date.AddDays(1).AddHours(1).AddMinutes(random.Next(0, 60)),//bổ sung thông tin tài chính của danh nghiệp bằng ssi api
                 5 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 30)),//lấy danh sách lịch sử giá cổ phiếu theo ssi api
                 6 => baseTime.Date.AddDays(1).AddHours(1).AddMinutes(random.Next(0, 60)),//lấy danh sách lịch sử sự kiện công ty theo ssi api
-                7 => baseTime.Date.AddDays(1).AddHours(10).AddMinutes(random.Next(31, 120)),//lấy lịch sử giao dịch, khớp lệnh
+                7 => baseTime.Date.AddDays(1).AddHours(22).AddMinutes(random.Next(31, 120)),//lấy lịch sử giao dịch, khớp lệnh
                 8 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 60)),//Bổ sung đánh giá cổ phiếu của fiin
                 9 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 60)),//Thu thập dữ liệu chart price
                 10 => baseTime.Date.AddDays(1).AddHours(2).AddMinutes(random.Next(0, 60)),//Lấy lãi suất ngân hàng lớn nhất
