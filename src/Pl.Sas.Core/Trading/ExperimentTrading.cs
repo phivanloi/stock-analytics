@@ -170,16 +170,16 @@ namespace Pl.Sas.Core.Trading
 
         public int BuyCondition(DateTime tradingDate, float lastClosePrice)
         {
-            //var rsi = _stochRsi_14_14_3_3.Find(tradingDate);
-            //if (rsi is null || rsi.StochRsi is null || rsi.Signal is null)
-            //{
-            //    return 0;
-            //}
+            var rsi = _stochRsi_14_14_3_3.Find(tradingDate);
+            if (rsi is null || rsi.StochRsi is null || rsi.Signal is null)
+            {
+                return 0;
+            }
 
-            //if (rsi.StochRsi > 90)
-            //{
-            //    return 0;
-            //}
+            if (rsi.StochRsi < 10 || rsi.StochRsi > 90)
+            {
+                return 0;
+            }
 
             var sma36 = _sma_36.Find(tradingDate);
             if (sma36 is null || sma36.Sma is null)
