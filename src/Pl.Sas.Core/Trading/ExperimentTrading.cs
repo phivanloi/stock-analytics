@@ -8,8 +8,6 @@ namespace Pl.Sas.Core.Trading
         private readonly List<SmaResult> _sma_10;
         private readonly List<SmaResult> _sma_6;
         private readonly List<SmaResult> _sma_36;
-        private readonly List<SmaResult> _indexSma50;
-        private readonly List<SmaResult> _indexSma1;
         private readonly List<StochRsiResult> _stochRsi_14_14_3_3;
         private TradingCase tradingCase = new();
 
@@ -20,8 +18,6 @@ namespace Pl.Sas.Core.Trading
             _sma_10 = quotes.Use(CandlePart.Close).GetSma(10).ToList();
             _sma_6 = quotes.Use(CandlePart.Close).GetSma(6).ToList();
             _sma_36 = quotes.Use(CandlePart.Close).GetSma(36).ToList();
-            _indexSma50 = indexQuotes.Use(CandlePart.Close).GetSma(50).ToList();
-            _indexSma1 = indexQuotes.Use(CandlePart.Close).GetSma(1).ToList();
             _stochRsi_14_14_3_3 = quotes.GetStochRsi(14, 14, 3, 3).ToList();
         }
 
@@ -174,33 +170,16 @@ namespace Pl.Sas.Core.Trading
 
         public int BuyCondition(DateTime tradingDate, float lastClosePrice)
         {
-            var indexSma50 = _indexSma50.Find(tradingDate);
-            if (indexSma50 is null || indexSma50.Sma is null)
-            {
-                return 0;
-            }
+            //var rsi = _stochRsi_14_14_3_3.Find(tradingDate);
+            //if (rsi is null || rsi.StochRsi is null || rsi.Signal is null)
+            //{
+            //    return 0;
+            //}
 
-            var indexSma1 = _indexSma1.Find(tradingDate);
-            if (indexSma1 is null || indexSma1.Sma is null)
-            {
-                return 0;
-            }
-
-            if (indexSma1.Sma < indexSma50.Sma)
-            {
-                return 0;
-            }
-
-            var rsi = _stochRsi_14_14_3_3.Find(tradingDate);
-            if (rsi is null || rsi.StochRsi is null || rsi.Signal is null)
-            {
-                return 0;
-            }
-
-            if (rsi.StochRsi > 50)
-            {
-                return 0;
-            }
+            //if (rsi.StochRsi > 90)
+            //{
+            //    return 0;
+            //}
 
             var sma36 = _sma_36.Find(tradingDate);
             if (sma36 is null || sma36.Sma is null)
