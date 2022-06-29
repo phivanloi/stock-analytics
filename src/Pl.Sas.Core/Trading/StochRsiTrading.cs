@@ -6,26 +6,16 @@ namespace Pl.Sas.Core.Trading
     /// <summary>
     /// Trading thử nghiệm
     /// </summary>
-    public class ExperimentTradingV2 : BaseTrading
+    public class StochRsiTrading : BaseTrading
     {
-        private readonly List<SmaResult> _sma_10;
-        private readonly List<SmaResult> _sma_6;
-        private readonly List<SmaResult> _sma_36;
-        private readonly List<SmaResult> _indexSma50;
-        private readonly List<SmaResult> _indexSma1;
-        private List<ZigZagResult> _zigZag = new();
+        private readonly List<StochRsiResult> _stochRsi_14_14_3_3;
         private TradingCase tradingCase = new();
 
-        public ExperimentTradingV2(List<ChartPrice> chartPrices, List<ChartPrice> indexChartPrices)
+        public StochRsiTrading(List<ChartPrice> chartPrices, List<ChartPrice> indexChartPrices)
         {
             var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
             var indexQuotes = indexChartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
-            _sma_10 = quotes.Use(CandlePart.Close).GetSma(10).ToList();
-            _sma_6 = quotes.Use(CandlePart.Close).GetSma(6).ToList();
-            _sma_36 = quotes.Use(CandlePart.Close).GetSma(36).ToList();
-            _indexSma50 = indexQuotes.Use(CandlePart.Close).GetSma(50).ToList();
-            _indexSma1 = indexQuotes.Use(CandlePart.Close).GetSma(1).ToList();
-            _zigZag = quotes.GetZigZag(EndType.HighLow, 10).ToList();
+            _stochRsi_14_14_3_3 = quotes.GetStochRsi(14, 14, 3, 3).ToList();
         }
 
         public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName, bool isNoteTrading = true)
@@ -156,19 +146,13 @@ namespace Pl.Sas.Core.Trading
                 tradingCase.MaxPriceOnBuy = chartPrice.ClosePrice;//Đặt lại giá cao nhất đã đạt được
             }
 
-            var sma10 = _sma_10.Find(chartPrice.TradingDate);
-            if (sma10 is null || sma10.Sma is null)
+            var rsi = _stochRsi_14_14_3_3.Find(chartPrice.TradingDate);
+            if (rsi is null || rsi.StochRsi is null || rsi.Signal is null)
             {
                 return;
             }
 
-            var sma6 = _sma_6.Find(chartPrice.TradingDate);
-            if (sma6 is null || sma6.Sma is null)
-            {
-                return;
-            }
-
-            if (sma6.Sma < sma10.Sma && !tradingCase.ContinueBuy)
+            if (rsi.StochRsi < rsi.Signal && !tradingCase.ContinueBuy)
             {
                 tradingCase.AddNote(0, $"{chartPrice.TradingDate:yy/MM/dd}: Cho phép lệnh mua được hoạt động do đường ma6 đã cắt xuống đường ma10.");
                 tradingCase.ContinueBuy = true;
@@ -177,58 +161,18 @@ namespace Pl.Sas.Core.Trading
 
         public int BuyCondition(DateTime tradingDate, float lastClosePrice)
         {
-            var indexSma50 = _indexSma50.Find(tradingDate);
-            if (indexSma50 is null || indexSma50.Sma is null)
+            var rsi = _stochRsi_14_14_3_3.Find(tradingDate);
+            if (rsi is null || rsi.StochRsi is null || rsi.Signal is null)
             {
                 return 0;
             }
 
-            var indexSma1 = _indexSma1.Find(tradingDate);
-            if (indexSma1 is null || indexSma1.Sma is null)
+            if (rsi.StochRsi > 50)
             {
                 return 0;
             }
 
-            if (indexSma1.Sma < indexSma50.Sma)
-            {
-                return 0;
-            }
-
-            var sma36 = _sma_36.Find(tradingDate);
-            if (sma36 is null || sma36.Sma is null)
-            {
-                return 0;
-            }
-
-            if (lastClosePrice < sma36.Sma)
-            {
-                return 0;
-            }
-
-            var sma10 = _sma_10.Find(tradingDate);
-            if (sma10 is null || sma10.Sma is null)
-            {
-                return 0;
-            }
-
-            var sma6 = _sma_6.Find(tradingDate);
-            if (sma6 is null || sma6.Sma is null)
-            {
-                return 0;
-            }
-
-            var zigZagResultH = _zigZag.LastOrDefault(q => q.Date <= tradingDate && q.PointType == "H" && ((decimal)lastClosePrice < (q.ZigZag - (q.ZigZag * 0.01m))));
-            var zigZagResultL = _zigZag.LastOrDefault(q => q.Date <= tradingDate && q.PointType == "L" && ((decimal)lastClosePrice > (q.ZigZag + (q.ZigZag * 0.01m))));
-            if (zigZagResultH is not null && zigZagResultH.ZigZag is not null && zigZagResultL is not null && zigZagResultL.ZigZag is not null)
-            {
-                if ((float)zigZagResultH.ZigZag.Value - lastClosePrice < (lastClosePrice - (float)zigZagResultL.ZigZag.Value) * 0.1)
-                {
-                    tradingCase.AddNote(-1, $"{tradingDate:yy/MM/dd}: Tỉ lệ lãi không phù hợp, H: {zigZagResultH.ZigZag.Value:0.0,00}, C: {lastClosePrice:0.0,00}, L: {zigZagResultL.ZigZag.Value:0.0,00}");
-                    return 0;
-                }
-            }
-
-            if (sma6.Sma < sma10.Sma)
+            if (rsi.StochRsi < rsi.Signal)
             {
                 return 0;
             }
@@ -245,19 +189,13 @@ namespace Pl.Sas.Core.Trading
                 return 100;
             }
 
-            var sma10 = _sma_10.Find(tradingDate);
-            if (sma10 is null || sma10.Sma is null)
+            var rsi = _stochRsi_14_14_3_3.Find(tradingDate);
+            if (rsi is null || rsi.StochRsi is null || rsi.Signal is null)
             {
                 return 0;
             }
 
-            var sma6 = _sma_6.Find(tradingDate);
-            if (sma6 is null || sma6.Sma is null)
-            {
-                return 0;
-            }
-
-            if (sma6.Sma > sma10.Sma)
+            if (rsi.StochRsi > rsi.Signal)
             {
                 return 0;
             }

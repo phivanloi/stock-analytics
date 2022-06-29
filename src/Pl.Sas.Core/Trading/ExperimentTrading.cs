@@ -3,9 +3,6 @@ using Skender.Stock.Indicators;
 
 namespace Pl.Sas.Core.Trading
 {
-    /// <summary>
-    /// Trading thử nghiệm
-    /// </summary>
     public class ExperimentTrading : BaseTrading
     {
         private readonly List<SmaResult> _sma_10;
@@ -13,6 +10,7 @@ namespace Pl.Sas.Core.Trading
         private readonly List<SmaResult> _sma_36;
         private readonly List<SmaResult> _indexSma50;
         private readonly List<SmaResult> _indexSma1;
+        private readonly List<StochRsiResult> _stochRsi_14_14_3_3;
         private TradingCase tradingCase = new();
 
         public ExperimentTrading(List<ChartPrice> chartPrices, List<ChartPrice> indexChartPrices)
@@ -24,6 +22,7 @@ namespace Pl.Sas.Core.Trading
             _sma_36 = quotes.Use(CandlePart.Close).GetSma(36).ToList();
             _indexSma50 = indexQuotes.Use(CandlePart.Close).GetSma(50).ToList();
             _indexSma1 = indexQuotes.Use(CandlePart.Close).GetSma(1).ToList();
+            _stochRsi_14_14_3_3 = quotes.GetStochRsi(14, 14, 3, 3).ToList();
         }
 
         public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName, bool isNoteTrading = true)
@@ -188,6 +187,17 @@ namespace Pl.Sas.Core.Trading
             }
 
             if (indexSma1.Sma < indexSma50.Sma)
+            {
+                return 0;
+            }
+
+            var rsi = _stochRsi_14_14_3_3.Find(tradingDate);
+            if (rsi is null || rsi.StochRsi is null || rsi.Signal is null)
+            {
+                return 0;
+            }
+
+            if (rsi.StochRsi > 50)
             {
                 return 0;
             }

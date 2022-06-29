@@ -180,17 +180,16 @@ namespace Pl.Sas.Core.Services
             var financialIndicators = await _financialIndicatorData.GetTopAsync(symbol, 10);
             var industry = await _industryData.GetByCodeAsync(company.SubsectorCode);
             var bankInterestRate12 = await _keyValueData.CacheGetAsync(Constants.BankInterestRate12Key);
-            var stockView = new StockView()
+            var stockView = new StockView
             {
                 Symbol = symbol,
                 IndustryCode = company.SubsectorCode,
                 Description = $"{company.Exchange} - {company.CompanyName} - {company.Supersector} - {company.Sector}",
                 Exchange = company.Exchange.ToUpper().Trim(),
                 MarketCap = company.MarketCap,
+                Beta = company.Beta.ShowPercent(),
+                BetaCss = "beta t-r" + (company.Beta <= 1 ? " t-wn" : company.Beta <= 1.4f ? "" : " t-s")
             };
-
-            stockView.Beta = company.Beta.ShowPercent();
-            stockView.BetaCss = "beta t-r" + (company.Beta <= 1 ? " t-wn" : company.Beta <= 1.4f ? "" : " t-s");
 
             if (analyticsResults is not null)
             {
