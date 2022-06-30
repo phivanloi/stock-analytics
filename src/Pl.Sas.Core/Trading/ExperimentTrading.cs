@@ -10,7 +10,6 @@ namespace Pl.Sas.Core.Trading
         private readonly List<SmaResult> _limitSmas;
         private readonly List<SmaResult> _indexFastSmas;
         private readonly List<SmaResult> _indexSlowSmas;
-        private readonly List<AdxResult> _adxs;
         private TradingCase tradingCase = new();
 
         public ExperimentTrading(List<ChartPrice> chartPrices, List<ChartPrice> indexChartPrices)
@@ -22,7 +21,6 @@ namespace Pl.Sas.Core.Trading
             _limitSmas = quotes.Use(CandlePart.Close).GetSma(36).ToList();
             _indexFastSmas = indexQuotes.Use(CandlePart.Close).GetSma(1).ToList();
             _indexSlowSmas = indexQuotes.Use(CandlePart.Close).GetSma(12).ToList();
-            _adxs = quotes.GetAdx(14).ToList();
         }
 
         public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName, bool isNoteTrading = true)
@@ -86,7 +84,7 @@ namespace Pl.Sas.Core.Trading
                 }
                 else
                 {
-                    if (tradingCase.NumberChangeDay > 2)
+                    if (tradingCase.NumberChangeDay > _timeStockCome)
                     {
                         tradingCase.IsSell = SellCondition(tradingHistory.Last().TradingDate, tradingHistory.Last().ClosePrice) > 0;
                         if (tradingCase.IsSell)
@@ -187,17 +185,6 @@ namespace Pl.Sas.Core.Trading
             }
 
             if (indexFastSma.Sma < indexSlowSma.Sma)
-            {
-                return 0;
-            }
-
-            var adx = _adxs.Find(tradingDate);
-            if (adx is null || adx.Adx is null)
-            {
-                return 0;
-            }
-
-            if (adx.Adx < 30)
             {
                 return 0;
             }
