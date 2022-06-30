@@ -8,17 +8,19 @@ namespace Pl.Sas.Core.Trading
         private readonly List<SmaResult> _sma_10;
         private readonly List<SmaResult> _sma_6;
         private readonly List<SmaResult> _sma_36;
-        private readonly List<StochRsiResult> _stochRsi_14_14_3_3;
+        private readonly List<SmaResult> _index_fast_sma;
+        private readonly List<SmaResult> _index_slow_sma;
         private TradingCase tradingCase = new();
 
         public ExperimentTrading(List<ChartPrice> chartPrices, List<ChartPrice> indexChartPrices)
         {
             var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
             var indexQuotes = indexChartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
-            _sma_10 = quotes.Use(CandlePart.Close).GetSma(10).ToList();
+            _sma_10 = quotes.Use(CandlePart.Close).GetSma(12).ToList();
             _sma_6 = quotes.Use(CandlePart.Close).GetSma(6).ToList();
             _sma_36 = quotes.Use(CandlePart.Close).GetSma(36).ToList();
-            _stochRsi_14_14_3_3 = quotes.GetStochRsi(14, 14, 3, 3).ToList();
+            _index_fast_sma = indexQuotes.Use(CandlePart.Close).GetSma(1).ToList();
+            _index_slow_sma = indexQuotes.Use(CandlePart.Close).GetSma(12).ToList();
         }
 
         public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName, bool isNoteTrading = true)
@@ -170,13 +172,19 @@ namespace Pl.Sas.Core.Trading
 
         public int BuyCondition(DateTime tradingDate, float lastClosePrice)
         {
-            var rsi = _stochRsi_14_14_3_3.Find(tradingDate);
-            if (rsi is null || rsi.StochRsi is null || rsi.Signal is null)
+            var indexFastSma = _index_fast_sma.Find(tradingDate);
+            if (indexFastSma is null || indexFastSma.Sma is null)
             {
                 return 0;
             }
 
-            if (rsi.StochRsi < 10 || rsi.StochRsi > 90)
+            var indexSlowSma = _index_slow_sma.Find(tradingDate);
+            if (indexSlowSma is null || indexSlowSma.Sma is null)
+            {
+                return 0;
+            }
+
+            if (indexFastSma.Sma < indexSlowSma.Sma)
             {
                 return 0;
             }

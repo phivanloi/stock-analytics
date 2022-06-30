@@ -82,7 +82,7 @@
             <tr class="t-w t-c">
                 <td rowspan="2" title="Tên doanh nghiệp - lĩnh vực hoạt động" id="number-row">Mã</td>
                 <td colspan="10" title="Điểm đánh giá doanh nghiệp và các chỉ số tài chính hiện tại của doanh nghiệp">Doanh nghiệp</td>
-                <td colspan="3" title="Phân tích các yếu tố vĩ mô tác động vào cổ phiếu">Dòng tiền</td>
+                <td colspan="2" title="Điểm số dòng tiền ngành và dòng tiền của cổ phiếu">Dòng tiền</td>
                 <td colspan="11" title="Điểm đánh giá tăng trưởng thị giá và phân tích kỹ thuật">Kỹ thuật</td>
                 <td colspan="5" title="Kết quả các phương pháp khi cho đầu tư từ @Pl.Sas.Core.Constants.StartTime.ToString("dd/MM/yyyy") và đánh giá mua/bán">Khuyến nghị</td>
             </tr>
@@ -98,7 +98,6 @@
                 <td title="Đánh giá của vndirect">VND</td>
                 <td title="Giá dự phóng của các công ty chứng khoán">Giá DP</td>
 
-                <td title="Tổng điểm đánh giá dòng tiền">TH</td>
                 <td title="Điểm đánh giá dòng tiền ngành">DTN</td>
                 <td title="Điểm đánh giá dòng tiền cổ phiếu">DTC</td>
 
@@ -204,7 +203,7 @@
 
         function LoadMarket() {
             var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            $('#user-invest-table-body').html('<tr><td colspan="30" class="text-center"><p class="fas fa-sync-alt fa-spin"></p></td></tr>');
+            $('#user-invest-table-body').html('<tr><td colspan="29" class="text-center"><p class="fas fa-sync-alt fa-spin"></p></td></tr>');
             var postData = JSON.stringify({
                 Ordinal: $('#ordinal').val(),
                 IndustryCode: $('#industry').val(),
