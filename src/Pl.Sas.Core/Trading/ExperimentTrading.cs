@@ -191,13 +191,13 @@ namespace Pl.Sas.Core.Trading
                 return 0;
             }
 
-            var adxs = _adxs.Where(q => q.Date <= tradingDate).OrderByDescending(q => q.Date).Take(3).ToList();
-            if (adxs is null || adxs.Count < 2)
+            var adx = _adxs.Find(tradingDate);
+            if (adx is null || adx.Adx is null)
             {
                 return 0;
             }
 
-            if (adxs[0].Adx < 30 || adxs[0].Adx < adxs[1].Adx)
+            if (adx.Adx < 30)
             {
                 return 0;
             }
