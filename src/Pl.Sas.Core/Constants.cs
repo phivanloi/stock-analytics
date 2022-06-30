@@ -10,7 +10,7 @@
         /// <summary>
         /// ngày này được mặc định dùng để làm mốc cho việc trading thử nghiệm
         /// </summary>
-        public static readonly DateTime StartTime = new(2010, 1, 1);
+        public static readonly DateTime StartTime = new(2018, 1, 1);
 
         /// <summary>
         /// Khóa cache cho KeyValue
