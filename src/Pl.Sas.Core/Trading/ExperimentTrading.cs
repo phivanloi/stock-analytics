@@ -5,22 +5,24 @@ namespace Pl.Sas.Core.Trading
 {
     public class ExperimentTrading : BaseTrading
     {
-        private readonly List<SmaResult> _slow_sma;
-        private readonly List<SmaResult> _fast_sma;
-        private readonly List<SmaResult> _limit_sma;
-        private readonly List<SmaResult> _index_fast_sma;
-        private readonly List<SmaResult> _index_slow_sma;
+        private readonly List<SmaResult> _slowSmas;
+        private readonly List<SmaResult> _fastSmas;
+        private readonly List<SmaResult> _limitSmas;
+        private readonly List<SmaResult> _indexFastSmas;
+        private readonly List<SmaResult> _indexSlowSmas;
+        private readonly List<AdxResult> _adxs;
         private TradingCase tradingCase = new();
 
         public ExperimentTrading(List<ChartPrice> chartPrices, List<ChartPrice> indexChartPrices)
         {
             var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
             var indexQuotes = indexChartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
-            _slow_sma = quotes.Use(CandlePart.Close).GetSma(10).ToList();
-            _fast_sma = quotes.Use(CandlePart.Close).GetSma(6).ToList();
-            _limit_sma = quotes.Use(CandlePart.Close).GetSma(36).ToList();
-            _index_fast_sma = indexQuotes.Use(CandlePart.Close).GetSma(1).ToList();
-            _index_slow_sma = indexQuotes.Use(CandlePart.Close).GetSma(12).ToList();
+            _slowSmas = quotes.Use(CandlePart.Close).GetSma(10).ToList();
+            _fastSmas = quotes.Use(CandlePart.Close).GetSma(6).ToList();
+            _limitSmas = quotes.Use(CandlePart.Close).GetSma(36).ToList();
+            _indexFastSmas = indexQuotes.Use(CandlePart.Close).GetSma(1).ToList();
+            _indexSlowSmas = indexQuotes.Use(CandlePart.Close).GetSma(12).ToList();
+            _adxs = quotes.GetAdx(14).ToList();
         }
 
         public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName, bool isNoteTrading = true)
@@ -151,19 +153,19 @@ namespace Pl.Sas.Core.Trading
                 tradingCase.MaxPriceOnBuy = chartPrice.ClosePrice;//Đặt lại giá cao nhất đã đạt được
             }
 
-            var sma10 = _slow_sma.Find(chartPrice.TradingDate);
-            if (sma10 is null || sma10.Sma is null)
+            var slowSma = _slowSmas.Find(chartPrice.TradingDate);
+            if (slowSma is null || slowSma.Sma is null)
             {
                 return;
             }
 
-            var sma6 = _fast_sma.Find(chartPrice.TradingDate);
-            if (sma6 is null || sma6.Sma is null)
+            var fastSma = _fastSmas.Find(chartPrice.TradingDate);
+            if (fastSma is null || fastSma.Sma is null)
             {
                 return;
             }
 
-            if (sma6.Sma < sma10.Sma && !tradingCase.ContinueBuy)
+            if (fastSma.Sma < slowSma.Sma && !tradingCase.ContinueBuy)
             {
                 tradingCase.AddNote(0, $"{chartPrice.TradingDate:yy/MM/dd}: Cho phép lệnh mua được hoạt động do đường ma6 đã cắt xuống đường ma10.");
                 tradingCase.ContinueBuy = true;
@@ -172,13 +174,13 @@ namespace Pl.Sas.Core.Trading
 
         public int BuyCondition(DateTime tradingDate, float lastClosePrice)
         {
-            var indexFastSma = _index_fast_sma.Find(tradingDate);
+            var indexFastSma = _indexFastSmas.Find(tradingDate);
             if (indexFastSma is null || indexFastSma.Sma is null)
             {
                 return 0;
             }
 
-            var indexSlowSma = _index_slow_sma.Find(tradingDate);
+            var indexSlowSma = _indexSlowSmas.Find(tradingDate);
             if (indexSlowSma is null || indexSlowSma.Sma is null)
             {
                 return 0;
@@ -189,30 +191,41 @@ namespace Pl.Sas.Core.Trading
                 return 0;
             }
 
-            var sma36 = _limit_sma.Find(tradingDate);
-            if (sma36 is null || sma36.Sma is null)
+            var adxs = _adxs.Where(q => q.Date <= tradingDate).OrderByDescending(q => q.Date).Take(3).ToList();
+            if (adxs is null || adxs.Count < 2)
             {
                 return 0;
             }
 
-            if (lastClosePrice < sma36.Sma)
+            if (adxs[0].Adx < 30 || adxs[0].Adx < adxs[1].Adx)
             {
                 return 0;
             }
 
-            var sma10 = _slow_sma.Find(tradingDate);
-            if (sma10 is null || sma10.Sma is null)
+            var limitSma = _limitSmas.Find(tradingDate);
+            if (limitSma is null || limitSma.Sma is null)
             {
                 return 0;
             }
 
-            var sma6 = _fast_sma.Find(tradingDate);
-            if (sma6 is null || sma6.Sma is null)
+            if (lastClosePrice < limitSma.Sma)
             {
                 return 0;
             }
 
-            if (sma6.Sma < sma10.Sma)
+            var slowSma = _slowSmas.Find(tradingDate);
+            if (slowSma is null || slowSma.Sma is null)
+            {
+                return 0;
+            }
+
+            var fastSma = _fastSmas.Find(tradingDate);
+            if (fastSma is null || fastSma.Sma is null)
+            {
+                return 0;
+            }
+
+            if (fastSma.Sma < slowSma.Sma)
             {
                 return 0;
             }
@@ -229,19 +242,19 @@ namespace Pl.Sas.Core.Trading
                 return 100;
             }
 
-            var sma10 = _slow_sma.Find(tradingDate);
-            if (sma10 is null || sma10.Sma is null)
+            var slowSma = _slowSmas.Find(tradingDate);
+            if (slowSma is null || slowSma.Sma is null)
             {
                 return 0;
             }
 
-            var sma6 = _fast_sma.Find(tradingDate);
-            if (sma6 is null || sma6.Sma is null)
+            var fastSma = _fastSmas.Find(tradingDate);
+            if (fastSma is null || fastSma.Sma is null)
             {
                 return 0;
             }
 
-            if (sma6.Sma > sma10.Sma)
+            if (fastSma.Sma > slowSma.Sma)
             {
                 return 0;
             }
