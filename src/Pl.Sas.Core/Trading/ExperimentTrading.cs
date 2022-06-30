@@ -20,7 +20,7 @@ namespace Pl.Sas.Core.Trading
             _fastSmas = quotes.Use(CandlePart.Close).GetSma(6).ToList();
             _limitSmas = quotes.Use(CandlePart.Close).GetSma(36).ToList();
             _indexFastSmas = indexQuotes.Use(CandlePart.Close).GetSma(1).ToList();
-            _indexSlowSmas = indexQuotes.Use(CandlePart.Close).GetSma(12).ToList();
+            _indexSlowSmas = indexQuotes.Use(CandlePart.Close).GetSma(36).ToList();
         }
 
         public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName, bool isNoteTrading = true)
