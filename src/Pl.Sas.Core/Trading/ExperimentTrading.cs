@@ -5,9 +5,9 @@ namespace Pl.Sas.Core.Trading
 {
     public class ExperimentTrading : BaseTrading
     {
-        private readonly List<SmaResult> _sma_10;
-        private readonly List<SmaResult> _sma_6;
-        private readonly List<SmaResult> _sma_36;
+        private readonly List<SmaResult> _slow_sma;
+        private readonly List<SmaResult> _fast_sma;
+        private readonly List<SmaResult> _limit_sma;
         private readonly List<SmaResult> _index_fast_sma;
         private readonly List<SmaResult> _index_slow_sma;
         private TradingCase tradingCase = new();
@@ -16,9 +16,9 @@ namespace Pl.Sas.Core.Trading
         {
             var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
             var indexQuotes = indexChartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
-            _sma_10 = quotes.Use(CandlePart.Close).GetSma(12).ToList();
-            _sma_6 = quotes.Use(CandlePart.Close).GetSma(6).ToList();
-            _sma_36 = quotes.Use(CandlePart.Close).GetSma(36).ToList();
+            _slow_sma = quotes.Use(CandlePart.Close).GetSma(10).ToList();
+            _fast_sma = quotes.Use(CandlePart.Close).GetSma(6).ToList();
+            _limit_sma = quotes.Use(CandlePart.Close).GetSma(36).ToList();
             _index_fast_sma = indexQuotes.Use(CandlePart.Close).GetSma(1).ToList();
             _index_slow_sma = indexQuotes.Use(CandlePart.Close).GetSma(12).ToList();
         }
@@ -151,13 +151,13 @@ namespace Pl.Sas.Core.Trading
                 tradingCase.MaxPriceOnBuy = chartPrice.ClosePrice;//Đặt lại giá cao nhất đã đạt được
             }
 
-            var sma10 = _sma_10.Find(chartPrice.TradingDate);
+            var sma10 = _slow_sma.Find(chartPrice.TradingDate);
             if (sma10 is null || sma10.Sma is null)
             {
                 return;
             }
 
-            var sma6 = _sma_6.Find(chartPrice.TradingDate);
+            var sma6 = _fast_sma.Find(chartPrice.TradingDate);
             if (sma6 is null || sma6.Sma is null)
             {
                 return;
@@ -189,7 +189,7 @@ namespace Pl.Sas.Core.Trading
                 return 0;
             }
 
-            var sma36 = _sma_36.Find(tradingDate);
+            var sma36 = _limit_sma.Find(tradingDate);
             if (sma36 is null || sma36.Sma is null)
             {
                 return 0;
@@ -200,13 +200,13 @@ namespace Pl.Sas.Core.Trading
                 return 0;
             }
 
-            var sma10 = _sma_10.Find(tradingDate);
+            var sma10 = _slow_sma.Find(tradingDate);
             if (sma10 is null || sma10.Sma is null)
             {
                 return 0;
             }
 
-            var sma6 = _sma_6.Find(tradingDate);
+            var sma6 = _fast_sma.Find(tradingDate);
             if (sma6 is null || sma6.Sma is null)
             {
                 return 0;
@@ -229,13 +229,13 @@ namespace Pl.Sas.Core.Trading
                 return 100;
             }
 
-            var sma10 = _sma_10.Find(tradingDate);
+            var sma10 = _slow_sma.Find(tradingDate);
             if (sma10 is null || sma10.Sma is null)
             {
                 return 0;
             }
 
-            var sma6 = _sma_6.Find(tradingDate);
+            var sma6 = _fast_sma.Find(tradingDate);
             if (sma6 is null || sma6.Sma is null)
             {
                 return 0;
