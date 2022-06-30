@@ -9,6 +9,7 @@ namespace Pl.Sas.Core.Trading
         protected const float _sellTax = 0.25f / 100;
         protected const float _advanceTax = 0.15f / 100;
         protected const int _batch = 100;
+        protected const int _timeStockCome = 2;
 
         /// <summary>
         /// Hàm lấy tỉ lệ biến động giá của các sàn chứng khoán
