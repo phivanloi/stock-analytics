@@ -20,7 +20,7 @@ namespace Pl.Sas.Core.Trading
 
         public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName, bool isNoteTrading = true)
         {
-            tradingCase = new() { IsNote = isNoteTrading, StopLossPercent = -7 };
+            tradingCase = new() { IsNote = isNoteTrading };
 
             foreach (var day in chartPrices)
             {
@@ -42,7 +42,7 @@ namespace Pl.Sas.Core.Trading
 
                 if (tradingCase.NumberStock <= 0)
                 {
-                    tradingCase.IsBuy = BuyCondition(tradingHistory.Last().TradingDate, tradingHistory.Last().ClosePrice) > 0 && tradingCase.ContinueBuy;
+                    tradingCase.IsBuy = BuyCondition(tradingHistory.Last().TradingDate) > 0 && tradingCase.ContinueBuy;
                     if (tradingCase.IsBuy)
                     {
                         tradingCase.ActionPrice = tradingCase.BuyPrice;
@@ -61,6 +61,7 @@ namespace Pl.Sas.Core.Trading
                         tradingCase.NumberStock += stockCount;
                         tradingCase.NumberChangeDay = 0;
                         tradingCase.MaxPriceOnBuy = day.ClosePrice;
+                        tradingCase.StopLossPrice = tradingCase.ActionPrice - (tradingCase.ActionPrice * 0.07f);
                         if (timeTrading == TimeTrading.NST || DateTime.Now.Date != day.TradingDate)
                         {
                             tradingCase.AssetPosition = "100% C";
@@ -159,7 +160,7 @@ namespace Pl.Sas.Core.Trading
             }
         }
 
-        public int BuyCondition(DateTime tradingDate, float lastClosePrice)
+        public int BuyCondition(DateTime tradingDate)
         {
             var rsi = _stochRsi_14_14_3_3.Find(tradingDate);
             if (rsi is null || rsi.StochRsi is null || rsi.Signal is null)
@@ -182,7 +183,7 @@ namespace Pl.Sas.Core.Trading
 
         public int SellCondition(DateTime tradingDate, float lastClosePrice)
         {
-            if (lastClosePrice.GetPercent(tradingCase.ActionPrice) <= tradingCase.StopLossPercent)//Kiểm tra trạng thái bán chặn lỗ
+            if (lastClosePrice <= tradingCase.StopLossPrice)
             {
                 tradingCase.AddNote(-1, $"{tradingDate:yy/MM/dd}: Kích hoạt lệnh bán chặn lỗ, giá mua {tradingCase.ActionPrice:0.0,00} giá kích hoạt {lastClosePrice:0.0,00}({lastClosePrice.GetPercent(tradingCase.ActionPrice):0.0,00})");
                 tradingCase.ContinueBuy = false;

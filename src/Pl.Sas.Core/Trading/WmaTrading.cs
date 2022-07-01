@@ -8,24 +8,19 @@ namespace Pl.Sas.Core.Trading
         private readonly List<WmaResult> _slowWmas;
         private readonly List<WmaResult> _fastWmas;
         private readonly List<WmaResult> _limitWmas;
-        private readonly List<WmaResult> _indexFastWmas;
-        private readonly List<WmaResult> _indexSlowWmas;
         private TradingCase tradingCase = new();
 
-        public WmaTrading(List<ChartPrice> chartPrices, List<ChartPrice> indexChartPrices)
+        public WmaTrading(List<ChartPrice> chartPrices)
         {
             var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
-            var indexQuotes = indexChartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
             _slowWmas = quotes.Use(CandlePart.Close).GetWma(16).ToList();
             _fastWmas = quotes.Use(CandlePart.Close).GetWma(9).ToList();
             _limitWmas = quotes.Use(CandlePart.Close).GetWma(50).ToList();
-            _indexFastWmas = indexQuotes.Use(CandlePart.Close).GetWma(1).ToList();
-            _indexSlowWmas = indexQuotes.Use(CandlePart.Close).GetWma(50).ToList();
         }
 
         public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName, bool isNoteTrading = true)
         {
-            tradingCase = new() { IsNote = isNoteTrading, StopLossPercent = -7f };
+            tradingCase = new() { IsNote = isNoteTrading};
 
             foreach (var day in chartPrices)
             {
@@ -222,7 +217,7 @@ namespace Pl.Sas.Core.Trading
 
         public int SellCondition(DateTime tradingDate, float lastClosePrice)
         {
-            if (lastClosePrice.GetPercent(tradingCase.ActionPrice) <= tradingCase.StopLossPercent)//Kiểm tra trạng thái bán chặn lỗ
+            if (lastClosePrice <= tradingCase.StopLossPrice)
             {
                 tradingCase.AddNote(-1, $"{tradingDate:yy/MM/dd}: Kích hoạt lệnh bán chặn lỗ, giá mua {tradingCase.ActionPrice:0.0,00} giá kích hoạt {lastClosePrice:0.0,00}({lastClosePrice.GetPercent(tradingCase.ActionPrice):0.0,00})");
                 tradingCase.ContinueBuy = false;
