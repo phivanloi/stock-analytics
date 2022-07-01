@@ -6,13 +6,13 @@ namespace Pl.Sas.Core.Trading
     /// <summary>
     /// Trading thử nghiệm
     /// </summary>
-    public class ExperimentTradingBk : BaseTrading
+    public class MacdZigZag : BaseTrading
     {
         private List<MacdResult> _macd_9_20_3 = new();
         private List<ZigZagResult> _zigZag = new();
         private TradingCase tradingCase = new();
 
-        public ExperimentTradingBk(List<ChartPrice> chartPrices, float beta)
+        public MacdZigZag(List<ChartPrice> chartPrices, float beta)
         {
             var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
             _macd_9_20_3 = quotes.Use(CandlePart.Close).GetMacd(9, 20, 3).ToList();

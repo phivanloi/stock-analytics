@@ -521,8 +521,7 @@ namespace Pl.Sas.Core.Services
             var checkingKey = $"{symbol}-Analytics-TestTrading";
             var stock = await _stockData.FindBySymbolAsync(symbol);
             var chartPrices = await _chartPriceData.CacheFindAllAsync(symbol, "D");
-            var indexChartPrices = await _chartPriceData.CacheFindAllAsync("VNINDEX", "D");
-            if (indexChartPrices is null || stock is null || chartPrices is null || chartPrices.Count <= 2)
+            if (stock is null || chartPrices is null || chartPrices.Count <= 2)
             {
                 _logger.LogWarning("TestTradingAnalyticsAsync => stock is null or chartPrices is null for {symbol}", symbol);
                 return await _keyValueData.SetAsync(checkingKey, false);
@@ -585,7 +584,7 @@ namespace Pl.Sas.Core.Services
             #endregion
 
             #region Experiment Trading
-            var experimentTrading = new ExperimentTrading(chartPrices, indexChartPrices);
+            var experimentTrading = new ExperimentTrading(chartPrices);
             tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
             var experCase = experimentTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
             var experNote = $"Trading {Utilities.GetPrincipleName(0).ToLower()} {chartTrading.Count} phiên từ ngày {chartTrading[0].TradingDate:dd/MM/yyyy}, Lợi nhuận {experCase.Profit(chartTrading[^1].ClosePrice):0,0} ({experCase.ProfitPercent(chartTrading[^1].ClosePrice):0,0.00}%), thuế {experCase.TotalTax:0,0}, xem chi tiết tại tab \"Lợi nhuận và đầu tư TN\".";

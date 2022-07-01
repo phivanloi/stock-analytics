@@ -92,6 +92,28 @@ namespace Pl.Sas.UnitTests
         }
 
         [Fact]
+        public async Task ParabolicSarTestAsync()
+        {
+            var services = ConfigureServices.GetConfigureServices();
+            var serviceProvider = services.BuildServiceProvider();
+            var chartPriceData = serviceProvider.GetService<IChartPriceData>() ?? throw new Exception("Can't get IChartPriceData");
+            var hostedService = serviceProvider.GetService<IHostedService>() as LoggingQueuedHostedService ?? throw new Exception("Can't get LoggingQueuedHostedService");
+            await hostedService.StartAsync(CancellationToken.None);
+
+            var chartPrices = await chartPriceData.FindAllAsync("VND", "D");
+            var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
+            var reverseSignals = quotes.GetParabolicSar(0.02, 0.2).ToList();
+            foreach (var reverseSignal in reverseSignals)
+            {
+                _output.WriteLine($"{reverseSignal.Date:yyyy:MM:dd}, Sar:{reverseSignal.Sar:00.00}, IsReversal:{reverseSignal.IsReversal ?? false}");
+            }
+
+            Assert.True(true);
+
+            await hostedService.StopAsync(CancellationToken.None);
+        }
+
+        [Fact]
         public async Task RsiTestAsync()
         {
             var services = ConfigureServices.GetConfigureServices();

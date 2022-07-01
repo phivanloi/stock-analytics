@@ -31,9 +31,9 @@
         public float TradingMoney { get; set; } = 0;
 
         /// <summary>
-        /// Phần % chặn lỗ
+        /// Giá chặn lỗ
         /// </summary>
-        public float StopLossPercent { get; set; } = -7;
+        public float StopLossPrice { get; set; }
 
         /// <summary>
         /// Số cổ phiếu

@@ -8,24 +8,19 @@ namespace Pl.Sas.Core.Trading
         private readonly List<SmaResult> _slowSmas;
         private readonly List<SmaResult> _fastSmas;
         private readonly List<SmaResult> _limitSmas;
-        private readonly List<SmaResult> _indexFastSmas;
-        private readonly List<SmaResult> _indexSlowSmas;
         private TradingCase tradingCase = new();
 
-        public ExperimentTrading(List<ChartPrice> chartPrices, List<ChartPrice> indexChartPrices)
+        public ExperimentTrading(List<ChartPrice> chartPrices)
         {
             var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
-            var indexQuotes = indexChartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
-            _slowSmas = quotes.Use(CandlePart.Close).GetSma(10).ToList();
             _fastSmas = quotes.Use(CandlePart.Close).GetSma(6).ToList();
+            _slowSmas = quotes.Use(CandlePart.Close).GetSma(10).ToList();
             _limitSmas = quotes.Use(CandlePart.Close).GetSma(36).ToList();
-            _indexFastSmas = indexQuotes.Use(CandlePart.Close).GetSma(1).ToList();
-            _indexSlowSmas = indexQuotes.Use(CandlePart.Close).GetSma(36).ToList();
         }
 
         public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName, bool isNoteTrading = true)
         {
-            tradingCase = new() { IsNote = isNoteTrading, StopLossPercent = -7f };
+            tradingCase = new() { IsNote = isNoteTrading };
 
             foreach (var day in chartPrices)
             {
@@ -66,6 +61,7 @@ namespace Pl.Sas.Core.Trading
                         tradingCase.NumberStock += stockCount;
                         tradingCase.NumberChangeDay = 0;
                         tradingCase.MaxPriceOnBuy = day.ClosePrice;
+                        tradingCase.StopLossPrice = tradingCase.ActionPrice - (tradingCase.ActionPrice * 0.07f);
                         if (timeTrading == TimeTrading.NST || DateTime.Now.Date != day.TradingDate)
                         {
                             tradingCase.AssetPosition = "100% C";
@@ -172,23 +168,6 @@ namespace Pl.Sas.Core.Trading
 
         public int BuyCondition(DateTime tradingDate, float lastClosePrice)
         {
-            var indexFastSma = _indexFastSmas.Find(tradingDate);
-            if (indexFastSma is null || indexFastSma.Sma is null)
-            {
-                return 0;
-            }
-
-            var indexSlowSma = _indexSlowSmas.Find(tradingDate);
-            if (indexSlowSma is null || indexSlowSma.Sma is null)
-            {
-                return 0;
-            }
-
-            if (indexFastSma.Sma < indexSlowSma.Sma)
-            {
-                return 0;
-            }
-
             var limitSma = _limitSmas.Find(tradingDate);
             if (limitSma is null || limitSma.Sma is null)
             {
@@ -222,7 +201,7 @@ namespace Pl.Sas.Core.Trading
 
         public int SellCondition(DateTime tradingDate, float lastClosePrice)
         {
-            if (lastClosePrice.GetPercent(tradingCase.ActionPrice) <= tradingCase.StopLossPercent)//Kiểm tra trạng thái bán chặn lỗ
+            if (lastClosePrice <= tradingCase.StopLossPrice)
             {
                 tradingCase.AddNote(-1, $"{tradingDate:yy/MM/dd}: Kích hoạt lệnh bán chặn lỗ, giá mua {tradingCase.ActionPrice:0.0,00} giá kích hoạt {lastClosePrice:0.0,00}({lastClosePrice.GetPercent(tradingCase.ActionPrice):0.0,00})");
                 tradingCase.ContinueBuy = false;
