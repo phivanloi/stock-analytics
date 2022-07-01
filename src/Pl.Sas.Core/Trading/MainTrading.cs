@@ -5,22 +5,22 @@ namespace Pl.Sas.Core.Trading
 {
     public class MainTrading : BaseTrading
     {
-        private readonly List<SmaResult> _sma_10;
-        private readonly List<SmaResult> _sma_6;
-        private readonly List<SmaResult> _sma_36;
+        private readonly List<SmaResult> _slowSmas;
+        private readonly List<SmaResult> _fastSmas;
+        private readonly List<SmaResult> _limitSmas;
         private TradingCase tradingCase = new();
 
         public MainTrading(List<ChartPrice> chartPrices)
         {
             var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
-            _sma_10 = quotes.Use(CandlePart.Close).GetSma(10).ToList();
-            _sma_6 = quotes.Use(CandlePart.Close).GetSma(6).ToList();
-            _sma_36 = quotes.Use(CandlePart.Close).GetSma(36).ToList();
+            _fastSmas = quotes.Use(CandlePart.Close).GetSma(12).ToList();
+            _slowSmas = quotes.Use(CandlePart.Close).GetSma(26).ToList();
+            _limitSmas = quotes.Use(CandlePart.Close).GetSma(36).ToList();
         }
 
         public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName, bool isNoteTrading = true)
         {
-            tradingCase = new() { IsNote = isNoteTrading, StopLossPercent = -7 };
+            tradingCase = new() { IsNote = isNoteTrading, StopLossPercent = -7f };
 
             foreach (var day in chartPrices)
             {
@@ -79,7 +79,7 @@ namespace Pl.Sas.Core.Trading
                 }
                 else
                 {
-                    if (tradingCase.NumberChangeDay > 2)
+                    if (tradingCase.NumberChangeDay > _timeStockCome)
                     {
                         tradingCase.IsSell = SellCondition(tradingHistory.Last().TradingDate, tradingHistory.Last().ClosePrice) > 0;
                         if (tradingCase.IsSell)
@@ -146,19 +146,19 @@ namespace Pl.Sas.Core.Trading
                 tradingCase.MaxPriceOnBuy = chartPrice.ClosePrice;//Đặt lại giá cao nhất đã đạt được
             }
 
-            var sma10 = _sma_10.Find(chartPrice.TradingDate);
-            if (sma10 is null || sma10.Sma is null)
+            var slowSma = _slowSmas.Find(chartPrice.TradingDate);
+            if (slowSma is null || slowSma.Sma is null)
             {
                 return;
             }
 
-            var sma6 = _sma_6.Find(chartPrice.TradingDate);
-            if (sma6 is null || sma6.Sma is null)
+            var fastSma = _fastSmas.Find(chartPrice.TradingDate);
+            if (fastSma is null || fastSma.Sma is null)
             {
                 return;
             }
 
-            if (sma6.Sma < sma10.Sma && !tradingCase.ContinueBuy)
+            if (fastSma.Sma < slowSma.Sma && !tradingCase.ContinueBuy)
             {
                 tradingCase.AddNote(0, $"{chartPrice.TradingDate:yy/MM/dd}: Cho phép lệnh mua được hoạt động do đường ma6 đã cắt xuống đường ma10.");
                 tradingCase.ContinueBuy = true;
@@ -167,30 +167,30 @@ namespace Pl.Sas.Core.Trading
 
         public int BuyCondition(DateTime tradingDate, float lastClosePrice)
         {
-            var sma36 = _sma_36.Find(tradingDate);
-            if (sma36 is null || sma36.Sma is null)
+            var limitSma = _limitSmas.Find(tradingDate);
+            if (limitSma is null || limitSma.Sma is null)
             {
                 return 0;
             }
 
-            if (lastClosePrice < sma36.Sma)
+            if (lastClosePrice < limitSma.Sma)
             {
                 return 0;
             }
 
-            var sma10 = _sma_10.Find(tradingDate);
-            if (sma10 is null || sma10.Sma is null)
+            var slowSma = _slowSmas.Find(tradingDate);
+            if (slowSma is null || slowSma.Sma is null)
             {
                 return 0;
             }
 
-            var sma6 = _sma_6.Find(tradingDate);
-            if (sma6 is null || sma6.Sma is null)
+            var fastSma = _fastSmas.Find(tradingDate);
+            if (fastSma is null || fastSma.Sma is null)
             {
                 return 0;
             }
 
-            if (sma6.Sma < sma10.Sma)
+            if (fastSma.Sma < slowSma.Sma)
             {
                 return 0;
             }
@@ -200,26 +200,26 @@ namespace Pl.Sas.Core.Trading
 
         public int SellCondition(DateTime tradingDate, float lastClosePrice)
         {
-            if (lastClosePrice.GetPercent(tradingCase.ActionPrice) < tradingCase.StopLossPercent)//Kiểm tra trạng thái bán chặn lỗ
+            if (lastClosePrice.GetPercent(tradingCase.ActionPrice) <= tradingCase.StopLossPercent)//Kiểm tra trạng thái bán chặn lỗ
             {
                 tradingCase.AddNote(-1, $"{tradingDate:yy/MM/dd}: Kích hoạt lệnh bán chặn lỗ, giá mua {tradingCase.ActionPrice:0.0,00} giá kích hoạt {lastClosePrice:0.0,00}({lastClosePrice.GetPercent(tradingCase.ActionPrice):0.0,00})");
                 tradingCase.ContinueBuy = false;
                 return 100;
             }
 
-            var sma10 = _sma_10.Find(tradingDate);
-            if (sma10 is null || sma10.Sma is null)
+            var slowSma = _slowSmas.Find(tradingDate);
+            if (slowSma is null || slowSma.Sma is null)
             {
                 return 0;
             }
 
-            var sma6 = _sma_6.Find(tradingDate);
-            if (sma6 is null || sma6.Sma is null)
+            var fastSma = _fastSmas.Find(tradingDate);
+            if (fastSma is null || fastSma.Sma is null)
             {
                 return 0;
             }
 
-            if (sma6.Sma > sma10.Sma)
+            if (fastSma.Sma > slowSma.Sma)
             {
                 return 0;
             }

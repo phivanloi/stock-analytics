@@ -3,14 +3,15 @@ using Skender.Stock.Indicators;
 
 namespace Pl.Sas.Core.Trading
 {
-    public class ExperimentTrading : BaseTrading
+    public class SmaPSarTrading : BaseTrading
     {
         private readonly List<SmaResult> _slowSmas;
         private readonly List<SmaResult> _fastSmas;
         private readonly List<SmaResult> _limitSmas;
+        private readonly List<ParabolicSarResult> _limitSmas;
         private TradingCase tradingCase = new();
 
-        public ExperimentTrading(List<ChartPrice> chartPrices)
+        public SmaPSarTrading(List<ChartPrice> chartPrices)
         {
             var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
             _fastSmas = quotes.Use(CandlePart.Close).GetSma(6).ToList();

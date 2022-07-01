@@ -3,19 +3,24 @@ using Skender.Stock.Indicators;
 
 namespace Pl.Sas.Core.Trading
 {
-    public class ExperimentTrading : BaseTrading
+    public class WmaTrading : BaseTrading
     {
-        private readonly List<SmaResult> _slowSmas;
-        private readonly List<SmaResult> _fastSmas;
-        private readonly List<SmaResult> _limitSmas;
+        private readonly List<WmaResult> _slowWmas;
+        private readonly List<WmaResult> _fastWmas;
+        private readonly List<WmaResult> _limitWmas;
+        private readonly List<WmaResult> _indexFastWmas;
+        private readonly List<WmaResult> _indexSlowWmas;
         private TradingCase tradingCase = new();
 
-        public ExperimentTrading(List<ChartPrice> chartPrices)
+        public WmaTrading(List<ChartPrice> chartPrices, List<ChartPrice> indexChartPrices)
         {
             var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
-            _fastSmas = quotes.Use(CandlePart.Close).GetSma(6).ToList();
-            _slowSmas = quotes.Use(CandlePart.Close).GetSma(10).ToList();
-            _limitSmas = quotes.Use(CandlePart.Close).GetSma(36).ToList();
+            var indexQuotes = indexChartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
+            _slowWmas = quotes.Use(CandlePart.Close).GetWma(16).ToList();
+            _fastWmas = quotes.Use(CandlePart.Close).GetWma(9).ToList();
+            _limitWmas = quotes.Use(CandlePart.Close).GetWma(50).ToList();
+            _indexFastWmas = indexQuotes.Use(CandlePart.Close).GetWma(1).ToList();
+            _indexSlowWmas = indexQuotes.Use(CandlePart.Close).GetWma(50).ToList();
         }
 
         public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName, bool isNoteTrading = true)
@@ -146,19 +151,19 @@ namespace Pl.Sas.Core.Trading
                 tradingCase.MaxPriceOnBuy = chartPrice.ClosePrice;//Đặt lại giá cao nhất đã đạt được
             }
 
-            var slowSma = _slowSmas.Find(chartPrice.TradingDate);
-            if (slowSma is null || slowSma.Sma is null)
+            var slowSma = _slowWmas.Find(chartPrice.TradingDate);
+            if (slowSma is null || slowSma.Wma is null)
             {
                 return;
             }
 
-            var fastSma = _fastSmas.Find(chartPrice.TradingDate);
-            if (fastSma is null || fastSma.Sma is null)
+            var fastSma = _fastWmas.Find(chartPrice.TradingDate);
+            if (fastSma is null || fastSma.Wma is null)
             {
                 return;
             }
 
-            if (fastSma.Sma < slowSma.Sma && !tradingCase.ContinueBuy)
+            if (fastSma.Wma < slowSma.Wma && !tradingCase.ContinueBuy)
             {
                 tradingCase.AddNote(0, $"{chartPrice.TradingDate:yy/MM/dd}: Cho phép lệnh mua được hoạt động do đường ma6 đã cắt xuống đường ma10.");
                 tradingCase.ContinueBuy = true;
@@ -167,30 +172,47 @@ namespace Pl.Sas.Core.Trading
 
         public int BuyCondition(DateTime tradingDate, float lastClosePrice)
         {
-            var limitSma = _limitSmas.Find(tradingDate);
-            if (limitSma is null || limitSma.Sma is null)
+            //var indexFastSma = _indexFastWmas.Find(tradingDate);
+            //if (indexFastSma is null || indexFastSma.Wma is null)
+            //{
+            //    return 0;
+            //}
+
+            //var indexSlowSma = _indexSlowWmas.Find(tradingDate);
+            //if (indexSlowSma is null || indexSlowSma.Wma is null)
+            //{
+            //    return 0;
+            //}
+
+            //if (indexFastSma.Wma < indexSlowSma.Wma)
+            //{
+            //    return 0;
+            //}
+
+            var limitSma = _limitWmas.Find(tradingDate);
+            if (limitSma is null || limitSma.Wma is null)
             {
                 return 0;
             }
 
-            if (lastClosePrice < limitSma.Sma)
+            if (lastClosePrice < limitSma.Wma)
             {
                 return 0;
             }
 
-            var slowSma = _slowSmas.Find(tradingDate);
-            if (slowSma is null || slowSma.Sma is null)
+            var slowSma = _slowWmas.Find(tradingDate);
+            if (slowSma is null || slowSma.Wma is null)
             {
                 return 0;
             }
 
-            var fastSma = _fastSmas.Find(tradingDate);
-            if (fastSma is null || fastSma.Sma is null)
+            var fastSma = _fastWmas.Find(tradingDate);
+            if (fastSma is null || fastSma.Wma is null)
             {
                 return 0;
             }
 
-            if (fastSma.Sma < slowSma.Sma)
+            if (fastSma.Wma < slowSma.Wma)
             {
                 return 0;
             }
@@ -207,19 +229,19 @@ namespace Pl.Sas.Core.Trading
                 return 100;
             }
 
-            var slowSma = _slowSmas.Find(tradingDate);
-            if (slowSma is null || slowSma.Sma is null)
+            var slowSma = _slowWmas.Find(tradingDate);
+            if (slowSma is null || slowSma.Wma is null)
             {
                 return 0;
             }
 
-            var fastSma = _fastSmas.Find(tradingDate);
-            if (fastSma is null || fastSma.Sma is null)
+            var fastSma = _fastWmas.Find(tradingDate);
+            if (fastSma is null || fastSma.Wma is null)
             {
                 return 0;
             }
 
-            if (fastSma.Sma > slowSma.Sma)
+            if (fastSma.Wma > slowSma.Wma)
             {
                 return 0;
             }
