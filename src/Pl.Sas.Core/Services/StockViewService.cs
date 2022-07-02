@@ -204,66 +204,41 @@ namespace Pl.Sas.Core.Services
                 stockView.Roe = (financialIndicators[0]?.Roe ?? company.Roe) * 100;
                 stockView.Roa = (financialIndicators[0]?.Roa ?? company.Roa) * 100;
 
-                var quarterlyPercentRevenue = -1000000f;
-                var quarterlyPercentProfit = -1000000f;
-                var yearlyPercentRevenue = -1000000f;
-                var yearlyPercentProfit = -1000000f;
-
                 var sourceItem = financialIndicators.FirstOrDefault(q => q.LengthReport != 5);
                 if (sourceItem is not null)
                 {
                     var compareItem = financialIndicators.FirstOrDefault(q => q.LengthReport == sourceItem.LengthReport && q.YearReport == sourceItem.YearReport - 1);
                     if (compareItem is not null)
                     {
-                        quarterlyPercentRevenue = sourceItem.Revenue.GetPercent(compareItem.Revenue);
-                        quarterlyPercentProfit = sourceItem.Profit.GetPercent(compareItem.Profit);
+                        var quarterlyPercentProfit = sourceItem.Profit.GetPercent(compareItem.Profit);
+                        stockView.Lnq = quarterlyPercentProfit.ToString("0,0.0");
+                        if (quarterlyPercentProfit > 30)
+                        {
+                            stockView.LnqCss = "lnq t-r t-s";
+                        }
+                        else if (quarterlyPercentProfit < 5)
+                        {
+                            stockView.LnqCss = "lnq t-r t-d";
+                        }
                     }
                 }
 
-                if (financialIndicators.Count > 2)
+                if (financialIndicators.Count > 3)
                 {
-                    var topTwoYear = financialIndicators.OrderByDescending(q => q.YearReport).Where(q => q.LengthReport == 5).Take(2).ToList();
-                    if (topTwoYear is not null && topTwoYear.Count > 1)
+                    var topTwoYear = financialIndicators.Take(3).ToList();
+                    if (topTwoYear.Count >= 3)
                     {
-                        yearlyPercentRevenue = topTwoYear[0].Revenue.GetPercent(topTwoYear[1].Revenue);
-                        yearlyPercentProfit = topTwoYear[0].Profit.GetPercent(topTwoYear[1].Profit);
+                        var yearlyPercentProfit = (topTwoYear[0].Profit.GetPercent(topTwoYear[1].Profit) + topTwoYear[1].Profit.GetPercent(topTwoYear[2].Profit)) / 2;
+                        stockView.Lnn = yearlyPercentProfit.ToString("0,0.0");
+                        if (yearlyPercentProfit > 25)
+                        {
+                            stockView.LnnCss = "lnn t-r t-s";
+                        }
+                        else if (yearlyPercentProfit < 5)
+                        {
+                            stockView.LnqCss = "lnn t-r t-d";
+                        }
                     }
-                }
-
-                if (quarterlyPercentRevenue != 1000000f)
-                {
-                    stockView.Dtqvn = $"{quarterlyPercentRevenue:0.0}";
-                }
-                if (quarterlyPercentProfit != 1000000f)
-                {
-                    stockView.Dtqvn += $" - {yearlyPercentRevenue:0.0}";
-                }
-
-                if (quarterlyPercentRevenue > 50 && yearlyPercentRevenue > 30)
-                {
-                    stockView.DtqvnCss = "dtqvn t-r t-s";
-                }
-                else if (quarterlyPercentRevenue < 10 && yearlyPercentRevenue < 5)
-                {
-                    stockView.DtqvnCss = "dtqvn t-r t-d";
-                }
-
-                if (quarterlyPercentProfit != 1000000f)
-                {
-                    stockView.Lnqvn = $"{quarterlyPercentProfit:0.0}";
-                }
-                if (yearlyPercentProfit != 1000000f)
-                {
-                    stockView.Lnqvn += $" - {yearlyPercentProfit:0.0}";
-                }
-
-                if (quarterlyPercentProfit > 50 && yearlyPercentProfit > 30)
-                {
-                    stockView.DtqvnCss = "lnqvn t-r t-s";
-                }
-                else if (quarterlyPercentProfit < 10 && yearlyPercentProfit < 5)
-                {
-                    stockView.DtqvnCss = "lnqvn t-r t-d";
                 }
             }
 

@@ -63,14 +63,14 @@
         public float Roa { get; set; }
         #endregion
 
-        #region Cột % lợi nhận sau thuế quý gần nhất và % tăng trưởng 2 năm
-        public string Lnqvn { get; set; } = null!;
-        public string LnqvnCss { get; set; } = "lnqvn t-r";
+        #region Cột % lợi nhận sau thuế quý gần nhất
+        public string Lnq { get; set; } = null!;
+        public string LnqCss { get; set; } = "lnq t-r";
         #endregion        
 
-        #region Cột % doanh thu quý gần nhất và  % tăng trưởng 2 năm
-        public string Dtqvn { get; set; } = null!;
-        public string DtqvnCss { get; set; } = "dtqvn t-r";
+        #region % trung bình lơi nhuận 3 năm gần nhất
+        public string Lnn { get; set; } = null!;
+        public string LnnCss { get; set; } = "lnn t-r";
         #endregion
 
         #region Cột điểm số doanh nghiệp
