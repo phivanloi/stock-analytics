@@ -16,9 +16,8 @@
                     else
                     {
                         <option value="all" selected="selected">Toàn thị trường và bỏ thanh khoản nhỏ hơn 10k cổ</option>
-                        <option value="me">Quan tâm của tôi</option>
+                        <option value="me">Quan tâm</option>
                     }
-                    <option value="suggestion">Đề xuất của hệ thống</option>
                 </select>
             </div>
         </div>
@@ -27,8 +26,6 @@
                 <select id="ordinal" onchange="LoadMarket()" class="form-control seach-control">
                     <option value="ddgdn">Điểm đánh giá DN giảm dần</option>
                     <option selected="selected" value="klk">Khối lượng khớp giảm dần</option>
-                    <option value="idt">Đánh giá mã ngành giảm dần</option>
-                    <option value="mcdesc">Vốn hóa giảm dần</option>
                 </select>
             </div>
         </div>
@@ -81,27 +78,24 @@
         <thead>
             <tr class="t-w t-c">
                 <td rowspan="2" title="Tên doanh nghiệp - lĩnh vực hoạt động" id="number-row">Mã</td>
-                <td colspan="10" title="Điểm đánh giá doanh nghiệp và các chỉ số tài chính hiện tại của doanh nghiệp">Doanh nghiệp</td>
+                <td colspan="8" title="Điểm đánh giá doanh nghiệp và các chỉ số tài chính hiện tại của doanh nghiệp">Doanh nghiệp</td>
                 <td colspan="2" title="Điểm số dòng tiền ngành và dòng tiền của cổ phiếu">Dòng tiền</td>
-                <td colspan="11" title="Điểm đánh giá tăng trưởng thị giá và phân tích kỹ thuật">Kỹ thuật</td>
+                <td colspan="10" title="Điểm đánh giá tăng trưởng thị giá và phân tích kỹ thuật">Kỹ thuật</td>
                 <td colspan="5" title="Kết quả các phương pháp khi cho đầu tư từ @Pl.Sas.Core.Constants.StartTime.ToString("dd/MM/yyyy") và đánh giá mua/bán">Khuyến nghị</td>
             </tr>
             <tr class="t-c t-w">
-                <td title="Tổng hợp điểm đánh giá của doanh nghiệp">TH</td>
+                <td title="Tổng hợp điểm đánh giá của doanh nghiệp">ĐCP</td>
                 <td title="Chỉ số EPS, EPS = (LNST-cổ tức của cổ phiếu ưu đãi) / (KLCP lưu hành bình quân trong kỳ)">EPS</td>
                 <td title="Chỉ số P/E, P/E = giá cổ phiếu / EPS">P/E</td>
                 <td title="Chỉ số P/B, Giá cổ phiếu / (Book value / số lượng cổ phiếu đang lưu hành bình quân)">P/B</td>
-                <td title="Tổng hợp điểm đánh giá tăng trưởng doanh nghiệp">TH</td>
-                <td title="% tăng trưởng doanh thu trung bình 4 năm">%DT</td>
-                <td title="% tăng trưởng lợi nhuận trung bình 4 năm">%LN</td>
-                <td title="Đánh giá của fiintrading">FIIN</td>
-                <td title="Đánh giá của vndirect">VND</td>
-                <td title="Giá dự phóng của các công ty chứng khoán">Giá DP</td>
+                <td title="Return On Equity (ROE) hay lợi nhuận trên vốn chủ sở hữu là chỉ số đo lường mức độ hiệu quả của việc sử dụng vốn chủ sở hữu trong doanh nghiệp.">ROE</td>
+                <td title="Return On Asset (ROA) hay lợi nhuận trên tổng tài sản là chỉ số đo lường mức độ hiệu quả của việc sử dụng tài sản của doanh nghiệp.">ROA</td>
+                <td title="% doanh thu quý gần nhất so với cùng kỳ và % tăng trưởng trong 2 năm gần đây nhất">DTQ-DTN</td>
+                <td title="% lợi nhuận sau thuế quý gần nhất so với cùng kỳ và % tăng trưởng trong 2 năm gần đây nhất">LNQ-LNN</td>
 
                 <td title="Điểm đánh giá dòng tiền ngành">DTN</td>
                 <td title="Điểm đánh giá dòng tiền cổ phiếu">DTC</td>
 
-                <td title="Tổng điểm đánh giá tăng trưởng giá">TH</td>
                 <td title="Chỉ số beta">Beta</td>
                 <td title="Chỉ số stoch Rsi 14 phiên">S Rsi</td>
                 <td title="Giá kháng cự">GKC</td>
@@ -203,7 +197,7 @@
 
         function LoadMarket() {
             var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            $('#user-invest-table-body').html('<tr><td colspan="29" class="text-center"><p class="fas fa-sync-alt fa-spin"></p></td></tr>');
+            $('#user-invest-table-body').html('<tr><td colspan="27" class="text-center"><p class="fas fa-sync-alt fa-spin"></p></td></tr>');
             var postData = JSON.stringify({
                 Ordinal: $('#ordinal').val(),
                 IndustryCode: $('#industry').val(),

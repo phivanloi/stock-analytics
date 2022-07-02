@@ -6,18 +6,11 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Pl.Sas.UnitTests
 {
     public class StockViewServiceTests
     {
-        private readonly ITestOutputHelper _output;
-        public StockViewServiceTests(ITestOutputHelper output)
-        {
-            _output = output;
-        }
-
         [Fact]
         public async Task BindingStocksViewAndSetCacheTestAsync()
         {

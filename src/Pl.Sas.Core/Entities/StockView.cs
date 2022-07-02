@@ -24,13 +24,7 @@
         public string Exchange { get; set; } = null!;
         #endregion
 
-
         #region Company Value
-        /// <summary>
-        /// Điểm đánh giá giá trị cua công ty
-        /// </summary>
-        public int CompanyValueScore { get; set; }
-
         /// <summary>
         /// <para>Chỉ số EPS</para>
         /// <para>lợi nhuận (thu nhập) trên mỗi cổ phiếu.</para>
@@ -67,62 +61,22 @@
         /// <para>roe = Lợi nhuận sau thuế(Earning) / Tổng tài sản bình quân</para>
         /// </summary>
         public float Roa { get; set; }
-
-        /// <summary>
-        /// <para>Vốn hóa thị trường</para>
-        /// <para>là tổng giá trị của số cổ phần của một công ty niêm yết</para>
-        /// <para>Vốn hóa = Giá 1 cổ phiếu X số lượng cổ phiếu đang lưu hành.</para>
-        /// </summary>
-        public float MarketCap { get; set; }
         #endregion
 
-        #region Company Growth
-        /// <summary>
-        /// Điểm đánh giá tăng trưởng doanh nghiệp
-        /// </summary>
-        public int CompanyGrowthScore { get; set; }
+        #region Cột % lợi nhận sau thuế quý gần nhất và % tăng trưởng 2 năm
+        public string Lnqvn { get; set; } = null!;
+        public string LnqvnCss { get; set; } = "lnqvn t-r";
+        #endregion        
 
-        /// <summary>
-        /// % tăng trưởng doanh thu 3 năm gần đây nhất
-        /// </summary>
-        public float YearlyRevenueGrowthPercent { get; set; }
-
-        /// <summary>
-        /// % tăng trưởng lợi nhuận 3 năm gần đây nhất
-        /// </summary>
-        public float YearlyProfitGrowthPercent { get; set; }
+        #region Cột % doanh thu quý gần nhất và  % tăng trưởng 2 năm
+        public string Dtqvn { get; set; } = null!;
+        public string DtqvnCss { get; set; } = "dtqvn t-r";
         #endregion
 
-        #region Recommendation
-
-        /// <summary>
-        /// Điểm đánh giá của fiin
-        /// </summary>
-        public int FiinScore { get; set; }
-
-        /// <summary>
-        /// Điểm đánh giá của vnd
-        /// </summary>
-        public int VndScore { get; set; }
-
-        /// <summary>
-        /// Giá dự phóng trung bình của các công ty chứng khoán
-        /// </summary>
-        public float TargetPrice { get; set; }
-
-        #endregion
-
-        /// <summary>
-        /// Tổng hợp điểm đánh giá, 
-        /// tạm thời là tổng của MacroeconomicsScore * 1, CompanyValueScore * 1, CompanyGrowthScore * 1, StockScore * 1. Tưởng lai có thể thay đổi các biến số để đánh trọng số cao hơn cho các score
-        /// </summary>
-        public int TotalScore => MaketScore + CompanyValueScore + CompanyGrowthScore + StockScore;
-
-        #region Cột điểm số dòng tiền
-        /// <summary>
-        /// Đánh giá điểm số dòng tiền
-        /// </summary>
-        public int MaketScore { get; set; }
+        #region Cột điểm số doanh nghiệp
+        public string Score { get; set; } = null!;
+        public string ScoreCss { get; set; } = "score t-r";
+        public float ScoreValue { get; set; } = 0;
         #endregion
 
         #region Cột dòng tiền theo ngành
@@ -133,10 +87,6 @@
         #region Cột dòng tiền của cổ phiếu
         public string Scf { get; set; } = null!;
         public string ScfCss { get; set; } = "scf t-r";
-        #endregion
-
-        #region Cột điểm số kỹ thuật
-        public int StockScore { get; set; }
         #endregion
 
         #region Cột chỉ số beta
