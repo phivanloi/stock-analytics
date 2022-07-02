@@ -33,11 +33,8 @@ namespace Pl.Sas.Infrastructure.Data
             var cacheKey = $"{Constants.ChartPriceCachePrefix}-SM{symbol}-TP{type}";
             return await _memoryCacheService.GetOrCreateAsync(cacheKey, async () =>
             {
-                return await _asyncCacheService.GetOrCreateAsync(cacheKey, async () =>
-                {
-                    return await FindAllAsync(symbol, type);
-                }, Constants.DefaultCacheTime * 60 * 24);
-            }, Constants.DefaultCacheTime * 30);
+                return await FindAllAsync(symbol, type);
+            }, Constants.DefaultCacheTime * 10);
         }
 
         public virtual async Task<List<ChartPrice>> FindAllAsync(string symbol, string type = "D", DateTime? fromDate = null, DateTime? toDate = null)
