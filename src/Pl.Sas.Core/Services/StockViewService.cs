@@ -175,7 +175,7 @@ namespace Pl.Sas.Core.Services
             }
             var chartPrices = await _chartPriceData.CacheFindAllAsync(symbol, "D");
             var stockPrices = await _stockPriceData.GetForStockViewAsync(symbol, 10);
-            var financialIndicators = await _financialIndicatorData.GetTopAsync(symbol, 10);
+            var financialIndicators = await _financialIndicatorData.GetTopAsync(symbol, 15);
             var industry = await _industryData.GetByCodeAsync(company.SubsectorCode);
             var vndScore = await _vndStockScoreData.FindAsync(symbol, "100000");
             var bankInterestRate12 = await _keyValueData.CacheGetAsync(Constants.BankInterestRate12Key);
@@ -225,7 +225,7 @@ namespace Pl.Sas.Core.Services
 
                 if (financialIndicators.Count > 3)
                 {
-                    var topTwoYear = financialIndicators.Take(3).ToList();
+                    var topTwoYear = financialIndicators.Where(q => q.LengthReport == 5).Take(3).ToList();
                     if (topTwoYear.Count >= 3)
                     {
                         var yearlyPercentProfit = (topTwoYear[0].Profit.GetPercent(topTwoYear[1].Profit) + topTwoYear[1].Profit.GetPercent(topTwoYear[2].Profit)) / 2;
