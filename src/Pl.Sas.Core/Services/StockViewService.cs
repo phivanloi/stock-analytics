@@ -225,10 +225,10 @@ namespace Pl.Sas.Core.Services
 
                 if (financialIndicators.Count > 3)
                 {
-                    var topTwoYear = financialIndicators.Where(q => q.LengthReport == 5).Take(3).ToList();
-                    if (topTwoYear.Count >= 3)
+                    var topYearly = financialIndicators.Where(q => q.LengthReport == 5).Take(3).ToList();
+                    if (topYearly.Count >= 3)
                     {
-                        var yearlyPercentProfit = (topTwoYear[0].Profit.GetPercent(topTwoYear[1].Profit) + topTwoYear[1].Profit.GetPercent(topTwoYear[2].Profit)) / 2;
+                        var yearlyPercentProfit = (topYearly[0].Profit.GetPercent(topYearly[1].Profit) + topYearly[1].Profit.GetPercent(topYearly[2].Profit)) / 2;
                         stockView.Lnn = yearlyPercentProfit.ToString("0,0.0");
                         if (yearlyPercentProfit > 25)
                         {
@@ -236,7 +236,7 @@ namespace Pl.Sas.Core.Services
                         }
                         else if (yearlyPercentProfit < 5)
                         {
-                            stockView.LnqCss = "lnn t-r t-d";
+                            stockView.LnnCss = "lnn t-r t-d";
                         }
                     }
                 }
@@ -285,14 +285,9 @@ namespace Pl.Sas.Core.Services
             var tradingResults = await _tradingResultData.GetForViewAsync(symbol);
             BindingTradingResultToView(ref stockView, tradingResults, bankInterestRate12?.GetValue<float>() ?? 6.8f);
 
-            industry = null;
-            company = null;
-            var cacheKey = $"{Constants.StockViewCachePrefix}-SM-{symbol}";
-            var setCacheTask = _asyncCacheService.SetValueAsync(cacheKey, stockView, Constants.DefaultCacheTime * 60 * 24 * 30);
             var sendMessage = new QueueMessage("UpdateStockView");
             sendMessage.KeyValues.Add("Data", JsonSerializer.Serialize(stockView));
             sendMessage.KeyValues.Add("Symbol", symbol);
-            await setCacheTask;
             return sendMessage;
         }
 
