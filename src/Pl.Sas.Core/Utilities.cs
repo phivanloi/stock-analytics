@@ -271,7 +271,7 @@ namespace Pl.Sas.Core
             {
                 0 => "Ngăn hạn",
                 1 => "Trung hạn",
-                2 => "Tích sản khi rẻ",
+                2 => "Thư nghiệm",
                 3 => "Mua và nắm giữ",
                 _ => "Trung hạn",
             };

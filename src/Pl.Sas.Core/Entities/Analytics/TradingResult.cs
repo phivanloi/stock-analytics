@@ -12,9 +12,9 @@
 
         /// <summary>
         /// Phương pháp
-        /// <para>0 => Thử nghiệm</para>
-        /// <para>1 => Phương pháp chính</para>
-        /// <para>2 => Tích sản khi giá rẻ</para>
+        /// <para>0 => Ngắn hạn</para>
+        /// <para>1 => Trung hạn</para>
+        /// <para>2 => Thử nghiệm</para>
         /// <para>3 => Mua và nắm giữ</para>
         /// </summary>
         public int Principle { get; set; } = 1;

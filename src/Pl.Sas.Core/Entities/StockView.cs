@@ -24,7 +24,13 @@
         public string Exchange { get; set; } = null!;
         #endregion
 
-        #region Company Value
+        #region Cột điểm số doanh nghiệp
+        public string Score { get; set; } = null!;
+        public string ScoreCss { get; set; } = "score t-r";
+        public float ScoreValue { get; set; } = 0;
+        #endregion
+
+        #region Chỉ số tài chính
         /// <summary>
         /// <para>Chỉ số EPS</para>
         /// <para>lợi nhuận (thu nhập) trên mỗi cổ phiếu.</para>
@@ -71,12 +77,6 @@
         #region % trung bình lơi nhuận 3 năm gần nhất
         public string Lnn { get; set; } = null!;
         public string LnnCss { get; set; } = "lnn t-r";
-        #endregion
-
-        #region Cột điểm số doanh nghiệp
-        public string Score { get; set; } = null!;
-        public string ScoreCss { get; set; } = "score t-r";
-        public float ScoreValue { get; set; } = 0;
         #endregion
 
         #region Cột dòng tiền theo ngành
@@ -150,29 +150,39 @@
         public string Bd60Css { get; set; } = "bd60 t-r";
         #endregion
 
-        #region Cột % Lợi nhận phương pháp thử nghiệm
-        public string Lntn { get; set; } = null!;
-        public string LntnCss { get; set; } = "lntn t-r";
-        #endregion
-
-        #region Cột % Lợi nhận phương pháp chính
-        public string Lnc { get; set; } = null!;
-        public string LncCss { get; set; } = "lnc t-r";
-        #endregion
-
         #region Cột % Lợi nhận mua và giữ
         public string Lnmg { get; set; } = null!;
         public string LnmgCss { get; set; } = "lnmg t-r";
         #endregion
 
+        #region Cột % Lợi nhận phương pháp ngắn hạn
+        public string Lnnh { get; set; } = null!;
+        public string LnnhCss { get; set; } = "lnnh t-r";
+        #endregion
+
+        #region Cột % Lợi nhận phương pháp trung hạn
+        public string Lnth { get; set; } = null!;
+        public string LnthCss { get; set; } = "lnth t-r";
+        #endregion
+
+        #region Cột % Lợi nhận phương pháp thử nghiệm
+        public string Lntn { get; set; } = null!;
+        public string LntnCss { get; set; } = "lntn t-r";
+        #endregion
+
+        #region Cột Khuyến nghị theo phương pháp ngắn hạn
+        public string Knnh { get; set; } = null!;
+        public string KnnhCss { get; set; } = "knnh t-c";
+        #endregion
+
+        #region Cột Khuyến nghị theo phương pháp trung hạn
+        public string Knth { get; set; } = null!;
+        public string KnthCss { get; set; } = "knth t-c";
+        #endregion
+
         #region Cột Khuyến nghị theo phương pháp thử nghiệm
         public string Kntn { get; set; } = null!;
         public string KntnCss { get; set; } = "kntn t-c";
-        #endregion
-
-        #region Cột Khuyến nghị theo phương pháp chính
-        public string Knc { get; set; } = null!;
-        public string KncCss { get; set; } = "knc t-c";
         #endregion
     }
 }
