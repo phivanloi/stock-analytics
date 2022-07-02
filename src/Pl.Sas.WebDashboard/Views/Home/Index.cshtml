@@ -81,7 +81,7 @@
                 <td colspan="8" title="Điểm đánh giá doanh nghiệp và các chỉ số tài chính hiện tại của doanh nghiệp">Doanh nghiệp</td>
                 <td colspan="2" title="Điểm số dòng tiền ngành và dòng tiền của cổ phiếu">Dòng tiền</td>
                 <td colspan="10" title="Điểm đánh giá tăng trưởng thị giá và phân tích kỹ thuật">Kỹ thuật</td>
-                <td colspan="5" title="Kết quả các phương pháp khi cho đầu tư từ @Pl.Sas.Core.Constants.StartTime.ToString("dd/MM/yyyy") và đánh giá mua/bán">Khuyến nghị</td>
+                <td colspan="7" title="Kết quả các phương pháp khi cho đầu tư từ @Pl.Sas.Core.Constants.StartTime.ToString("dd/MM/yyyy") và đánh giá mua/bán">Khuyến nghị</td>
             </tr>
             <tr class="t-c t-w">
                 <td title="Tổng hợp điểm đánh giá của doanh nghiệp">ĐCP</td>
@@ -107,11 +107,13 @@
                 <td title="% biến động giá trong 10 phiên">%10P</td>
                 <td title="% biến động giá trong 30 phiên">%30P</td>
 
-                <td title="% Lợi nhuận của phương pháp ngắn hạn phù hợp với beta cao">TN</td>
-                <td title="% Lợi nhuận của phương pháp trung hạn phù hợp với beta thấp">CH</td>
                 <td title="% lợi nhuận của phương pháp mua và giữ">LNMG</td>
-                <td title="Khuyến nghị theo phương pháp ngắn hạn">KNTN</td>
-                <td title="Khuyến nghị theo phương pháp trung hạn">KNC</td>
+                <td title="% Lợi nhuận của phương pháp ngắn hạn phù hợp với beta cao">NH</td>
+                <td title="% Lợi nhuận của phương pháp trung hạn phù hợp với beta thấp">TH</td>
+                <td title="% Lợi nhuận của phương pháp thử nghiệm">TN</td>
+                <td title="Khuyến nghị theo phương pháp ngắn hạn">KNNH</td>
+                <td title="Khuyến nghị theo phương pháp trung hạn">KNTH</td>
+                <td title="Khuyến nghị theo phương pháp thử nghiệm">KNTN</td>
             </tr>
         </thead>
         <tbody id="user-invest-table-body">
@@ -133,14 +135,15 @@
                 setContent('#' + view.symbol + ' .bd5', view.bd5, view.bd5Css);
                 setContent('#' + view.symbol + ' .bd10', view.bd10, view.bd10Css);
                 setContent('#' + view.symbol + ' .bd30', view.bd30, view.bd30Css, '60 phiên: ' + view.bd60);
-                setContent('#' + view.symbol + ' .lntn', view.lntn, view.lntnCss);
-                setContent('#' + view.symbol + ' .lnc', view.lnc, view.lncCss);
-                setContent('#' + view.symbol + ' .lnmg', view.lnmg, view.lnmgCss);
-                setContent('#' + view.symbol + ' .kntn', view.kntn, view.kntnCss);
-                setContent('#' + view.symbol + ' .knc', view.knc, view.kncCss);
                 setContent('#' + view.symbol + ' .rsi14', view.rsi14, view.rsi14Css);
-                setContent('#' + view.symbol + ' .nght', view.nght, view.nghtCss);
-                setContent('#' + view.symbol + ' .ngkc', view.ngkc, view.ngkcCss);
+                
+                setContent('#' + view.symbol + ' .lnmg', view.lnmg, view.lnmgCss);
+                setContent('#' + view.symbol + ' .lnnh', view.lnnh, view.lnnhCss);
+                setContent('#' + view.symbol + ' .lnth', view.lnth, view.lnthCss);
+                setContent('#' + view.symbol + ' .lntn', view.lntn, view.lntnCss);
+                setContent('#' + view.symbol + ' .knnh', view.knnh, view.knnhCss);
+                setContent('#' + view.symbol + ' .knth', view.knth, view.knthCss);
+                setContent('#' + view.symbol + ' .kntn', view.kntn, view.kntnCss);
             });
             srConnection.on("UpdateIndexView", (indexview) => {
                 setContent('.dji', indexview.dji, indexview.djiCss);
@@ -197,7 +200,7 @@
 
         function LoadMarket() {
             var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            $('#user-invest-table-body').html('<tr><td colspan="27" class="text-center"><p class="fas fa-sync-alt fa-spin"></p></td></tr>');
+            $('#user-invest-table-body').html('<tr><td colspan="29" class="text-center"><p class="fas fa-sync-alt fa-spin"></p></td></tr>');
             var postData = JSON.stringify({
                 Ordinal: $('#ordinal').val(),
                 IndustryCode: $('#industry').val(),

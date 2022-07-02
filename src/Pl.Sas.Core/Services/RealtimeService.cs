@@ -122,50 +122,6 @@ namespace Pl.Sas.Core.Services
             }
 
             var listTradingResult = new List<TradingResult>();
-            #region Experiment Trading
-            var experimentTrading = new ExperimentTrading(chartPrices);
-            var tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
-            var experCase = experimentTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
-            listTradingResult.Add(new()
-            {
-                Symbol = symbol,
-                Principle = 0,
-                IsBuy = experCase.IsBuy,
-                IsSell = experCase.IsSell,
-                BuyPrice = experCase.BuyPrice,
-                SellPrice = experCase.SellPrice,
-                FixedCapital = experCase.FixedCapital,
-                Profit = experCase.Profit(chartTrading[^1].ClosePrice),
-                TotalTax = experCase.TotalTax,
-                TradingNotes = null,
-                AssetPosition = experCase.AssetPosition,
-                LoseNumber = experCase.LoseNumber,
-                WinNumber = experCase.WinNumber,
-            });
-            #endregion
-
-            #region Main Trading
-            var macdTrading = new MainTrading(chartPrices);
-            tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
-            var macdCase = macdTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
-            listTradingResult.Add(new()
-            {
-                Symbol = symbol,
-                Principle = 1,
-                IsBuy = macdCase.IsBuy,
-                IsSell = macdCase.IsSell,
-                BuyPrice = macdCase.BuyPrice,
-                SellPrice = macdCase.SellPrice,
-                FixedCapital = macdCase.FixedCapital,
-                Profit = macdCase.Profit(chartTrading[^1].ClosePrice),
-                TotalTax = macdCase.TotalTax,
-                TradingNotes = null,
-                AssetPosition = macdCase.AssetPosition,
-                LoseNumber = macdCase.LoseNumber,
-                WinNumber = macdCase.WinNumber,
-            });
-            #endregion
-
             #region Buy and wait
             var startPrice = chartTrading[0].ClosePrice;
             var endPrice = chartTrading[^1].ClosePrice;
@@ -184,6 +140,72 @@ namespace Pl.Sas.Core.Services
                 AssetPosition = "100% C",
                 LoseNumber = startPrice <= endPrice ? 1 : 0,
                 WinNumber = startPrice > endPrice ? 1 : 0,
+            });
+            #endregion
+
+            #region ngắn hạn
+            var shortTrading = new ShortTrading(chartPrices);
+            var tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
+            var shortCase = shortTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
+            listTradingResult.Add(new()
+            {
+                Symbol = symbol,
+                Principle = 0,
+                IsBuy = shortCase.IsBuy,
+                IsSell = shortCase.IsSell,
+                BuyPrice = shortCase.BuyPrice,
+                SellPrice = shortCase.SellPrice,
+                FixedCapital = shortCase.FixedCapital,
+                Profit = shortCase.Profit(chartTrading[^1].ClosePrice),
+                TotalTax = shortCase.TotalTax,
+                TradingNotes = null,
+                AssetPosition = shortCase.AssetPosition,
+                LoseNumber = shortCase.LoseNumber,
+                WinNumber = shortCase.WinNumber,
+            });
+            #endregion
+
+            #region Trung hạn
+            var midTrading = new MidTrading(chartPrices);
+            tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
+            var midCase = midTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
+            listTradingResult.Add(new()
+            {
+                Symbol = symbol,
+                Principle = 1,
+                IsBuy = midCase.IsBuy,
+                IsSell = midCase.IsSell,
+                BuyPrice = midCase.BuyPrice,
+                SellPrice = midCase.SellPrice,
+                FixedCapital = midCase.FixedCapital,
+                Profit = midCase.Profit(chartTrading[^1].ClosePrice),
+                TotalTax = midCase.TotalTax,
+                TradingNotes = null,
+                AssetPosition = midCase.AssetPosition,
+                LoseNumber = midCase.LoseNumber,
+                WinNumber = midCase.WinNumber,
+            });
+            #endregion
+
+            #region Thử nghiệm
+            var smaPSarTrading = new SmaPSarTrading(chartPrices);
+            tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
+            var smaPSarCase = midTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
+            listTradingResult.Add(new()
+            {
+                Symbol = symbol,
+                Principle = 2,
+                IsBuy = smaPSarCase.IsBuy,
+                IsSell = smaPSarCase.IsSell,
+                BuyPrice = smaPSarCase.BuyPrice,
+                SellPrice = smaPSarCase.SellPrice,
+                FixedCapital = smaPSarCase.FixedCapital,
+                Profit = smaPSarCase.Profit(chartTrading[^1].ClosePrice),
+                TotalTax = smaPSarCase.TotalTax,
+                TradingNotes = null,
+                AssetPosition = smaPSarCase.AssetPosition,
+                LoseNumber = smaPSarCase.LoseNumber,
+                WinNumber = smaPSarCase.WinNumber,
             });
             #endregion
 
