@@ -87,9 +87,7 @@
                 <td title="Tổng hợp điểm đánh giá của doanh nghiệp">ĐCP</td>
                 <td title="Chỉ số EPS, EPS = (LNST-cổ tức của cổ phiếu ưu đãi) / (KLCP lưu hành bình quân trong kỳ)">EPS</td>
                 <td title="Chỉ số P/E, P/E = giá cổ phiếu / EPS">P/E</td>
-                <td title="Chỉ số P/B, Giá cổ phiếu / (Book value / số lượng cổ phiếu đang lưu hành bình quân)">P/B</td>
                 <td title="Return On Equity (ROE) hay lợi nhuận trên vốn chủ sở hữu là chỉ số đo lường mức độ hiệu quả của việc sử dụng vốn chủ sở hữu trong doanh nghiệp.">ROE</td>
-                <td title="Return On Asset (ROA) hay lợi nhuận trên tổng tài sản là chỉ số đo lường mức độ hiệu quả của việc sử dụng tài sản của doanh nghiệp.">ROA</td>
                 <td title="% lợi nhuận quý gần nhất">LNQ</td>
                 <td title="% trung bình lợi nhuận 3 năm gần nhất">LNN</td>
 
@@ -200,7 +198,7 @@
 
         function LoadMarket() {
             var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            $('#user-invest-table-body').html('<tr><td colspan="29" class="text-center"><p class="fas fa-sync-alt fa-spin"></p></td></tr>');
+            $('#user-invest-table-body').html('<tr><td colspan="26" class="text-center"><p class="fas fa-sync-alt fa-spin"></p></td></tr>');
             var postData = JSON.stringify({
                 Ordinal: $('#ordinal').val(),
                 IndustryCode: $('#industry').val(),
