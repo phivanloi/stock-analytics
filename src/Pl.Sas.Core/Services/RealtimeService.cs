@@ -190,7 +190,7 @@ namespace Pl.Sas.Core.Services
             #region Thử nghiệm
             var smaPSarTrading = new SmaPSarTrading(chartPrices);
             tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
-            var smaPSarCase = midTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
+            var smaPSarCase = smaPSarTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
             listTradingResult.Add(new()
             {
                 Symbol = symbol,
