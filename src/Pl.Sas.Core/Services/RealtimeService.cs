@@ -86,7 +86,8 @@ namespace Pl.Sas.Core.Services
 
             var stock = await _stockData.FindBySymbolAsync(symbol);
             var chartPrices = await _chartPriceData.CacheFindAllAsync(symbol, "D");
-            if (chartPrices is null || chartPrices.Count <= 0 || stock is null)
+            var indexChartPrices = await _chartPriceData.CacheFindAllAsync("VNINDEX", "D");
+            if (chartPrices is null || chartPrices.Count <= 0 || stock is null || indexChartPrices is null || indexChartPrices.Count <= 0)
             {
                 return;
             }
@@ -188,24 +189,24 @@ namespace Pl.Sas.Core.Services
             #endregion
 
             #region Thử nghiệm
-            var smaPSarTrading = new SmaPSarTrading(chartPrices);
+            var indexSmaPSarTrading = new IndexSmaPSarTrading(chartPrices, indexChartPrices);
             tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
-            var smaPSarCase = smaPSarTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
+            var indexSmaPSarCase = indexSmaPSarTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
             listTradingResult.Add(new()
             {
                 Symbol = symbol,
                 Principle = 2,
-                IsBuy = smaPSarCase.IsBuy,
-                IsSell = smaPSarCase.IsSell,
-                BuyPrice = smaPSarCase.BuyPrice,
-                SellPrice = smaPSarCase.SellPrice,
-                FixedCapital = smaPSarCase.FixedCapital,
-                Profit = smaPSarCase.Profit(chartTrading[^1].ClosePrice),
-                TotalTax = smaPSarCase.TotalTax,
+                IsBuy = indexSmaPSarCase.IsBuy,
+                IsSell = indexSmaPSarCase.IsSell,
+                BuyPrice = indexSmaPSarCase.BuyPrice,
+                SellPrice = indexSmaPSarCase.SellPrice,
+                FixedCapital = indexSmaPSarCase.FixedCapital,
+                Profit = indexSmaPSarCase.Profit(chartTrading[^1].ClosePrice),
+                TotalTax = indexSmaPSarCase.TotalTax,
                 TradingNotes = null,
-                AssetPosition = smaPSarCase.AssetPosition,
-                LoseNumber = smaPSarCase.LoseNumber,
-                WinNumber = smaPSarCase.WinNumber,
+                AssetPosition = indexSmaPSarCase.AssetPosition,
+                LoseNumber = indexSmaPSarCase.LoseNumber,
+                WinNumber = indexSmaPSarCase.WinNumber,
             });
             #endregion
 
