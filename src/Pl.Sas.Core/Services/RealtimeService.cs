@@ -123,6 +123,7 @@ namespace Pl.Sas.Core.Services
             }
 
             var listTradingResult = new List<TradingResult>();
+
             #region Buy and wait
             var startPrice = chartTrading[0].ClosePrice;
             var endPrice = chartTrading[^1].ClosePrice;
