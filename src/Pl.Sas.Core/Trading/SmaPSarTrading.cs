@@ -14,8 +14,8 @@ namespace Pl.Sas.Core.Trading
         public SmaPSarTrading(List<ChartPrice> chartPrices)
         {
             var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
-            _fastSmas = quotes.Use(CandlePart.Close).GetSma(6).ToList();
-            _slowSmas = quotes.Use(CandlePart.Close).GetSma(10).ToList();
+            _fastSmas = quotes.Use(CandlePart.Close).GetSma(5).ToList();
+            _slowSmas = quotes.Use(CandlePart.Close).GetSma(9).ToList();
             _limitSmas = quotes.Use(CandlePart.Close).GetSma(36).ToList();
             _reverseSignals = quotes.GetParabolicSar(0.02, 0.2).ToList();
         }

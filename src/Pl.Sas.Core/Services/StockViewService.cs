@@ -117,6 +117,7 @@ namespace Pl.Sas.Core.Services
                 {
                     "klk" => query.OrderByDescending(q => q.KlhtValue).ToList(),
                     "ddgdn" => query.OrderByDescending(q => q.ScoreValue).ToList(),
+                    "td1p" => query.OrderByDescending(q => q.Bd2Value).ToList(),
                     _ => query.OrderByDescending(q => q.KlhtValue).ToList(),
                 };
             }
