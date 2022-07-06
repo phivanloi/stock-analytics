@@ -11,6 +11,7 @@ namespace Pl.Sas.Core.Trading
         private readonly List<SmaResult> _slowIndexSmas;
         private readonly List<SmaResult> _fastIndexSmas;
         private readonly List<ParabolicSarResult> _reverseSignals;
+        private readonly List<ParabolicSarResult> _indexReverseSignals;
         private TradingCase tradingCase = new();
 
         public IndexSmaPSarTrading(List<ChartPrice> chartPrices, List<ChartPrice> indexChartPrices)
@@ -23,6 +24,7 @@ namespace Pl.Sas.Core.Trading
             _reverseSignals = quotes.GetParabolicSar(0.02, 0.2).ToList();
             _fastIndexSmas = indexQuotes.Use(CandlePart.Close).GetSma(6).ToList();
             _slowIndexSmas = indexQuotes.Use(CandlePart.Close).GetSma(10).ToList();
+            _indexReverseSignals = indexQuotes.GetParabolicSar(0.02, 0.2).ToList();
         }
 
         public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName, bool isNoteTrading = true)
@@ -202,6 +204,17 @@ namespace Pl.Sas.Core.Trading
                 return 0;
             }
 
+            var indexSarSignal = _indexReverseSignals.Find(tradingDate);
+            if (indexSarSignal is null || indexSarSignal.Sar is null)
+            {
+                return 0;
+            }
+
+            if (indexSarSignal.Sar > fastIndexSma.Sma)
+            {
+                return 0;
+            }
+
             var limitSma = _limitSmas.Find(tradingDate);
             if (limitSma is null || limitSma.Sma is null)
             {
@@ -270,16 +283,16 @@ namespace Pl.Sas.Core.Trading
                 return 0;
             }
 
-            var sarSignal = _reverseSignals.Find(tradingDate);
-            if (sarSignal is null || sarSignal.Sar is null)
-            {
-                return 0;
-            }
+            //var sarSignal = _reverseSignals.Find(tradingDate);
+            //if (sarSignal is null || sarSignal.Sar is null)
+            //{
+            //    return 0;
+            //}
 
-            if (sarSignal.Sar < lastClosePrice)
-            {
-                return 0;
-            }
+            //if (sarSignal.Sar < lastClosePrice)
+            //{
+            //    return 0;
+            //}
 
             return 100;
         }
