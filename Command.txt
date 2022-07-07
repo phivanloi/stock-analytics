@@ -135,8 +135,14 @@ docker run -d -p 3354:80 --restart always phivanloi/html_image
 	)
 	DELETE FROM CTE WHERE RN > 1
 
-
-- định giá thị trường
-	https://fiin-market.ssi.com.vn/MarketInDepth/GetValuationSeriesV2?language=vi&Code=VNINDEX&TimeRange=AllTime&FromDate=&ToDate=
-- các thị trường khác
-	https://fiin-market.ssi.com.vn/MarketInDepth/GetProspectV2?language=vi&ComGroupCode=VNINDEX
+- Các tài khoản được khởi tạo truy cập
+	minhhop@quangich.com/anhhop01012021
+	phamtuyen@quangich.com/anhtuyen81704
+	tranuy@quangich.com/888868
+	trandinhhoang.ksxd@gmail.com/tranhoang6686
+	chucuong@investing.vn/chucuong89
+	hoang31297@gmail.com/hoangqi97
+	phamxuanphongson@gmail.com/123456ps
+	phamhungphi2910@gmail.com/123456hp
+	cbsreview@gmail.com/123456788
+	kieunguyen@gmail.com/123456@abc
