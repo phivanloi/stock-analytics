@@ -15,7 +15,7 @@ namespace Pl.Sas.Core.Trading
             var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
             _fastSmas = quotes.Use(CandlePart.Close).GetSma(12).ToList();
             _slowSmas = quotes.Use(CandlePart.Close).GetSma(26).ToList();
-            _limitSmas = quotes.Use(CandlePart.Close).GetSma(36).ToList();
+            _limitSmas = quotes.Use(CandlePart.Close).GetSma(50).ToList();
         }
 
         public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName, bool isNoteTrading = true)

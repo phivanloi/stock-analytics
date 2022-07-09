@@ -18,9 +18,9 @@ namespace Pl.Sas.Core.Trading
             var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
             _fastSmas = quotes.Use(CandlePart.Close).GetSma(12).ToList();
             _slowSmas = quotes.Use(CandlePart.Close).GetSma(26).ToList();
-            _limitSmas = quotes.Use(CandlePart.Close).GetSma(36).ToList();
+            _limitSmas = quotes.Use(CandlePart.Close).GetSma(50).ToList();
             _fastRsis = quotes.GetRsi(1).ToList();
-            _slowRsis = quotes.GetRsi(5).ToList();
+            _slowRsis = quotes.GetRsi(14).ToList();
             _reverseSignals = quotes.GetParabolicSar(0.02, 0.2).ToList();
         }
 
