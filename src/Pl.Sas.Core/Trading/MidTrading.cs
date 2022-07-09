@@ -8,9 +8,6 @@ namespace Pl.Sas.Core.Trading
         private readonly List<SmaResult> _slowSmas;
         private readonly List<SmaResult> _fastSmas;
         private readonly List<SmaResult> _limitSmas;
-        private readonly List<RsiResult> _fastRsis;
-        private readonly List<RsiResult> _slowRsis;
-        private readonly List<ParabolicSarResult> _reverseSignals;
         private TradingCase tradingCase = new();
 
         public MidTrading(List<ChartPrice> chartPrices)
@@ -19,9 +16,6 @@ namespace Pl.Sas.Core.Trading
             _fastSmas = quotes.Use(CandlePart.Close).GetSma(12).ToList();
             _slowSmas = quotes.Use(CandlePart.Close).GetSma(26).ToList();
             _limitSmas = quotes.Use(CandlePart.Close).GetSma(36).ToList();
-            _fastRsis = quotes.GetRsi(1).ToList();
-            _slowRsis = quotes.GetRsi(5).ToList();
-            _reverseSignals = quotes.GetParabolicSar(0.02, 0.2).ToList();
         }
 
         public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName, bool isNoteTrading = true)
@@ -185,23 +179,6 @@ namespace Pl.Sas.Core.Trading
                 return 0;
             }
 
-            var slowRsi = _slowRsis.Find(tradingDate);
-            if (slowRsi is null || slowRsi.Rsi is null)
-            {
-                return 0;
-            }
-
-            var fastRsi = _fastRsis.Find(tradingDate);
-            if (fastRsi is null || fastRsi.Rsi is null)
-            {
-                return 0;
-            }
-
-            if (fastRsi.Rsi < slowRsi.Rsi)
-            {
-                return 0;
-            }
-
             var slowSma = _slowSmas.Find(tradingDate);
             if (slowSma is null || slowSma.Sma is null)
             {
@@ -215,17 +192,6 @@ namespace Pl.Sas.Core.Trading
             }
 
             if (fastSma.Sma < slowSma.Sma)
-            {
-                return 0;
-            }
-
-            var sarSignal = _reverseSignals.Find(tradingDate);
-            if (sarSignal is null || sarSignal.Sar is null)
-            {
-                return 0;
-            }
-
-            if (sarSignal.Sar > lastClosePrice)
             {
                 return 0;
             }
@@ -255,34 +221,6 @@ namespace Pl.Sas.Core.Trading
             }
 
             if (fastSma.Sma > slowSma.Sma)
-            {
-                return 0;
-            }
-
-            var slowRsi = _slowRsis.Find(tradingDate);
-            if (slowRsi is null || slowRsi.Rsi is null)
-            {
-                return 0;
-            }
-
-            var fastRsi = _fastRsis.Find(tradingDate);
-            if (fastRsi is null || fastRsi.Rsi is null)
-            {
-                return 0;
-            }
-
-            if (fastRsi.Rsi > slowRsi.Rsi)
-            {
-                return 0;
-            }
-
-            var sarSignal = _reverseSignals.Find(tradingDate);
-            if (sarSignal is null || sarSignal.Sar is null)
-            {
-                return 0;
-            }
-
-            if (sarSignal.Sar < lastClosePrice)
             {
                 return 0;
             }

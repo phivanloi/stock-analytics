@@ -8,21 +8,20 @@ namespace Pl.Sas.Core.Trading
         private readonly List<SmaResult> _slowSmas;
         private readonly List<SmaResult> _fastSmas;
         private readonly List<SmaResult> _limitSmas;
-        private readonly List<ParabolicSarResult> _reverseSignals;
         private readonly List<RsiResult> _fastRsis;
         private readonly List<RsiResult> _slowRsis;
+        private readonly List<ParabolicSarResult> _reverseSignals;
         private TradingCase tradingCase = new();
 
-        public IndexSmaPSarTrading(List<ChartPrice> chartPrices, List<ChartPrice> indexChartPrices)
+        public IndexSmaPSarTrading(List<ChartPrice> chartPrices)
         {
             var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
-            var indexQuotes = indexChartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
-            _fastSmas = quotes.Use(CandlePart.Close).GetSma(6).ToList();
-            _slowSmas = quotes.Use(CandlePart.Close).GetSma(10).ToList();
+            _fastSmas = quotes.Use(CandlePart.Close).GetSma(12).ToList();
+            _slowSmas = quotes.Use(CandlePart.Close).GetSma(26).ToList();
             _limitSmas = quotes.Use(CandlePart.Close).GetSma(36).ToList();
-            _reverseSignals = quotes.GetParabolicSar(0.02, 0.2).ToList();
             _fastRsis = quotes.GetRsi(1).ToList();
             _slowRsis = quotes.GetRsi(5).ToList();
+            _reverseSignals = quotes.GetParabolicSar(0.02, 0.2).ToList();
         }
 
         public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName, bool isNoteTrading = true)
@@ -31,7 +30,7 @@ namespace Pl.Sas.Core.Trading
 
             foreach (var day in chartPrices)
             {
-                if (tradingHistory.Count < 1)
+                if (tradingHistory.Count <= 0)
                 {
                     tradingCase.AssetPosition = "100% T";
                     tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, O:{day.OpenPrice:0,0.00}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0} |-> không giao dịch ngày đầu tiên");
@@ -68,7 +67,7 @@ namespace Pl.Sas.Core.Trading
                         tradingCase.NumberStock += stockCount;
                         tradingCase.NumberChangeDay = 0;
                         tradingCase.MaxPriceOnBuy = day.ClosePrice;
-                        tradingCase.StopLossPrice = GetStopLossPrice(tradingHistory[^1].TradingDate, tradingCase.ActionPrice);
+                        tradingCase.StopLossPrice = tradingCase.ActionPrice - (tradingCase.ActionPrice * 0.07f);
                         if (timeTrading == TimeTrading.NST || DateTime.Now.Date != day.TradingDate)
                         {
                             tradingCase.AssetPosition = "100% C";
@@ -173,16 +172,6 @@ namespace Pl.Sas.Core.Trading
             }
         }
 
-        public float GetStopLossPrice(DateTime tradingDate, float actionPrice)
-        {
-            var sarSignal = _reverseSignals.Find(tradingDate);
-            if (sarSignal is null || sarSignal.Sar is null)
-            {
-                return actionPrice - (actionPrice * 0.07f);
-            }
-            return (float)sarSignal.Sar;
-        }
-
         public int BuyCondition(DateTime tradingDate, float lastClosePrice)
         {
             var limitSma = _limitSmas.Find(tradingDate);
@@ -192,23 +181,6 @@ namespace Pl.Sas.Core.Trading
             }
 
             if (lastClosePrice < limitSma.Sma)
-            {
-                return 0;
-            }
-
-            var slowSma = _slowSmas.Find(tradingDate);
-            if (slowSma is null || slowSma.Sma is null)
-            {
-                return 0;
-            }
-
-            var fastSma = _fastSmas.Find(tradingDate);
-            if (fastSma is null || fastSma.Sma is null)
-            {
-                return 0;
-            }
-
-            if (fastSma.Sma < slowSma.Sma)
             {
                 return 0;
             }
@@ -226,6 +198,23 @@ namespace Pl.Sas.Core.Trading
             }
 
             if (fastRsi.Rsi < slowRsi.Rsi)
+            {
+                return 0;
+            }
+
+            var slowSma = _slowSmas.Find(tradingDate);
+            if (slowSma is null || slowSma.Sma is null)
+            {
+                return 0;
+            }
+
+            var fastSma = _fastSmas.Find(tradingDate);
+            if (fastSma is null || fastSma.Sma is null)
+            {
+                return 0;
+            }
+
+            if (fastSma.Sma < slowSma.Sma)
             {
                 return 0;
             }
@@ -304,14 +293,14 @@ namespace Pl.Sas.Core.Trading
         public static float CalculateOptimalBuyPrice(List<ChartPrice> chartPrices, float rootPrice)
         {
             var percent = chartPrices.OrderByDescending(q => q.TradingDate).Take(10).Select(q => q.HighestPrice.GetPercent(q.OpenPrice)).Average() / 100;
-            var buyPrice = rootPrice - (rootPrice * (percent * 5));
+            var buyPrice = rootPrice - (rootPrice * (percent * 10));
             return (float)Math.Round((decimal)buyPrice, 2);
         }
 
         public static float CalculateOptimalSellPrice(List<ChartPrice> chartPrices, float rootPrice)
         {
             var percent = chartPrices.OrderByDescending(q => q.TradingDate).Take(10).Select(q => q.OpenPrice.GetPercent(q.LowestPrice)).Average() / 100;
-            var buyPrice = rootPrice + (rootPrice * (percent * 5));
+            var buyPrice = rootPrice + (rootPrice * (percent * 10));
             return (float)Math.Round((decimal)buyPrice, 2);
         }
     }
