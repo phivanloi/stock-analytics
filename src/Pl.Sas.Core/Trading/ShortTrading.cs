@@ -21,7 +21,7 @@ namespace Pl.Sas.Core.Trading
             _limitSmas = quotes.Use(CandlePart.Close).GetSma(36).ToList();
             _reverseSignals = quotes.GetParabolicSar(0.02, 0.2).ToList();
             _fastRsis = quotes.GetRsi(1).ToList();
-            _slowRsis = quotes.GetRsi(5).ToList();
+            _slowRsis = quotes.GetRsi(14).ToList();
         }
 
         public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName, bool isNoteTrading = true)
