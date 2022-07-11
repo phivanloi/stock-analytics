@@ -606,7 +606,7 @@ namespace Pl.Sas.Core.Services
             #endregion
 
             #region Thử nghiệm
-            var indexSmaPSarTrading = new EmaTrading(chartPrices);
+            var indexSmaPSarTrading = new ExperimentTrading(chartPrices);
             tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
             var indexSmaPSarCase = indexSmaPSarTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
             var smaPSarResult = new TradingResult()

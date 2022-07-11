@@ -166,7 +166,7 @@ namespace Pl.Sas.Core.Trading
 
             if (fastSma.Sma < slowSma.Sma && !tradingCase.ContinueBuy)
             {
-                tradingCase.AddNote(0, $"{chartPrice.TradingDate:yy/MM/dd}: Cho phép lệnh mua được hoạt động do đường ma6 đã cắt xuống đường ma10.");
+                tradingCase.AddNote(0, $"{chartPrice.TradingDate:yy/MM/dd}: Cho phép lệnh mua được hoạt động do đường FastSma đã cắt xuống đường SlowSma.");
                 tradingCase.ContinueBuy = true;
             }
         }

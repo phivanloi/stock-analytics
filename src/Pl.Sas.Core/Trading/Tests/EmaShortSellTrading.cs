@@ -3,21 +3,28 @@ using Skender.Stock.Indicators;
 
 namespace Pl.Sas.Core.Trading
 {
-    public class MidTrading : BaseTrading
+    /// <summary>
+    /// Phương pháo giao dịch bằng đường ema nhưng có điều kiện riêng cho lệnh bạn có đường ema ngắn hơn
+    /// </summary>
+    public class EmaShortSellTrading : BaseTrading
     {
-        private readonly List<SmaResult> _slowSmas;
-        private readonly List<SmaResult> _fastSmas;
-        private readonly List<SmaResult> _limitSmas;
+        private readonly List<EmaResult> _slowBuyEmas;
+        private readonly List<EmaResult> _fastBuyEmas;
+        private readonly List<EmaResult> _slowSellEmas;
+        private readonly List<EmaResult> _fastSellEmas;
+        private readonly List<EmaResult> _limitEmas;
+        private TradingCase tradingCase = new();
         private readonly List<RsiResult> _fastRsis;
         private readonly List<RsiResult> _slowRsis;
-        private TradingCase tradingCase = new();
 
-        public MidTrading(List<ChartPrice> chartPrices)
+        public EmaShortSellTrading(List<ChartPrice> chartPrices)
         {
             var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
-            _fastSmas = quotes.Use(CandlePart.Close).GetSma(12).ToList();
-            _slowSmas = quotes.Use(CandlePart.Close).GetSma(26).ToList();
-            _limitSmas = quotes.Use(CandlePart.Close).GetSma(36).ToList();
+            _fastBuyEmas = quotes.Use(CandlePart.Close).GetEma(12).ToList();
+            _slowBuyEmas = quotes.Use(CandlePart.Close).GetEma(26).ToList();
+            _fastSellEmas = quotes.Use(CandlePart.Close).GetEma(14).ToList();
+            _slowSellEmas = quotes.Use(CandlePart.Close).GetEma(30).ToList();
+            _limitEmas = quotes.Use(CandlePart.Close).GetEma(26).ToList();
             _fastRsis = quotes.GetRsi(1).ToList();
             _slowRsis = quotes.GetRsi(14).ToList();
         }
@@ -150,51 +157,51 @@ namespace Pl.Sas.Core.Trading
                 tradingCase.MaxPriceOnBuy = chartPrice.ClosePrice;//Đặt lại giá cao nhất đã đạt được
             }
 
-            var slowSma = _slowSmas.Find(chartPrice.TradingDate);
-            if (slowSma is null || slowSma.Sma is null)
+            var slowSma = _slowBuyEmas.Find(chartPrice.TradingDate);
+            if (slowSma is null || slowSma.Ema is null)
             {
                 return;
             }
 
-            var fastSma = _fastSmas.Find(chartPrice.TradingDate);
-            if (fastSma is null || fastSma.Sma is null)
+            var fastSma = _fastBuyEmas.Find(chartPrice.TradingDate);
+            if (fastSma is null || fastSma.Ema is null)
             {
                 return;
             }
 
-            if (fastSma.Sma < slowSma.Sma && !tradingCase.ContinueBuy)
+            if (fastSma.Ema < slowSma.Ema && !tradingCase.ContinueBuy)
             {
-                tradingCase.AddNote(0, $"{chartPrice.TradingDate:yy/MM/dd}: Cho phép lệnh mua được hoạt động do đường FastSma đã cắt xuống đường SlowSma.");
+                tradingCase.AddNote(0, $"{chartPrice.TradingDate:yy/MM/dd}: Cho phép lệnh mua được hoạt động do đường ma6 đã cắt xuống đường ma10.");
                 tradingCase.ContinueBuy = true;
             }
         }
 
         public int BuyCondition(DateTime tradingDate, float lastClosePrice)
         {
-            var limitSma = _limitSmas.Find(tradingDate);
-            if (limitSma is null || limitSma.Sma is null)
+            var limitSma = _limitEmas.Find(tradingDate);
+            if (limitSma is null || limitSma.Ema is null)
             {
                 return 0;
             }
 
-            if (lastClosePrice < limitSma.Sma)
+            if (lastClosePrice < limitSma.Ema)
             {
                 return 0;
             }
 
-            var slowSma = _slowSmas.Find(tradingDate);
-            if (slowSma is null || slowSma.Sma is null)
+            var slowSma = _slowBuyEmas.Find(tradingDate);
+            if (slowSma is null || slowSma.Ema is null)
             {
                 return 0;
             }
 
-            var fastSma = _fastSmas.Find(tradingDate);
-            if (fastSma is null || fastSma.Sma is null)
+            var fastSma = _fastBuyEmas.Find(tradingDate);
+            if (fastSma is null || fastSma.Ema is null)
             {
                 return 0;
             }
 
-            if (fastSma.Sma < slowSma.Sma)
+            if (fastSma.Ema < slowSma.Ema)
             {
                 return 0;
             }
@@ -216,17 +223,6 @@ namespace Pl.Sas.Core.Trading
                 return 0;
             }
 
-            //var sarSignal = _reverseSignals.Find(tradingDate);
-            //if (sarSignal is null || sarSignal.Sar is null)
-            //{
-            //    return 0;
-            //}
-
-            //if (sarSignal.Sar > lastClosePrice)
-            //{
-            //    return 0;
-            //}
-
             return 100;
         }
 
@@ -239,19 +235,19 @@ namespace Pl.Sas.Core.Trading
                 return 100;
             }
 
-            var slowSma = _slowSmas.Find(tradingDate);
-            if (slowSma is null || slowSma.Sma is null)
+            var slowSma = _slowSellEmas.Find(tradingDate);
+            if (slowSma is null || slowSma.Ema is null)
             {
                 return 0;
             }
 
-            var fastSma = _fastSmas.Find(tradingDate);
-            if (fastSma is null || fastSma.Sma is null)
+            var fastSma = _fastSellEmas.Find(tradingDate);
+            if (fastSma is null || fastSma.Ema is null)
             {
                 return 0;
             }
 
-            if (fastSma.Sma > slowSma.Sma)
+            if (fastSma.Ema > slowSma.Ema)
             {
                 return 0;
             }
@@ -272,17 +268,6 @@ namespace Pl.Sas.Core.Trading
             {
                 return 0;
             }
-
-            //var sarSignal = _reverseSignals.Find(tradingDate);
-            //if (sarSignal is null || sarSignal.Sar is null)
-            //{
-            //    return 0;
-            //}
-
-            //if (sarSignal.Sar < lastClosePrice)
-            //{
-            //    return 0;
-            //}
 
             return 100;
         }

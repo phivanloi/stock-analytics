@@ -3,21 +3,23 @@ using Skender.Stock.Indicators;
 
 namespace Pl.Sas.Core.Trading
 {
-    public class EmaTrading : BaseTrading
+    public class WmaTrading : BaseTrading
     {
-        private readonly List<EmaResult> _slowEmas;
-        private readonly List<EmaResult> _fastEmas;
-        private readonly List<EmaResult> _limitEmas;
-        private TradingCase tradingCase = new();
+        private readonly List<WmaResult> _slowWmas;
+        private readonly List<WmaResult> _fastWmas;
+        private readonly List<WmaResult> _limitWmas;
+        private readonly List<ParabolicSarResult> _reverseSignals;
         private readonly List<RsiResult> _fastRsis;
         private readonly List<RsiResult> _slowRsis;
+        private TradingCase tradingCase = new();
 
-        public EmaTrading(List<ChartPrice> chartPrices)
+        public WmaTrading(List<ChartPrice> chartPrices)
         {
             var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
-            _fastEmas = quotes.Use(CandlePart.Close).GetEma(12).ToList();
-            _slowEmas = quotes.Use(CandlePart.Close).GetEma(26).ToList();
-            _limitEmas = quotes.Use(CandlePart.Close).GetEma(26).ToList();
+            _fastWmas = quotes.Use(CandlePart.Close).GetWma(20).ToList();
+            _slowWmas = quotes.Use(CandlePart.Close).GetWma(36).ToList();
+            _limitWmas = quotes.Use(CandlePart.Close).GetWma(36).ToList();
+            _reverseSignals = quotes.GetParabolicSar(0.02, 0.2).ToList();
             _fastRsis = quotes.GetRsi(1).ToList();
             _slowRsis = quotes.GetRsi(14).ToList();
         }
@@ -28,7 +30,7 @@ namespace Pl.Sas.Core.Trading
 
             foreach (var day in chartPrices)
             {
-                if (tradingHistory.Count <= 0)
+                if (tradingHistory.Count < 1)
                 {
                     tradingCase.AssetPosition = "100% T";
                     tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, O:{day.OpenPrice:0,0.00}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0} |-> không giao dịch ngày đầu tiên");
@@ -63,7 +65,7 @@ namespace Pl.Sas.Core.Trading
                         tradingCase.NumberStock += stockCount;
                         tradingCase.NumberChangeDay = 0;
                         tradingCase.MaxPriceOnBuy = day.ClosePrice;
-                        tradingCase.StopLossPrice = tradingCase.ActionPrice - (tradingCase.ActionPrice * 0.07f);
+                        tradingCase.StopLossPrice = GetStopLossPrice(tradingHistory[^1].TradingDate, tradingCase.ActionPrice);
                         if (timeTrading == TimeTrading.NST || DateTime.Now.Date != day.TradingDate)
                         {
                             tradingCase.AssetPosition = "100% C";
@@ -150,51 +152,61 @@ namespace Pl.Sas.Core.Trading
                 tradingCase.MaxPriceOnBuy = chartPrice.ClosePrice;//Đặt lại giá cao nhất đã đạt được
             }
 
-            var slowSma = _slowEmas.Find(chartPrice.TradingDate);
-            if (slowSma is null || slowSma.Ema is null)
+            var slowSma = _slowWmas.Find(chartPrice.TradingDate);
+            if (slowSma is null || slowSma.Wma is null)
             {
                 return;
             }
 
-            var fastSma = _fastEmas.Find(chartPrice.TradingDate);
-            if (fastSma is null || fastSma.Ema is null)
+            var fastSma = _fastWmas.Find(chartPrice.TradingDate);
+            if (fastSma is null || fastSma.Wma is null)
             {
                 return;
             }
 
-            if (fastSma.Ema < slowSma.Ema && !tradingCase.ContinueBuy)
+            if (fastSma.Wma < slowSma.Wma && !tradingCase.ContinueBuy)
             {
-                tradingCase.AddNote(0, $"{chartPrice.TradingDate:yy/MM/dd}: Cho phép lệnh mua được hoạt động do đường ma6 đã cắt xuống đường ma10.");
+                tradingCase.AddNote(0, $"{chartPrice.TradingDate:yy/MM/dd}: Cho phép lệnh mua được hoạt động do đường FastSma đã cắt xuống đường SlowSma.");
                 tradingCase.ContinueBuy = true;
             }
         }
 
+        public float GetStopLossPrice(DateTime tradingDate, float actionPrice)
+        {
+            var sarSignal = _reverseSignals.Find(tradingDate);
+            if (sarSignal is null || sarSignal.Sar is null)
+            {
+                return actionPrice - (actionPrice * 0.07f);
+            }
+            return (float)sarSignal.Sar;
+        }
+
         public int BuyCondition(DateTime tradingDate, float lastClosePrice)
         {
-            var limitSma = _limitEmas.Find(tradingDate);
-            if (limitSma is null || limitSma.Ema is null)
+            var limitSma = _limitWmas.Find(tradingDate);
+            if (limitSma is null || limitSma.Wma is null)
             {
                 return 0;
             }
 
-            if (lastClosePrice < limitSma.Ema)
+            if (lastClosePrice < limitSma.Wma)
             {
                 return 0;
             }
 
-            var slowSma = _slowEmas.Find(tradingDate);
-            if (slowSma is null || slowSma.Ema is null)
+            var slowSma = _slowWmas.Find(tradingDate);
+            if (slowSma is null || slowSma.Wma is null)
             {
                 return 0;
             }
 
-            var fastSma = _fastEmas.Find(tradingDate);
-            if (fastSma is null || fastSma.Ema is null)
+            var fastSma = _fastWmas.Find(tradingDate);
+            if (fastSma is null || fastSma.Wma is null)
             {
                 return 0;
             }
 
-            if (fastSma.Ema < slowSma.Ema)
+            if (fastSma.Wma < slowSma.Wma)
             {
                 return 0;
             }
@@ -216,6 +228,17 @@ namespace Pl.Sas.Core.Trading
                 return 0;
             }
 
+            var sarSignal = _reverseSignals.Find(tradingDate);
+            if (sarSignal is null || sarSignal.Sar is null)
+            {
+                return 0;
+            }
+
+            if (sarSignal.Sar > lastClosePrice)
+            {
+                return 0;
+            }
+
             return 100;
         }
 
@@ -228,19 +251,19 @@ namespace Pl.Sas.Core.Trading
                 return 100;
             }
 
-            var slowSma = _slowEmas.Find(tradingDate);
-            if (slowSma is null || slowSma.Ema is null)
+            var slowSma = _slowWmas.Find(tradingDate);
+            if (slowSma is null || slowSma.Wma is null)
             {
                 return 0;
             }
 
-            var fastSma = _fastEmas.Find(tradingDate);
-            if (fastSma is null || fastSma.Ema is null)
+            var fastSma = _fastWmas.Find(tradingDate);
+            if (fastSma is null || fastSma.Wma is null)
             {
                 return 0;
             }
 
-            if (fastSma.Ema > slowSma.Ema)
+            if (fastSma.Wma > slowSma.Wma)
             {
                 return 0;
             }
@@ -258,6 +281,17 @@ namespace Pl.Sas.Core.Trading
             }
 
             if (fastRsi.Rsi > slowRsi.Rsi)
+            {
+                return 0;
+            }
+
+            var sarSignal = _reverseSignals.Find(tradingDate);
+            if (sarSignal is null || sarSignal.Sar is null)
+            {
+                return 0;
+            }
+
+            if (sarSignal.Sar < lastClosePrice)
             {
                 return 0;
             }
