@@ -3,16 +3,16 @@ using Skender.Stock.Indicators;
 
 namespace Pl.Sas.Core.Trading
 {
-    public class EmaRsiTrading : BaseTrading
+    public class ExperimentTrading: BaseTrading
     {
         private readonly List<EmaResult> _slowEmas;
         private readonly List<EmaResult> _fastEmas;
         private readonly List<EmaResult> _limitEmas;
-        private TradingCase tradingCase = new();
         private readonly List<RsiResult> _fastRsis;
         private readonly List<RsiResult> _slowRsis;
+        private TradingCase tradingCase = new();
 
-        public EmaRsiTrading(List<ChartPrice> chartPrices)
+        public ExperimentTrading(List<ChartPrice> chartPrices)
         {
             var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
             _fastEmas = quotes.Use(CandlePart.Close).GetEma(12).ToList();
@@ -164,7 +164,7 @@ namespace Pl.Sas.Core.Trading
 
             if (fastSma.Ema < slowSma.Ema && !tradingCase.ContinueBuy)
             {
-                tradingCase.AddNote(0, $"{chartPrice.TradingDate:yy/MM/dd}: Cho phép lệnh mua được hoạt động do đường ma6 đã cắt xuống đường ma10.");
+                tradingCase.AddNote(0, $"{chartPrice.TradingDate:yy/MM/dd}: Cho phép lệnh mua được hoạt động do đường FastSma đã cắt xuống đường SlowSma.");
                 tradingCase.ContinueBuy = true;
             }
         }
@@ -228,22 +228,22 @@ namespace Pl.Sas.Core.Trading
                 return 100;
             }
 
-            //var slowSma = _slowEmas.Find(tradingDate);
-            //if (slowSma is null || slowSma.Ema is null)
-            //{
-            //    return 0;
-            //}
+            var slowSma = _slowEmas.Find(tradingDate);
+            if (slowSma is null || slowSma.Ema is null)
+            {
+                return 0;
+            }
 
-            //var fastSma = _fastEmas.Find(tradingDate);
-            //if (fastSma is null || fastSma.Ema is null)
-            //{
-            //    return 0;
-            //}
+            var fastSma = _fastEmas.Find(tradingDate);
+            if (fastSma is null || fastSma.Ema is null)
+            {
+                return 0;
+            }
 
-            //if (fastSma.Ema > slowSma.Ema)
-            //{
-            //    return 0;
-            //}
+            if (fastSma.Ema > slowSma.Ema)
+            {
+                return 0;
+            }
 
             var slowRsi = _slowRsis.Find(tradingDate);
             if (slowRsi is null || slowRsi.Rsi is null)
