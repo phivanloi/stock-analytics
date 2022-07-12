@@ -182,19 +182,19 @@ namespace Pl.Sas.Core.Trading
                 return 0;
             }
 
-            var slowSma = _slowEmas.Find(tradingDate);
-            if (slowSma is null || slowSma.Ema is null)
+            var slowEma = _slowEmas.Find(tradingDate);
+            if (slowEma is null || slowEma.Ema is null)
             {
                 return 0;
             }
 
-            var fastSma = _fastEmas.Find(tradingDate);
-            if (fastSma is null || fastSma.Ema is null)
+            var fastEma = _fastEmas.Find(tradingDate);
+            if (fastEma is null || fastEma.Ema is null)
             {
                 return 0;
             }
 
-            if (fastSma.Ema < slowSma.Ema)
+            if (fastEma.Ema < slowEma.Ema)
             {
                 return 0;
             }
@@ -228,19 +228,19 @@ namespace Pl.Sas.Core.Trading
                 return 100;
             }
 
-            var slowSma = _slowEmas.Find(tradingDate);
-            if (slowSma is null || slowSma.Ema is null)
+            var slowEma = _slowEmas.Find(tradingDate);
+            if (slowEma is null || slowEma.Ema is null)
             {
                 return 0;
             }
 
-            var fastSma = _fastEmas.Find(tradingDate);
-            if (fastSma is null || fastSma.Ema is null)
+            var fastEma = _fastEmas.Find(tradingDate);
+            if (fastEma is null || fastEma.Ema is null)
             {
                 return 0;
             }
 
-            if (fastSma.Ema > slowSma.Ema)
+            if (fastEma.Ema > slowEma.Ema)
             {
                 return 0;
             }
