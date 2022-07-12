@@ -7,27 +7,34 @@ namespace Pl.Sas.Core.Trading
     {
         private readonly List<EmaResult> _slowEmas;
         private readonly List<EmaResult> _fastEmas;
+        private readonly List<SmaResult> _slowSmas;
+        private readonly List<SmaResult> _fastSmas;
         private readonly List<SmaResult> _limitSmas;
         private readonly List<ParabolicSarResult> _reverseSignals;
         private readonly List<RsiResult> _fastRsis;
         private readonly List<RsiResult> _slowRsis;
-        private TradingCase tradingCase = new();
+        private readonly List<EmaResult> _indexSlowEmas;
+        private readonly List<EmaResult> _indexFastEmas;
+        private readonly TradingCase tradingCase = new() { IsNote = true };
 
-        public EmaPSarTrading(List<ChartPrice> chartPrices)
+        public EmaPSarTrading(List<ChartPrice> chartPrices, List<ChartPrice> indexChartPrices)
         {
             var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
+            var indexQuotes = indexChartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
             _fastEmas = quotes.Use(CandlePart.Close).GetEma(12).ToList();
             _slowEmas = quotes.Use(CandlePart.Close).GetEma(26).ToList();
+            _fastSmas = quotes.Use(CandlePart.Close).GetSma(12).ToList();
+            _slowSmas = quotes.Use(CandlePart.Close).GetSma(26).ToList();
             _limitSmas = quotes.Use(CandlePart.Close).GetSma(36).ToList();
             _reverseSignals = quotes.GetParabolicSar(0.02, 0.2).ToList();
             _fastRsis = quotes.GetRsi(10).ToList();
             _slowRsis = quotes.GetRsi(14).ToList();
+            _indexFastEmas = indexQuotes.Use(CandlePart.Close).GetEma(12).ToList();
+            _indexSlowEmas = indexQuotes.Use(CandlePart.Close).GetEma(26).ToList();
         }
 
-        public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName, bool isNoteTrading = true)
+        public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName)
         {
-            tradingCase = new() { IsNote = isNoteTrading };
-
             foreach (var day in chartPrices)
             {
                 if (tradingHistory.Count <= 0)
@@ -184,32 +191,66 @@ namespace Pl.Sas.Core.Trading
 
         public int BuyCondition(DateTime tradingDate, float lastClosePrice)
         {
-            //var limitSma = _limitSmas.Find(tradingDate);
-            //if (limitSma is null || limitSma.Sma is null)
-            //{
-            //    return 0;
-            //}
-
-            //if (lastClosePrice < limitSma.Sma)
-            //{
-            //    return 0;
-            //}
-
-            var slowSma = _slowEmas.Find(tradingDate);
-            if (slowSma is null || slowSma.Ema is null)
+            var limitSma = _limitSmas.Find(tradingDate);
+            if (limitSma is null || limitSma.Sma is null)
             {
                 return 0;
             }
 
-            var fastSma = _fastEmas.Find(tradingDate);
-            if (fastSma is null || fastSma.Ema is null)
+            if (lastClosePrice < limitSma.Sma)
             {
                 return 0;
             }
 
-            if (fastSma.Ema < slowSma.Ema)
+            var indexSlowSma = _indexSlowEmas.Find(tradingDate);
+            if (indexSlowSma is null || indexSlowSma.Ema is null)
             {
                 return 0;
+            }
+
+            var indexFastSma = _indexFastEmas.Find(tradingDate);
+            if (indexFastSma is null || indexFastSma.Ema is null)
+            {
+                return 0;
+            }
+
+            if (indexFastSma.Ema < indexSlowSma.Ema)
+            {
+                var slowSma = _slowSmas.Find(tradingDate);
+                if (slowSma is null || slowSma.Sma is null)
+                {
+                    return 0;
+                }
+
+                var fastSma = _fastSmas.Find(tradingDate);
+                if (fastSma is null || fastSma.Sma is null)
+                {
+                    return 0;
+                }
+
+                if (fastSma.Sma < slowSma.Sma)
+                {
+                    return 0;
+                }
+            }
+            else
+            {
+                var slowEma = _slowEmas.Find(tradingDate);
+                if (slowEma is null || slowEma.Ema is null)
+                {
+                    return 0;
+                }
+
+                var fastEma = _fastEmas.Find(tradingDate);
+                if (fastEma is null || fastEma.Ema is null)
+                {
+                    return 0;
+                }
+
+                if (fastEma.Ema < slowEma.Ema)
+                {
+                    return 0;
+                }
             }
 
             var slowRsi = _slowRsis.Find(tradingDate);
@@ -252,22 +293,22 @@ namespace Pl.Sas.Core.Trading
                 return 100;
             }
 
-            //var slowSma = _slowSmas.Find(tradingDate);
-            //if (slowSma is null || slowSma.Sma is null)
-            //{
-            //    return 0;
-            //}
+            var slowEma = _slowEmas.Find(tradingDate);
+            if (slowEma is null || slowEma.Ema is null)
+            {
+                return 0;
+            }
 
-            //var fastSma = _fastSmas.Find(tradingDate);
-            //if (fastSma is null || fastSma.Sma is null)
-            //{
-            //    return 0;
-            //}
+            var fastEma = _fastEmas.Find(tradingDate);
+            if (fastEma is null || fastEma.Ema is null)
+            {
+                return 0;
+            }
 
-            //if (fastSma.Sma > slowSma.Sma)
-            //{
-            //    return 0;
-            //}
+            if (fastEma.Ema > slowEma.Ema)
+            {
+                return 0;
+            }
 
             var slowRsi = _slowRsis.Find(tradingDate);
             if (slowRsi is null || slowRsi.Rsi is null)
