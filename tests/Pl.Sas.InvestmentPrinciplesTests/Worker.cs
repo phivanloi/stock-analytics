@@ -43,7 +43,7 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 var endPrice = chartTrading[^1].ClosePrice;
                 Console.Clear();
                 Console.Clear();
-                var trader = new EmaPSarTrading(chartPrices, indexChartPrices);
+                var trader = new ExperimentTrading(chartPrices);
                 var tradingCase = trader.Trading(chartTrading, tradingHistory, stock.Exchange);
                 foreach (var note in tradingCase.ExplainNotes)
                 {

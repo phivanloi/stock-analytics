@@ -86,8 +86,7 @@ namespace Pl.Sas.Core.Services
 
             var stock = await _stockData.FindBySymbolAsync(symbol);
             var chartPrices = await _chartPriceData.CacheFindAllAsync(symbol, "D");
-            var indexChartPrices = await _chartPriceData.CacheFindAllAsync("VNINDEX", "D");
-            if (chartPrices is null || chartPrices.Count <= 0 || stock is null || indexChartPrices is null || indexChartPrices.Count <= 0)
+            if (chartPrices is null || chartPrices.Count <= 0 || stock is null)
             {
                 return;
             }
@@ -190,24 +189,24 @@ namespace Pl.Sas.Core.Services
             #endregion
 
             #region Thử nghiệm
-            var indexSmaPSarTrading = new EmaPSarTrading(chartPrices, indexChartPrices);
+            var experimentTrading = new ExperimentTrading(chartPrices);
             tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
-            var indexSmaPSarCase = indexSmaPSarTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
+            var experimentCase = experimentTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
             listTradingResult.Add(new()
             {
                 Symbol = symbol,
                 Principle = 2,
-                IsBuy = indexSmaPSarCase.IsBuy,
-                IsSell = indexSmaPSarCase.IsSell,
-                BuyPrice = indexSmaPSarCase.BuyPrice,
-                SellPrice = indexSmaPSarCase.SellPrice,
-                FixedCapital = indexSmaPSarCase.FixedCapital,
-                Profit = indexSmaPSarCase.Profit(chartTrading[^1].ClosePrice),
-                TotalTax = indexSmaPSarCase.TotalTax,
+                IsBuy = experimentCase.IsBuy,
+                IsSell = experimentCase.IsSell,
+                BuyPrice = experimentCase.BuyPrice,
+                SellPrice = experimentCase.SellPrice,
+                FixedCapital = experimentCase.FixedCapital,
+                Profit = experimentCase.Profit(chartTrading[^1].ClosePrice),
+                TotalTax = experimentCase.TotalTax,
                 TradingNotes = null,
-                AssetPosition = indexSmaPSarCase.AssetPosition,
-                LoseNumber = indexSmaPSarCase.LoseNumber,
-                WinNumber = indexSmaPSarCase.WinNumber,
+                AssetPosition = experimentCase.AssetPosition,
+                LoseNumber = experimentCase.LoseNumber,
+                WinNumber = experimentCase.WinNumber,
             });
             #endregion
 

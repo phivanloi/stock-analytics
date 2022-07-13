@@ -521,8 +521,7 @@ namespace Pl.Sas.Core.Services
             var checkingKey = $"{symbol}-Analytics-TestTrading";
             var stock = await _stockData.FindBySymbolAsync(symbol);
             var chartPrices = await _chartPriceData.CacheFindAllAsync(symbol, "D");
-            var indexChartPrices = await _chartPriceData.CacheFindAllAsync("VNINDEX", "D");
-            if (stock is null || chartPrices is null || chartPrices.Count <= 2 || indexChartPrices is null || indexChartPrices.Count <= 0)
+            if (stock is null || chartPrices is null || chartPrices.Count <= 2)
             {
                 _logger.LogWarning("TestTradingAnalyticsAsync => stock is null or chartPrices is null for {symbol}", symbol);
                 return await _keyValueData.SetAsync(checkingKey, false);
@@ -606,24 +605,24 @@ namespace Pl.Sas.Core.Services
             #endregion
 
             #region Thử nghiệm
-            var indexSmaPSarTrading = new ExperimentTrading(chartPrices);
+            var experimentTrading = new ExperimentTrading(chartPrices);
             tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
-            var indexSmaPSarCase = indexSmaPSarTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
+            var experimentCase = experimentTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
             var smaPSarResult = new TradingResult()
             {
                 Symbol = symbol,
                 Principle = 2,
-                IsBuy = indexSmaPSarCase.IsBuy,
-                IsSell = indexSmaPSarCase.IsSell,
-                BuyPrice = indexSmaPSarCase.BuyPrice,
-                SellPrice = indexSmaPSarCase.SellPrice,
-                FixedCapital = indexSmaPSarCase.FixedCapital,
-                Profit = indexSmaPSarCase.Profit(chartTrading[^1].ClosePrice),
-                TotalTax = indexSmaPSarCase.TotalTax,
-                AssetPosition = indexSmaPSarCase.AssetPosition,
-                LoseNumber = indexSmaPSarCase.LoseNumber,
-                WinNumber = indexSmaPSarCase.WinNumber,
-                TradingNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(indexSmaPSarCase.ExplainNotes)),
+                IsBuy = experimentCase.IsBuy,
+                IsSell = experimentCase.IsSell,
+                BuyPrice = experimentCase.BuyPrice,
+                SellPrice = experimentCase.SellPrice,
+                FixedCapital = experimentCase.FixedCapital,
+                Profit = experimentCase.Profit(chartTrading[^1].ClosePrice),
+                TotalTax = experimentCase.TotalTax,
+                AssetPosition = experimentCase.AssetPosition,
+                LoseNumber = experimentCase.LoseNumber,
+                WinNumber = experimentCase.WinNumber,
+                TradingNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(experimentCase.ExplainNotes)),
             };
             await _tradingResultData.SaveTestTradingResultAsync(smaPSarResult);
             #endregion            
