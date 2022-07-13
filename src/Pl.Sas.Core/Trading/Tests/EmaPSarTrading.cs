@@ -27,8 +27,8 @@ namespace Pl.Sas.Core.Trading
             _slowSmas = quotes.Use(CandlePart.Close).GetSma(26).ToList();
             _limitSmas = quotes.Use(CandlePart.Close).GetSma(36).ToList();
             _reverseSignals = quotes.GetParabolicSar(0.02, 0.2).ToList();
-            _fastRsis = quotes.GetRsi(10).ToList();
-            _slowRsis = quotes.GetRsi(14).ToList();
+            _fastRsis = quotes.GetRsi(1).ToList();
+            _slowRsis = quotes.GetRsi(36).ToList();
             _indexFastEmas = indexQuotes.Use(CandlePart.Close).GetEma(12).ToList();
             _indexSlowEmas = indexQuotes.Use(CandlePart.Close).GetEma(26).ToList();
         }
