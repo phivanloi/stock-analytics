@@ -109,7 +109,7 @@
                 <td title="% lợi nhuận của phương pháp mua và giữ">LNMG</td>
                 <td title="% Lợi nhuận của phương pháp ngắn hạn phù hợp với beta cao">NH</td>
                 <td title="% Lợi nhuận của phương pháp trung hạn phù hợp với beta thấp">TH</td>
-                <td title="% Lợi nhuận của phương pháp thử nghiệm">TN</td>
+                <td title="% Lợi nhuận của phương pháp thử nghiệm" id="compete-result">TN</td>
                 <td title="Khuyến nghị theo phương pháp ngắn hạn">KNNH</td>
                 <td title="Khuyến nghị theo phương pháp trung hạn">KNTH</td>
                 <td title="Khuyến nghị theo phương pháp thử nghiệm">KNTN</td>
@@ -135,7 +135,7 @@
                 setContent('#' + view.symbol + ' .bd10', view.bd10, view.bd10Css);
                 setContent('#' + view.symbol + ' .bd30', view.bd30, view.bd30Css, '60 phiên: ' + view.bd60);
                 setContent('#' + view.symbol + ' .rsi14', view.rsi14, view.rsi14Css);
-                
+
                 setContent('#' + view.symbol + ' .lnmg', view.lnmg, view.lnmgCss);
                 setContent('#' + view.symbol + ' .lnnh', view.lnnh, view.lnnhCss);
                 setContent('#' + view.symbol + ' .lnth', view.lnth, view.lnthCss);
@@ -217,6 +217,7 @@
                     if (html.length > 0) {
                         $('#user-invest-table-body').html(html);
                         $('#number-row').html($('#user-invest-table-body').children().length + '</br> Mã');
+                        $('#compete-result').prop('title',$('#compete').val());
                         document.documentElement.scrollTop = document.body.scrollTop = scrollTop;
                     }
                     else {

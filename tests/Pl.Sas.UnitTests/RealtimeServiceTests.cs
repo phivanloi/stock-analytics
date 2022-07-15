@@ -26,7 +26,7 @@ namespace Pl.Sas.UnitTests
             var hostedService = serviceProvider.GetService<IHostedService>() as LoggingQueuedHostedService ?? throw new Exception("Can't get LoggingQueuedHostedService");
             await hostedService.StartAsync(CancellationToken.None);
 
-            var symbol = "VND";
+            var symbol = "HPG";
             var chartPrices = new List<ChartPrice>();
             var random = new Random();
             if (random.Next(0, 3000) > 2000)
