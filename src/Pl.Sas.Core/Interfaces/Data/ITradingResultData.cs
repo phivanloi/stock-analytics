@@ -5,6 +5,12 @@ namespace Pl.Sas.Core.Interfaces
     public interface ITradingResultData
     {
         /// <summary>
+        /// Lấy toàn bộ kết quả trading trong hệ thống
+        /// </summary>
+        /// <returns>List TradingResult</returns>
+        Task<List<TradingResult>> FindAllAsync();
+
+        /// <summary>
         /// Lấy danh sách kết quả đầu tư thử nghiệm
         /// </summary>
         /// <param name="symbol">Mã chứng khoán</param>

@@ -10,6 +10,13 @@ namespace Pl.Sas.Infrastructure.Data
     {
         public TradingResultData(IOptionsMonitor<ConnectionStrings> options) : base(options) { }
 
+        public virtual async Task<List<TradingResult>> FindAllAsync()
+        {
+            string query = @"SELECT * FROM TradingResults";
+            using SqlConnection connection = new(_connectionStrings.AnalyticsConnection);
+            return (await connection.QueryAsync<TradingResult>(query)).AsList();
+        }
+
         public virtual async Task<List<TradingResult>> FindAllAsync(string symbol, int? principle = null)
         {
             string query = @"SELECT * FROM TradingResults WHERE Symbol = @symbol";

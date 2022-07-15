@@ -1,8 +1,14 @@
 ﻿@using Pl.Sas.Core
 @model MarketListViewModel
+@{
+    var tnWinVsNh = 0;
+    var tnWinVsTh = 0;
+}
 @for (int i = 0; i < Model.StockViews.Count; i++)
 {
     var view = Model.StockViews[i];
+    tnWinVsNh += float.Parse(view.Lntn) > float.Parse(view.Lnnh) ? 1 : -1;
+    tnWinVsTh += float.Parse(view.Lntn) > float.Parse(view.Lnth) ? 1 : -1;
     <tr id="@view.Symbol">
         <td class="s-c t-w t-c" fo="@(Model.UserFollowSymbols.Contains(view.Symbol) ? "1" : "0")" title="@view.Description">@view.Symbol</td>
 
@@ -36,3 +42,4 @@
         <td class="@view.KntnCss">@view.Kntn</td>
     </tr>
 }
+<input type="hidden" id="compete" value="% Lợi nhuận của phương pháp thử nghiệm. Thắng ngắn hạn / trung hạn: @tnWinVsNh / @tnWinVsTh" />
