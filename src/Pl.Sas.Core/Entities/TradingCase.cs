@@ -102,7 +102,7 @@
         /// <summary>
         /// Số ngày thay đổi trạng thái
         /// </summary>
-        public int NumberChangeDay { get; set; } = 10;
+        public int NumberChangeDay { get; set; } = 1;
 
         /// <summary>
         /// Số ngày giữ cổ phiếu

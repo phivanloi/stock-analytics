@@ -38,7 +38,7 @@ namespace Pl.Sas.Core.Trading
                     continue;
                 }
 
-                RebuildStatus(tradingHistory.Last());
+                RebuildStatus(tradingHistory[^1]);
                 tradingCase.IsBuy = false;
                 tradingCase.IsSell = false;
                 var timeTrading = GetTimeTrading(exchangeName, DateTime.Now);
@@ -72,7 +72,7 @@ namespace Pl.Sas.Core.Trading
                         }
                         else
                         {
-                            tradingCase.AssetPosition = $"M:({tradingCase.BuyPrice:0,0.00})";
+                            tradingCase.AssetPosition = $"Mua";
                         }
                         tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, O:{day.OpenPrice:0,0.00}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0} |-> Mua {tradingCase.NumberStock:0,0} cổ giá {tradingCase.ActionPrice:0,0.00} thuế {totalTax:0,0}");
                     }
@@ -113,9 +113,9 @@ namespace Pl.Sas.Core.Trading
                             }
                             else
                             {
-                                tradingCase.AssetPosition = $"B:({tradingCase.SellPrice:0,0.00})";
+                                tradingCase.AssetPosition = $"Bán";
                             }
-                            tradingCase.AddNote(tradingCase.ActionPrice > lastBuyPrice ? 1 : -1, $"{day.TradingDate:yy/MM/dd}, O:{day.OpenPrice:0,0.00}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0} |-> Bán {selNumberStock:0,0} cổ giá {tradingCase.ActionPrice:0,0.00} ({tradingCase.ActionPrice.GetPercent(lastBuyPrice):0,0.00}%), Max: ({tradingCase.MaxPriceOnBuy:0,0.00}) thuế {totalTax:0,0}");
+                            tradingCase.AddNote(tradingCase.ActionPrice > lastBuyPrice ? 1 : -1, $"{day.TradingDate:yy/MM/dd}, O:{day.OpenPrice:0,0.00}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0} |-> Bán {selNumberStock:0,0} cổ giá {tradingCase.ActionPrice:0,0.00} ({tradingCase.ActionPrice.GetPercent(lastBuyPrice):0,0.00}%), Max: ({tradingCase.MaxPriceOnBuy.GetPercent(tradingCase.ActionPrice):0,0.00}%) thuế {totalTax:0,0}");
                         }
                         else
                         {
