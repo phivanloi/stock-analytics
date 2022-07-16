@@ -172,17 +172,17 @@
 
         #region Cột Khuyến nghị theo phương pháp ngắn hạn
         public string Knnh { get; set; } = null!;
-        public string KnnhCss { get; set; } = "knnh t-c";
+        public string KnnhCss { get; set; } = "knnh t-r";
         #endregion
 
         #region Cột Khuyến nghị theo phương pháp trung hạn
         public string Knth { get; set; } = null!;
-        public string KnthCss { get; set; } = "knth t-c";
+        public string KnthCss { get; set; } = "knth t-r";
         #endregion
 
         #region Cột Khuyến nghị theo phương pháp thử nghiệm
         public string Kntn { get; set; } = null!;
-        public string KntnCss { get; set; } = "kntn t-c";
+        public string KntnCss { get; set; } = "kntn t-r";
         #endregion
     }
 }
