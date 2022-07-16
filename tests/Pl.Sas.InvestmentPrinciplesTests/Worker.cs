@@ -31,7 +31,7 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 Console.OutputEncoding = Encoding.UTF8;
                 DateTime fromDate = new(2010, 1, 1);
                 DateTime toDate = new(2040, 1, 1);
-                var symbol = "VIX";
+                var symbol = "HPG";
                 var stock = await _stockData.FindBySymbolAsync(symbol);
                 var company = await _companyData.FindBySymbolAsync(symbol);
                 var chartPrices = await _chartPriceData.CacheFindAllAsync(symbol, "D") ?? throw new Exception("ChartPrices is null");

@@ -433,15 +433,15 @@ namespace Pl.Sas.Core.Services
                         stockView.Knnh = result.AssetPosition;
                         if (result.IsBuy)
                         {
-                            stockView.KnnhCss = "knnh t-c t-m";
+                            stockView.KnnhCss = "knnh t-r t-m";
                         }
                         else if (result.IsSell)
                         {
-                            stockView.KnnhCss = "knnh t-c t-b";
+                            stockView.KnnhCss = "knnh t-r t-b";
                         }
                         else
                         {
-                            stockView.KnnhCss = "knnh t-c";
+                            stockView.KnnhCss = "knnh t-r";
                         }
                     }
                     else if (result.Principle == 1)
@@ -451,15 +451,15 @@ namespace Pl.Sas.Core.Services
                         stockView.Knth = result.AssetPosition;
                         if (result.IsBuy)
                         {
-                            stockView.KnthCss = "knth t-c t-m";
+                            stockView.KnthCss = "knth t-r t-m";
                         }
                         else if (result.IsSell)
                         {
-                            stockView.KnthCss = "knth t-c t-b";
+                            stockView.KnthCss = "knth t-r t-b";
                         }
                         else
                         {
-                            stockView.KnthCss = "knth t-c";
+                            stockView.KnthCss = "knth t-r";
                         }
                     }
                     else if (result.Principle == 2)
@@ -469,15 +469,15 @@ namespace Pl.Sas.Core.Services
                         stockView.Kntn = result.AssetPosition;
                         if (result.IsBuy)
                         {
-                            stockView.KntnCss = "kntn t-c t-m";
+                            stockView.KntnCss = "kntn t-r t-m";
                         }
                         else if (result.IsSell)
                         {
-                            stockView.KntnCss = "kntn t-c t-b";
+                            stockView.KntnCss = "kntn t-r t-b";
                         }
                         else
                         {
-                            stockView.KntnCss = "kntn t-c";
+                            stockView.KntnCss = "kntn t-r";
                         }
                     }
                     else if (result.Principle == 3)

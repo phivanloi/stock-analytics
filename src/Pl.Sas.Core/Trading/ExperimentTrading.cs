@@ -28,7 +28,7 @@ namespace Pl.Sas.Core.Trading
             {
                 if (tradingHistory.Count <= 0)
                 {
-                    tradingCase.AssetPosition = $"T ({tradingCase.NumberChangeDay})";
+                    tradingCase.AssetPosition = $"T-{tradingCase.NumberChangeDay}";
                     tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, O:{day.OpenPrice:0,0.00}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0} |-> không giao dịch.");
                     tradingHistory.Add(day);
                     continue;
