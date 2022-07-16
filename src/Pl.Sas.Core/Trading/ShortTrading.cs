@@ -32,7 +32,7 @@ namespace Pl.Sas.Core.Trading
             {
                 if (tradingHistory.Count < 1)
                 {
-                    tradingCase.AssetPosition = "100% T";
+                    tradingCase.AssetPosition = $"T-{tradingCase.NumberChangeDay}";
                     tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, O:{day.OpenPrice:0,0.00}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0} |-> không giao dịch ngày đầu tiên");
                     tradingHistory.Add(day);
                     continue;
@@ -68,18 +68,25 @@ namespace Pl.Sas.Core.Trading
                         tradingCase.StopLossPrice = GetStopLossPrice(tradingHistory[^1].TradingDate, tradingCase.ActionPrice);
                         if (timeTrading == TimeTrading.NST || DateTime.Now.Date != day.TradingDate)
                         {
-                            tradingCase.AssetPosition = "100% C";
+                            tradingCase.AssetPosition = $"C-{tradingCase.NumberChangeDay}, {day.ClosePrice.GetPercent(tradingCase.ActionPrice):0.0}";
                         }
                         else
                         {
-                            tradingCase.AssetPosition = $"Mua";
+                            if (timeTrading == TimeTrading.DON)
+                            {
+                                tradingCase.AssetPosition = $"C-{tradingCase.NumberChangeDay}, {day.ClosePrice.GetPercent(tradingCase.ActionPrice):0.0}";
+                            }
+                            else
+                            {
+                                tradingCase.AssetPosition = $"Mua";
+                            }
                         }
                         tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, O:{day.OpenPrice:0,0.00}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0} |-> Mua {tradingCase.NumberStock:0,0} cổ giá {tradingCase.ActionPrice:0,0.00} thuế {totalTax:0,0}");
                     }
                     else
                     {
-                        tradingCase.AssetPosition = "100% T";
-                        tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, O:{day.OpenPrice:0,0.00}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0}|-> Không giao dịch.");
+                        tradingCase.AssetPosition = $"T-{tradingCase.NumberChangeDay}";
+                        tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, O:{day.OpenPrice:0,0.00}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0} |-> Không giao dịch.");
                     }
                 }
                 else
@@ -109,23 +116,30 @@ namespace Pl.Sas.Core.Trading
                             tradingCase.NumberChangeDay = 0;
                             if (timeTrading == TimeTrading.NST || DateTime.Now.Date != day.TradingDate)
                             {
-                                tradingCase.AssetPosition = "100% T";
+                                tradingCase.AssetPosition = $"T-{tradingCase.NumberChangeDay}";
                             }
                             else
                             {
-                                tradingCase.AssetPosition = $"Bán";
+                                if (timeTrading == TimeTrading.DON)
+                                {
+                                    tradingCase.AssetPosition = $"T-{tradingCase.NumberChangeDay}";
+                                }
+                                else
+                                {
+                                    tradingCase.AssetPosition = $"Bán";
+                                }
                             }
                             tradingCase.AddNote(tradingCase.ActionPrice > lastBuyPrice ? 1 : -1, $"{day.TradingDate:yy/MM/dd}, O:{day.OpenPrice:0,0.00}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0} |-> Bán {selNumberStock:0,0} cổ giá {tradingCase.ActionPrice:0,0.00} ({tradingCase.ActionPrice.GetPercent(lastBuyPrice):0,0.00}%), Max: ({tradingCase.MaxPriceOnBuy.GetPercent(tradingCase.ActionPrice):0,0.00}%) thuế {totalTax:0,0}");
                         }
                         else
                         {
-                            tradingCase.AssetPosition = "100% C";
+                            tradingCase.AssetPosition = $"C-{tradingCase.NumberChangeDay}, {day.ClosePrice.GetPercent(tradingCase.ActionPrice):0.0}";
                             tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, O:{day.OpenPrice:0,0.00}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0} |-> Không giao dịch");
                         }
                     }
                     else
                     {
-                        tradingCase.AssetPosition = "100% C";
+                        tradingCase.AssetPosition = $"C-{tradingCase.NumberChangeDay}, {day.ClosePrice.GetPercent(tradingCase.ActionPrice):0.0}";
                         tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, O:{day.OpenPrice:0,0.00}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0} |-> Không giao dịch do mới mua {tradingCase.NumberChangeDay} ngày");
                     }
                 }
