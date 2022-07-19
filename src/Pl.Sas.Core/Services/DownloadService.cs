@@ -711,6 +711,11 @@ namespace Pl.Sas.Core.Services
             var listDbCheck = await _financialIndicatorData.FindAllAsync(symbol);
             foreach (var ssiFinancialIndicator in ssiFinancialIndicators.Data.FinancialIndicator.DataList)
             {
+                if (ssiFinancialIndicator.YearReport == "N" || ssiFinancialIndicator.LengthReport == "N" || ssiFinancialIndicator.Revenue == "N" || ssiFinancialIndicator.Profit == "N")
+                {
+                    continue;
+                }
+
                 var reportYear = int.Parse(ssiFinancialIndicator.YearReport);
                 var lengthReport = int.Parse(ssiFinancialIndicator.LengthReport);
                 var updateItem = listDbCheck.FirstOrDefault(q => q.YearReport == reportYear && q.LengthReport == lengthReport);
@@ -719,21 +724,21 @@ namespace Pl.Sas.Core.Services
                     updateItem.YearReport = reportYear;
                     updateItem.Symbol = symbol;
                     updateItem.LengthReport = lengthReport;
-                    updateItem.Revenue = float.Parse(ssiFinancialIndicator.Revenue);
-                    updateItem.Profit = float.Parse(ssiFinancialIndicator.Profit);
-                    updateItem.Eps = float.Parse(ssiFinancialIndicator.Eps);
-                    updateItem.DilutedEps = float.Parse(ssiFinancialIndicator.DilutedEps);
-                    updateItem.Pe = float.Parse(ssiFinancialIndicator.Pe);
-                    updateItem.DilutedPe = float.Parse(ssiFinancialIndicator.DilutedPe);
-                    updateItem.Roe = float.Parse(ssiFinancialIndicator.Roe);
-                    updateItem.Roa = float.Parse(ssiFinancialIndicator.Roa);
-                    updateItem.Roic = float.Parse(ssiFinancialIndicator.Roic);
-                    updateItem.GrossProfitMargin = float.Parse(ssiFinancialIndicator.GrossProfitMargin);
-                    updateItem.NetProfitMargin = float.Parse(ssiFinancialIndicator.NetProfitMargin);
-                    updateItem.DebtAsset = float.Parse(ssiFinancialIndicator.DebtAsset);
-                    updateItem.QuickRatio = float.Parse(ssiFinancialIndicator.QuickRatio);
-                    updateItem.CurrentRatio = float.Parse(ssiFinancialIndicator.CurrentRatio);
-                    updateItem.Pb = float.Parse(ssiFinancialIndicator.Pb);
+                    updateItem.Revenue = ssiFinancialIndicator.Revenue == "N" ? 0 : float.Parse(ssiFinancialIndicator.Revenue);
+                    updateItem.Profit = ssiFinancialIndicator.Profit == "N" ? 0 : float.Parse(ssiFinancialIndicator.Profit);
+                    updateItem.Eps = ssiFinancialIndicator.Eps == "N" ? 0 : float.Parse(ssiFinancialIndicator.Eps);
+                    updateItem.DilutedEps = ssiFinancialIndicator.DilutedEps == "N" ? 0 : float.Parse(ssiFinancialIndicator.DilutedEps);
+                    updateItem.Pe = ssiFinancialIndicator.Pe == "N" ? 0 : float.Parse(ssiFinancialIndicator.Pe);
+                    updateItem.DilutedPe = ssiFinancialIndicator.DilutedPe == "N" ? 0 : float.Parse(ssiFinancialIndicator.DilutedPe);
+                    updateItem.Roe = ssiFinancialIndicator.Roe == "N" ? 0 : float.Parse(ssiFinancialIndicator.Roe);
+                    updateItem.Roa = ssiFinancialIndicator.Roa == "N" ? 0 : float.Parse(ssiFinancialIndicator.Roa);
+                    updateItem.Roic = ssiFinancialIndicator.Roic == "N" ? 0 : float.Parse(ssiFinancialIndicator.Roic);
+                    updateItem.GrossProfitMargin = ssiFinancialIndicator.GrossProfitMargin == "N" ? 0 : float.Parse(ssiFinancialIndicator.GrossProfitMargin);
+                    updateItem.NetProfitMargin = ssiFinancialIndicator.NetProfitMargin == "N" ? 0 : float.Parse(ssiFinancialIndicator.NetProfitMargin);
+                    updateItem.DebtAsset = ssiFinancialIndicator.DebtAsset == "N" ? 0 : float.Parse(ssiFinancialIndicator.DebtAsset);
+                    updateItem.QuickRatio = ssiFinancialIndicator.QuickRatio == "N" ? 0 : float.Parse(ssiFinancialIndicator.QuickRatio);
+                    updateItem.CurrentRatio = ssiFinancialIndicator.CurrentRatio == "N" ? 0 : float.Parse(ssiFinancialIndicator.CurrentRatio);
+                    updateItem.Pb = ssiFinancialIndicator.Pb == "N" ? 0 : float.Parse(ssiFinancialIndicator.Pb);
                     updateList.Add(updateItem);
                 }
                 else
@@ -743,21 +748,21 @@ namespace Pl.Sas.Core.Services
                         YearReport = reportYear,
                         Symbol = symbol,
                         LengthReport = lengthReport,
-                        Revenue = float.Parse(ssiFinancialIndicator.Revenue),
-                        Profit = float.Parse(ssiFinancialIndicator.Profit),
-                        Eps = float.Parse(ssiFinancialIndicator.Eps),
-                        DilutedEps = float.Parse(ssiFinancialIndicator.DilutedEps),
-                        Pe = float.Parse(ssiFinancialIndicator.Pe),
-                        DilutedPe = float.Parse(ssiFinancialIndicator.DilutedPe),
-                        Roe = float.Parse(ssiFinancialIndicator.Roe),
-                        Roa = float.Parse(ssiFinancialIndicator.Roa),
-                        Roic = float.Parse(ssiFinancialIndicator.Roic),
-                        GrossProfitMargin = float.Parse(ssiFinancialIndicator.GrossProfitMargin),
-                        NetProfitMargin = float.Parse(ssiFinancialIndicator.NetProfitMargin),
-                        DebtAsset = float.Parse(ssiFinancialIndicator.DebtAsset),
-                        QuickRatio = float.Parse(ssiFinancialIndicator.QuickRatio),
-                        CurrentRatio = float.Parse(ssiFinancialIndicator.CurrentRatio),
-                        Pb = float.Parse(ssiFinancialIndicator.Pb)
+                        Revenue = ssiFinancialIndicator.Revenue == "N" ? 0 : float.Parse(ssiFinancialIndicator.Revenue),
+                        Profit = ssiFinancialIndicator.Profit == "N" ? 0 : float.Parse(ssiFinancialIndicator.Profit),
+                        Eps = ssiFinancialIndicator.Eps == "N" ? 0 : float.Parse(ssiFinancialIndicator.Eps),
+                        DilutedEps = ssiFinancialIndicator.DilutedEps == "N" ? 0 : float.Parse(ssiFinancialIndicator.DilutedEps),
+                        Pe = ssiFinancialIndicator.Pe == "N" ? 0 : float.Parse(ssiFinancialIndicator.Pe),
+                        DilutedPe = ssiFinancialIndicator.DilutedPe == "N" ? 0 : float.Parse(ssiFinancialIndicator.DilutedPe),
+                        Roe = ssiFinancialIndicator.Roe == "N" ? 0 : float.Parse(ssiFinancialIndicator.Roe),
+                        Roa = ssiFinancialIndicator.Roa == "N" ? 0 : float.Parse(ssiFinancialIndicator.Roa),
+                        Roic = ssiFinancialIndicator.Roic == "N" ? 0 : float.Parse(ssiFinancialIndicator.Roic),
+                        GrossProfitMargin = ssiFinancialIndicator.GrossProfitMargin == "N" ? 0 : float.Parse(ssiFinancialIndicator.GrossProfitMargin),
+                        NetProfitMargin = ssiFinancialIndicator.NetProfitMargin == "N" ? 0 : float.Parse(ssiFinancialIndicator.NetProfitMargin),
+                        DebtAsset = ssiFinancialIndicator.DebtAsset == "N" ? 0 : float.Parse(ssiFinancialIndicator.DebtAsset),
+                        QuickRatio = ssiFinancialIndicator.QuickRatio == "N" ? 0 : float.Parse(ssiFinancialIndicator.QuickRatio),
+                        CurrentRatio = ssiFinancialIndicator.CurrentRatio == "N" ? 0 : float.Parse(ssiFinancialIndicator.CurrentRatio),
+                        Pb = ssiFinancialIndicator.Pb == "N" ? 0 : float.Parse(ssiFinancialIndicator.Pb)
                     });
                 }
             }
