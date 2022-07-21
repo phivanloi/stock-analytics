@@ -15,6 +15,14 @@ namespace Pl.Sas.UnitTests
         }
 
         [Fact]
+        public void ConvertFloatTest()
+        {
+            var testValue = "9602746000000.0";
+            var convertValue = float.Parse(testValue);
+            Assert.True(convertValue == 9602746000000f);
+        }
+
+        [Fact]
         public void GenerateShortGuidTest()
         {
             var testGuid = Utilities.GenerateShortGuid();

@@ -221,85 +221,57 @@ namespace Pl.Sas.Core.Services
             var symbol = schedule.DataKey ?? throw new Exception($"Schedule Null DataKey, di: {schedule.Id}, type: {schedule.Type}");
             var chartPrices = new List<ChartPrice>();
             var random = new Random();
-            if (random.Next(0, 3000) > 2000)
+
+            if (random.Next(0, 2000) > 1000)
             {
-                var vndChartPrices = await _downloadData.DownloadVndChartPricesRealTimeAsync(symbol, "D");
-                if (vndChartPrices is not null && vndChartPrices.Time?.Length > 0)
+                var ssiChartPrices = await _downloadData.DownloadSsiChartPricesRealTimeAsync(symbol, "D");
+                if (ssiChartPrices is not null && ssiChartPrices.Time?.Length > 0)
                 {
-                    for (int i = 0; i < vndChartPrices.Time.Length; i++)
+                    for (int i = 0; i < ssiChartPrices.Time.Length; i++)
                     {
-                        var tradingDate = DateTimeOffset.FromUnixTimeSeconds(vndChartPrices.Time[i]).Date;
+                        var tradingDate = DateTimeOffset.FromUnixTimeSeconds(ssiChartPrices.Time[i]).Date;
                         if (!chartPrices.Any(q => q.TradingDate == tradingDate))
                         {
                             chartPrices.Add(new()
                             {
                                 Symbol = symbol,
                                 TradingDate = tradingDate,
-                                ClosePrice = vndChartPrices.Close[i],
-                                OpenPrice = vndChartPrices.Open[i],
-                                HighestPrice = vndChartPrices.Highest[i],
-                                LowestPrice = vndChartPrices.Lowest[i],
-                                TotalMatchVol = vndChartPrices.Volumes[i],
+                                ClosePrice = string.IsNullOrEmpty(ssiChartPrices.Close[i]) ? 0 : float.Parse(ssiChartPrices.Close[i]),
+                                OpenPrice = string.IsNullOrEmpty(ssiChartPrices.Open[i]) ? 0 : float.Parse(ssiChartPrices.Open[i]),
+                                HighestPrice = string.IsNullOrEmpty(ssiChartPrices.Highest[i]) ? 0 : float.Parse(ssiChartPrices.Highest[i]),
+                                LowestPrice = string.IsNullOrEmpty(ssiChartPrices.Lowest[i]) ? 0 : float.Parse(ssiChartPrices.Lowest[i]),
+                                TotalMatchVol = string.IsNullOrEmpty(ssiChartPrices.Volumes[i]) ? 0 : float.Parse(ssiChartPrices.Volumes[i]),
                                 Type = "D"
                             });
                         }
                     }
-                    vndChartPrices = null;
+                    ssiChartPrices = null;
                 }
             }
             else
             {
-                if (random.Next(0, 2000) > 1000)
+                var vpsChartPrices = await _downloadData.DownloadVpsChartPricesRealTimeAsync(symbol, "D");
+                if (vpsChartPrices is not null && vpsChartPrices.Time?.Length > 0)
                 {
-                    var ssiChartPrices = await _downloadData.DownloadSsiChartPricesRealTimeAsync(symbol, "D");
-                    if (ssiChartPrices is not null && ssiChartPrices.Time?.Length > 0)
+                    for (int i = 0; i < vpsChartPrices.Time.Length; i++)
                     {
-                        for (int i = 0; i < ssiChartPrices.Time.Length; i++)
+                        var tradingDate = DateTimeOffset.FromUnixTimeSeconds(vpsChartPrices.Time[i]).Date;
+                        if (!chartPrices.Any(q => q.TradingDate == tradingDate))
                         {
-                            var tradingDate = DateTimeOffset.FromUnixTimeSeconds(ssiChartPrices.Time[i]).Date;
-                            if (!chartPrices.Any(q => q.TradingDate == tradingDate))
+                            chartPrices.Add(new()
                             {
-                                chartPrices.Add(new()
-                                {
-                                    Symbol = symbol,
-                                    TradingDate = tradingDate,
-                                    ClosePrice = string.IsNullOrEmpty(ssiChartPrices.Close[i]) ? 0 : float.Parse(ssiChartPrices.Close[i]),
-                                    OpenPrice = string.IsNullOrEmpty(ssiChartPrices.Open[i]) ? 0 : float.Parse(ssiChartPrices.Open[i]),
-                                    HighestPrice = string.IsNullOrEmpty(ssiChartPrices.Highest[i]) ? 0 : float.Parse(ssiChartPrices.Highest[i]),
-                                    LowestPrice = string.IsNullOrEmpty(ssiChartPrices.Lowest[i]) ? 0 : float.Parse(ssiChartPrices.Lowest[i]),
-                                    TotalMatchVol = string.IsNullOrEmpty(ssiChartPrices.Volumes[i]) ? 0 : float.Parse(ssiChartPrices.Volumes[i]),
-                                    Type = "D"
-                                });
-                            }
+                                Symbol = symbol,
+                                TradingDate = tradingDate,
+                                ClosePrice = vpsChartPrices.Close[i],
+                                OpenPrice = vpsChartPrices.Open[i],
+                                HighestPrice = vpsChartPrices.Highest[i],
+                                LowestPrice = vpsChartPrices.Lowest[i],
+                                TotalMatchVol = vpsChartPrices.Volumes[i],
+                                Type = "D"
+                            });
                         }
-                        ssiChartPrices = null;
                     }
-                }
-                else
-                {
-                    var vpsChartPrices = await _downloadData.DownloadVpsChartPricesRealTimeAsync(symbol, "D");
-                    if (vpsChartPrices is not null && vpsChartPrices.Time?.Length > 0)
-                    {
-                        for (int i = 0; i < vpsChartPrices.Time.Length; i++)
-                        {
-                            var tradingDate = DateTimeOffset.FromUnixTimeSeconds(vpsChartPrices.Time[i]).Date;
-                            if (!chartPrices.Any(q => q.TradingDate == tradingDate))
-                            {
-                                chartPrices.Add(new()
-                                {
-                                    Symbol = symbol,
-                                    TradingDate = tradingDate,
-                                    ClosePrice = vpsChartPrices.Close[i],
-                                    OpenPrice = vpsChartPrices.Open[i],
-                                    HighestPrice = vpsChartPrices.Highest[i],
-                                    LowestPrice = vpsChartPrices.Lowest[i],
-                                    TotalMatchVol = vpsChartPrices.Volumes[i],
-                                    Type = "D"
-                                });
-                            }
-                        }
-                        vpsChartPrices = null;
-                    }
+                    vpsChartPrices = null;
                 }
             }
 
@@ -711,6 +683,11 @@ namespace Pl.Sas.Core.Services
             var listDbCheck = await _financialIndicatorData.FindAllAsync(symbol);
             foreach (var ssiFinancialIndicator in ssiFinancialIndicators.Data.FinancialIndicator.DataList)
             {
+                if (ssiFinancialIndicator.YearReport == "N" || ssiFinancialIndicator.LengthReport == "N" || ssiFinancialIndicator.Revenue == "N" || ssiFinancialIndicator.Profit == "N")
+                {
+                    continue;
+                }
+
                 var reportYear = int.Parse(ssiFinancialIndicator.YearReport);
                 var lengthReport = int.Parse(ssiFinancialIndicator.LengthReport);
                 var updateItem = listDbCheck.FirstOrDefault(q => q.YearReport == reportYear && q.LengthReport == lengthReport);
@@ -719,21 +696,21 @@ namespace Pl.Sas.Core.Services
                     updateItem.YearReport = reportYear;
                     updateItem.Symbol = symbol;
                     updateItem.LengthReport = lengthReport;
-                    updateItem.Revenue = float.Parse(ssiFinancialIndicator.Revenue);
-                    updateItem.Profit = float.Parse(ssiFinancialIndicator.Profit);
-                    updateItem.Eps = float.Parse(ssiFinancialIndicator.Eps);
-                    updateItem.DilutedEps = float.Parse(ssiFinancialIndicator.DilutedEps);
-                    updateItem.Pe = float.Parse(ssiFinancialIndicator.Pe);
-                    updateItem.DilutedPe = float.Parse(ssiFinancialIndicator.DilutedPe);
-                    updateItem.Roe = float.Parse(ssiFinancialIndicator.Roe);
-                    updateItem.Roa = float.Parse(ssiFinancialIndicator.Roa);
-                    updateItem.Roic = float.Parse(ssiFinancialIndicator.Roic);
-                    updateItem.GrossProfitMargin = float.Parse(ssiFinancialIndicator.GrossProfitMargin);
-                    updateItem.NetProfitMargin = float.Parse(ssiFinancialIndicator.NetProfitMargin);
-                    updateItem.DebtAsset = float.Parse(ssiFinancialIndicator.DebtAsset);
-                    updateItem.QuickRatio = float.Parse(ssiFinancialIndicator.QuickRatio);
-                    updateItem.CurrentRatio = float.Parse(ssiFinancialIndicator.CurrentRatio);
-                    updateItem.Pb = float.Parse(ssiFinancialIndicator.Pb);
+                    updateItem.Revenue = ssiFinancialIndicator.Revenue == "N" ? 0 : float.Parse(ssiFinancialIndicator.Revenue);
+                    updateItem.Profit = ssiFinancialIndicator.Profit == "N" ? 0 : float.Parse(ssiFinancialIndicator.Profit);
+                    updateItem.Eps = ssiFinancialIndicator.Eps == "N" ? 0 : float.Parse(ssiFinancialIndicator.Eps);
+                    updateItem.DilutedEps = ssiFinancialIndicator.DilutedEps == "N" ? 0 : float.Parse(ssiFinancialIndicator.DilutedEps);
+                    updateItem.Pe = ssiFinancialIndicator.Pe == "N" ? 0 : float.Parse(ssiFinancialIndicator.Pe);
+                    updateItem.DilutedPe = ssiFinancialIndicator.DilutedPe == "N" ? 0 : float.Parse(ssiFinancialIndicator.DilutedPe);
+                    updateItem.Roe = ssiFinancialIndicator.Roe == "N" ? 0 : float.Parse(ssiFinancialIndicator.Roe);
+                    updateItem.Roa = ssiFinancialIndicator.Roa == "N" ? 0 : float.Parse(ssiFinancialIndicator.Roa);
+                    updateItem.Roic = ssiFinancialIndicator.Roic == "N" ? 0 : float.Parse(ssiFinancialIndicator.Roic);
+                    updateItem.GrossProfitMargin = ssiFinancialIndicator.GrossProfitMargin == "N" ? 0 : float.Parse(ssiFinancialIndicator.GrossProfitMargin);
+                    updateItem.NetProfitMargin = ssiFinancialIndicator.NetProfitMargin == "N" ? 0 : float.Parse(ssiFinancialIndicator.NetProfitMargin);
+                    updateItem.DebtAsset = ssiFinancialIndicator.DebtAsset == "N" ? 0 : float.Parse(ssiFinancialIndicator.DebtAsset);
+                    updateItem.QuickRatio = ssiFinancialIndicator.QuickRatio == "N" ? 0 : float.Parse(ssiFinancialIndicator.QuickRatio);
+                    updateItem.CurrentRatio = ssiFinancialIndicator.CurrentRatio == "N" ? 0 : float.Parse(ssiFinancialIndicator.CurrentRatio);
+                    updateItem.Pb = ssiFinancialIndicator.Pb == "N" ? 0 : float.Parse(ssiFinancialIndicator.Pb);
                     updateList.Add(updateItem);
                 }
                 else
@@ -743,21 +720,21 @@ namespace Pl.Sas.Core.Services
                         YearReport = reportYear,
                         Symbol = symbol,
                         LengthReport = lengthReport,
-                        Revenue = float.Parse(ssiFinancialIndicator.Revenue),
-                        Profit = float.Parse(ssiFinancialIndicator.Profit),
-                        Eps = float.Parse(ssiFinancialIndicator.Eps),
-                        DilutedEps = float.Parse(ssiFinancialIndicator.DilutedEps),
-                        Pe = float.Parse(ssiFinancialIndicator.Pe),
-                        DilutedPe = float.Parse(ssiFinancialIndicator.DilutedPe),
-                        Roe = float.Parse(ssiFinancialIndicator.Roe),
-                        Roa = float.Parse(ssiFinancialIndicator.Roa),
-                        Roic = float.Parse(ssiFinancialIndicator.Roic),
-                        GrossProfitMargin = float.Parse(ssiFinancialIndicator.GrossProfitMargin),
-                        NetProfitMargin = float.Parse(ssiFinancialIndicator.NetProfitMargin),
-                        DebtAsset = float.Parse(ssiFinancialIndicator.DebtAsset),
-                        QuickRatio = float.Parse(ssiFinancialIndicator.QuickRatio),
-                        CurrentRatio = float.Parse(ssiFinancialIndicator.CurrentRatio),
-                        Pb = float.Parse(ssiFinancialIndicator.Pb)
+                        Revenue = ssiFinancialIndicator.Revenue == "N" ? 0 : float.Parse(ssiFinancialIndicator.Revenue),
+                        Profit = ssiFinancialIndicator.Profit == "N" ? 0 : float.Parse(ssiFinancialIndicator.Profit),
+                        Eps = ssiFinancialIndicator.Eps == "N" ? 0 : float.Parse(ssiFinancialIndicator.Eps),
+                        DilutedEps = ssiFinancialIndicator.DilutedEps == "N" ? 0 : float.Parse(ssiFinancialIndicator.DilutedEps),
+                        Pe = ssiFinancialIndicator.Pe == "N" ? 0 : float.Parse(ssiFinancialIndicator.Pe),
+                        DilutedPe = ssiFinancialIndicator.DilutedPe == "N" ? 0 : float.Parse(ssiFinancialIndicator.DilutedPe),
+                        Roe = ssiFinancialIndicator.Roe == "N" ? 0 : float.Parse(ssiFinancialIndicator.Roe),
+                        Roa = ssiFinancialIndicator.Roa == "N" ? 0 : float.Parse(ssiFinancialIndicator.Roa),
+                        Roic = ssiFinancialIndicator.Roic == "N" ? 0 : float.Parse(ssiFinancialIndicator.Roic),
+                        GrossProfitMargin = ssiFinancialIndicator.GrossProfitMargin == "N" ? 0 : float.Parse(ssiFinancialIndicator.GrossProfitMargin),
+                        NetProfitMargin = ssiFinancialIndicator.NetProfitMargin == "N" ? 0 : float.Parse(ssiFinancialIndicator.NetProfitMargin),
+                        DebtAsset = ssiFinancialIndicator.DebtAsset == "N" ? 0 : float.Parse(ssiFinancialIndicator.DebtAsset),
+                        QuickRatio = ssiFinancialIndicator.QuickRatio == "N" ? 0 : float.Parse(ssiFinancialIndicator.QuickRatio),
+                        CurrentRatio = ssiFinancialIndicator.CurrentRatio == "N" ? 0 : float.Parse(ssiFinancialIndicator.CurrentRatio),
+                        Pb = ssiFinancialIndicator.Pb == "N" ? 0 : float.Parse(ssiFinancialIndicator.Pb)
                     });
                 }
             }
