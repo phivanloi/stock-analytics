@@ -30,8 +30,8 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 Console.Clear();
                 Console.OutputEncoding = Encoding.UTF8;
                 DateTime fromDate = new(2010, 1, 1);
-                DateTime toDate = new(2040, 1, 1);
-                var symbol = "C4G";
+                DateTime toDate = new(2023, 1, 1);
+                var symbol = "HPG";
                 var stock = await _stockData.FindBySymbolAsync(symbol);
                 var company = await _companyData.FindBySymbolAsync(symbol);
                 var chartPrices = await _chartPriceData.CacheFindAllAsync(symbol, "D") ?? throw new Exception("ChartPrices is null");
@@ -43,7 +43,7 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 var endPrice = chartTrading[^1].ClosePrice;
                 Console.Clear();
                 Console.Clear();
-                var trader = new ShortTrading(chartPrices);
+                var trader = new ExperimentTrading(chartPrices);
                 var tradingCase = trader.Trading(chartTrading, tradingHistory, stock.Exchange);
                 foreach (var note in tradingCase.ExplainNotes)
                 {
@@ -59,7 +59,7 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 $"Thực hiện mua và giữ {symbol} trong {chartTrading.Count} phiên: Giá đóng cửa đầu kỳ {chartTrading[0].TradingDate:dd-MM-yyyy}: {startPrice * 1000:0,0.00} giá đóng cửa cuối kỳ {chartTrading[^1].TradingDate:dd-MM-yyyy}: {endPrice * 1000:0,0.00} lợi nhuận {endPrice.GetPercent(startPrice):0.00}%.".WriteConsole(endPrice > startPrice ? ConsoleColor.Green : ConsoleColor.Red);
                 $"Trạng thái hôm nay: 100% C".WriteConsole();
                 Console.WriteLine();
-                var year = DateTime.Now.Year - fromDate.Year;
+                var year = toDate.Year - fromDate.Year;
                 var bankProfit = BaseTrading.BankProfit(tradingCase.FixedCapital, year, 6.8f);
                 $"Gửi ngân hàng: {tradingCase.FixedCapital:0,0.00} trong {year} năm lãi suất 6.8 kết quả: {bankProfit:0,0.00}({bankProfit.GetPercent(tradingCase.FixedCapital):0.00}%)".WriteConsole(ConsoleColor.Green);
             }

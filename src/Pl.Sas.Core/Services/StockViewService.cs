@@ -199,13 +199,13 @@ namespace Pl.Sas.Core.Services
 
             if (financialIndicators is not null && financialIndicators.Count > 0)//Chỉ số tài chính
             {
+                stockView.Eps = financialIndicators[0]?.Eps ?? company.Eps;
+                stockView.Pe = financialIndicators[0]?.Pe ?? company.Pe;
+                stockView.Pb = financialIndicators[0]?.Pb ?? company.Pb;
+                stockView.Roe = (financialIndicators[0]?.Roe ?? company.Roe) * 100;
+                stockView.Roa = (financialIndicators[0]?.Roa ?? company.Roa) * 100;
+
                 var sourceItem = financialIndicators.FirstOrDefault(q => q.LengthReport != 5);
-                stockView.Eps = sourceItem?.Eps ?? company.Eps;
-                stockView.Pe = sourceItem?.Pe ?? company.Pe;
-                stockView.Pb = sourceItem?.Pb ?? company.Pb;
-                stockView.Roe = (sourceItem?.Roe ?? company.Roe) * 100;
-                stockView.Roa = (sourceItem?.Roa ?? company.Roa) * 100;
-                
                 if (sourceItem is not null)
                 {
                     var compareItem = financialIndicators.FirstOrDefault(q => q.LengthReport == sourceItem.LengthReport && q.YearReport == sourceItem.YearReport - 1);
