@@ -82,7 +82,7 @@ namespace Pl.Sas.Core.Trading
                     else
                     {
                         tradingCase.AssetPosition = $"T-{tradingCase.NumberChangeDay}";
-                        tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, O:{day.OpenPrice:0,0.00}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0} |-> Không giao dịch.");
+                        tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, O:{day.OpenPrice:0,0.00}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0} (T-{tradingCase.NumberChangeDay}) |-> Không giao dịch.");
                     }
                 }
                 else
@@ -130,13 +130,13 @@ namespace Pl.Sas.Core.Trading
                         else
                         {
                             tradingCase.AssetPosition = $"C-{tradingCase.NumberChangeDay}, {day.ClosePrice.GetPercent(tradingCase.ActionPrice):0.0}";
-                            tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, O:{day.OpenPrice:0,0.00}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0} |-> Không giao dịch");
+                            tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, O:{day.OpenPrice:0,0.00}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0} (C-{tradingCase.NumberChangeDay}, {day.ClosePrice.GetPercent(tradingCase.ActionPrice):0,0.00}%) |-> Không giao dịch");
                         }
                     }
                     else
                     {
                         tradingCase.AssetPosition = $"C-{tradingCase.NumberChangeDay}, {day.ClosePrice.GetPercent(tradingCase.ActionPrice):0.0}";
-                        tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, O:{day.OpenPrice:0,0.00}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0} |-> Không giao dịch do mới mua {tradingCase.NumberChangeDay} ngày");
+                        tradingCase.AddNote(0, $"{day.TradingDate:yy/MM/dd}, O:{day.OpenPrice:0,0.00}, H:{day.HighestPrice:0,0.00}, L:{day.LowestPrice:0,0.00}, C:{day.ClosePrice:0,0.00}, chứng khoán:{tradingCase.NumberStock:0,0}, Tải sản: {tradingCase.Profit(day.ClosePrice):0,0} (C-{tradingCase.NumberChangeDay}, {day.ClosePrice.GetPercent(tradingCase.ActionPrice):0,0.00}%) |-> Không giao dịch do mới mua {tradingCase.NumberChangeDay} ngày");
                     }
                 }
 
@@ -222,7 +222,14 @@ namespace Pl.Sas.Core.Trading
 
         public int SellCondition(ChartPrice chartPrice)
         {
-            if (chartPrice.ClosePrice <= tradingCase.StopLossPrice)
+            //if (tradingCase.NumberChangeDay == 3 && chartPrice.ClosePrice.GetPercent(tradingCase.ActionPrice) < -5)
+            //{
+            //    tradingCase.AddNote(-1, $"{chartPrice.TradingDate:yy/MM/dd}: Kích hoạt lệnh bán do T-3 không có lãi, giá mua {tradingCase.ActionPrice:0.0,00} giá kích hoạt {chartPrice.ClosePrice:0.0,00}({chartPrice.ClosePrice.GetPercent(tradingCase.ActionPrice):0.0,00})");
+            //    tradingCase.ContinueBuy = false;
+            //    return 100;
+            //}
+
+            if (chartPrice.ClosePrice <= tradingCase.StopLossPrice) //|| chartPrice.ClosePrice.GetPercent(tradingCase.MaxPriceOnBuy) < -25
             {
                 tradingCase.AddNote(-1, $"{chartPrice.TradingDate:yy/MM/dd}: Kích hoạt lệnh bán chặn lỗ, giá mua {tradingCase.ActionPrice:0.0,00} giá kích hoạt {chartPrice.ClosePrice:0.0,00}({chartPrice.ClosePrice.GetPercent(tradingCase.ActionPrice):0.0,00})");
                 tradingCase.ContinueBuy = false;
