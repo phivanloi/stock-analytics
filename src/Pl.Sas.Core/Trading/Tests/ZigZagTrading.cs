@@ -8,7 +8,7 @@ namespace Pl.Sas.Core.Trading
         private readonly List<WmaResult> _slowWmas;
         private readonly List<WmaResult> _fastWmas;
         private readonly List<WmaResult> _limitWmas;
-        private TradingCase tradingCase = new();
+        private readonly TradingCase tradingCase = new();
 
         public ZigZagTrading(List<ChartPrice> chartPrices)
         {
@@ -18,10 +18,8 @@ namespace Pl.Sas.Core.Trading
             _limitWmas = quotes.Use(CandlePart.Close).GetWma(50).ToList();
         }
 
-        public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName, bool isNoteTrading = true)
+        public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName)
         {
-            tradingCase = new() { IsNote = isNoteTrading};
-
             foreach (var day in chartPrices)
             {
                 if (tradingHistory.Count <= 0)

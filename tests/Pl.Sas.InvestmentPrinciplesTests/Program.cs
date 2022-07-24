@@ -1,9 +1,11 @@
 using Pl.Sas.Core;
 using Pl.Sas.Core.Interfaces;
+using Pl.Sas.Core.Services;
 using Pl.Sas.Infrastructure;
 using Pl.Sas.Infrastructure.Caching;
 using Pl.Sas.Infrastructure.Data;
 using Pl.Sas.Infrastructure.Helper;
+using Pl.Sas.Infrastructure.RabbitmqMessageQueue;
 using Pl.Sas.InvestmentPrinciplesTests;
 
 IHost host = Host.CreateDefaultBuilder(args)
@@ -13,6 +15,31 @@ IHost host = Host.CreateDefaultBuilder(args)
         services.Configure<AppSettings>(hostContext.Configuration.GetSection("AppSettings"));
         services.Configure<ConnectionStrings>(hostContext.Configuration.GetSection("ConnectionStrings"));
 
+        services.AddHttpClient("ssidownloader", c =>
+        {
+            c.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36 Edg/101.0.1210.53");
+            c.DefaultRequestHeaders.Add("Referer", "https://iboard.ssi.com.vn/");
+        }).ConfigurePrimaryHttpMessageHandler(() => { return new SocketsHttpHandler() { UseCookies = false }; });
+        services.AddHttpClient("vnddownloader", c =>
+        {
+            c.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36 Edg/101.0.1210.53");
+            c.DefaultRequestHeaders.Add("Referer", "https://dchart.vndirect.com.vn/");
+            c.DefaultRequestHeaders.Add("Origin", "https://dchart.vndirect.com.vn/");
+        }).ConfigurePrimaryHttpMessageHandler(() => { return new SocketsHttpHandler() { UseCookies = false }; });
+        services.AddHttpClient("fiindownloader", c =>
+        {
+            c.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36 Edg/101.0.1210.53");
+            c.DefaultRequestHeaders.Add("Referer", "https://fiintrade.vn");
+            c.DefaultRequestHeaders.Add("Origin", "https://fiintrade.vn");
+            c.DefaultRequestHeaders.Add("Authorization", "Bearer");
+        }).ConfigurePrimaryHttpMessageHandler(() => { return new SocketsHttpHandler() { UseCookies = false }; });
+        services.AddHttpClient("vpsdownloader", c =>
+        {
+            c.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36 Edg/101.0.1210.53");
+            c.DefaultRequestHeaders.Add("Referer", "https://chart.vps.com.vn");
+            c.DefaultRequestHeaders.Add("Origin", "https://chart.vps.com.vn");
+        }).ConfigurePrimaryHttpMessageHandler(() => { return new SocketsHttpHandler() { UseCookies = false }; });
+
         services.AddSingleton<IZipHelper, GZipHelper>();
         services.AddMemoryCacheService();
         services.AddRedisCacheService(option =>
@@ -21,7 +48,8 @@ IHost host = Host.CreateDefaultBuilder(args)
             option.Configuration = hostContext.Configuration.GetConnectionString("CacheConnection");
         });
 
-
+        services.AddSingleton<IKeyValueData, KeyValueData>();
+        services.AddSingleton<IDownloadData, DownloadData>();
         services.AddSingleton<IStockData, StockData>();
         services.AddSingleton<IStockPriceData, StockPriceData>();
         services.AddSingleton<ICompanyData, CompanyData>();
@@ -38,6 +66,12 @@ IHost host = Host.CreateDefaultBuilder(args)
         services.AddSingleton<ITradingResultData, TradingResultData>();
         services.AddSingleton<IAnalyticsResultData, AnalyticsResultData>();
         services.AddSingleton<IChartPriceData, ChartPriceData>();
+
+        services.AddSingleton<IWorkerQueueService, WorkerQueueService>();
+        services.AddSingleton<DownloadService>();
+        services.AddSingleton<AnalyticsService>();
+        services.AddSingleton<StockViewService>();
+        services.AddSingleton<RealtimeService>();
         services.AddHostedService<Worker>();
     })
     .Build();

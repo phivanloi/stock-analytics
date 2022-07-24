@@ -9,7 +9,7 @@ namespace Pl.Sas.Core.Trading
     public class StochRsiTrading : BaseTrading
     {
         private readonly List<StochRsiResult> _stochRsi_14_14_3_3;
-        private TradingCase tradingCase = new();
+        private readonly TradingCase tradingCase = new();
 
         public StochRsiTrading(List<ChartPrice> chartPrices, List<ChartPrice> indexChartPrices)
         {
@@ -18,10 +18,8 @@ namespace Pl.Sas.Core.Trading
             _stochRsi_14_14_3_3 = quotes.GetStochRsi(14, 14, 3, 3).ToList();
         }
 
-        public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName, bool isNoteTrading = true)
+        public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName)
         {
-            tradingCase = new() { IsNote = isNoteTrading };
-
             foreach (var day in chartPrices)
             {
                 if (tradingHistory.Count <= 0)

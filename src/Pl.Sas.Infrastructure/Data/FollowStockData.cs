@@ -2,6 +2,7 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 using Pl.Sas.Core.Entities;
+using Pl.Sas.Core.Entities.Identity;
 using Pl.Sas.Core.Interfaces;
 
 namespace Pl.Sas.Infrastructure.Data

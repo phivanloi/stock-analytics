@@ -6,7 +6,7 @@ namespace Pl.Sas.Core.Trading
     public class SarTrading : BaseTrading
     {
         private List<ParabolicSarResult> _parabolicSar = new();
-        private TradingCase tradingCase = new();
+        private readonly TradingCase tradingCase = new();
 
         public SarTrading(List<ChartPrice> chartPrices)
         {
@@ -14,9 +14,8 @@ namespace Pl.Sas.Core.Trading
             _parabolicSar = quotes.GetParabolicSar(0.02).ToList();
         }
 
-        public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, bool isNoteTrading = true)
+        public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory)
         {
-            tradingCase.IsNote = isNoteTrading;
             var numberChangeDay = 10;
             float? lastBuyPrice = null;
             ChartPrice? previousChart = null;

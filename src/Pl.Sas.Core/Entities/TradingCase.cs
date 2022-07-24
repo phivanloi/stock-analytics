@@ -2,9 +2,8 @@
 {
     public class TradingCase
     {
-        public TradingCase(bool isNote = false, float fixedCapital = 100000000)
+        public TradingCase(float fixedCapital = 100000000)
         {
-            IsNote = isNote;
             FixedCapital = fixedCapital;
             TradingMoney = fixedCapital;
         }
@@ -132,11 +131,6 @@
         public List<KeyValuePair<int, string>> ExplainNotes { get; set; } = new();
 
         /// <summary>
-        /// Trạng thái có cho phép note ghi chú hay không
-        /// </summary>
-        public bool IsNote { get; set; }
-
-        /// <summary>
         /// Thêm ghi chú
         /// </summary>
         /// <param name="key">Trạng thái win/lose</param>
@@ -151,10 +145,7 @@
             {
                 LoseNumber++;
             }
-            if (IsNote)
-            {
-                ExplainNotes.Add(new KeyValuePair<int, string>(key, message));
-            }
+            ExplainNotes.Add(new KeyValuePair<int, string>(key, message));
         }
         #endregion
     }

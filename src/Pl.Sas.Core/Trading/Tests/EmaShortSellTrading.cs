@@ -13,7 +13,7 @@ namespace Pl.Sas.Core.Trading
         private readonly List<EmaResult> _slowSellEmas;
         private readonly List<EmaResult> _fastSellEmas;
         private readonly List<EmaResult> _limitEmas;
-        private TradingCase tradingCase = new();
+        private readonly TradingCase tradingCase = new();
         private readonly List<RsiResult> _fastRsis;
         private readonly List<RsiResult> _slowRsis;
 
@@ -29,10 +29,8 @@ namespace Pl.Sas.Core.Trading
             _slowRsis = quotes.GetRsi(14).ToList();
         }
 
-        public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName, bool isNoteTrading = true)
+        public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName)
         {
-            tradingCase = new() { IsNote = isNoteTrading };
-
             foreach (var day in chartPrices)
             {
                 if (tradingHistory.Count <= 0)
