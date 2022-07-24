@@ -1,11 +1,27 @@
 using Pl.Sas.Core;
+using Pl.Sas.Core.Trading;
 using System;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Pl.Sas.UnitTests
 {
     public class UtilitiesTests
     {
+        private readonly ITestOutputHelper _output;
+        public UtilitiesTests(ITestOutputHelper output)
+        {
+            _output = output;
+        }
+
+        [Fact]
+        public void ConvertFloatTest()
+        {
+            var testValue = "9602746000000.0";
+            var convertValue = float.Parse(testValue);
+            Assert.True(convertValue == 9602746000000f);
+        }
+
         [Fact]
         public void GenerateShortGuidTest()
         {
@@ -40,6 +56,15 @@ namespace Pl.Sas.UnitTests
             }
             DateTime.Now.Date.AddHours(8).AddMinutes(random.Next(50, 60));
             Assert.True(true);
+        }
+
+        [Fact]
+        public void BankProfitTest()
+        {
+            var totalMoney = 100000000f;
+            var profit = BaseTrading.BankProfit(100000000, 5, 6.8f);
+            _output.WriteLine($"{profit:0,0.000}({totalMoney.GetPercent(profit)}:0.00)");
+            Assert.True(138949264 == profit);
         }
     }
 }

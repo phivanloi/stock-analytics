@@ -1,27 +1,30 @@
 ﻿@using Pl.Sas.Core
 @model MarketListViewModel
+@{
+    var tnWinVsNh = 0;
+    var tnWinVsTh = 0;
+}
 @for (int i = 0; i < Model.StockViews.Count; i++)
 {
     var view = Model.StockViews[i];
+    if (!string.IsNullOrEmpty(view.Lntn) && !string.IsNullOrEmpty(view.Lnnh) && !string.IsNullOrEmpty(view.Lnth))
+    {
+        tnWinVsNh += float.Parse(view.Lntn) > float.Parse(view.Lnnh) ? 1 : -1;
+        tnWinVsTh += float.Parse(view.Lntn) > float.Parse(view.Lnth) ? 1 : -1;
+    }
     <tr id="@view.Symbol">
         <td class="s-c t-w t-c" fo="@(Model.UserFollowSymbols.Contains(view.Symbol) ? "1" : "0")" title="@view.Description">@view.Symbol</td>
 
-        <td class="t-r @view.CompanyValueScore.GetRangeTextColorCss(0, 5)" title="Vốn hóa: @view.MarketCap.ShowPercent(), Roe: @view.Roe.ShowPercent(), Roa: @view.Roa.ShowPercent()">@view.CompanyValueScore.ToString("0")</td>
-        <td class="t-r">@view.Eps.ShowMoney(1)</td>
+        <td class="@view.ScoreCss">@view.Score</td>
+        <td class="t-r @view.Eps.GetRangeTextColorCss(1000, 1500)">@view.Eps.ShowMoney(1)</td>
         <td class="t-r">@view.Pe.ShowPercent()</td>
-        <td class="t-r">@view.Pb.ShowPercent()</td>
-        <td class="t-r @view.CompanyGrowthScore.GetRangeTextColorCss(0, 15)">@view.CompanyGrowthScore.ToString("0")</td>
-        <td class="t-r @view.YearlyRevenueGrowthPercent.GetTextColorCss(Model.BankInterestRate12)">@view.YearlyRevenueGrowthPercent.ShowPercent()</td>
-        <td class="t-r @view.YearlyProfitGrowthPercent.GetTextColorCss(Model.BankInterestRate12)">@view.YearlyProfitGrowthPercent.ShowPercent()</td>
-        <td class="t-r @view.FiinScore.GetTextColorCss()">@view.FiinScore.ToString("0")</td>
-        <td class="t-r @view.VndScore.GetTextColorCss()">@view.VndScore.ToString("0")</td>
-        <td class="t-r">@view.TargetPrice.ShowPriceZezoToNull(1)</td>
+        <td class="t-r">@view.Roe.ShowPercent()</td>
+        <td class="@view.LnqCss">@view.Lnq</td>
+        <td class="@view.LnnCss">@view.Lnn</td>
 
-        <td class="t-r @view.MaketScore.GetTextColorCss(0)">@view.MaketScore.ToString("0")</td>
         <td class="@view.IcfCss">@view.Icf</td>
         <td class="@view.ScfCss">@view.Scf</td>
 
-        <td class="t-r @view.StockScore.GetRangeTextColorCss(-2, 1)">@view.StockScore.ToString("0")</td>
         <td class="@view.BetaCss">@view.Beta</td>
         <td class="@view.Rsi14Css">@view.Rsi14</td>
         <td class="@view.NgkcCss">@view.Ngkc</td>
@@ -33,10 +36,13 @@
         <td class="@view.Bd10Css">@view.Bd10</td>
         <td class="@view.Bd30Css" title="60 phiên: @view.Bd60">@view.Bd30</td>
 
-        <td class="@view.LntnCss">@view.Lntn</td>
-        <td class="@view.LncCss">@view.Lnc</td>
         <td class="@view.LnmgCss">@view.Lnmg</td>
+        <td class="@view.LnnhCss">@view.Lnnh</td>
+        <td class="@view.LnthCss">@view.Lnth</td>
+        <td class="@view.LntnCss">@view.Lntn</td>
+        <td class="@view.KnnhCss">@view.Knnh</td>
+        <td class="@view.KnthCss">@view.Knth</td>
         <td class="@view.KntnCss">@view.Kntn</td>
-        <td class="@view.KncCss">@view.Knc</td>
     </tr>
 }
+<input type="hidden" id="compete" value="% Lợi nhuận của phương pháp thử nghiệm. Thắng ngắn hạn / trung hạn: @tnWinVsNh / @tnWinVsTh" />

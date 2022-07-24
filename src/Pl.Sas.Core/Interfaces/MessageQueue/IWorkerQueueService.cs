@@ -5,6 +5,12 @@ namespace Pl.Sas.Core.Interfaces
     public interface IWorkerQueueService
     {
         /// <summary>
+        /// Lắng nghe xự kiện update memory, thay đổi dữ liệu
+        /// </summary>
+        /// <param name="func">Hàm xử lý</param>
+        void SubscribeUpdateMemoryTask(Action<QueueMessage> func);
+
+        /// <summary>
         /// Phát hành một sự kiện cần update memory
         /// </summary>
         /// <param name="queueMessage">nội dung tin nhắn</param>

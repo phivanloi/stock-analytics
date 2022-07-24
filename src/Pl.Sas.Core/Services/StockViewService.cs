@@ -19,20 +19,20 @@ namespace Pl.Sas.Core.Services
         private readonly IScheduleData _scheduleData;
         private readonly IChartPriceData _chartPriceData;
         private readonly ICompanyData _companyData;
-        private readonly IAnalyticsResultData _analyticsResultData;
         private readonly IStockPriceData _stockPriceData;
         private readonly IFinancialIndicatorData _financialIndicatorData;
         private readonly ITradingResultData _tradingResultData;
         private readonly IStockData _stockData;
         private readonly IKeyValueData _keyValueData;
+        private readonly IVndStockScoreData _vndStockScoreData;
 
         public StockViewService(
+            IVndStockScoreData vndStockScoreData,
             IKeyValueData keyValueData,
             IStockData stockData,
             ITradingResultData tradingResultData,
             IFinancialIndicatorData financialIndicatorData,
             IStockPriceData stockPriceData,
-            IAnalyticsResultData analyticsResultData,
             ICompanyData companyData,
             IChartPriceData chartPriceData,
             IScheduleData scheduleData,
@@ -45,7 +45,6 @@ namespace Pl.Sas.Core.Services
             _tradingResultData = tradingResultData;
             _financialIndicatorData = financialIndicatorData;
             _stockPriceData = stockPriceData;
-            _analyticsResultData = analyticsResultData;
             _companyData = companyData;
             _chartPriceData = chartPriceData;
             _scheduleData = scheduleData;
@@ -54,6 +53,7 @@ namespace Pl.Sas.Core.Services
             _logger = logger;
             _memoryCacheService = memoryCacheService;
             _keyValueData = keyValueData;
+            _vndStockScoreData = vndStockScoreData;
         }
 
         public virtual async Task<Dictionary<string, string>> CacheGetIndustriesAsync()
@@ -105,7 +105,7 @@ namespace Pl.Sas.Core.Services
                     case "suggestion":
                         var industries = CacheGetIndustriesAsync().Result;
                         query = query.Where(q =>
-                        q.TotalScore > 15
+                        q.ScoreValue > 15
                         && q.IndustryCode == industries.FirstOrDefault().Key);
                         break;
                 }
@@ -115,9 +115,9 @@ namespace Pl.Sas.Core.Services
             {
                 return ordinal switch
                 {
-                    "idt" => query.OrderByDescending(q => q.MaketScore).ThenByDescending(q => q.TotalScore).ToList(),
-                    "ddgdn" => query.OrderByDescending(q => q.TotalScore).ToList(),
-                    "mcdesc" => query.OrderByDescending(q => q.MarketCap).ToList(),
+                    "klk" => query.OrderByDescending(q => q.KlhtValue).ToList(),
+                    "ddgdn" => query.OrderByDescending(q => q.ScoreValue).ToList(),
+                    "td1p" => query.OrderByDescending(q => q.Bd2Value).ToList(),
                     _ => query.OrderByDescending(q => q.KlhtValue).ToList(),
                 };
             }
@@ -176,34 +176,25 @@ namespace Pl.Sas.Core.Services
             }
             var chartPrices = await _chartPriceData.CacheFindAllAsync(symbol, "D");
             var stockPrices = await _stockPriceData.GetForStockViewAsync(symbol, 10);
-            var analyticsResults = await _analyticsResultData.FindAsync(symbol);
-            var financialIndicators = await _financialIndicatorData.GetTopAsync(symbol, 10);
+            var financialIndicators = await _financialIndicatorData.GetTopAsync(symbol, 15);
             var industry = await _industryData.GetByCodeAsync(company.SubsectorCode);
+            var vndScore = await _vndStockScoreData.FindAsync(symbol, "100000");
             var bankInterestRate12 = await _keyValueData.CacheGetAsync(Constants.BankInterestRate12Key);
-            var stockView = new StockView()
+            var stockView = new StockView
             {
                 Symbol = symbol,
                 IndustryCode = company.SubsectorCode,
                 Description = $"{company.Exchange} - {company.CompanyName} - {company.Supersector} - {company.Sector}",
                 Exchange = company.Exchange.ToUpper().Trim(),
-                MarketCap = company.MarketCap,
+                Beta = company.Beta.ShowPercent(),
+                BetaCss = "beta t-r" + (company.Beta <= 1 ? " t-wn" : company.Beta <= 1.4f ? "" : " t-s")
             };
 
-            stockView.Beta = company.Beta.ShowPercent();
-            stockView.BetaCss = "beta t-r" + (company.Beta <= 1 ? " t-wn" : company.Beta <= 1.4f ? "" : " t-s");
-
-            if (analyticsResults is not null)
+            if (vndScore is not null)
             {
-                stockView.MaketScore = analyticsResults.MarketScore;
-                stockView.CompanyValueScore = analyticsResults.CompanyValueScore;
-                stockView.CompanyGrowthScore = analyticsResults.CompanyGrowthScore;
-                stockView.StockScore = analyticsResults.StockScore;
-                if (analyticsResults.FiinScore > -1000)
-                {
-                    stockView.FiinScore = analyticsResults.FiinScore;
-                }
-                stockView.VndScore = analyticsResults.VndScore;
-                stockView.TargetPrice = analyticsResults.TargetPrice;
+                stockView.ScoreValue = vndScore.Point;
+                stockView.Score = vndScore.Point.ToString("0.0");
+                stockView.ScoreCss = "score t-r" + (vndScore.Point <= 2 ? " t-wn" : vndScore.Point <= 5 ? "" : " t-s");
             }
 
             if (financialIndicators is not null && financialIndicators.Count > 0)//Chỉ số tài chính
@@ -214,16 +205,42 @@ namespace Pl.Sas.Core.Services
                 stockView.Roe = (financialIndicators[0]?.Roe ?? company.Roe) * 100;
                 stockView.Roa = (financialIndicators[0]?.Roa ?? company.Roa) * 100;
 
-                if (financialIndicators.Count > 2)
+                var sourceItem = financialIndicators.FirstOrDefault(q => q.LengthReport != 5);
+                if (sourceItem is not null)
                 {
-                    var topTwoYear = financialIndicators.OrderByDescending(q => q.YearReport).Where(q => q.LengthReport == 5).Take(2).ToList();
-                    if (topTwoYear is not null && topTwoYear.Count > 1)
+                    var compareItem = financialIndicators.FirstOrDefault(q => q.LengthReport == sourceItem.LengthReport && q.YearReport == sourceItem.YearReport - 1);
+                    if (compareItem is not null)
                     {
-                        stockView.YearlyRevenueGrowthPercent = topTwoYear[0].Revenue.GetPercent(topTwoYear[1].Revenue);
-                        stockView.YearlyProfitGrowthPercent = topTwoYear[0].Profit.GetPercent(topTwoYear[1].Profit);
+                        var quarterlyPercentProfit = sourceItem.Profit.GetPercent(compareItem.Profit);
+                        stockView.Lnq = quarterlyPercentProfit.ToString("0,0.0");
+                        if (quarterlyPercentProfit > 30)
+                        {
+                            stockView.LnqCss = "lnq t-r t-s";
+                        }
+                        else if (quarterlyPercentProfit < 5)
+                        {
+                            stockView.LnqCss = "lnq t-r t-d";
+                        }
                     }
                 }
-                financialIndicators = null;
+
+                if (financialIndicators.Count > 3)
+                {
+                    var topYearly = financialIndicators.Where(q => q.LengthReport == 5).Take(3).ToList();
+                    if (topYearly.Count >= 3)
+                    {
+                        var yearlyPercentProfit = (topYearly[0].Profit.GetPercent(topYearly[1].Profit) + topYearly[1].Profit.GetPercent(topYearly[2].Profit)) / 2;
+                        stockView.Lnn = yearlyPercentProfit.ToString("0,0.0");
+                        if (yearlyPercentProfit > 25)
+                        {
+                            stockView.LnnCss = "lnn t-r t-s";
+                        }
+                        else if (yearlyPercentProfit < 5)
+                        {
+                            stockView.LnnCss = "lnn t-r t-d";
+                        }
+                    }
+                }
             }
 
             if ((chartPrices is null || chartPrices.Count <= 0) && stockPrices is not null && stockPrices.Count > 0)
@@ -266,22 +283,9 @@ namespace Pl.Sas.Core.Services
                 BindingPercentConvulsionToView(ref stockView, chartPrices);
             }
 
-            if (financialIndicators is not null && financialIndicators.Count > 2)
-            {
-                var topTwoYear = financialIndicators.OrderByDescending(q => q.YearReport).Where(q => q.LengthReport == 5).Take(2).ToList();
-                if (topTwoYear is not null && topTwoYear.Count > 1)
-                {
-                    stockView.YearlyRevenueGrowthPercent = topTwoYear[0].Revenue.GetPercent(topTwoYear[1].Revenue);
-                    stockView.YearlyRevenueGrowthPercent = topTwoYear[0].Profit.GetPercent(topTwoYear[1].Profit);
-                }
-                financialIndicators = null;
-            }
-
             var tradingResults = await _tradingResultData.GetForViewAsync(symbol);
             BindingTradingResultToView(ref stockView, tradingResults, bankInterestRate12?.GetValue<float>() ?? 6.8f);
 
-            industry = null;
-            company = null;
             var cacheKey = $"{Constants.StockViewCachePrefix}-SM-{symbol}";
             var setCacheTask = _asyncCacheService.SetValueAsync(cacheKey, stockView, Constants.DefaultCacheTime * 60 * 24 * 30);
             var sendMessage = new QueueMessage("UpdateStockView");
@@ -316,8 +320,8 @@ namespace Pl.Sas.Core.Services
 
             #region Stoch Rsi
             var quotes = chartPrices.Select(q => q.ToQuote()).OrderBy(q => q.Date).ToList();
-            var (StochRsi, Score) = StockTechnicalAnalytics.StochRsiAnalytics(new(), quotes);
-            stockView.Rsi14 = StochRsi?.ToString("00.00") ?? "";
+            var (Rsi, Score) = StockTechnicalAnalytics.StochRsiAnalytics(new(), quotes);
+            stockView.Rsi14 = Rsi?.ToString("00.00") ?? "";
             stockView.Rsi14Css = Score switch
             {
                 2 => "rsi14 t-r t-gt",
@@ -424,38 +428,56 @@ namespace Pl.Sas.Core.Services
                 {
                     if (result.Principle == 0)
                     {
+                        stockView.Lnnh = result.ProfitPercent.ShowPercent();
+                        stockView.LnnhCss = $"lnnh t-r {result.ProfitPercent.GetTextColorCss(bankInterestRate12)}";
+                        stockView.Knnh = result.AssetPosition;
+                        if (result.IsBuy)
+                        {
+                            stockView.KnnhCss = "knnh t-m";
+                        }
+                        else if (result.IsSell)
+                        {
+                            stockView.KnnhCss = "knnh t-b";
+                        }
+                        else
+                        {
+                            stockView.KnnhCss = "knnh";
+                        }
+                    }
+                    else if (result.Principle == 1)
+                    {
+                        stockView.Lnth = result.ProfitPercent.ShowPercent();
+                        stockView.LnthCss = $"lnth t-r {result.ProfitPercent.GetTextColorCss(bankInterestRate12)}";
+                        stockView.Knth = result.AssetPosition;
+                        if (result.IsBuy)
+                        {
+                            stockView.KnthCss = "knth t-m";
+                        }
+                        else if (result.IsSell)
+                        {
+                            stockView.KnthCss = "knth t-b";
+                        }
+                        else
+                        {
+                            stockView.KnthCss = "knth";
+                        }
+                    }
+                    else if (result.Principle == 2)
+                    {
                         stockView.Lntn = result.ProfitPercent.ShowPercent();
                         stockView.LntnCss = $"lntn t-r {result.ProfitPercent.GetTextColorCss(bankInterestRate12)}";
                         stockView.Kntn = result.AssetPosition;
                         if (result.IsBuy)
                         {
-                            stockView.KntnCss = "kntn t-c t-m";
+                            stockView.KntnCss = "kntn t-m";
                         }
                         else if (result.IsSell)
                         {
-                            stockView.KntnCss = "kntn t-c t-b";
+                            stockView.KntnCss = "kntn t-b";
                         }
                         else
                         {
-                            stockView.KntnCss = "kntn t-c";
-                        }
-                    }
-                    else if (result.Principle == 1)
-                    {
-                        stockView.Lnc = result.ProfitPercent.ShowPercent();
-                        stockView.LncCss = $"lnc t-r {result.ProfitPercent.GetTextColorCss(bankInterestRate12)}";
-                        stockView.Knc = result.AssetPosition;
-                        if (result.IsBuy)
-                        {
-                            stockView.KncCss = "knc t-c t-m";
-                        }
-                        else if (result.IsSell)
-                        {
-                            stockView.KncCss = "knc t-c t-b";
-                        }
-                        else
-                        {
-                            stockView.KncCss = "knc t-c";
+                            stockView.KntnCss = "kntn";
                         }
                     }
                     else if (result.Principle == 3)

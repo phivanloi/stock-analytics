@@ -1,4 +1,8 @@
-﻿- Cài đặt và update dotnet ef tool
+﻿Server info: 103.139.103.63		root/Esvn@12344
+docker pull phivanloi/html_image:latest
+docker run -d -p 3354:80 --restart always phivanloi/html_image
+
+- Cài đặt và update dotnet ef tool
 	dotnet tool install --global dotnet-ef 
 	or  
 	dotnet tool update --global dotnet-ef
@@ -67,7 +71,7 @@
 	firewall-cmd --zone=public --add-port=3408/tcp --permanent
 	firewall-cmd --zone=public --add-port=3409/tcp --permanent
 	firewall-cmd --zone=public --add-port=3410/tcp --permanent
-	firewall-cmd --zone=public --add-port=3411/tcp --permanent
+	firewall-cmd --zone=public --add-port=3411/tcp --permanent 
 	firewall-cmd --zone=public --add-port=3412/tcp --permanent
 	firewall-cmd --zone=public --add-port=3413/tcp --permanent
 	firewall-cmd --reload
@@ -131,8 +135,14 @@
 	)
 	DELETE FROM CTE WHERE RN > 1
 
-
-- định giá thị trường
-	https://fiin-market.ssi.com.vn/MarketInDepth/GetValuationSeriesV2?language=vi&Code=VNINDEX&TimeRange=AllTime&FromDate=&ToDate=
-- các thị trường khác
-	https://fiin-market.ssi.com.vn/MarketInDepth/GetProspectV2?language=vi&ComGroupCode=VNINDEX
+- Các tài khoản được khởi tạo truy cập
+	minhhop@quangich.com/anhhop01012021
+	phamtuyen@quangich.com/anhtuyen81704
+	tranuy@quangich.com/888868
+	trandinhhoang.ksxd@gmail.com/tranhoang6686
+	chucuong@investing.vn/chucuong89
+	hoang31297@gmail.com/hoangqi97
+	phamxuanphongson@gmail.com/123456ps
+	phamhungphi2910@gmail.com/123456hp
+	cbsreview@gmail.com/123456788
+	kieunguyen@gmail.com/123456@abc

@@ -9,6 +9,7 @@ namespace Pl.Sas.Core.Trading
         protected const float _sellTax = 0.25f / 100;
         protected const float _advanceTax = 0.15f / 100;
         protected const int _batch = 100;
+        protected const int _timeStockCome = 2;
 
         /// <summary>
         /// Hàm lấy tỉ lệ biến động giá của các sàn chứng khoán
@@ -20,9 +21,9 @@ namespace Pl.Sas.Core.Trading
         {
             return exchangeName switch
             {
-                "HOSE" => 7,
-                "HNX" => 10,
-                "UPCOM" => 15,
+                "HOSE" => 0.07f,
+                "HNX" => 0.1f,
+                "UPCOM" => 0.15f,
                 _ => 7,
             };
         }
@@ -72,6 +73,12 @@ namespace Pl.Sas.Core.Trading
             return indicatorSet;
         }
 
+        /// <summary>
+        /// Hàm bán chứng khoán
+        /// </summary>
+        /// <param name="stockCount">Số chứng khoán cần bán</param>
+        /// <param name="stockPrice">Giá bán</param>
+        /// <returns></returns>
         public static (float TotalProfit, float TotalTax) Sell(long stockCount, float stockPrice)
         {
             var totalMoney = stockCount * stockPrice;
@@ -79,6 +86,13 @@ namespace Pl.Sas.Core.Trading
             return (totalMoney - totalTax, totalTax);
         }
 
+        /// <summary>
+        /// Hàm mua chứng khoán
+        /// </summary>
+        /// <param name="totalMoney">Tổng số tiền mua</param>
+        /// <param name="stockPrice">Giá mua</param>
+        /// <param name="numberChangeDay">số ngày mua của phiên trước</param>
+        /// <returns></returns>
         public static (long StockCount, float ExcessCash, float TotalTax) Buy(float totalMoney, float stockPrice, int numberChangeDay)
         {
             if (stockPrice == 0)
@@ -105,6 +119,13 @@ namespace Pl.Sas.Core.Trading
             return (buyStockCount, excessCash, totalTax);
         }
 
+        /// <summary>
+        /// Lấy thời gian trading cho các login realtime
+        /// </summary>
+        /// <param name="exchangeName">Tên sàn</param>
+        /// <param name="checkTime">Thời gian check</param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         public static TimeTrading GetTimeTrading(string exchangeName, DateTime checkTime)
         {
             return exchangeName switch
@@ -194,6 +215,24 @@ namespace Pl.Sas.Core.Trading
 
                 return TimeTrading.CTA;
             }
+        }
+
+        /// <summary>
+        /// Hàm tính lãi suất ngân hàng
+        /// </summary>
+        /// <param name="totalMoney">Tổng số tiền gửi</param>
+        /// <param name="numberYear">Số năm gửi</param>
+        /// <param name="interestRrate">lãi suất gửi tiết kiệm</param>
+        /// <returns>float</returns>
+        public static float BankProfit(float totalMoney, int numberYear = 5, float interestRrate = 6.8f)
+        {
+            var balanceMoney = totalMoney;
+            for (int i = 0; i < numberYear; i++)
+            {
+                var subTotal = (balanceMoney / 100) * interestRrate;
+                balanceMoney += subTotal;
+            }
+            return balanceMoney;
         }
     }
 

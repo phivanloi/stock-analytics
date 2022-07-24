@@ -24,13 +24,13 @@
         public string Exchange { get; set; } = null!;
         #endregion
 
+        #region Cột điểm số doanh nghiệp
+        public string Score { get; set; } = null!;
+        public string ScoreCss { get; set; } = "score t-r";
+        public float ScoreValue { get; set; } = 0;
+        #endregion
 
-        #region Company Value
-        /// <summary>
-        /// Điểm đánh giá giá trị cua công ty
-        /// </summary>
-        public int CompanyValueScore { get; set; }
-
+        #region Chỉ số tài chính
         /// <summary>
         /// <para>Chỉ số EPS</para>
         /// <para>lợi nhuận (thu nhập) trên mỗi cổ phiếu.</para>
@@ -67,62 +67,16 @@
         /// <para>roe = Lợi nhuận sau thuế(Earning) / Tổng tài sản bình quân</para>
         /// </summary>
         public float Roa { get; set; }
-
-        /// <summary>
-        /// <para>Vốn hóa thị trường</para>
-        /// <para>là tổng giá trị của số cổ phần của một công ty niêm yết</para>
-        /// <para>Vốn hóa = Giá 1 cổ phiếu X số lượng cổ phiếu đang lưu hành.</para>
-        /// </summary>
-        public float MarketCap { get; set; }
         #endregion
 
-        #region Company Growth
-        /// <summary>
-        /// Điểm đánh giá tăng trưởng doanh nghiệp
-        /// </summary>
-        public int CompanyGrowthScore { get; set; }
+        #region Cột % lợi nhận sau thuế quý gần nhất
+        public string Lnq { get; set; } = null!;
+        public string LnqCss { get; set; } = "lnq t-r";
+        #endregion        
 
-        /// <summary>
-        /// % tăng trưởng doanh thu 3 năm gần đây nhất
-        /// </summary>
-        public float YearlyRevenueGrowthPercent { get; set; }
-
-        /// <summary>
-        /// % tăng trưởng lợi nhuận 3 năm gần đây nhất
-        /// </summary>
-        public float YearlyProfitGrowthPercent { get; set; }
-        #endregion
-
-        #region Recommendation
-
-        /// <summary>
-        /// Điểm đánh giá của fiin
-        /// </summary>
-        public int FiinScore { get; set; }
-
-        /// <summary>
-        /// Điểm đánh giá của vnd
-        /// </summary>
-        public int VndScore { get; set; }
-
-        /// <summary>
-        /// Giá dự phóng trung bình của các công ty chứng khoán
-        /// </summary>
-        public float TargetPrice { get; set; }
-
-        #endregion
-
-        /// <summary>
-        /// Tổng hợp điểm đánh giá, 
-        /// tạm thời là tổng của MacroeconomicsScore * 1, CompanyValueScore * 1, CompanyGrowthScore * 1, StockScore * 1. Tưởng lai có thể thay đổi các biến số để đánh trọng số cao hơn cho các score
-        /// </summary>
-        public int TotalScore => MaketScore + CompanyValueScore + CompanyGrowthScore + StockScore;
-
-        #region Cột điểm số dòng tiền
-        /// <summary>
-        /// Đánh giá điểm số dòng tiền
-        /// </summary>
-        public int MaketScore { get; set; }
+        #region % trung bình lơi nhuận 3 năm gần nhất
+        public string Lnn { get; set; } = null!;
+        public string LnnCss { get; set; } = "lnn t-r";
         #endregion
 
         #region Cột dòng tiền theo ngành
@@ -133,10 +87,6 @@
         #region Cột dòng tiền của cổ phiếu
         public string Scf { get; set; } = null!;
         public string ScfCss { get; set; } = "scf t-r";
-        #endregion
-
-        #region Cột điểm số kỹ thuật
-        public int StockScore { get; set; }
         #endregion
 
         #region Cột chỉ số beta
@@ -200,29 +150,39 @@
         public string Bd60Css { get; set; } = "bd60 t-r";
         #endregion
 
-        #region Cột % Lợi nhận phương pháp thử nghiệm
-        public string Lntn { get; set; } = null!;
-        public string LntnCss { get; set; } = "lntn t-r";
-        #endregion
-
-        #region Cột % Lợi nhận phương pháp chính
-        public string Lnc { get; set; } = null!;
-        public string LncCss { get; set; } = "lnc t-r";
-        #endregion
-
         #region Cột % Lợi nhận mua và giữ
         public string Lnmg { get; set; } = null!;
         public string LnmgCss { get; set; } = "lnmg t-r";
         #endregion
 
-        #region Cột Khuyến nghị theo phương pháp thử nghiệm
-        public string Kntn { get; set; } = null!;
-        public string KntnCss { get; set; } = "kntn t-c";
+        #region Cột % Lợi nhận phương pháp ngắn hạn
+        public string Lnnh { get; set; } = null!;
+        public string LnnhCss { get; set; } = "lnnh t-r";
         #endregion
 
-        #region Cột Khuyến nghị theo phương pháp chính
-        public string Knc { get; set; } = null!;
-        public string KncCss { get; set; } = "knc t-c";
+        #region Cột % Lợi nhận phương pháp trung hạn
+        public string Lnth { get; set; } = null!;
+        public string LnthCss { get; set; } = "lnth t-r";
+        #endregion
+
+        #region Cột % Lợi nhận phương pháp thử nghiệm
+        public string Lntn { get; set; } = null!;
+        public string LntnCss { get; set; } = "lntn t-r";
+        #endregion
+
+        #region Cột Khuyến nghị theo phương pháp ngắn hạn
+        public string Knnh { get; set; } = null!;
+        public string KnnhCss { get; set; } = "knnh";
+        #endregion
+
+        #region Cột Khuyến nghị theo phương pháp trung hạn
+        public string Knth { get; set; } = null!;
+        public string KnthCss { get; set; } = "knth";
+        #endregion
+
+        #region Cột Khuyến nghị theo phương pháp thử nghiệm
+        public string Kntn { get; set; } = null!;
+        public string KntnCss { get; set; } = "kntn";
         #endregion
     }
 }

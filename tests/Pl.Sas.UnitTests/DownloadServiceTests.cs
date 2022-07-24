@@ -98,7 +98,7 @@ namespace Pl.Sas.UnitTests
             {
                 Type = 4,
                 Name = "Xử lý thông tin tài chính của doanh nghiệp.",
-                DataKey = "SD8"
+                DataKey = "HPG"
             });
             Assert.True(1 == 1);
 

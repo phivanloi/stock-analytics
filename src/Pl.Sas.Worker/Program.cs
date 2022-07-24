@@ -96,6 +96,7 @@ builder.Services.AddSingleton<ITradingResultData, TradingResultData>();
 builder.Services.AddSingleton<IAnalyticsResultData, AnalyticsResultData>();
 builder.Services.AddSingleton<IChartPriceData, ChartPriceData>();
 
+builder.Services.AddSingleton<IMemoryUpdateService, MemoryUpdateService>();
 builder.Services.AddSingleton<IWorkerQueueService, WorkerQueueService>();
 builder.Services.AddSingleton<DownloadService>();
 builder.Services.AddSingleton<AnalyticsService>();

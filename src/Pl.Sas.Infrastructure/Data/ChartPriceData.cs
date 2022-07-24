@@ -14,12 +14,15 @@ namespace Pl.Sas.Infrastructure.Data
     {
         private readonly ILogger<ChartPriceData> _logger;
         private readonly IAsyncCacheService _asyncCacheService;
+        private readonly IMemoryCacheService _memoryCacheService;
 
         public ChartPriceData(
+            IMemoryCacheService memoryCacheService,
             IAsyncCacheService asyncCacheService,
             ILogger<ChartPriceData> logger,
             IOptionsMonitor<ConnectionStrings> options) : base(options)
         {
+            _memoryCacheService = memoryCacheService;
             _asyncCacheService = asyncCacheService;
             _logger = logger;
         }
@@ -28,10 +31,10 @@ namespace Pl.Sas.Infrastructure.Data
         {
             Guard.Against.NullOrEmpty(symbol, nameof(symbol));
             var cacheKey = $"{Constants.ChartPriceCachePrefix}-SM{symbol}-TP{type}";
-            return await _asyncCacheService.GetOrCreateAsync(cacheKey, async () =>
+            return await _memoryCacheService.GetOrCreateAsync(cacheKey, async () =>
             {
                 return await FindAllAsync(symbol, type);
-            }, Constants.DefaultCacheTime * 60 * 24);
+            }, Constants.DefaultCacheTime * 10);
         }
 
         public virtual async Task<List<ChartPrice>> FindAllAsync(string symbol, string type = "D", DateTime? fromDate = null, DateTime? toDate = null)

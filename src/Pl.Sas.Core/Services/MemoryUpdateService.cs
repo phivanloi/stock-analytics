@@ -44,6 +44,9 @@ namespace Pl.Sas.Core.Services
                 case "TradingResult":
                     _memoryCacheService.RemoveByPrefix(Constants.TradingResultCachePrefix);
                     break;
+                case "ChartPrices":
+                    _memoryCacheService.RemoveByPrefix(Constants.ChartPriceCachePrefix);
+                    break;
             }
         }
     }

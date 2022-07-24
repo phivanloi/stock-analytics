@@ -31,8 +31,10 @@ namespace Pl.Sas.Core.Services
         private readonly ITradingResultData _tradingResultData;
         private readonly IIndustryData _industryData;
         private readonly ICorporateActionData _corporateActionData;
+        private readonly IAsyncCacheService _asyncCacheService;
 
         public AnalyticsService(
+            IAsyncCacheService asyncCacheService,
             ICorporateActionData corporateActionData,
             IIndustryData industryData,
             ITradingResultData tradingResultData,
@@ -52,6 +54,7 @@ namespace Pl.Sas.Core.Services
             IZipHelper zipHelper,
             ILogger<AnalyticsService> logger)
         {
+            _asyncCacheService = asyncCacheService;
             _corporateActionData = corporateActionData;
             _industryData = industryData;
             _tradingResultData = tradingResultData;
@@ -339,7 +342,6 @@ namespace Pl.Sas.Core.Services
                 return await _keyValueData.SetAsync(checkingKey, false);
             }
             var fiinEvaluate = await _fiinEvaluatedData.FindAsync(symbol);
-            var exchangeFluctuationsRate = BaseTrading.GetExchangeFluctuationsRate(stock.Exchange);
             var quotes = chartPrices.Select(q => q.ToQuote()).ToList();
 
             var score = 0;
@@ -558,55 +560,75 @@ namespace Pl.Sas.Core.Services
             await _tradingResultData.SaveTestTradingResultAsync(buyAndWaitResult);
             #endregion
 
-            #region Main Trading
-            var macdTrading = new MainTrading(chartPrices);
+            #region Ngắn hạn
+            var shortTrading = new ShortTrading(chartPrices);
             var tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
-            var macdCase = macdTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
-            var macdNote = $"Trading {Utilities.GetPrincipleName(1).ToLower()} {chartTrading.Count} phiên từ ngày {chartTrading[0].TradingDate:dd/MM/yyyy}, Lợi nhuận {macdCase.Profit(chartTrading[^1].ClosePrice):0,0} ({macdCase.ProfitPercent(chartTrading[^1].ClosePrice):0,0.00}%), thuế {macdCase.TotalTax:0,0}, xem chi tiết tại tab \"Lợi nhuận và đầu tư TN\".";
-            var macdType = macdCase.FixedCapital < macdCase.Profit(chartTrading[^1].ClosePrice) ? 1 : macdCase.FixedCapital == macdCase.Profit(chartTrading[^1].ClosePrice) ? 0 : -1;
-            var macdResult = new TradingResult()
-            {
-                Symbol = symbol,
-                Principle = 1,
-                IsBuy = macdCase.IsBuy,
-                IsSell = macdCase.IsSell,
-                BuyPrice = macdCase.BuyPrice,
-                SellPrice = macdCase.SellPrice,
-                FixedCapital = macdCase.FixedCapital,
-                Profit = macdCase.Profit(chartTrading[^1].ClosePrice),
-                TotalTax = macdCase.TotalTax,
-                AssetPosition = macdCase.AssetPosition,
-                LoseNumber = macdCase.LoseNumber,
-                WinNumber = macdCase.WinNumber,
-                TradingNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(macdCase.ExplainNotes)),
-            };
-            await _tradingResultData.SaveTestTradingResultAsync(macdResult);
-            #endregion
-
-            #region Experiment Trading
-            var experimentTrading = new ExperimentTrading(chartPrices);
-            tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
-            var experCase = experimentTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
-            var experNote = $"Trading {Utilities.GetPrincipleName(0).ToLower()} {chartTrading.Count} phiên từ ngày {chartTrading[0].TradingDate:dd/MM/yyyy}, Lợi nhuận {experCase.Profit(chartTrading[^1].ClosePrice):0,0} ({experCase.ProfitPercent(chartTrading[^1].ClosePrice):0,0.00}%), thuế {experCase.TotalTax:0,0}, xem chi tiết tại tab \"Lợi nhuận và đầu tư TN\".";
-            var experType = experCase.FixedCapital < experCase.Profit(chartTrading[^1].ClosePrice) ? 1 : experCase.FixedCapital == experCase.Profit(chartTrading[^1].ClosePrice) ? 0 : -1;
-            var experResult = new TradingResult()
+            var shortCase = shortTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
+            var shortResult = new TradingResult()
             {
                 Symbol = symbol,
                 Principle = 0,
-                IsBuy = experCase.IsBuy,
-                IsSell = experCase.IsSell,
-                BuyPrice = experCase.BuyPrice,
-                SellPrice = experCase.SellPrice,
-                FixedCapital = experCase.FixedCapital,
-                Profit = experCase.Profit(chartTrading[^1].ClosePrice),
-                TotalTax = experCase.TotalTax,
-                AssetPosition = experCase.AssetPosition,
-                LoseNumber = experCase.LoseNumber,
-                WinNumber = experCase.WinNumber,
-                TradingNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(experCase.ExplainNotes)),
+                IsBuy = shortCase.IsBuy,
+                IsSell = shortCase.IsSell,
+                BuyPrice = shortCase.BuyPrice,
+                SellPrice = shortCase.SellPrice,
+                FixedCapital = shortCase.FixedCapital,
+                Profit = shortCase.Profit(chartTrading[^1].ClosePrice),
+                TotalTax = shortCase.TotalTax,
+                AssetPosition = shortCase.AssetPosition,
+                LoseNumber = shortCase.LoseNumber,
+                WinNumber = shortCase.WinNumber,
+                TradingNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(shortCase.ExplainNotes)),
             };
-            await _tradingResultData.SaveTestTradingResultAsync(experResult);
+            await _tradingResultData.SaveTestTradingResultAsync(shortResult);
             #endregion
+
+            #region Trung hạn
+            var midTrading = new MidTrading(chartPrices);
+            tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
+            var midCase = midTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
+            var midResult = new TradingResult()
+            {
+                Symbol = symbol,
+                Principle = 1,
+                IsBuy = midCase.IsBuy,
+                IsSell = midCase.IsSell,
+                BuyPrice = midCase.BuyPrice,
+                SellPrice = midCase.SellPrice,
+                FixedCapital = midCase.FixedCapital,
+                Profit = midCase.Profit(chartTrading[^1].ClosePrice),
+                TotalTax = midCase.TotalTax,
+                AssetPosition = midCase.AssetPosition,
+                LoseNumber = midCase.LoseNumber,
+                WinNumber = midCase.WinNumber,
+                TradingNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(midCase.ExplainNotes)),
+            };
+            await _tradingResultData.SaveTestTradingResultAsync(midResult);
+            #endregion
+
+            #region Thử nghiệm
+            var experimentTrading = new ExperimentTrading(chartPrices);
+            tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
+            var experimentCase = experimentTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
+            var smaPSarResult = new TradingResult()
+            {
+                Symbol = symbol,
+                Principle = 2,
+                IsBuy = experimentCase.IsBuy,
+                IsSell = experimentCase.IsSell,
+                BuyPrice = experimentCase.BuyPrice,
+                SellPrice = experimentCase.SellPrice,
+                FixedCapital = experimentCase.FixedCapital,
+                Profit = experimentCase.Profit(chartTrading[^1].ClosePrice),
+                TotalTax = experimentCase.TotalTax,
+                AssetPosition = experimentCase.AssetPosition,
+                LoseNumber = experimentCase.LoseNumber,
+                WinNumber = experimentCase.WinNumber,
+                TradingNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(experimentCase.ExplainNotes)),
+            };
+            await _tradingResultData.SaveTestTradingResultAsync(smaPSarResult);
+            #endregion            
+
             return await _keyValueData.SetAsync(checkingKey, true);
         }
 
@@ -741,8 +763,7 @@ namespace Pl.Sas.Core.Services
         /// <summary>
         /// Phân tích các yếu tố vĩ mô tác động đến giá cổ phiếu
         /// </summary>
-        /// <param name="workerMessageQueueService">message queue service</param>
-        /// <param name="schedule">Thông tin lịch làm việc</param>
+        /// <param name="symbol">Mã chứng khoán</param>
         /// <returns></returns>
         public virtual async Task<bool> MarketAnalyticsAsync(string symbol)
         {
@@ -766,6 +787,68 @@ namespace Pl.Sas.Core.Services
             var saveZipData = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(analyticsNotes));
             var check = await _analyticsResultData.SaveMarketScoreAsync(symbol, score, saveZipData);
             return await _keyValueData.SetAsync(checkingKey, check);
+        }
+
+        /// <summary>
+        /// Tìm kiếm đặc trưng của cố phiếu
+        /// </summary>
+        /// <param name="symbol">Mã chứng khoán</param>
+        /// <returns></returns>
+        public virtual async Task<(TradingCase? Case, StockFeature? Feature)> FindStockFeatureAsync(string symbol)
+        {
+            DateTime fromDate = new(2010, 1, 1);
+            DateTime toDate = new(2023, 1, 1);
+            var chartPrices = await _chartPriceData.CacheFindAllAsync(symbol, "D") ?? throw new Exception("ChartPrices is null");
+            var stock = await _stockData.FindBySymbolAsync(symbol);
+            if (chartPrices is null || chartPrices.Count < 50 || stock is null)
+            {
+                return (null, null);
+            }
+            var cacheKey = $"TOCKFEATURE-{symbol}";
+            var stockFeature = await _asyncCacheService.GetByKeyAsync<StockFeature>(cacheKey);
+            if (stockFeature is null)
+            {
+                stockFeature = new StockFeature();
+            }
+            chartPrices = chartPrices.OrderBy(q => q.TradingDate).ToList();
+            var chartTrading = chartPrices.Where(q => q.TradingDate >= fromDate && q.TradingDate < toDate).OrderBy(q => q.TradingDate).ToList();
+            var tradingHistory = chartPrices.Where(q => q.TradingDate < fromDate).OrderBy(q => q.TradingDate).ToList();
+            var winCase = 0;
+            var loseCase = 0;
+            var tradingCase = new TradingCase();
+
+            var testCaseCount = 0;
+            var totalCase = 50 * 50;
+
+            for (int i = 1; i < 50; i++)
+            {
+                for (int j = 1; j < 50; j++)
+                {
+                    testCaseCount++;
+                    Console.Write($"\r{testCaseCount}/{totalCase} cases.");
+                    var trader = new MidTrading(chartPrices, i, j);
+                    tradingHistory = chartPrices.Where(q => q.TradingDate < fromDate).OrderBy(q => q.TradingDate).ToList();
+                    var findResult = trader.Trading(chartTrading, tradingHistory, stock.Exchange);
+                    if (findResult.Profit(chartTrading[^1].ClosePrice) > tradingCase.FixedCapital)
+                    {
+                        winCase++;
+                    }
+                    else
+                    {
+                        loseCase++;
+                    }
+                    if (tradingCase.Profit(chartTrading[^1].ClosePrice) < findResult.Profit(chartTrading[^1].ClosePrice))
+                    {
+                        stockFeature.FastEma = i;
+                        stockFeature.SlowEma = j;
+                        tradingCase = findResult;
+                    }
+                }
+            }
+            stockFeature.EmaWin = winCase;
+            stockFeature.EmaLose = loseCase;
+            await _asyncCacheService.SetValueAsync(cacheKey, stockFeature);
+            return (tradingCase, stockFeature);
         }
     }
 }

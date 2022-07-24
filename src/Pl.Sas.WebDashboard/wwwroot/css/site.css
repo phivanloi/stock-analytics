@@ -4,6 +4,8 @@
 
 .table thead th {
     border-bottom: none;
+    position: sticky;
+    top: 0;
 }
 
 .table-hover tbody tr:hover {
@@ -80,6 +82,7 @@ label {
     color: #1d1d1d;
     background-color: #a3a3a3;
 }
+
 .modal-header {
     border-bottom: 1px solid #9e9e9e
 }
@@ -220,13 +223,21 @@ label {
     font-size: 15px;
 }
 
-@media (max-width: 1200px) {
+.navbar-dark {
+    background-color: #151618;
+}
+
+[class*=sidebar-dark-] {
+    background-color: #151618;
+}
+
+@media (min-width: 992px) {
     .table td, .table th {
         padding: 2px 5px;
-        font-size: 14px;
+        font-size: 15px;
     }
 
     .index-item {
-        font-size: 13px;
+        font-size: 14px;
     }
 }
