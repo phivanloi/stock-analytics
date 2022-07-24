@@ -14,10 +14,6 @@ services:
       - sql_database:/var/opt/mssql/data
     ports:
       - 3400:1433
-    deploy:
-      resources:
-        limits:
-          memory: 8G
     restart: always
     networks:
       - pl-network
@@ -41,10 +37,6 @@ services:
     ports:
       - 3401:15672
       - 3402:5672
-    deploy:
-      resources:
-        limits:
-          memory: 2G
     restart: always
     networks:
       - pl-network
@@ -65,10 +57,6 @@ services:
       - redis_config:/usr/local/etc/redis
     ports:
       - 3403:6379
-    deploy:
-      resources:
-        limits:
-          memory: 2G
     restart: always
     networks:
       - pl-network
@@ -90,10 +78,6 @@ services:
     restart: always
     ports:
       - "3404:80"
-    deploy:
-      resources:
-        limits:
-          memory: 2G
     networks:
       - pl-network
     logging:
