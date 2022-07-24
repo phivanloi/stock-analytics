@@ -21,9 +21,9 @@ namespace Pl.Sas.Core.Trading
         {
             return exchangeName switch
             {
-                "HOSE" => 7,
-                "HNX" => 10,
-                "UPCOM" => 15,
+                "HOSE" => 0.07f,
+                "HNX" => 0.1f,
+                "UPCOM" => 0.15f,
                 _ => 7,
             };
         }

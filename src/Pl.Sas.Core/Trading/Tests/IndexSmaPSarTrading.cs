@@ -11,7 +11,7 @@ namespace Pl.Sas.Core.Trading
         private readonly List<RsiResult> _fastRsis;
         private readonly List<RsiResult> _slowRsis;
         private readonly List<ParabolicSarResult> _reverseSignals;
-        private TradingCase tradingCase = new();
+        private readonly TradingCase tradingCase = new();
 
         public IndexSmaPSarTrading(List<ChartPrice> chartPrices)
         {
@@ -24,10 +24,8 @@ namespace Pl.Sas.Core.Trading
             _reverseSignals = quotes.GetParabolicSar(0.02, 0.2).ToList();
         }
 
-        public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName, bool isNoteTrading = true)
+        public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName)
         {
-            tradingCase = new() { IsNote = isNoteTrading };
-
             foreach (var day in chartPrices)
             {
                 if (tradingHistory.Count <= 0)

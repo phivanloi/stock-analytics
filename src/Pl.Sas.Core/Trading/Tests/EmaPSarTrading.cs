@@ -15,7 +15,7 @@ namespace Pl.Sas.Core.Trading
         private readonly List<RsiResult> _slowRsis;
         private readonly List<EmaResult> _indexSlowEmas;
         private readonly List<EmaResult> _indexFastEmas;
-        private readonly TradingCase tradingCase = new() { IsNote = true };
+        private readonly TradingCase tradingCase = new();
 
         public EmaPSarTrading(List<ChartPrice> chartPrices, List<ChartPrice> indexChartPrices)
         {

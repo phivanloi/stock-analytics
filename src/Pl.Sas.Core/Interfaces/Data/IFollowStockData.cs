@@ -1,4 +1,5 @@
 ﻿using Pl.Sas.Core.Entities;
+using Pl.Sas.Core.Entities.Identity;
 
 namespace Pl.Sas.Core.Interfaces
 {

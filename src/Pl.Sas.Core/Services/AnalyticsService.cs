@@ -31,8 +31,10 @@ namespace Pl.Sas.Core.Services
         private readonly ITradingResultData _tradingResultData;
         private readonly IIndustryData _industryData;
         private readonly ICorporateActionData _corporateActionData;
+        private readonly IAsyncCacheService _asyncCacheService;
 
         public AnalyticsService(
+            IAsyncCacheService asyncCacheService,
             ICorporateActionData corporateActionData,
             IIndustryData industryData,
             ITradingResultData tradingResultData,
@@ -52,6 +54,7 @@ namespace Pl.Sas.Core.Services
             IZipHelper zipHelper,
             ILogger<AnalyticsService> logger)
         {
+            _asyncCacheService = asyncCacheService;
             _corporateActionData = corporateActionData;
             _industryData = industryData;
             _tradingResultData = tradingResultData;
@@ -339,7 +342,6 @@ namespace Pl.Sas.Core.Services
                 return await _keyValueData.SetAsync(checkingKey, false);
             }
             var fiinEvaluate = await _fiinEvaluatedData.FindAsync(symbol);
-            var exchangeFluctuationsRate = BaseTrading.GetExchangeFluctuationsRate(stock.Exchange);
             var quotes = chartPrices.Select(q => q.ToQuote()).ToList();
 
             var score = 0;
@@ -761,8 +763,7 @@ namespace Pl.Sas.Core.Services
         /// <summary>
         /// Phân tích các yếu tố vĩ mô tác động đến giá cổ phiếu
         /// </summary>
-        /// <param name="workerMessageQueueService">message queue service</param>
-        /// <param name="schedule">Thông tin lịch làm việc</param>
+        /// <param name="symbol">Mã chứng khoán</param>
         /// <returns></returns>
         public virtual async Task<bool> MarketAnalyticsAsync(string symbol)
         {
@@ -786,6 +787,68 @@ namespace Pl.Sas.Core.Services
             var saveZipData = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(analyticsNotes));
             var check = await _analyticsResultData.SaveMarketScoreAsync(symbol, score, saveZipData);
             return await _keyValueData.SetAsync(checkingKey, check);
+        }
+
+        /// <summary>
+        /// Tìm kiếm đặc trưng của cố phiếu
+        /// </summary>
+        /// <param name="symbol">Mã chứng khoán</param>
+        /// <returns></returns>
+        public virtual async Task<(TradingCase? Case, StockFeature? Feature)> FindStockFeatureAsync(string symbol)
+        {
+            DateTime fromDate = new(2010, 1, 1);
+            DateTime toDate = new(2023, 1, 1);
+            var chartPrices = await _chartPriceData.CacheFindAllAsync(symbol, "D") ?? throw new Exception("ChartPrices is null");
+            var stock = await _stockData.FindBySymbolAsync(symbol);
+            if (chartPrices is null || chartPrices.Count < 50 || stock is null)
+            {
+                return (null, null);
+            }
+            var cacheKey = $"TOCKFEATURE-{symbol}";
+            var stockFeature = await _asyncCacheService.GetByKeyAsync<StockFeature>(cacheKey);
+            if (stockFeature is null)
+            {
+                stockFeature = new StockFeature();
+            }
+            chartPrices = chartPrices.OrderBy(q => q.TradingDate).ToList();
+            var chartTrading = chartPrices.Where(q => q.TradingDate >= fromDate && q.TradingDate < toDate).OrderBy(q => q.TradingDate).ToList();
+            var tradingHistory = chartPrices.Where(q => q.TradingDate < fromDate).OrderBy(q => q.TradingDate).ToList();
+            var winCase = 0;
+            var loseCase = 0;
+            var tradingCase = new TradingCase();
+
+            var testCaseCount = 0;
+            var totalCase = 50 * 50;
+
+            for (int i = 1; i < 50; i++)
+            {
+                for (int j = 1; j < 50; j++)
+                {
+                    testCaseCount++;
+                    Console.Write($"\r{testCaseCount}/{totalCase} cases.");
+                    var trader = new MidTrading(chartPrices, i, j);
+                    tradingHistory = chartPrices.Where(q => q.TradingDate < fromDate).OrderBy(q => q.TradingDate).ToList();
+                    var findResult = trader.Trading(chartTrading, tradingHistory, stock.Exchange);
+                    if (findResult.Profit(chartTrading[^1].ClosePrice) > tradingCase.FixedCapital)
+                    {
+                        winCase++;
+                    }
+                    else
+                    {
+                        loseCase++;
+                    }
+                    if (tradingCase.Profit(chartTrading[^1].ClosePrice) < findResult.Profit(chartTrading[^1].ClosePrice))
+                    {
+                        stockFeature.FastEma = i;
+                        stockFeature.SlowEma = j;
+                        tradingCase = findResult;
+                    }
+                }
+            }
+            stockFeature.EmaWin = winCase;
+            stockFeature.EmaLose = loseCase;
+            await _asyncCacheService.SetValueAsync(cacheKey, stockFeature);
+            return (tradingCase, stockFeature);
         }
     }
 }

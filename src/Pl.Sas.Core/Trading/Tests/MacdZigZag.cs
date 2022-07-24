@@ -20,9 +20,8 @@ namespace Pl.Sas.Core.Trading
             _zigZag = quotes.GetZigZag(EndType.HighLow, zigZagPercentChange).ToList();
         }
 
-        public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName, bool isNoteTrading = true)
+        public TradingCase Trading(List<ChartPrice> chartPrices, List<ChartPrice> tradingHistory, string exchangeName)
         {
-            tradingCase = new() { IsNote = isNoteTrading };
             foreach (var day in chartPrices)
             {
                 if (tradingHistory.Count <= 0)
