@@ -83,7 +83,7 @@
                     var backUp = $('#body-table').html();
                     var html = "";
                     $.each(data, function (i, obj) {
-                        html += '<tr class="row-item row-new"> <td style="line-height:35px;">' + moment.unix(obj.createdTime).format('DD/MM/YYYY hh:mm:ss') + '</td> <td style="line-height:35px;">' + obj.host + '</td> <td style="line-height:35px;">' + obj.message + '</td> <td><a style="cursor:pointer;color:#fff" class="btn btn-secondary" onclick="LoadContent(\'' + obj.id + '\')" ><i class="fa fa-info-circle"></i> Xem</a></td> </tr>';
+                        html += '<tr class="row-item row-new"> <td style="line-height:35px;">' + obj.timeView + '</td> <td style="line-height:35px;">' + obj.host + '</td> <td style="line-height:35px;">' + obj.message + '</td> <td><a style="cursor:pointer;color:#fff" class="btn btn-secondary" onclick="LoadContent(\'' + obj.id + '\')" ><i class="fa fa-info-circle"></i> Xem</a></td> </tr>';
                         if (i === 0) {
                             time = obj.createdTime;
                         }
