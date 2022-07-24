@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Pl.Sas.Core.Entities;
-using Pl.Sas.Core.Entities.Identity;
 
 namespace Pl.Sas.Scheduler.DataContexts
 {
