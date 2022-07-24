@@ -12,6 +12,15 @@
         /// </summary>
         public long CreatedTime { get; set; }
 
+        public string TimeView
+        {
+            get
+            {
+                var date = DateTimeOffset.FromUnixTimeSeconds(CreatedTime);
+                return date.ToString("MM/dd HH:mm:ss");
+            }
+        }
+
         /// <summary>
         /// Tiêu đề log
         /// </summary>

@@ -145,7 +145,7 @@ namespace Pl.Sas.Core.Services
             #endregion
 
             #region ngắn hạn
-            var shortTrading = new ShortTrading(chartPrices);
+            var shortTrading = new SmaTrading(chartPrices, 6, 23);
             var tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
             var shortCase = shortTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
             listTradingResult.Add(new()
@@ -167,7 +167,7 @@ namespace Pl.Sas.Core.Services
             #endregion
 
             #region Trung hạn
-            var midTrading = new MidTrading(chartPrices);
+            var midTrading = new SmaTrading(chartPrices, 11, 36);
             tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
             var midCase = midTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
             listTradingResult.Add(new()
@@ -189,7 +189,7 @@ namespace Pl.Sas.Core.Services
             #endregion
 
             #region Thử nghiệm
-            var experimentTrading = new ExperimentTrading(chartPrices);
+            var experimentTrading = new EmaTrading(chartPrices);
             tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
             var experimentCase = experimentTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
             listTradingResult.Add(new()

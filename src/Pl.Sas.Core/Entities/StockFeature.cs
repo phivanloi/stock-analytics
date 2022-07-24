@@ -3,23 +3,23 @@
     public class StockFeature
     {
         /// <summary>
-        /// Đường ema nhanh tối ưu nhất
+        /// Đường sma nhanh tối ưu nhất
         /// </summary>
-        public int FastEma { get; set; } = 10;
+        public int FastSma { get; set; } = 10;
 
         /// <summary>
-        /// Đường ema chậm tối ưu nhất
+        /// Đường sma chậm tối ưu nhất
         /// </summary>
-        public int SlowEma { get; set; } = 28;
+        public int SlowSma { get; set; } = 28;
 
         /// <summary>
-        /// Số lần chiến thắng bằng ema
+        /// Số lần chiến thắng bằng sma
         /// </summary>
-        public int EmaWin { get; set; } = 0;
+        public int SmaWin { get; set; } = 0;
 
         /// <summary>
-        /// Số lần thua bằng ema
+        /// Số lần thua bằng sma
         /// </summary>
-        public int EmaLose { get; set; } = 0;
+        public int SmaLose { get; set; } = 0;
     }
 }
