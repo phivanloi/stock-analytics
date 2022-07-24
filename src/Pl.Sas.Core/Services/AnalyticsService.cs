@@ -584,7 +584,7 @@ namespace Pl.Sas.Core.Services
             #endregion
 
             #region Trung hạn
-            var midTrading = new SmaTrading(chartPrices, 12, 26);
+            var midTrading = new SmaTrading(chartPrices, 11, 36);
             tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
             var midCase = midTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
             var midResult = new TradingResult()
@@ -825,6 +825,10 @@ namespace Pl.Sas.Core.Services
                 for (int j = 1; j < 50; j++)
                 {
                     testCaseCount++;
+                    if (i >= j)
+                    {
+                        continue;
+                    }
                     Console.Write($"\r{testCaseCount}/{totalCase} cases.");
                     var trader = new SmaTrading(chartPrices, i, j);
                     tradingHistory = chartPrices.Where(q => q.TradingDate < fromDate).OrderBy(q => q.TradingDate).ToList();

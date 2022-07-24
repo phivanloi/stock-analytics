@@ -10,11 +10,6 @@
       "provider": "unpkg",
       "library": "bootstrap@5.1.3",
       "destination": "wwwroot/lib/bootstrap/"
-    },
-    {
-      "provider": "unpkg",
-      "library": "moment@latest",
-      "destination": "wwwroot/lib/moment/"
     }
   ]
 }
