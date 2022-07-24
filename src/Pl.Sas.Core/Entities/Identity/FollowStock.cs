@@ -1,4 +1,4 @@
-﻿namespace Pl.Sas.Core.Entities.Identity
+﻿namespace Pl.Sas.Core.Entities
 {
     public class FollowStock : BaseEntity
     {
