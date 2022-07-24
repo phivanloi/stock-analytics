@@ -561,7 +561,7 @@ namespace Pl.Sas.Core.Services
             #endregion
 
             #region Ngắn hạn
-            var shortTrading = new ShortTrading(chartPrices);
+            var shortTrading = new SmaTrading(chartPrices, 6, 23);
             var tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
             var shortCase = shortTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
             var shortResult = new TradingResult()
@@ -584,7 +584,7 @@ namespace Pl.Sas.Core.Services
             #endregion
 
             #region Trung hạn
-            var midTrading = new MidTrading(chartPrices);
+            var midTrading = new SmaTrading(chartPrices, 12, 26);
             tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
             var midCase = midTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
             var midResult = new TradingResult()
@@ -607,7 +607,7 @@ namespace Pl.Sas.Core.Services
             #endregion
 
             #region Thử nghiệm
-            var experimentTrading = new ExperimentTrading(chartPrices);
+            var experimentTrading = new EmaTrading(chartPrices);
             tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
             var experimentCase = experimentTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
             var smaPSarResult = new TradingResult()
@@ -826,7 +826,7 @@ namespace Pl.Sas.Core.Services
                 {
                     testCaseCount++;
                     Console.Write($"\r{testCaseCount}/{totalCase} cases.");
-                    var trader = new MidTrading(chartPrices, i, j);
+                    var trader = new SmaTrading(chartPrices, i, j);
                     tradingHistory = chartPrices.Where(q => q.TradingDate < fromDate).OrderBy(q => q.TradingDate).ToList();
                     var findResult = trader.Trading(chartTrading, tradingHistory, stock.Exchange);
                     if (findResult.Profit(chartTrading[^1].ClosePrice) > tradingCase.FixedCapital)
@@ -839,14 +839,14 @@ namespace Pl.Sas.Core.Services
                     }
                     if (tradingCase.Profit(chartTrading[^1].ClosePrice) < findResult.Profit(chartTrading[^1].ClosePrice))
                     {
-                        stockFeature.FastEma = i;
-                        stockFeature.SlowEma = j;
+                        stockFeature.FastSma = i;
+                        stockFeature.SlowSma = j;
                         tradingCase = findResult;
                     }
                 }
             }
-            stockFeature.EmaWin = winCase;
-            stockFeature.EmaLose = loseCase;
+            stockFeature.SmaWin = winCase;
+            stockFeature.SmaLose = loseCase;
             await _asyncCacheService.SetValueAsync(cacheKey, stockFeature);
             return (tradingCase, stockFeature);
         }
