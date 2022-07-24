@@ -35,7 +35,7 @@ namespace Pl.Sas.InvestmentPrinciplesTests
             try
             {
                 //await FindThebestAsync("HPG");
-                await TestTradingAsync("DXG");
+                await TestTradingAsync("VIX");
             }
             catch (Exception ex)
             {
@@ -61,7 +61,7 @@ namespace Pl.Sas.InvestmentPrinciplesTests
             var endPrice = chartTrading[^1].ClosePrice;
             Console.Clear();
             Console.Clear();
-            var trader = new MidTrading(chartPrices, 12, 26);
+            var trader = new SmaTrading(chartPrices, 6, 23);
             var tradingCase = trader.Trading(chartTrading, tradingHistory, stock.Exchange);
             foreach (var note in tradingCase.ExplainNotes)
             {
@@ -95,7 +95,7 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 note.Value.WriteConsole(note.Key > 0 ? ConsoleColor.Green : note.Key < 0 ? ConsoleColor.Red : ConsoleColor.White);
             }
             Console.WriteLine();
-            $"Tham số tối ưu: FastEma: {Feature.FastEma}, SlowEma: {Feature.SlowEma}, sô trường hợp thắng/thua: {Feature.EmaWin}/{Feature.EmaLose}".WriteConsole();
+            $"Tham số tối ưu: FastSma: {Feature.FastSma}, SlowSma: {Feature.SlowSma}, sô trường hợp thắng/thua: {Feature.SmaWin}/{Feature.SmaLose}".WriteConsole();
             $"Số lần mua, bán thắng/thua {Case.WinNumber}/{Case.LoseNumber}. Số lần khớp giá tính toán/giá đóng cửa: {Case.NumberPriceNeed}/{Case.NumberPriceClose}".WriteConsole(Case.FixedCapital <= Case.Profit(chartPrices[0].ClosePrice) ? ConsoleColor.Green : ConsoleColor.Red);
             $"Lợi nhuận {Case.Profit(chartPrices[0].ClosePrice):0,0} ({Case.ProfitPercent(chartPrices[0].ClosePrice):0,0.00}%), thuế {Case.TotalTax:0,0}".WriteConsole(Case.FixedCapital <= Case.Profit(chartPrices[0].ClosePrice) ? ConsoleColor.Green : ConsoleColor.Red);
             Console.WriteLine();
