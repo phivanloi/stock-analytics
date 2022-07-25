@@ -831,8 +831,7 @@ namespace Pl.Sas.Core.Services
                     }
                     Console.Write($"\r{testCaseCount}/{totalCase} cases.");
                     var trader = new SmaTrading(chartPrices, i, j);
-                    tradingHistory = chartPrices.Where(q => q.TradingDate < fromDate).OrderBy(q => q.TradingDate).ToList();
-                    var findResult = trader.Trading(chartTrading, tradingHistory, stock.Exchange);
+                    var findResult = trader.Trading(chartTrading, new List<ChartPrice>(tradingHistory), stock.Exchange);
                     if (findResult.Profit(chartTrading[^1].ClosePrice) > tradingCase.FixedCapital)
                     {
                         winCase++;

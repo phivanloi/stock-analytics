@@ -34,7 +34,7 @@ namespace Pl.Sas.InvestmentPrinciplesTests
             Console.Clear();
             try
             {
-                await FindThebestAsync("VND");
+                await FindThebestAsync("STB");
                 //await TestTradingAsync("HPG");
             }
             catch (Exception ex)
@@ -95,7 +95,7 @@ namespace Pl.Sas.InvestmentPrinciplesTests
                 note.Value.WriteConsole(note.Key > 0 ? ConsoleColor.Green : note.Key < 0 ? ConsoleColor.Red : ConsoleColor.White);
             }
             Console.WriteLine();
-            $"Tham số tối ưu: FastSma: {Feature.FastSma}, SlowSma: {Feature.SlowSma}, sô trường hợp thắng/thua: {Feature.SmaWin}/{Feature.SmaLose}".WriteConsole();
+            $"Tham số tối ưu cho {symbol}: FastSma: {Feature.FastSma}, SlowSma: {Feature.SlowSma}, sô trường hợp thắng/thua: {Feature.SmaWin}/{Feature.SmaLose}".WriteConsole();
             $"Số lần mua, bán thắng/thua {Case.WinNumber}/{Case.LoseNumber}. Số lần khớp giá tính toán/giá đóng cửa: {Case.NumberPriceNeed}/{Case.NumberPriceClose}".WriteConsole(Case.FixedCapital <= Case.Profit(chartPrices[0].ClosePrice) ? ConsoleColor.Green : ConsoleColor.Red);
             $"Lợi nhuận {Case.Profit(chartPrices[0].ClosePrice):0,0} ({Case.ProfitPercent(chartPrices[0].ClosePrice):0,0.00}%), thuế {Case.TotalTax:0,0}".WriteConsole(Case.FixedCapital <= Case.Profit(chartPrices[0].ClosePrice) ? ConsoleColor.Green : ConsoleColor.Red);
             Console.WriteLine();
