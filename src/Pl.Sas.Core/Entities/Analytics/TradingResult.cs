@@ -72,10 +72,10 @@
         /// <summary>
         /// vị thế tài sản
         /// </summary>
-        public string AssetPosition { get; set; } = "100% tiền mặt";
+        public string AssetPosition { get; set; } = "T-1";
 
         /// <summary>
-        /// Ghi chú diễn giải đầu tư <see cref="string"/>
+        /// Ghi chú diễn giải đầu tư <see cref="TradingCase"/>
         /// </summary>
         public byte[]? TradingNotes { get; set; } = null;
     }

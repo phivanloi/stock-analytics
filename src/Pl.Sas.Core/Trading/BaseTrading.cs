@@ -15,7 +15,6 @@ namespace Pl.Sas.Core.Trading
         /// Hàm lấy tỉ lệ biến động giá của các sàn chứng khoán
         /// </summary>
         /// <param name="exchangeName">Tên sàn</param>
-        /// <param name="isStartTrading">Có là ngày đầu tiên bắt đầu giao dịch hay không hoặc là ngày đầu tiên sau 25 phiên không giao dịch</param>
         /// <returns></returns>
         public static float GetExchangeFluctuationsRate(string exchangeName)
         {
@@ -25,6 +24,22 @@ namespace Pl.Sas.Core.Trading
                 "HNX" => 0.1f,
                 "UPCOM" => 0.15f,
                 _ => 7,
+            };
+        }
+
+        /// <summary>
+        /// Lấy tỉ lệ cắt lỗ theo sàn chứng khoán
+        /// </summary>
+        /// <param name="exchangeName">Tên sàn</param>
+        /// <returns>float</returns>
+        public static float GetStopLossPercentRate(string exchangeName)
+        {
+            return exchangeName switch
+            {
+                "HOSE" => 0.07f,
+                "HNX" => 0.08f,
+                "UPCOM" => 0.09f,
+                _ => 0.07f,
             };
         }
 

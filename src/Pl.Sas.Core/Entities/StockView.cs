@@ -120,6 +120,7 @@
         #endregion
 
         #region Cột giá hiện tại
+        public float GhtValue { get; set; } = 0;
         public string Ght { get; set; } = null!;
         public string GhtCss { get; set; } = "ght t-r";
         #endregion
@@ -183,6 +184,10 @@
         #region Cột Khuyến nghị theo phương pháp thử nghiệm
         public string Kntn { get; set; } = null!;
         public string KntnCss { get; set; } = "kntn";
+        #endregion
+
+        #region % lãi khi mua bằng phương pháp ngắn hạn
+        public float Lnhkm { get; set; } = 0;
         #endregion
     }
 }
