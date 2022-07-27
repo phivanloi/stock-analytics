@@ -42,6 +42,7 @@ namespace Pl.Sas.Infrastructure.Data
                                     BuyPrice,
                                     IsSell,
                                     SellPrice,
+                                    TradingNotes,
                                     AssetPosition
                                 FROM
                                     TradingResults
