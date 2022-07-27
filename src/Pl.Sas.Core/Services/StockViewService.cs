@@ -25,8 +25,10 @@ namespace Pl.Sas.Core.Services
         private readonly IStockData _stockData;
         private readonly IKeyValueData _keyValueData;
         private readonly IVndStockScoreData _vndStockScoreData;
+        private readonly IZipHelper _zipHelper;
 
         public StockViewService(
+            IZipHelper zipHelper,
             IVndStockScoreData vndStockScoreData,
             IKeyValueData keyValueData,
             IStockData stockData,
@@ -41,6 +43,7 @@ namespace Pl.Sas.Core.Services
             IAsyncCacheService asyncCacheService,
             IMemoryCacheService memoryCacheService)
         {
+            _zipHelper = zipHelper;
             _stockData = stockData;
             _tradingResultData = tradingResultData;
             _financialIndicatorData = financialIndicatorData;
@@ -284,7 +287,13 @@ namespace Pl.Sas.Core.Services
             }
 
             var tradingResults = await _tradingResultData.GetForViewAsync(symbol);
-            BindingTradingResultToView(ref stockView, tradingResults, bankInterestRate12?.GetValue<float>() ?? 6.8f);
+            var shortCase = new TradingCase() { NumberStock = 0 };
+            var shorResult = tradingResults?.FirstOrDefault(q => q.Principle == 0);
+            if (shorResult != null)
+            {
+                shortCase = JsonSerializer.Deserialize<TradingCase>(_zipHelper.UnZipByte(shorResult.TradingNotes ?? throw new Exception("Short result don't has a trading case in TradingNotes"))) ?? throw new Exception();
+            }
+            BindingTradingResultToView(ref stockView, tradingResults, shortCase, bankInterestRate12?.GetValue<float>() ?? 6.8f);
 
             var cacheKey = $"{Constants.StockViewCachePrefix}-SM-{symbol}";
             var setCacheTask = _asyncCacheService.SetValueAsync(cacheKey, stockView, Constants.DefaultCacheTime * 60 * 24 * 30);
@@ -313,6 +322,7 @@ namespace Pl.Sas.Core.Services
         {
             var checkChartPrices = chartPrices.OrderByDescending(q => q.TradingDate).ToList();
             var lastPercent = checkChartPrices[0].ClosePrice.GetPercent(checkChartPrices[^1].ClosePrice);
+            stockView.GhtValue = checkChartPrices[0].ClosePrice;
             stockView.Ght = checkChartPrices[0].ClosePrice.ShowPrice(1);
 
             stockView.KlhtValue = checkChartPrices[0].TotalMatchVol;
@@ -420,7 +430,7 @@ namespace Pl.Sas.Core.Services
             }
         }
 
-        public static void BindingTradingResultToView(ref StockView stockView, List<TradingResult>? tradingResults, float bankInterestRate12)
+        public static void BindingTradingResultToView(ref StockView stockView, List<TradingResult>? tradingResults, TradingCase shortCase, float bankInterestRate12)
         {
             if (tradingResults is not null && tradingResults.Count > 0)
             {
@@ -431,6 +441,15 @@ namespace Pl.Sas.Core.Services
                         stockView.Lnnh = result.ProfitPercent.ShowPercent();
                         stockView.LnnhCss = $"lnnh t-r {result.ProfitPercent.GetTextColorCss(bankInterestRate12)}";
                         stockView.Knnh = result.AssetPosition;
+                        if (shortCase.NumberStock > 0)
+                        {
+                            stockView.Lnhkm = shortCase.ProfitPercent(stockView.GhtValue);
+                        }
+                        else
+                        {
+                            stockView.Lnhkm = 0;
+                        }
+
                         if (result.IsBuy)
                         {
                             stockView.KnnhCss = "knnh t-m";

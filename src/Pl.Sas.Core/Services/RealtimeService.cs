@@ -21,8 +21,10 @@ namespace Pl.Sas.Core.Services
         private readonly IAsyncCacheService _asyncCacheService;
         private readonly IKeyValueData _keyValueData;
         private readonly IStockData _stockData;
+        private readonly IZipHelper _zipHelper;
 
         public RealtimeService(
+            IZipHelper zipHelper,
             IStockData stockData,
             IKeyValueData keyValueData,
             IAsyncCacheService asyncCacheService,
@@ -31,6 +33,7 @@ namespace Pl.Sas.Core.Services
             IWorkerQueueService workerQueueService,
             ILogger<RealtimeService> logger)
         {
+            _zipHelper = zipHelper;
             _chartPriceData = chartPriceData;
             _logger = logger;
             _workerQueueService = workerQueueService;
@@ -138,7 +141,7 @@ namespace Pl.Sas.Core.Services
                 Profit = (100000000 / startPrice) * endPrice,
                 TotalTax = 0,
                 TradingNotes = null,
-                AssetPosition = "100% C",
+                AssetPosition = "C-~",
                 LoseNumber = startPrice <= endPrice ? 1 : 0,
                 WinNumber = startPrice > endPrice ? 1 : 0,
             });
@@ -148,6 +151,7 @@ namespace Pl.Sas.Core.Services
             var shortTrading = new SmaTrading(chartPrices, 6, 23);
             var tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
             var shortCase = shortTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
+            shortCase.ExplainNotes = new();
             listTradingResult.Add(new()
             {
                 Symbol = symbol,
@@ -170,6 +174,7 @@ namespace Pl.Sas.Core.Services
             var midTrading = new SmaTrading(chartPrices, 12, 36);
             tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
             var midCase = midTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
+            midCase.ExplainNotes = new();
             listTradingResult.Add(new()
             {
                 Symbol = symbol,
@@ -192,6 +197,7 @@ namespace Pl.Sas.Core.Services
             var experimentTrading = new EmaTrading(chartPrices);
             tradingHistory = chartPrices.Where(q => q.TradingDate < Constants.StartTime).OrderBy(q => q.TradingDate).ToList();
             var experimentCase = experimentTrading.Trading(chartTrading, tradingHistory, stock.Exchange);
+            experimentCase.ExplainNotes = new();
             listTradingResult.Add(new()
             {
                 Symbol = symbol,
@@ -211,7 +217,7 @@ namespace Pl.Sas.Core.Services
             #endregion
 
             StockViewService.BindingPercentConvulsionToView(ref stockView, chartPrices);
-            StockViewService.BindingTradingResultToView(ref stockView, listTradingResult, bankInterestRate12?.GetValue<float>() ?? 6.8f);
+            StockViewService.BindingTradingResultToView(ref stockView, listTradingResult, shortCase, bankInterestRate12?.GetValue<float>() ?? 6.8f);
 
             var setViewCacheKey = $"{Constants.StockViewCachePrefix}-SM-{symbol}";
             var setCacheTask = _asyncCacheService.SetValueAsync(setViewCacheKey, stockView, Constants.DefaultCacheTime * 60 * 24 * 30);

@@ -541,6 +541,8 @@ namespace Pl.Sas.Core.Services
             var startPrice = chartTrading[0].ClosePrice;
             var endPrice = chartTrading[^1].ClosePrice;
             var noteInvestment = $"Mua và nắm giữ {chartTrading.Count} phiên từ ngày {chartTrading[0].TradingDate:dd/MM/yyyy}: Giá đóng cửa đầu kỳ {startPrice:0,0} giá đóng cửa cuối kỳ {endPrice:0,0} lợi nhuận {endPrice.GetPercent(startPrice):0.00}%.";
+            var buyAndWaitCase = new TradingCase();
+            buyAndWaitCase.AddNote(startPrice > endPrice ? -1 : startPrice < endPrice ? 1 : 0, noteInvestment);
             var buyAndWaitResult = new TradingResult()
             {
                 Symbol = symbol,
@@ -555,7 +557,7 @@ namespace Pl.Sas.Core.Services
                 AssetPosition = "100% C",
                 LoseNumber = startPrice <= endPrice ? 1 : 0,
                 WinNumber = startPrice > endPrice ? 1 : 0,
-                TradingNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(new List<KeyValuePair<int, string>>() { new(startPrice > endPrice ? -1 : startPrice < endPrice ? 1 : 0, noteInvestment) })),
+                TradingNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(buyAndWaitCase)),
             };
             await _tradingResultData.SaveTestTradingResultAsync(buyAndWaitResult);
             #endregion
@@ -578,7 +580,7 @@ namespace Pl.Sas.Core.Services
                 AssetPosition = shortCase.AssetPosition,
                 LoseNumber = shortCase.LoseNumber,
                 WinNumber = shortCase.WinNumber,
-                TradingNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(shortCase.ExplainNotes)),
+                TradingNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(shortCase)),
             };
             await _tradingResultData.SaveTestTradingResultAsync(shortResult);
             #endregion
@@ -601,7 +603,7 @@ namespace Pl.Sas.Core.Services
                 AssetPosition = midCase.AssetPosition,
                 LoseNumber = midCase.LoseNumber,
                 WinNumber = midCase.WinNumber,
-                TradingNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(midCase.ExplainNotes)),
+                TradingNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(midCase)),
             };
             await _tradingResultData.SaveTestTradingResultAsync(midResult);
             #endregion
@@ -624,7 +626,7 @@ namespace Pl.Sas.Core.Services
                 AssetPosition = experimentCase.AssetPosition,
                 LoseNumber = experimentCase.LoseNumber,
                 WinNumber = experimentCase.WinNumber,
-                TradingNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(experimentCase.ExplainNotes)),
+                TradingNotes = _zipHelper.ZipByte(JsonSerializer.SerializeToUtf8Bytes(experimentCase)),
             };
             await _tradingResultData.SaveTestTradingResultAsync(smaPSarResult);
             #endregion            
