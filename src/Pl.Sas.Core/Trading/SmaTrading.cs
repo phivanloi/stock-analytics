@@ -199,16 +199,16 @@ namespace Pl.Sas.Core.Trading
             //    return 0;
             //}
 
-            //var limitSma = _limitSmas.Find(chartPrice.TradingDate);
-            //if (limitSma is null || limitSma.Sma is null)
-            //{
-            //    return 0;
-            //}
+            var limitSma = _limitSmas.Find(chartPrice.TradingDate);
+            if (limitSma is null || limitSma.Sma is null)
+            {
+                return 0;
+            }
 
-            //if (chartPrice.ClosePrice < limitSma.Sma)
-            //{
-            //    return 0;
-            //}
+            if (chartPrice.ClosePrice < limitSma.Sma)
+            {
+                return 0;
+            }
 
             var slowSma = _slowSmas.Find(chartPrice.TradingDate);
             if (slowSma is null || slowSma.Sma is null)
