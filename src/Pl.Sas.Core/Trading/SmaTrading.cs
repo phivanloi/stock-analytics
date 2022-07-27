@@ -8,9 +8,9 @@ namespace Pl.Sas.Core.Trading
         private readonly List<SmaResult> _slowSmas;
         private readonly List<SmaResult> _fastSmas;
         private readonly List<SmaResult> _limitSmas;
+        private readonly List<SmaResult> _longLimitSmas;
         private readonly List<RsiResult> _fastRsis;
         private readonly List<RsiResult> _slowRsis;
-        private readonly List<ParabolicSarResult> _reverseSignals;
         private readonly TradingCase _tradingCase = new();
 
         public SmaTrading(List<ChartPrice> chartPrices, int fastSma = 12, int slowSma = 26)
@@ -19,7 +19,7 @@ namespace Pl.Sas.Core.Trading
             _fastSmas = quotes.Use(CandlePart.Close).GetSma(fastSma).ToList();
             _slowSmas = quotes.Use(CandlePart.Close).GetSma(slowSma).ToList();
             _limitSmas = quotes.Use(CandlePart.Close).GetSma(36).ToList();
-            _reverseSignals = quotes.GetParabolicSar(0.02, 0.2).ToList();
+            _longLimitSmas = quotes.Use(CandlePart.Close).GetSma(50).ToList();
             _fastRsis = quotes.GetRsi(1).ToList();
             _slowRsis = quotes.GetRsi(14).ToList();
         }
@@ -63,7 +63,7 @@ namespace Pl.Sas.Core.Trading
                         _tradingCase.NumberStock += stockCount;
                         _tradingCase.NumberChangeDay = 0;
                         _tradingCase.MaxPriceOnBuy = day.ClosePrice;
-                        _tradingCase.StopLossPrice = _tradingCase.ActionPrice - (_tradingCase.ActionPrice * GetExchangeFluctuationsRate(exchangeName));
+                        _tradingCase.StopLossPrice = _tradingCase.ActionPrice - (_tradingCase.ActionPrice * GetStopLossPercentRate(exchangeName));
                         if (timeTrading == TimeTrading.NST || DateTime.Now.Date != day.TradingDate)
                         {
                             _tradingCase.AssetPosition = $"C-{_tradingCase.NumberChangeDay}, {day.ClosePrice.GetPercent(_tradingCase.ActionPrice):0.0}";
@@ -157,16 +157,6 @@ namespace Pl.Sas.Core.Trading
             return _tradingCase;
         }
 
-        public float GetStopLossPrice(ChartPrice chartPrice)
-        {
-            var sarSignal = _reverseSignals.Find(chartPrice.TradingDate);
-            if (sarSignal is null || sarSignal.Sar is null)
-            {
-                return _tradingCase.ActionPrice - (_tradingCase.ActionPrice * 0.07f);
-            }
-            return (float)sarSignal.Sar;
-        }
-
         public void RebuildStatus(ChartPrice chartPrice)
         {
             if (_tradingCase.MaxPriceOnBuy < chartPrice.ClosePrice)
@@ -198,16 +188,27 @@ namespace Pl.Sas.Core.Trading
 
         public int BuyCondition(ChartPrice chartPrice)
         {
-            var limitSma = _limitSmas.Find(chartPrice.TradingDate);
-            if (limitSma is null || limitSma.Sma is null)
-            {
-                return 0;
-            }
+            //var longLimitSma = _longLimitSmas.Find(chartPrice.TradingDate);
+            //if (longLimitSma is null || longLimitSma.Sma is null)
+            //{
+            //    return 0;
+            //}
 
-            if (chartPrice.ClosePrice < limitSma.Sma)
-            {
-                return 0;
-            }
+            //if (chartPrice.ClosePrice < longLimitSma.Sma)
+            //{
+            //    return 0;
+            //}
+
+            //var limitSma = _limitSmas.Find(chartPrice.TradingDate);
+            //if (limitSma is null || limitSma.Sma is null)
+            //{
+            //    return 0;
+            //}
+
+            //if (chartPrice.ClosePrice < limitSma.Sma)
+            //{
+            //    return 0;
+            //}
 
             var slowSma = _slowSmas.Find(chartPrice.TradingDate);
             if (slowSma is null || slowSma.Sma is null)
