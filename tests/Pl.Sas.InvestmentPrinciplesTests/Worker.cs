@@ -34,8 +34,8 @@ namespace Pl.Sas.InvestmentPrinciplesTests
             Console.Clear();
             try
             {
-                await FindThebestAsync("STB");
-                //await TestTradingAsync("HPG");
+                await FindThebestAsync("SCI");
+                //await TestTradingAsync("SCI");
             }
             catch (Exception ex)
             {
