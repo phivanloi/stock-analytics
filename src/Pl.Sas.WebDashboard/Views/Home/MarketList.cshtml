@@ -13,7 +13,7 @@
         tnWinVsTh += float.Parse(view.Lntn) > float.Parse(view.Lnth) ? 1 : -1;
     }
     <tr id="@view.Symbol">
-        <td class="s-c t-w t-c" fo="@(Model.UserFollowSymbols.Contains(view.Symbol) ? "1" : "0")" title="@view.Description">@view.Symbol</td>
+        <td class="s-c @(view.IsDataOk ? "t-w" : "t-wn") t-c" fo="@(Model.UserFollowSymbols.Contains(view.Symbol) ? "1" : "0")" title="@view.Description">@view.Symbol</td>
 
         <td class="@view.ScoreCss">@view.Score</td>
         <td class="t-r @view.Eps.GetRangeTextColorCss(1000, 1500)">@view.Eps.ShowMoney(1)</td>

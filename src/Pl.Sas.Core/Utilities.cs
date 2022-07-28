@@ -244,6 +244,28 @@ namespace Pl.Sas.Core
         }
 
         /// <summary>
+        /// Lấy quý hiện tại để so sáng
+        /// </summary>
+        /// <returns>int</returns>
+        public static int GetQuarterIndex()
+        {
+            var currentMonth = DateTime.Now.Month;
+            if (currentMonth >= 1 && currentMonth < 3)
+            {
+                return 1;
+            }
+            if (currentMonth >= 3 && currentMonth < 6)
+            {
+                return 2;
+            }
+            if (currentMonth >= 6 && currentMonth < 9)
+            {
+                return 3;
+            }
+            return 4;
+        }
+
+        /// <summary>
         /// Lấy ngày giao dịch hiện tại, quy tắc xử lý 
         /// </summary>
         /// <returns>DateTime</returns>

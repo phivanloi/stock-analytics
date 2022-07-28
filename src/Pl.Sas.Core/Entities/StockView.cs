@@ -67,6 +67,11 @@
         /// <para>roe = Lợi nhuận sau thuế(Earning) / Tổng tài sản bình quân</para>
         /// </summary>
         public float Roa { get; set; }
+
+        /// <summary>
+        /// Trạng thái dữ liệu chứng khoán an toàn đề dùng
+        /// </summary>
+        public bool IsDataOk { get; set; } = false;
         #endregion
 
         #region Cột % lợi nhận sau thuế quý gần nhất
