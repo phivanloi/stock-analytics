@@ -203,6 +203,7 @@ namespace Pl.Sas.Core.Services
 
             if (financialIndicators is not null && financialIndicators.Count > 0)//Chỉ số tài chính
             {
+                var currentQuarterIndex = Utilities.GetQuarterIndex();
                 stockView.Eps = financialIndicators[0]?.Eps ?? company.Eps;
                 stockView.Pe = financialIndicators[0]?.Pe ?? company.Pe;
                 stockView.Pb = financialIndicators[0]?.Pb ?? company.Pb;
@@ -212,6 +213,14 @@ namespace Pl.Sas.Core.Services
                 var sourceItem = financialIndicators.FirstOrDefault(q => q.LengthReport != 5);
                 if (sourceItem is not null)
                 {
+                    if (currentQuarterIndex == 1)
+                    {
+                        stockView.IsDataOk = sourceItem.LengthReport == 4 && sourceItem.YearReport == DateTime.Now.Year - 1;
+                    }
+                    else
+                    {
+                        stockView.IsDataOk = sourceItem.LengthReport >= (currentQuarterIndex - 1) && sourceItem.YearReport == DateTime.Now.Year;
+                    }
                     var compareItem = financialIndicators.FirstOrDefault(q => q.LengthReport == sourceItem.LengthReport && q.YearReport == sourceItem.YearReport - 1);
                     if (compareItem is not null)
                     {
@@ -444,7 +453,7 @@ namespace Pl.Sas.Core.Services
                         stockView.Knnh = result.AssetPosition;
                         if (shortCase.NumberStock > 0)
                         {
-                            stockView.Lnhkm = shortCase.ProfitPercent(stockView.GhtValue);
+                            stockView.Lnhkm = shortCase.ActionPrice.GetPercent(stockView.GhtValue);
                         }
                         else
                         {
