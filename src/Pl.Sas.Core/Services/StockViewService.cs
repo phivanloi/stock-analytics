@@ -121,7 +121,8 @@ namespace Pl.Sas.Core.Services
                     "klk" => query.OrderByDescending(q => q.KlhtValue).ToList(),
                     "ddgdn" => query.OrderByDescending(q => q.ScoreValue).ToList(),
                     "td1p" => query.OrderByDescending(q => q.Bd2Value).ToList(),
-                    "lnhgd" => query.OrderBy(q => q.Lnhkm).ToList(),
+                    "lnhgd" => query.OrderByDescending(q => q.Lnhkm).ToList(),
+                    "lnqgn" => query.OrderByDescending(q => q.LnqValue).ToList(),
                     _ => query.OrderByDescending(q => q.KlhtValue).ToList(),
                 };
             }
@@ -225,6 +226,7 @@ namespace Pl.Sas.Core.Services
                     if (compareItem is not null)
                     {
                         var quarterlyPercentProfit = sourceItem.Profit.GetPercent(compareItem.Profit);
+                        stockView.LnqValue = quarterlyPercentProfit;
                         stockView.Lnq = quarterlyPercentProfit.ToString("0,0.0");
                         if (quarterlyPercentProfit > 30)
                         {
@@ -453,7 +455,7 @@ namespace Pl.Sas.Core.Services
                         stockView.Knnh = result.AssetPosition;
                         if (shortCase.NumberStock > 0)
                         {
-                            stockView.Lnhkm = shortCase.ActionPrice.GetPercent(stockView.GhtValue);
+                            stockView.Lnhkm = stockView.GhtValue.GetPercent(shortCase.ActionPrice);
                         }
                         else
                         {

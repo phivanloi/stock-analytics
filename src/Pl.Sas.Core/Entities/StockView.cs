@@ -75,6 +75,7 @@
         #endregion
 
         #region Cột % lợi nhận sau thuế quý gần nhất
+        public float LnqValue { get; set; }
         public string Lnq { get; set; } = null!;
         public string LnqCss { get; set; } = "lnq t-r";
         #endregion        
