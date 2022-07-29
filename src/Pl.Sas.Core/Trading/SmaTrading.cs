@@ -8,7 +8,6 @@ namespace Pl.Sas.Core.Trading
         private readonly List<SmaResult> _slowSmas;
         private readonly List<SmaResult> _fastSmas;
         private readonly List<SmaResult> _limitSmas;
-        private readonly List<SmaResult> _longLimitSmas;
         private readonly List<RsiResult> _fastRsis;
         private readonly List<RsiResult> _slowRsis;
         private readonly TradingCase _tradingCase = new();
@@ -19,7 +18,6 @@ namespace Pl.Sas.Core.Trading
             _fastSmas = quotes.Use(CandlePart.Close).GetSma(fastSma).ToList();
             _slowSmas = quotes.Use(CandlePart.Close).GetSma(slowSma).ToList();
             _limitSmas = quotes.Use(CandlePart.Close).GetSma(36).ToList();
-            _longLimitSmas = quotes.Use(CandlePart.Close).GetSma(50).ToList();
             _fastRsis = quotes.GetRsi(1).ToList();
             _slowRsis = quotes.GetRsi(14).ToList();
         }
@@ -188,17 +186,6 @@ namespace Pl.Sas.Core.Trading
 
         public int BuyCondition(ChartPrice chartPrice)
         {
-            //var longLimitSma = _longLimitSmas.Find(chartPrice.TradingDate);
-            //if (longLimitSma is null || longLimitSma.Sma is null)
-            //{
-            //    return 0;
-            //}
-
-            //if (chartPrice.ClosePrice < longLimitSma.Sma)
-            //{
-            //    return 0;
-            //}
-
             var limitSma = _limitSmas.Find(chartPrice.TradingDate);
             if (limitSma is null || limitSma.Sma is null)
             {
