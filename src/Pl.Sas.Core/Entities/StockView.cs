@@ -67,9 +67,15 @@
         /// <para>roe = Lợi nhuận sau thuế(Earning) / Tổng tài sản bình quân</para>
         /// </summary>
         public float Roa { get; set; }
+
+        /// <summary>
+        /// Trạng thái dữ liệu chứng khoán an toàn đề dùng
+        /// </summary>
+        public bool IsDataOk { get; set; } = false;
         #endregion
 
         #region Cột % lợi nhận sau thuế quý gần nhất
+        public float LnqValue { get; set; }
         public string Lnq { get; set; } = null!;
         public string LnqCss { get; set; } = "lnq t-r";
         #endregion        
@@ -120,6 +126,7 @@
         #endregion
 
         #region Cột giá hiện tại
+        public float GhtValue { get; set; } = 0;
         public string Ght { get; set; } = null!;
         public string GhtCss { get; set; } = "ght t-r";
         #endregion
@@ -183,6 +190,10 @@
         #region Cột Khuyến nghị theo phương pháp thử nghiệm
         public string Kntn { get; set; } = null!;
         public string KntnCss { get; set; } = "kntn";
+        #endregion
+
+        #region % lãi khi mua bằng phương pháp ngắn hạn
+        public float Lnhkm { get; set; } = 0;
         #endregion
     }
 }

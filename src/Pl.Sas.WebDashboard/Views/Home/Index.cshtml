@@ -27,6 +27,8 @@
                     <option value="ddgdn">Điểm đánh giá DN giảm dần</option>
                     <option selected="selected" value="klk">Khối lượng khớp giảm dần</option>
                     <option value="td1p">Giá thay đổi 1 phiên giảm dần</option>
+                    <option value="lnhgd">Lãi phương pháp ngắn hạn giảm dần</option>
+                    <option value="lnqgn">Lợi nhuận quý gần nhất giảm dần</option>
                 </select>
             </div>
         </div>
@@ -78,7 +80,7 @@
     <table class="table table-bordered table-hover market">
         <thead>
             <tr class="t-w t-c">
-                <td rowspan="2" title="Tên doanh nghiệp - lĩnh vực hoạt động" id="number-row">Mã</td>
+                <td rowspan="2" title="Tên doanh nghiệp - lĩnh vực hoạt động, Màu vàng thệ hiển dữ liệu có thể đang lỗi thời" id="number-row">Mã</td>
                 <td colspan="6" title="Điểm đánh giá doanh nghiệp và các chỉ số tài chính hiện tại của doanh nghiệp">Doanh nghiệp</td>
                 <td colspan="2" title="Điểm số dòng tiền ngành và dòng tiền của cổ phiếu">Dòng tiền</td>
                 <td colspan="10" title="Điểm đánh giá tăng trưởng thị giá và phân tích kỹ thuật">Kỹ thuật</td>
@@ -216,8 +218,8 @@
                 success: function(html) {
                     if (html.length > 0) {
                         $('#user-invest-table-body').html(html);
-                        $('#number-row').html($('#user-invest-table-body').children().length + '</br> Mã');
-                        $('#compete-result').prop('title',$('#compete').val());
+                        $('#number-row').html(($('#user-invest-table-body').children().length - 1) + '</br> Mã');
+                        $('#compete-result').prop('title', $('#compete').val());
                         document.documentElement.scrollTop = document.body.scrollTop = scrollTop;
                     }
                     else {
