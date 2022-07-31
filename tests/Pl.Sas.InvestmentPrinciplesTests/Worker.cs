@@ -35,7 +35,7 @@ namespace Pl.Sas.InvestmentPrinciplesTests
             try
             {
                 //await FindThebestAsync("VND");
-                await TestTradingAsync("VND");
+                await TestTradingAsync("HPG");
             }
             catch (Exception ex)
             {
@@ -48,7 +48,7 @@ namespace Pl.Sas.InvestmentPrinciplesTests
         {
             Console.Clear();
             Console.OutputEncoding = Encoding.UTF8;
-            DateTime fromDate = new(2010, 1, 1);
+            DateTime fromDate = new(2012, 1, 1);
             DateTime toDate = new(2023, 1, 1);
             var stock = await _stockData.FindBySymbolAsync(symbol);
             var company = await _companyData.FindBySymbolAsync(symbol);
@@ -61,7 +61,7 @@ namespace Pl.Sas.InvestmentPrinciplesTests
             var endPrice = chartTrading[^1].ClosePrice;
             Console.Clear();
             Console.Clear();
-            var trader = new SmaTrading(chartPrices, 6, 23);
+            var trader = new SmaTrading(chartPrices, 12, 36);
             var tradingCase = trader.Trading(chartTrading, tradingHistory, stock.Exchange);
             foreach (var note in tradingCase.ExplainNotes)
             {
